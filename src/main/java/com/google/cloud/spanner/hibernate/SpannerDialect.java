@@ -18,11 +18,14 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import org.hibernate.dialect.Dialect;
+
 /**
  * Hibernate Dialect implementation for Cloud Spanner.
  *
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
-public class SpannerDialect {
+public class SpannerDialect extends Dialect {
 
 }
