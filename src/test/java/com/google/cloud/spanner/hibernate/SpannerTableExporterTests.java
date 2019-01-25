@@ -48,8 +48,8 @@ public class SpannerTableExporterTests {
   private StandardServiceRegistry registry;
 
   /**
-  * Set up the metadata for Hibernate to generate schema statements.
-  */
+   * Set up the metadata for Hibernate to generate schema statements.
+   */
   @Before
   public void setup() {
     this.registry = new StandardServiceRegistryBuilder()

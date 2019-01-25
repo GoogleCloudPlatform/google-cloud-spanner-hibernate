@@ -42,7 +42,7 @@ public class SpannerTableExporter implements Exporter<Table> {
 
   @Override
   public String[] getSqlCreateStrings(Table exportable, Metadata metadata) {
-    return new String[] {"test_placeholder"};
+    return new String[]{"test_placeholder"};
   }
 
   @Override
@@ -52,6 +52,6 @@ public class SpannerTableExporter implements Exporter<Table> {
      * These must be dropped before the given table can be dropped.
      */
 
-    return new String[] {"test_placeholder"};
+    return new String[]{"test_placeholder"};
   }
 }
