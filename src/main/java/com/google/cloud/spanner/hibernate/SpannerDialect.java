@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.jdbc.env.spi.SchemaNameResolver;
 import org.hibernate.mapping.Table;
 import org.hibernate.tool.schema.spi.Exporter;
 
@@ -36,6 +37,8 @@ public class SpannerDialect extends Dialect {
   public Exporter<Table> getTableExporter() {
     return this.spannerTableExporter;
   }
+
+  /* SELECT-related functions */
 
   @Override
   public boolean supportsCurrentTimestampSelection() {
@@ -65,5 +68,80 @@ public class SpannerDialect extends Dialect {
   @Override
   public boolean supportsCaseInsensitiveLike() {
     return false;
+  }
+
+  /* DDL-related functions */
+
+  @Override
+  public boolean canCreateSchema() {
+    return false;
+  }
+
+  @Override
+  public String[] getCreateSchemaCommand(String schemaName) {
+    throw new UnsupportedOperationException(
+        "No create schema syntax supported by " + getClass().getName());
+  }
+
+  @Override
+  public String[] getDropSchemaCommand(String schemaName) {
+    throw new UnsupportedOperationException(
+        "No drop schema syntax supported by " + getClass().getName());
+  }
+
+  @Override
+  public String getCurrentSchemaCommand() {
+    throw new UnsupportedOperationException("No drop schema syntax supported by "
+        + getClass().getName());
+  }
+
+  @Override
+  public SchemaNameResolver getSchemaNameResolver() {
+    throw new UnsupportedOperationException(
+        "No schema name resolver supported by " + getClass().getName());
+  }
+
+  @Override
+  public boolean dropConstraints() {
+    return false;
+  }
+
+  @Override
+  public boolean qualifyIndexName() {
+    return false;
+  }
+
+  @Override
+  public String getAddColumnString() {
+    return "ADD COLUMN";
+  }
+
+  @Override
+  public String getDropForeignKeyString() {
+    throw new UnsupportedOperationException("Cannot drop foreign-key constraint because "
+        + "Cloud Spanner does not support foreign keys.");
+  }
+
+  @Override
+  public String getAddForeignKeyConstraintString(String constraintName,
+      String[] foreignKey,
+      String referencedTable,
+      String[] primaryKey,
+      boolean referencesPrimaryKey) {
+    throw new UnsupportedOperationException("Cannot add foreign-key constraint because "
+        + "Cloud Spanner does not support foreign keys.");
+  }
+
+  @Override
+  public String getAddForeignKeyConstraintString(
+      String constraintName,
+      String foreignKeyDefinition) {
+    throw new UnsupportedOperationException("Cannot add foreign-key constraint because "
+        + "Cloud Spanner does not support foreign keys.");
+  }
+
+  @Override
+  public String getAddPrimaryKeyConstraintString(String constraintName) {
+    throw new UnsupportedOperationException("Cannot add primary key constraint in Cloud Spanner.");
   }
 }
