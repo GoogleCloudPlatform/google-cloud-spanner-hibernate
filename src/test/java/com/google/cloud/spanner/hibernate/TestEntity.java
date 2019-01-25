@@ -29,6 +29,6 @@ import javax.persistence.Id;
 @Entity
 public class TestEntity {
 
-    @Id
-    String id;
+  @Id
+  String id;
 }

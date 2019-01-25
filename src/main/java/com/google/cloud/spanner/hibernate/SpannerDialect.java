@@ -30,10 +30,10 @@ import org.hibernate.tool.schema.spi.Exporter;
  */
 public class SpannerDialect extends Dialect {
 
-    private final SpannerTableExporter spannerTableExporter = new SpannerTableExporter(this);
+  private final SpannerTableExporter spannerTableExporter = new SpannerTableExporter(this);
 
-    @Override
-    public Exporter<Table> getTableExporter() {
-        return this.spannerTableExporter;
-    }
+  @Override
+  public Exporter<Table> getTableExporter() {
+    return this.spannerTableExporter;
+  }
 }

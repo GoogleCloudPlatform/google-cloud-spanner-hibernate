@@ -18,6 +18,15 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.UUID;
+
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
@@ -27,15 +36,6 @@ import org.hibernate.tool.schema.TargetType;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-
 /**
  * Tests for SpannerTableExporter.
  *
@@ -43,45 +43,46 @@ import static org.junit.Assert.assertEquals;
  */
 public class SpannerTableExporterTests {
 
-    private Metadata metadata;
+  private Metadata metadata;
 
-    private StandardServiceRegistry registry;
+  private StandardServiceRegistry registry;
 
-    @Before
-    public void setup() {
-        this.registry = new StandardServiceRegistryBuilder()
-                .applySetting("hibernate.dialect", SpannerDialect.class.getName())
-                .build();
-        this.metadata = new MetadataSources(this.registry)
-                .addAnnotatedClass(TestEntity.class)
-                .buildMetadata();
+  /**
+  * Set up the metadata for Hibernate to generate schema statements.
+  */
+  @Before
+  public void setup() {
+    this.registry = new StandardServiceRegistryBuilder()
+        .applySetting("hibernate.dialect", SpannerDialect.class.getName()).build();
+    this.metadata =
+        new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class).buildMetadata();
+  }
+
+  @Test
+  public void generateDropStringsTest() throws IOException {
+    String testFileName = UUID.randomUUID().toString();
+    new SchemaExport().setOutputFile(testFileName)
+        .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
+    File scriptFile = new File(testFileName);
+    List<String> statements = Files.readAllLines(scriptFile.toPath());
+    try {
+      assertEquals("test_placeholder", statements.get(0));
+    } finally {
+      scriptFile.delete();
     }
+  }
 
-    @Test
-    public void generateDropStringsTest() throws IOException {
-        String testFileName = UUID.randomUUID().toString();
-        new SchemaExport().setOutputFile(testFileName).drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT),
-                this.metadata);
-        File scriptFile = new File(testFileName);
-        List<String> statements = Files.readAllLines(scriptFile.toPath());
-        try {
-            assertEquals("test_placeholder", statements.get(0));
-        } finally {
-            scriptFile.delete();
-        }
+  @Test
+  public void generateCreateStringsTest() throws IOException {
+    String testFileName = UUID.randomUUID().toString();
+    new SchemaExport().setOutputFile(testFileName)
+        .create(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
+    File scriptFile = new File(testFileName);
+    List<String> statements = Files.readAllLines(scriptFile.toPath());
+    try {
+      assertEquals("test_placeholder", statements.get(0));
+    } finally {
+      scriptFile.delete();
     }
-
-    @Test
-    public void generateCreateStringsTest() throws IOException {
-        String testFileName = UUID.randomUUID().toString();
-        new SchemaExport().setOutputFile(testFileName).create(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT),
-                this.metadata);
-        File scriptFile = new File(testFileName);
-        List<String> statements = Files.readAllLines(scriptFile.toPath());
-        try {
-            assertEquals("test_placeholder", statements.get(0));
-        } finally {
-            scriptFile.delete();
-        }
-    }
+  }
 }
