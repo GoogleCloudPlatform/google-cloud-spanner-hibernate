@@ -58,5 +58,4 @@ public class SpannerDialect extends Dialect {
 		return false;
 	}
 
-
 }
