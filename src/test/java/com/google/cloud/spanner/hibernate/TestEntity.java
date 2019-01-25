@@ -18,35 +18,17 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
- * Unit test for SpannerDialect.
+ * A test entity class used for generating schema statements.
  *
- * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
-public class SpannerDialectTest {
+@Entity
+public class TestEntity {
 
-  private SpannerDialect spannerDialect;
-
-  @Before
-  public void setUp() {
-    this.spannerDialect = new SpannerDialect();
-  }
-
-  @Test
-  public void dropTableStringTest() {
-    assertEquals("drop table test_table", this.spannerDialect.getDropTableString("test_table"));
-  }
-
-  @Test
-  public void getTableExporterTest() {
-    assertNotNull(this.spannerDialect.getTableExporter());
-  }
+    @Id
+    String id;
 }
