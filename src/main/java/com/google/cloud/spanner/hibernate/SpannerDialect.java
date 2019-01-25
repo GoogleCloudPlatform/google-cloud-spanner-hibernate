@@ -30,40 +30,40 @@ import org.hibernate.tool.schema.spi.Exporter;
  */
 public class SpannerDialect extends Dialect {
 
-	private final SpannerTableExporter spannerTableExporter = new SpannerTableExporter(this);
+  private final SpannerTableExporter spannerTableExporter = new SpannerTableExporter(this);
 
-	@Override
-	public Exporter<Table> getTableExporter() {
-		return this.spannerTableExporter;
-	}
+  @Override
+  public Exporter<Table> getTableExporter() {
+    return this.spannerTableExporter;
+  }
 
-	@Override
-	public boolean supportsCurrentTimestampSelection() {
-		return true;
-	}
+  @Override
+  public boolean supportsCurrentTimestampSelection() {
+    return true;
+  }
 
-	@Override
-	public boolean isCurrentTimestampSelectStringCallable() {
-		return false;
-	}
+  @Override
+  public boolean isCurrentTimestampSelectStringCallable() {
+    return false;
+  }
 
-	@Override
-	public String getCurrentTimestampSelectString() {
-		return "SELECT CURRENT_TIMESTAMP() as now";
-	}
+  @Override
+  public String getCurrentTimestampSelectString() {
+    return "SELECT CURRENT_TIMESTAMP() as now";
+  }
 
-	@Override
-	public String toBooleanValueString(boolean bool) {
-		return bool ? "TRUE" : "FALSE";
-	}
+  @Override
+  public String toBooleanValueString(boolean bool) {
+    return bool ? "TRUE" : "FALSE";
+  }
 
-	@Override
-	public boolean supportsUnionAll() {
-		return true;
-	}
+  @Override
+  public boolean supportsUnionAll() {
+    return true;
+  }
 
-	@Override
-	public boolean supportsCaseInsensitiveLike() {
-		return false;
-	}
+  @Override
+  public boolean supportsCaseInsensitiveLike() {
+    return false;
+  }
 }

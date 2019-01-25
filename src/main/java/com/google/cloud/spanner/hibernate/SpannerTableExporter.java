@@ -29,29 +29,29 @@ import org.hibernate.tool.schema.spi.Exporter;
  */
 public class SpannerTableExporter implements Exporter<Table> {
 
-	private final SpannerDialect spannerDialect;
+  private final SpannerDialect spannerDialect;
 
-	/**
-	 * Constructor.
-	 *
-	 * @param spannerDialect a Cloud Spanner dialect.
-	 */
-	public SpannerTableExporter(SpannerDialect spannerDialect) {
-		this.spannerDialect = spannerDialect;
-	}
+  /**
+   * Constructor.
+   *
+   * @param spannerDialect a Cloud Spanner dialect.
+   */
+  public SpannerTableExporter(SpannerDialect spannerDialect) {
+    this.spannerDialect = spannerDialect;
+  }
 
-	@Override
-	public String[] getSqlCreateStrings(Table exportable, Metadata metadata) {
-		return new String[]{"test_placeholder"};
-	}
+  @Override
+  public String[] getSqlCreateStrings(Table exportable, Metadata metadata) {
+    return new String[]{"test_placeholder"};
+  }
 
-	@Override
-	public String[] getSqlDropStrings(Table table, Metadata metadata) {
-		/*
-		 * Cloud Spanner requires examining the metadata to find all indexes and interleaved tables.
-		 * These must be dropped before the given table can be dropped.
-		 */
+  @Override
+  public String[] getSqlDropStrings(Table table, Metadata metadata) {
+    /*
+     * Cloud Spanner requires examining the metadata to find all indexes and interleaved tables.
+     * These must be dropped before the given table can be dropped.
+     */
 
-		return new String[]{"test_placeholder"};
-	}
+    return new String[]{"test_placeholder"};
+  }
 }

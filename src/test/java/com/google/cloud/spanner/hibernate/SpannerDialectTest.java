@@ -18,11 +18,11 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Unit test for SpannerDialect.
@@ -32,20 +32,20 @@ import org.junit.Test;
  */
 public class SpannerDialectTest {
 
-	private SpannerDialect spannerDialect;
+  private SpannerDialect spannerDialect;
 
-	@Before
-	public void setUp() {
-		this.spannerDialect = new SpannerDialect();
-	}
+  @Before
+  public void setUp() {
+    this.spannerDialect = new SpannerDialect();
+  }
 
-	@Test
-	public void dropTableStringTest() {
-		assertEquals("drop table test_table", this.spannerDialect.getDropTableString("test_table"));
-	}
+  @Test
+  public void dropTableStringTest() {
+    assertEquals("drop table test_table", this.spannerDialect.getDropTableString("test_table"));
+  }
 
-	@Test
-	public void getTableExporterTest() {
-		assertNotNull(this.spannerDialect.getTableExporter());
+  @Test
+  public void getTableExporterTest() {
+    assertNotNull(this.spannerDialect.getTableExporter());
   }
 }
