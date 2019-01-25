@@ -18,52 +18,40 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import org.hibernate.dialect.Dialect;
+import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.Table;
 import org.hibernate.tool.schema.spi.Exporter;
 
 /**
- * Hibernate Dialect implementation for Cloud Spanner.
+ * The exporter for Cloud Spanner CREATE and DROP table statements.
  *
- * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
-public class SpannerDialect extends Dialect {
+public class SpannerTableExporter implements Exporter<Table> {
 
-	private final SpannerTableExporter spannerTableExporter = new SpannerTableExporter(this);
+	private final SpannerDialect spannerDialect;
 
-	@Override
-	public Exporter<Table> getTableExporter() {
-		return this.spannerTableExporter;
+	/**
+	 * Constructor.
+	 *
+	 * @param spannerDialect a Cloud Spanner dialect.
+	 */
+	public SpannerTableExporter(SpannerDialect spannerDialect) {
+		this.spannerDialect = spannerDialect;
 	}
 
 	@Override
-	public boolean supportsCurrentTimestampSelection() {
-		return true;
+	public String[] getSqlCreateStrings(Table exportable, Metadata metadata) {
+		return new String[]{"test_placeholder"};
 	}
 
 	@Override
-	public boolean isCurrentTimestampSelectStringCallable() {
-		return false;
-	}
+	public String[] getSqlDropStrings(Table table, Metadata metadata) {
+		/*
+		 * Cloud Spanner requires examining the metadata to find all indexes and interleaved tables.
+		 * These must be dropped before the given table can be dropped.
+		 */
 
-	@Override
-	public String getCurrentTimestampSelectString() {
-		return "SELECT CURRENT_TIMESTAMP() as now";
-	}
-
-	@Override
-	public String toBooleanValueString(boolean bool) {
-		return bool ? "TRUE" : "FALSE";
-	}
-
-	@Override
-	public boolean supportsUnionAll() {
-		return true;
-	}
-
-	@Override
-	public boolean supportsCaseInsensitiveLike() {
-		return false;
+		return new String[]{"test_placeholder"};
 	}
 }
