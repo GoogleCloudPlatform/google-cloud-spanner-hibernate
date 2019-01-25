@@ -20,13 +20,13 @@ package com.google.cloud.spanner.hibernate;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.cloud.spanner.hibernate.util.TestEntity;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
-
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
