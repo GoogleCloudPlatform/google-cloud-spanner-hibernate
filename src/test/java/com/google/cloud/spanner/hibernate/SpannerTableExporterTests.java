@@ -54,16 +54,16 @@ public class SpannerTableExporterTests {
   @Before
   public void setup() {
     this.registry = new StandardServiceRegistryBuilder()
-            .applySetting("hibernate.dialect", SpannerDialect.class.getName()).build();
+        .applySetting("hibernate.dialect", SpannerDialect.class.getName()).build();
     this.metadata =
-            new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class).buildMetadata();
+        new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class).buildMetadata();
   }
 
   @Test
   public void generateDropStringsTest() throws IOException {
     String testFileName = UUID.randomUUID().toString();
     new SchemaExport().setOutputFile(testFileName)
-            .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
+        .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
     File scriptFile = new File(testFileName);
     List<String> statements = Files.readAllLines(scriptFile.toPath());
     try {
@@ -77,7 +77,7 @@ public class SpannerTableExporterTests {
   public void generateCreateStringsTest() throws IOException {
     String testFileName = UUID.randomUUID().toString();
     new SchemaExport().setOutputFile(testFileName)
-            .create(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
+        .create(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
     File scriptFile = new File(testFileName);
     List<String> statements = Files.readAllLines(scriptFile.toPath());
     try {
