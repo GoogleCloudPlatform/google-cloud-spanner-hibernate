@@ -28,4 +28,35 @@ import org.hibernate.dialect.Dialect;
  */
 public class SpannerDialect extends Dialect {
 
+	@Override
+	public boolean supportsCurrentTimestampSelection() {
+		return true;
+	}
+
+	@Override
+	public boolean isCurrentTimestampSelectStringCallable() {
+		return false;
+	}
+
+	@Override
+	public String getCurrentTimestampSelectString() {
+		return "SELECT CURRENT_TIMESTAMP() as now";
+	}
+
+	@Override
+	public String toBooleanValueString(boolean bool) {
+		return bool ? "TRUE" : "FALSE";
+	}
+
+	@Override
+	public boolean supportsUnionAll() {
+		return true;
+	}
+
+	@Override
+	public boolean supportsCaseInsensitiveLike() {
+		return false;
+	}
+
+
 }
