@@ -22,6 +22,11 @@ use GitHub pull requests for this purpose. Consult
 [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more
 information on using pull requests.
 
+When submitting code, please apply
+[Java Google code style](https://google.github.io/styleguide/javaguide.html) guidelines.
+If you are developing with Eclipse or Intellij, the easiest way is to import the Java style
+configurations found [here](https://github.com/google/styleguide).
+
 ## Community Guidelines
 
 This project follows [Google's Open Source Community
