@@ -91,7 +91,7 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public String getCurrentSchemaCommand() {
-    throw new UnsupportedOperationException("No drop schema syntax supported by "
+    throw new UnsupportedOperationException("No current schema syntax supported by "
         + getClass().getName());
   }
 
