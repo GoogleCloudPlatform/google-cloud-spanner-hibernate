@@ -18,8 +18,12 @@
 
 package com.google.cloud.spanner.hibernate.util;
 
+import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * A test entity class used for generating schema statements.
@@ -27,8 +31,23 @@ import javax.persistence.Id;
  * @author Chengyuan Zhao
  */
 @Entity
+@Table(name = "test_table")
 public class TestEntity {
 
-  @Id
-  String id;
+  @EmbeddedId
+  IdClass id;
+
+  @Column(nullable = true)
+  String stringVal;
+
+  boolean boolVal;
+
+  long longVal;
+
+  @Embeddable
+  public class IdClass implements Serializable {
+
+    long id1;
+    String id2;
+  }
 }
