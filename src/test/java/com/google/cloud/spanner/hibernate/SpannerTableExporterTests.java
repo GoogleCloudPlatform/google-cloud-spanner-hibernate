@@ -71,12 +71,9 @@ public class SpannerTableExporterTests {
     new SchemaExport().setOutputFile(testFileName)
         .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
     File scriptFile = new File(testFileName);
+    scriptFile.deleteOnExit();
     List<String> statements = Files.readAllLines(scriptFile.toPath());
-    try {
-      assertEquals("drop table test_table", statements.get(0));
-    } finally {
-      scriptFile.delete();
-    }
+    assertEquals("drop table test_table", statements.get(0));
   }
 
   @Test
@@ -85,20 +82,17 @@ public class SpannerTableExporterTests {
     new SchemaExport().setOutputFile(testFileName)
         .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
     File scriptFile = new File(testFileName);
+    scriptFile.deleteOnExit();
     List<String> statements = Files.readAllLines(scriptFile.toPath());
-    try {
-      // The types in the following string need to be updated when SpannerDialect
-      // implementation maps types.
-      assertEquals("create table test_table "
-          + "(id1 bigint not null,"
-          + "id2 varchar(255) not null,"
-          + "boolVal boolean not null,"
-          + "longVal bigint not null,"
-          + "stringVal varchar(255)"
-          + ") PRIMARY KEY (id1,id2)", statements.get(0));
-    } finally {
-      scriptFile.delete();
-    }
+    // The types in the following string need to be updated when SpannerDialect
+    // implementation maps types.
+    assertEquals("create table test_table "
+        + "(id1 bigint not null,"
+        + "id2 varchar(255) not null,"
+        + "boolVal boolean not null,"
+        + "longVal bigint not null,"
+        + "stringVal varchar(255)"
+        + ") PRIMARY KEY (id1,id2)", statements.get(0));
   }
 
   @Test

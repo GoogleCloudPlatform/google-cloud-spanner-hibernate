@@ -21,6 +21,7 @@ package com.google.cloud.spanner.hibernate;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
@@ -52,9 +53,10 @@ public class SpannerTableExporter implements Exporter<Table> {
     String createTableTemplate = this.spannerDialect.getCreateTableString()
         + " {0} ({1}) PRIMARY KEY ({2})";
 
-    StringJoiner primaryKeyColNames = new StringJoiner(",");
-
-    table.getPrimaryKey().getColumns().forEach(col -> primaryKeyColNames.add(col.getName()));
+    String primaryKeyColNames = table.getPrimaryKey().getColumns()
+        .stream()
+        .map(Column::getName)
+        .collect(Collectors.joining(","));
 
     StringJoiner colsAndTypes = new StringJoiner(",");
 
@@ -64,7 +66,7 @@ public class SpannerTableExporter implements Exporter<Table> {
 
     return new String[]{
         MessageFormat.format(createTableTemplate, table.getName(), colsAndTypes.toString(),
-            primaryKeyColNames.toString())};
+            primaryKeyColNames)};
   }
 
   @Override
