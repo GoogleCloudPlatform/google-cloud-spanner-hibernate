@@ -78,7 +78,7 @@ public class GeneratedSelectStatementsTests {
   }
 
   @Test
-  public void deleteThenJoinDmlTest() {
+  public void deleteDmlTest() {
     openSessionAndDo(x -> x.createQuery("delete TestEntity where boolVal = true").executeUpdate());
 
     List<String> statements = this.jdbcMockObjectFactory.getMockConnection()
