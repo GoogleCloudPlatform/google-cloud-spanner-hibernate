@@ -3,6 +3,9 @@
 This directory contains a script which allows you to run the Spanner-Hibernate dialect against
 the integration tests provided in the [Hibernate ORM repository](https://github.com/hibernate/hibernate-orm).
 
+The script will take your local working copy of `google-cloud-spanner-hibernate` and install to
+local maven in order to facilitate testing, so it will allow you to test local changes.
+
 ## Instructions
 
 1. Install Python3 on your machine.
