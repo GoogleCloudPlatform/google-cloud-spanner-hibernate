@@ -79,30 +79,19 @@ public class GeneratedSelectStatementsTests {
 
   @Test
   public void deleteDmlTest() {
-    openSessionAndDo(x -> x.createQuery("delete TestEntity where boolVal = true").executeUpdate());
-
-    List<String> statements = this.jdbcMockObjectFactory.getMockConnection()
-        .getPreparedStatementResultSetHandler().getPreparedStatements().stream()
-        .map(MockPreparedStatement::getSQL).collect(
-            Collectors.toList());
-
-    assertEquals("delete from test_table where boolVal=TRUE", statements.get(0));
+    testStatementTranslation(
+        x -> x.createQuery("delete TestEntity where boolVal = true").executeUpdate(),
+        "delete from test_table where boolVal=TRUE");
   }
 
   @Test
   public void selectJoinTest() {
-    openSessionAndDo(
-        x -> x.createQuery("select s from SubTestEntity s inner join s.testEntity").list());
-
-    List<String> statements = this.jdbcMockObjectFactory.getMockConnection()
-        .getPreparedStatementResultSetHandler().getPreparedStatements().stream()
-        .map(MockPreparedStatement::getSQL).collect(
-            Collectors.toList());
-
-    assertEquals("select subtestent0_.id as id1_0_, subtestent0_.id1 as id2_0_, "
+    testStatementTranslation(
+        x -> x.createQuery("select s from SubTestEntity s inner join s.testEntity").list(),
+        "select subtestent0_.id as id1_0_, subtestent0_.id1 as id2_0_, "
         + "subtestent0_.id2 as id3_0_ from SubTestEntity subtestent0_ inner join test_table "
         + "testentity1_ on subtestent0_.id1=testentity1_.id1 "
-        + "and subtestent0_.id2=testentity1_.id2", statements.get(0));
+            + "and subtestent0_.id2=testentity1_.id2");
   }
 
   private void openSessionAndDo(Consumer<Session> func) {
@@ -110,5 +99,17 @@ public class GeneratedSelectStatementsTests {
     session.beginTransaction();
     func.accept(session);
     session.close();
+  }
+
+  private void testStatementTranslation(Consumer<Session> hibernateOperation,
+      String executedStatement) {
+    openSessionAndDo(hibernateOperation);
+
+    List<String> statements = this.jdbcMockObjectFactory.getMockConnection()
+        .getPreparedStatementResultSetHandler().getPreparedStatements().stream()
+        .map(MockPreparedStatement::getSQL).collect(
+            Collectors.toList());
+
+    assertEquals(executedStatement, statements.get(0));
   }
 }
