@@ -23,6 +23,8 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.MapsId;
 import javax.persistence.Table;
 
 /**
@@ -35,19 +37,20 @@ import javax.persistence.Table;
 public class TestEntity {
 
   @EmbeddedId
-  IdClass id;
+  public IdClass id;
 
   @Column(nullable = true)
-  String stringVal;
+  public String stringVal;
 
-  boolean boolVal;
+  public boolean boolVal;
 
-  long longVal;
+  public long longVal;
 
   @Embeddable
-  public class IdClass implements Serializable {
+  public static class IdClass implements Serializable {
 
-    long id1;
-    String id2;
+    public long id1;
+
+    public String id2;
   }
 }
