@@ -4,3 +4,8 @@ target
 # intellij / idea
 *.iml
 .idea
+
+# Ignores generated files through testing
+testing/hibernate-orm
+testing/hibernate-orm/**
+testing/.gradle
