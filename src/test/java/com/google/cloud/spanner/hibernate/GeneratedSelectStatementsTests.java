@@ -41,7 +41,7 @@ import org.junit.rules.ExpectedException;
  * These tests use SpannerDialect and Hibernate-core to generate the final SELECT statements that
  * are sent to the Spanner driver.
  *
- * @author Chengyuan
+ * @author Chengyuan Zhao
  */
 public class GeneratedSelectStatementsTests {
 
