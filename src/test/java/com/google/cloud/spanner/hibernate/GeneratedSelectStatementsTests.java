@@ -18,9 +18,15 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import static org.junit.Assert.assertEquals;
+
+import com.google.cloud.spanner.hibernate.util.SubTestEntity;
 import com.google.cloud.spanner.hibernate.util.TestEntity;
-import com.google.cloud.spanner.hibernate.util.TestEntity.IdClass;
 import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
+import com.mockrunner.mock.jdbc.MockPreparedStatement;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.hibernate.Session;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -55,7 +61,8 @@ public class GeneratedSelectStatementsTests {
   public void setup() {
     this.jdbcMockObjectFactory = new JDBCMockObjectFactory();
     this.jdbcMockObjectFactory.registerMockDriver();
-    this.jdbcMockObjectFactory.getMockDriver().setupConnection(this.jdbcMockObjectFactory.createMockConnection());
+    this.jdbcMockObjectFactory.getMockDriver()
+        .setupConnection(this.jdbcMockObjectFactory.getMockConnection());
 
     this.registry = new StandardServiceRegistryBuilder()
         .applySetting("hibernate.dialect", SpannerDialect.class.getName())
@@ -66,22 +73,42 @@ public class GeneratedSelectStatementsTests {
         .applySetting("hibernate.connection.password", "unused")
         .build();
     this.metadata =
-        new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class).buildMetadata();
+        new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class)
+            .addAnnotatedClass(SubTestEntity.class).buildMetadata();
   }
 
   @Test
-  public void saveDmlTest() {
+  public void deleteThenJoinDmlTest() {
+    openSessionAndDo(x -> x.createQuery("delete TestEntity where boolVal = true").executeUpdate());
 
-    TestEntity testEntity = new TestEntity();
-    IdClass idClass = new IdClass();
-    idClass.id1 = 1L;
-    idClass.id2 = "a";
-    testEntity.id = idClass;
+    List<String> statements = this.jdbcMockObjectFactory.getMockConnection()
+        .getPreparedStatementResultSetHandler().getPreparedStatements().stream()
+        .map(MockPreparedStatement::getSQL).collect(
+            Collectors.toList());
 
-    Session session = this.metadata.buildSessionFactory().openSession();
-    session.beginTransaction();
-    session.save(testEntity);
-    session.close();
+    assertEquals("delete from test_table where boolVal=TRUE", statements.get(0));
   }
 
+  @Test
+  public void selectJoinTest() {
+    openSessionAndDo(
+        x -> x.createQuery("select s from SubTestEntity s inner join s.testEntity").list());
+
+    List<String> statements = this.jdbcMockObjectFactory.getMockConnection()
+        .getPreparedStatementResultSetHandler().getPreparedStatements().stream()
+        .map(MockPreparedStatement::getSQL).collect(
+            Collectors.toList());
+
+    assertEquals("select subtestent0_.id as id1_0_, subtestent0_.id1 as id2_0_, "
+        + "subtestent0_.id2 as id3_0_ from SubTestEntity subtestent0_ inner join test_table "
+        + "testentity1_ on subtestent0_.id1=testentity1_.id1 "
+        + "and subtestent0_.id2=testentity1_.id2", statements.get(0));
+  }
+
+  private void openSessionAndDo(Consumer<Session> func) {
+    Session session = this.metadata.buildSessionFactory().openSession();
+    session.beginTransaction();
+    func.accept(session);
+    session.close();
+  }
 }
