@@ -212,4 +212,9 @@ public class SpannerDialectTest {
   public void getDropStringTest() {
     assertEquals("drop table test_table", this.spannerDialect.getDropTableString("test_table"));
   }
+
+  @Test
+  public void getCreateTableStringTest() {
+    assertEquals("create table", this.spannerDialect.getCreateTableString());
+  }
 }
