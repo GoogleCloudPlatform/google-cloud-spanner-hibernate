@@ -79,15 +79,15 @@ public class GeneratedSelectStatementsTests {
 
   @Test
   public void deleteDmlTest() {
-    testStatementTranslation(
-        x -> x.createQuery("delete TestEntity where boolVal = true").executeUpdate(),
+    testUpdateStatementTranslation(
+        "delete TestEntity where boolVal = true",
         "delete from test_table where boolVal=TRUE");
   }
 
   @Test
   public void selectJoinTest() {
-    testStatementTranslation(
-        x -> x.createQuery("select s from SubTestEntity s inner join s.testEntity").list(),
+    testReadStatementTranslation(
+        "select s from SubTestEntity s inner join s.testEntity",
         "select subtestent0_.id as id1_0_, subtestent0_.id1 as id2_0_, "
         + "subtestent0_.id2 as id3_0_ from SubTestEntity subtestent0_ inner join test_table "
         + "testentity1_ on subtestent0_.id1=testentity1_.id1 "
@@ -111,5 +111,16 @@ public class GeneratedSelectStatementsTests {
             Collectors.toList());
 
     assertEquals(executedStatement, statements.get(0));
+  }
+
+  private void testUpdateStatementTranslation(String updateStatement,
+      String expectedDatabaseStatement) {
+    testStatementTranslation(x -> x.createQuery(updateStatement).executeUpdate(),
+        expectedDatabaseStatement);
+  }
+
+  private void testReadStatementTranslation(String readStatement,
+      String expectedDatabaseStatement) {
+    testStatementTranslation(x -> x.createQuery(readStatement).list(), expectedDatabaseStatement);
   }
 }
