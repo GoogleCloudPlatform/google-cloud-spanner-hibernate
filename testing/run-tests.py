@@ -19,8 +19,7 @@ else:
   subprocess.run(['git', 'clone', HIBERNATE_TESTS_REPO])
 
 # Copy the JDBC driver to directory if it does not already exist.
-libs = [file for file in os.listdir('hibernate-orm/libs')]
-if 'CloudSpannerJDBC42.jar' not in libs:
+if 'CloudSpannerJDBC42.jar' not in os.listdir('hibernate-orm/libs'):
   print('Downloading Spanner JDBC driver')
   subprocess.run('gsutil cp gs://spanner-jdbc-bucket/CloudSpannerJDBC42.jar hibernate-orm/libs/', shell=True)
 
