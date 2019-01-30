@@ -23,6 +23,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.cloud.spanner.hibernate.SpannerDialect.DoNothingLockingStrategy;
+import org.hibernate.LockOptions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -216,5 +218,115 @@ public class SpannerDialectTest {
   @Test
   public void getCreateTableStringTest() {
     assertEquals("create table", this.spannerDialect.getCreateTableString());
+  }
+
+  /* Lock acquisition functions */
+  @Test
+  public void supportsLockTimeoutsTest() {
+    assertFalse(this.spannerDialect.supportsLockTimeouts());
+  }
+
+  @Test
+  public void getLockingStrategyTest() {
+    assertTrue(
+        this.spannerDialect.getLockingStrategy(null, null) instanceof DoNothingLockingStrategy);
+  }
+
+  @Test
+  public void getForUpdateStringLockOptionsTest() {
+    assertEquals("", this.spannerDialect.getForUpdateString((LockOptions) null));
+  }
+
+  @Test
+  public void getForUpdateStringTest() {
+    this.expectedException.expect(UnsupportedOperationException.class);
+    this.spannerDialect.getForUpdateString();
+  }
+
+  @Test
+  public void getWriteLockStringTest() {
+    this.expectedException.expect(UnsupportedOperationException.class);
+    this.spannerDialect.getWriteLockString(1);
+  }
+
+  @Test
+  public void getWriteLockStringAliasTimeoutTest() {
+    this.expectedException.expect(UnsupportedOperationException.class);
+    this.spannerDialect.getWriteLockString("a", 1);
+  }
+
+  @Test
+  public void getReadLockStringTest() {
+    this.expectedException.expect(UnsupportedOperationException.class);
+    this.spannerDialect.getReadLockString(1);
+  }
+
+  @Test
+  public void getReadLockStringAliasTimeoutTest() {
+    this.expectedException.expect(UnsupportedOperationException.class);
+    this.spannerDialect.getReadLockString("a", 1);
+  }
+
+  @Test
+  public void supportsOuterJoinForUpdateTest() {
+    assertFalse(this.spannerDialect.supportsOuterJoinForUpdate());
+  }
+
+  @Test
+  public void isLockTimeoutParameterizedTest() {
+    assertFalse(this.spannerDialect.isLockTimeoutParameterized());
+  }
+
+  @Test
+  public void forUpdateOfColumnsTest() {
+    assertFalse(this.spannerDialect.forUpdateOfColumns());
+  }
+
+  @Test
+  public void getForUpdateStringAliasTest() {
+    this.expectedException.expect(UnsupportedOperationException.class);
+    this.spannerDialect.getForUpdateString("a");
+  }
+
+  @Test
+  public void getForUpdateStringAliasLockOptionsTest() {
+    this.expectedException.expect(UnsupportedOperationException.class);
+    this.spannerDialect.getForUpdateString("a", null);
+  }
+
+  @Test
+  public void getForUpdateNowaitStringTest() {
+    this.expectedException.expect(UnsupportedOperationException.class);
+    this.spannerDialect.getForUpdateNowaitString();
+  }
+
+  @Test
+  public void getForUpdateSkipLockedStringTest() {
+    this.expectedException.expect(UnsupportedOperationException.class);
+    this.spannerDialect.getForUpdateSkipLockedString();
+  }
+
+  @Test
+  public void getForUpdateNowaitStringAliasTest() {
+    this.expectedException.expect(UnsupportedOperationException.class);
+    this.spannerDialect.getForUpdateNowaitString("a");
+  }
+
+  @Test
+  public void getForUpdateSkipLockedStringAliasTest() {
+    this.expectedException.expect(UnsupportedOperationException.class);
+    this.spannerDialect.getForUpdateSkipLockedString("a");
+  }
+
+  @Test
+  public void appendLockHintTest() {
+    assertEquals("original_table_name",
+        this.spannerDialect.appendLockHint((LockOptions) null, "original_table_name"));
+  }
+
+  @Test
+  public void applyLocksToSqlTest() {
+    assertEquals("original statement",
+        this.spannerDialect.applyLocksToSql("original statement", null, null));
   }
 }

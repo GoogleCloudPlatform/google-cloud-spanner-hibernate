@@ -27,11 +27,13 @@ import com.mockrunner.mock.jdbc.MockPreparedStatement;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import javax.persistence.LockModeType;
 import org.hibernate.Session;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.query.Query;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,6 +77,17 @@ public class GeneratedSelectStatementsTests {
     this.metadata =
         new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class)
             .addAnnotatedClass(SubTestEntity.class).buildMetadata();
+  }
+
+  @Test
+  public void selectLockAcquisitionTest() {
+    // the translated statement must NOT show locking statements.
+    testStatementTranslation(x -> {
+      Query q = x.createQuery("select s from SubTestEntity s");
+      q.setLockMode(LockModeType.PESSIMISTIC_READ);
+      q.list();
+    }, "select subtestent0_.id as id1_0_, subtestent0_.id1 as id2_0_, "
+        + "subtestent0_.id2 as id3_0_ from SubTestEntity subtestent0_");
   }
 
   @Test
