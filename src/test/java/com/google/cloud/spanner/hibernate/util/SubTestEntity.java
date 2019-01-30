@@ -18,37 +18,24 @@
 
 package com.google.cloud.spanner.hibernate.util;
 
-import java.io.Serializable;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
+import javax.persistence.ManyToOne;
 
 /**
- * A test entity class used for generating schema statements.
+ * A test entity that has relationships with `TestEntity`.
  *
  * @author Chengyuan Zhao
  */
 @Entity
-@Table(name = "test_table")
-public class TestEntity {
+public class SubTestEntity {
 
-  @EmbeddedId
-  public IdClass id;
+  @Id
+  String id;
 
-  @Column(nullable = true)
-  public String stringVal;
-
-  public boolean boolVal;
-
-  public long longVal;
-
-  @Embeddable
-  public static class IdClass implements Serializable {
-
-    public long id1;
-
-    public String id2;
-  }
+  @ManyToOne
+  @JoinColumns({@JoinColumn(name = "id1"), @JoinColumn(name = "id2")})
+  TestEntity testEntity;
 }
