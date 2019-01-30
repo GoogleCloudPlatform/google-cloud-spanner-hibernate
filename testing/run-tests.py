@@ -29,5 +29,5 @@ subprocess.run('cp databases.gradle hibernate-orm/gradle/databases.gradle', shel
 subprocess.run('cp documentation.gradle hibernate-orm/documentation/documentation.gradle', shell=True)
 
 # Run some tests.
-# Modify this to filter down to a specific test with --test TEST_NAME
-subprocess.run('hibernate-orm/gradlew test -p hibernate-orm/documentation -Pdb=spanner --tests TuplizerTest', shell=True)
+# Modify this to filter down to a specific test with --tests TEST_NAME
+subprocess.run('hibernate-orm/gradlew clean test -p hibernate-orm/documentation -Pdb=spanner --tests SQLTest', shell=True)
