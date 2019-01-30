@@ -12,11 +12,17 @@ HIBERNATE_TESTS_REPO = 'https://github.com/dzou/hibernate-orm.git'
 subprocess.run('mvn install -DskipTests -f ../pom.xml', shell=True)
 
 # Clone the Hibernate Tests repository if not present.
-subdirectories = [folder for folder in os.listdir(".") if os.path.isdir(folder)]
+subdirectories = [folder for folder in os.listdir('.') if os.path.isdir(folder)]
 if 'hibernate-orm' in subdirectories:
   print('The hibernate-orm directory already exists; will omit cloning step.')
 else:
   subprocess.run(['git', 'clone', HIBERNATE_TESTS_REPO])
+
+# Copy the JDBC driver to directory if it does not already exist.
+libs = [file for file in os.listdir('hibernate-orm/libs')]
+if 'CloudSpannerJDBC42.jar' not in libs:
+  print('Downloading Spanner JDBC driver')
+  subprocess.run('gsutil cp gs://spanner-jdbc-bucket/CloudSpannerJDBC42.jar hibernate-orm/libs/', shell=True)
 
 # Update the databases.gradle file with the current version.
 subprocess.run('cp databases.gradle hibernate-orm/gradle/databases.gradle', shell=True)
