@@ -7,5 +7,4 @@ target
 
 # Ignores generated files through testing
 testing/hibernate-orm
-testing/hibernate-orm/**
 testing/.gradle
