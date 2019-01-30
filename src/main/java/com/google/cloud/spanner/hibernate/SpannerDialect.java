@@ -18,9 +18,18 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import java.io.Serializable;
+import java.util.Map;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
+import org.hibernate.StaleObjectStateException;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.dialect.lock.LockingStrategyException;
 import org.hibernate.engine.jdbc.env.spi.SchemaNameResolver;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.mapping.Table;
+import org.hibernate.persister.entity.Lockable;
 import org.hibernate.tool.schema.spi.Exporter;
 
 /**
@@ -32,6 +41,8 @@ import org.hibernate.tool.schema.spi.Exporter;
 public class SpannerDialect extends Dialect {
 
   private final SpannerTableExporter spannerTableExporter = new SpannerTableExporter(this);
+
+  private static final LockingStrategy LOCKING_STRATEGY = new DoNothingLockingStrategy();
 
   @Override
   public Exporter<Table> getTableExporter() {
@@ -143,5 +154,116 @@ public class SpannerDialect extends Dialect {
   @Override
   public String getAddPrimaryKeyConstraintString(String constraintName) {
     throw new UnsupportedOperationException("Cannot add primary key constraint in Cloud Spanner.");
+  }
+
+  /* Lock acquisition functions */
+
+  @Override
+  public boolean supportsLockTimeouts() {
+    return false;
+  }
+
+  @Override
+  public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
+    return LOCKING_STRATEGY;
+  }
+
+  @Override
+  public String getForUpdateString(LockOptions lockOptions) {
+    return "";
+  }
+
+  @Override
+  public String getForUpdateString() {
+    throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
+        + " acquisition.");
+  }
+
+  @Override
+  public String getForUpdateString(String aliases) {
+    throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
+        + " acquisition.");
+  }
+
+  @Override
+  public String getForUpdateString(String aliases, LockOptions lockOptions) {
+    throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
+        + " acquisition.");
+  }
+
+  @Override
+  public String getWriteLockString(int timeout) {
+    throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
+        + " acquisition.");
+  }
+
+  @Override
+  public String getWriteLockString(String aliases, int timeout) {
+    throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
+        + " acquisition.");
+  }
+
+  @Override
+  public String getReadLockString(int timeout) {
+    throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
+        + " acquisition.");
+  }
+
+  @Override
+  public String getReadLockString(String aliases, int timeout) {
+    throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
+        + " acquisition.");
+  }
+
+  @Override
+  public boolean supportsOuterJoinForUpdate() {
+    return false;
+  }
+
+  @Override
+  public String getForUpdateNowaitString() {
+    throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
+        + " acquisition.");
+  }
+
+  @Override
+  public String getForUpdateNowaitString(String aliases) {
+    throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
+        + " acquisition.");
+  }
+
+
+  @Override
+  public String getForUpdateSkipLockedString() {
+    throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
+        + " acquisition.");
+  }
+
+  @Override
+  public String getForUpdateSkipLockedString(String aliases) {
+    throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
+        + " acquisition.");
+  }
+
+  @Override
+  public String applyLocksToSql(String sql, LockOptions aliasedLockOptions,
+      Map<String, String[]> keyColumnNames) {
+    return sql;
+  }
+
+  /**
+   * A locking strategy for the Cloud Spanner dialect that does nothing. Cloud Spanner does not
+   * support locking.
+   *
+   * @author Chengyuan Zhao
+   */
+  public static class DoNothingLockingStrategy implements LockingStrategy {
+
+    @Override
+    public void lock(Serializable id, Object version, Object object, int timeout,
+        SharedSessionContractImplementor session)
+        throws StaleObjectStateException, LockingStrategyException {
+      // Do nothing. Cloud Spanner doesn't have have locking strategies.
+    }
   }
 }
