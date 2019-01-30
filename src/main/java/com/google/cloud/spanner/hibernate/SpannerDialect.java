@@ -257,7 +257,7 @@ public class SpannerDialect extends Dialect {
    *
    * @author Chengyuan Zhao
    */
-  public static class DoNothingLockingStrategy implements LockingStrategy {
+  static class DoNothingLockingStrategy implements LockingStrategy {
 
     @Override
     public void lock(Serializable id, Object version, Object object, int timeout,
