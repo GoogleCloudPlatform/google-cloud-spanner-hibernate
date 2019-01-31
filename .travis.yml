@@ -7,5 +7,11 @@ branches:
   only:
   - master
 
+addons:
+  sonarcloud:
+    organization: "google-cloud-spanner-hibernate"
+    token:
+      secure: "rhzALSYOm+xfHz8//T7bAbGYE/jKEI4xpxo7jYu1Ak2DvMiXZ5gi72Zr/3BPurFyhN8EtvYxiJgovDLSGA9/Bp6uKTZXNV2YDH9GQXWMqBu1JeC9h0zHRM9EgmKQt5USXVWcpWvSQ0TquDG02d0oaHvsLygANoeAhviQsAsfqSDrnkq4+jPMFhu4jUSz5JzoIK8TWoQWP3tHEB9yYzQG+lyfglcQAnBVR6MeB1e864V9yBUhpChEeDgjRGdTt9Uw7aJ19hxONUWDQWkALtCdVxmEOPeBHCLGBPCd2pT1DI4bw5gC7D+pn4wxAqsBN/Yq4EoKPt05xe3c6FDKnPa7uqy2uYXtYI/EZS/rzn9J36v/bWECdFPffOxcIbzkZuBg/Qwh7SJQRmKaf1uzQEKBYDCLCsvq0MmeEYLSQeSu89DLzcl3Va5/ou1USBAGkTV7BRillMOF/wos1ETBZ/mgtgK7JOM7Y5AAjxrk5Nq/4OdiiejR3PWHsyoRA912Gl5R8KlV6S2kQ9aFRwhq/xupMgo9RtbyhGrIZyCyl47Y1lReEO4iKeTJfH2FBlmJpHD4S6JP8FWFbNNoUtAU6s5kIdRpHuj/tHiwlXnjOtmgQGojlzuJM9lhkMGSfS8xuMY4jqFF1QgKf/LYB3agIdU55F/xm4WSl6j2BCi+tFRbV3U="
+
 script:
-- mvn clean verify -B -V -q
+- mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -B -V -q -Dsonar.projectKey=google-cloud-spanner-hibernate
