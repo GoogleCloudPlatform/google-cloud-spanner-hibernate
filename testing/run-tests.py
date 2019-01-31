@@ -15,6 +15,7 @@ subprocess.run('mvn install -DskipTests -f ../pom.xml', shell=True)
 subdirectories = [folder for folder in os.listdir('.') if os.path.isdir(folder)]
 if 'hibernate-orm' in subdirectories:
   print('The hibernate-orm directory already exists; will omit cloning step.')
+  subprocess.run('git -C hibernate-orm pull', shell=True)
 else:
   subprocess.run(['git', 'clone', HIBERNATE_TESTS_REPO])
 
@@ -29,5 +30,6 @@ subprocess.run('cp databases.gradle hibernate-orm/gradle/databases.gradle', shel
 subprocess.run('cp documentation.gradle hibernate-orm/documentation/documentation.gradle', shell=True)
 
 # Run some tests.
-# Modify this to filter down to a specific test with --tests TEST_NAME
-subprocess.run('hibernate-orm/gradlew clean test -p hibernate-orm/documentation -Pdb=spanner --tests SQLTest', shell=True)
+# Modify this to filter down to a different test with --tests TEST_NAME
+subprocess.run('hibernate-orm/gradlew clean test -p hibernate-orm/documentation --tests SQLTest', shell=True)
+subprocess.run('google-chrome hibernate-orm/documentation/target/reports/tests/test/index.html', shell=True)
