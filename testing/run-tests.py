@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 
 '''
 Script for running Hibernate Integration tests against the
@@ -30,6 +31,10 @@ subprocess.run('cp databases.gradle hibernate-orm/gradle/databases.gradle', shel
 subprocess.run('cp documentation.gradle hibernate-orm/documentation/documentation.gradle', shell=True)
 
 # Run some tests.
-# Modify this to filter down to a different test with --tests TEST_NAME
-subprocess.run('hibernate-orm/gradlew clean test -p hibernate-orm/documentation --tests SQLTest', shell=True)
+# Use commandline args to specify which tests to run: python3 run-tests.py [TEST_NAME]
+if len(sys.argv) == 1:
+  tests = 'SQLTest' # all tests
+else:
+  tests = sys.argv[1] # example: SQLTest.test_sql_jpa_all_columns_scalar_query_example
+subprocess.run('hibernate-orm/gradlew clean test -p hibernate-orm/documentation --tests ' + tests, shell=True)
 subprocess.run('google-chrome hibernate-orm/documentation/target/reports/tests/test/index.html', shell=True)

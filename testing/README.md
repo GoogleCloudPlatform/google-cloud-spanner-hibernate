@@ -28,7 +28,9 @@ You will need to specify the correct GCP project ID, Spanner instance, and table
     ```
 
 3. Run `python3 run-tests.py`. Note that the script will run all the integration tests in the
-directory. It is likely you may want to run a specific test for debugging; this can be done
-by modifying the script and filtering the tests using `--tests` in the Gradle command.
-
-    Example: `hibernate-orm/gradlew test -p hibernate-orm/documentation --tests <TEST_NAME>`
+directory. It is likely you may want to run a specific test for debugging; this can be done passing in a tests filter as a commandline argument to the script:
+    
+    Example:
+    ```
+    python3 run-tests.py SQLTest.test_sql_jpa_all_columns_scalar_query_example
+    ```
