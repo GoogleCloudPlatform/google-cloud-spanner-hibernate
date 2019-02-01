@@ -1,0 +1,13 @@
+// Note: The JDBC URL must be configured properly to your GCP Project settings.
+ext {
+        db = 'spanner'
+        dbBundle = [
+                spanner : [
+                        'db.dialect' : 'com.google.cloud.spanner.hibernate.SpannerDialect',
+                        'jdbc.driver' : 'com.simba.cloudspanner.core.jdbc42.CloudSpanner42Driver',
+                        'jdbc.user' : '',
+                        'jdbc.pass' : '',
+                        'jdbc.url' : 'jdbc:cloudspanner://;Project=PROJECT_NAME;Instance=SPANNER_INSTANCE_NAME;Database=DATABASE_NAME',
+                ],
+        ]
+}
