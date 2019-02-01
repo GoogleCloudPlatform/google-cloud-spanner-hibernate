@@ -1,7 +1,7 @@
 languages: java
 
 jdk:
-- oraclejdk8
+  - oraclejdk8
 
 branches:
   only:
@@ -17,7 +17,7 @@ install:
   - ./mvnw -T 1.5C clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
 script:
-- if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
+  - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
     # only run Sonar if secure variables are available
     ./mvnw org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -B -V -q -Dsonar.projectKey=google-cloud-spanner-hibernate;
   else
