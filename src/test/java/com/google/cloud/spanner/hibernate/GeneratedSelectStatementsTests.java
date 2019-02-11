@@ -22,12 +22,14 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.cloud.spanner.hibernate.util.SubTestEntity;
 import com.google.cloud.spanner.hibernate.util.TestEntity;
+import com.google.cloud.spanner.hibernate.util.TestEntity.IdClass;
 import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
 import com.mockrunner.mock.jdbc.MockPreparedStatement;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.persistence.LockModeType;
+import javax.persistence.OptimisticLockException;
 import org.hibernate.Session;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -88,6 +90,30 @@ public class GeneratedSelectStatementsTests {
       q.list();
     }, "select subtestent0_.id as id1_0_, subtestent0_.id1 as id2_0_, "
         + "subtestent0_.id2 as id3_0_ from SubTestEntity subtestent0_");
+  }
+
+  @Test
+  public void insertDmlTest() {
+    TestEntity te = new TestEntity();
+    IdClass id = new IdClass();
+    id.id2 = "A";
+    id.id1 = 1L;
+    te.id = id;
+    te.stringVal = "asdf";
+    try {
+      openSessionAndDo(x -> {
+        x.save(te);
+        x.getTransaction().commit();
+      });
+    } catch (OptimisticLockException exception) {
+      // This exception is expected because the real Transaction is created by the real Session
+      // but the mock driver cannot satisfy it.
+      assertEquals(
+          "insert into test_table (boolVal, longVal, stringVal, id1, id2) values (?, ?, ?, ?, ?)",
+          this.jdbcMockObjectFactory.getMockConnection()
+              .getPreparedStatementResultSetHandler().getPreparedStatements().stream()
+              .map(MockPreparedStatement::getSQL).findFirst().get());
+    }
   }
 
   @Test
