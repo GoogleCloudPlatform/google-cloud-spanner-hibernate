@@ -251,6 +251,16 @@ public class SpannerDialect extends Dialect {
     return sql;
   }
 
+  @Override
+  public char openQuote() {
+    return '`';
+  }
+
+  @Override
+  public char closeQuote() {
+    return '`';
+  }
+
   /**
    * A locking strategy for the Cloud Spanner dialect that does nothing. Cloud Spanner does not
    * support locking.

@@ -22,6 +22,7 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
 import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
@@ -55,17 +56,18 @@ public class SpannerTableExporter implements Exporter<Table> {
 
     String primaryKeyColNames = table.getPrimaryKey().getColumns()
         .stream()
-        .map(Column::getName)
+        .map(Column::getQuotedName)
         .collect(Collectors.joining(","));
 
     StringJoiner colsAndTypes = new StringJoiner(",");
 
     ((Iterator<Column>) table.getColumnIterator()).forEachRemaining(col -> colsAndTypes
-        .add(col.getName() + " " + col.getSqlType(this.spannerDialect, metadata) + (col.isNullable()
-            ? this.spannerDialect.getNullColumnString() : " not null")));
+        .add(col.getQuotedName()
+            + " " + col.getSqlType(this.spannerDialect, metadata)
+            + (col.isNullable() ? this.spannerDialect.getNullColumnString() : " not null")));
 
     return new String[]{
-        MessageFormat.format(createTableTemplate, table.getName(), colsAndTypes.toString(),
+        MessageFormat.format(createTableTemplate, table.getQuotedName(), colsAndTypes.toString(),
             primaryKeyColNames)};
   }
 
@@ -77,6 +79,6 @@ public class SpannerTableExporter implements Exporter<Table> {
      * The current implementation does not support indexes or interleaved tables and indexes.
      * */
 
-    return new String[]{this.spannerDialect.getDropTableString(table.getName())};
+    return new String[]{this.spannerDialect.getDropTableString(table.getQuotedName())};
   }
 }
