@@ -20,9 +20,9 @@ package com.google.cloud.spanner.hibernate;
 
 import static org.junit.Assert.assertEquals;
 
-import com.google.cloud.spanner.hibernate.util.SubTestEntity;
-import com.google.cloud.spanner.hibernate.util.TestEntity;
-import com.google.cloud.spanner.hibernate.util.TestEntity.IdClass;
+import com.google.cloud.spanner.hibernate.entities.SubTestEntity;
+import com.google.cloud.spanner.hibernate.entities.TestEntity;
+import com.google.cloud.spanner.hibernate.entities.TestEntity.IdClass;
 import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
 import com.mockrunner.mock.jdbc.MockPreparedStatement;
 import java.util.List;
