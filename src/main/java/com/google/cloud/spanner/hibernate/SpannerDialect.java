@@ -24,6 +24,7 @@ import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.boot.Metadata;
+import org.hibernate.boot.model.relational.Exportable;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.lock.LockingStrategy;
@@ -48,6 +49,10 @@ public class SpannerDialect extends Dialect {
   private final SpannerTableExporter spannerTableExporter = new SpannerTableExporter(this);
 
   private static final LockingStrategy LOCKING_STRATEGY = new DoNothingLockingStrategy();
+
+  private static final Exporter<Sequence> NOOP_SEQUENCE_EXPORTER = new EmptyExporter<>();
+  private static final Exporter<ForeignKey> NOOP_FK_EXPORTER = new EmptyExporter<>();
+  private static final Exporter<Constraint> NOOP_CONSTRAINT_EXPORTER = new EmptyExporter<>();
 
   @Override
   public Exporter<Table> getTableExporter() {
@@ -254,47 +259,17 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public Exporter<Sequence> getSequenceExporter() {
-    return new Exporter<Sequence>() {
-      @Override
-      public String[] getSqlCreateStrings(Sequence exportable, Metadata metadata) {
-        return new String[0];
-      }
-
-      @Override
-      public String[] getSqlDropStrings(Sequence exportable, Metadata metadata) {
-        return new String[0];
-      }
-    };
+    return NOOP_SEQUENCE_EXPORTER;
   }
 
   @Override
   public Exporter<ForeignKey> getForeignKeyExporter() {
-    return new Exporter<ForeignKey>() {
-      @Override
-      public String[] getSqlCreateStrings(ForeignKey exportable, Metadata metadata) {
-        return new String[0];
-      }
-
-      @Override
-      public String[] getSqlDropStrings(ForeignKey exportable, Metadata metadata) {
-        return new String[0];
-      }
-    };
+    return NOOP_FK_EXPORTER;
   }
 
   @Override
   public Exporter<Constraint> getUniqueKeyExporter() {
-    return new Exporter<Constraint>() {
-      @Override
-      public String[] getSqlCreateStrings(Constraint exportable, Metadata metadata) {
-        return new String[0];
-      }
-
-      @Override
-      public String[] getSqlDropStrings(Constraint exportable, Metadata metadata) {
-        return new String[0];
-      }
-    };
+    return NOOP_CONSTRAINT_EXPORTER;
   }
 
   @Override
@@ -326,6 +301,23 @@ public class SpannerDialect extends Dialect {
         SharedSessionContractImplementor session)
         throws StaleObjectStateException, LockingStrategyException {
       // Do nothing. Cloud Spanner doesn't have have locking strategies.
+    }
+  }
+
+  /**
+   * A no-op {@link Exporter} which is responsible for returning empty Create and Drop SQL strings.
+   *
+   * @author Daniel Zou
+   */
+  static class EmptyExporter<T extends Exportable> implements Exporter<T> {
+    @Override
+    public String[] getSqlCreateStrings(T exportable, Metadata metadata) {
+      return new String[0];
+    }
+
+    @Override
+    public String[] getSqlDropStrings(T exportable, Metadata metadata) {
+      return new String[0];
     }
   }
 }
