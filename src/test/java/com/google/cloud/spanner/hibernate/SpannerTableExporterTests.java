@@ -20,7 +20,7 @@ package com.google.cloud.spanner.hibernate;
 
 import static org.junit.Assert.assertEquals;
 
-import com.google.cloud.spanner.hibernate.util.TestEntity;
+import com.google.cloud.spanner.hibernate.entities.TestEntity;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

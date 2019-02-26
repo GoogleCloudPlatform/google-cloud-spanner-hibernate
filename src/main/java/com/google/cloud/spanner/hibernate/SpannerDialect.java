@@ -23,11 +23,16 @@ import java.util.Map;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.StaleObjectStateException;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.model.relational.Exportable;
+import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.LockingStrategyException;
 import org.hibernate.engine.jdbc.env.spi.SchemaNameResolver;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.mapping.Constraint;
+import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.tool.schema.spi.Exporter;
@@ -37,12 +42,15 @@ import org.hibernate.tool.schema.spi.Exporter;
  *
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
+ * @author Daniel Zou
  */
 public class SpannerDialect extends Dialect {
 
   private final SpannerTableExporter spannerTableExporter = new SpannerTableExporter(this);
 
   private static final LockingStrategy LOCKING_STRATEGY = new DoNothingLockingStrategy();
+
+  private static final Exporter NOOP_EXPORTER = new EmptyExporter();
 
   @Override
   public Exporter<Table> getTableExporter() {
@@ -245,6 +253,23 @@ public class SpannerDialect extends Dialect {
         + " acquisition.");
   }
 
+  /* Unsupported Hibernate Exporters */
+
+  @Override
+  public Exporter<Sequence> getSequenceExporter() {
+    return NOOP_EXPORTER;
+  }
+
+  @Override
+  public Exporter<ForeignKey> getForeignKeyExporter() {
+    return NOOP_EXPORTER;
+  }
+
+  @Override
+  public Exporter<Constraint> getUniqueKeyExporter() {
+    return NOOP_EXPORTER;
+  }
+
   @Override
   public String applyLocksToSql(String sql, LockOptions aliasedLockOptions,
       Map<String, String[]> keyColumnNames) {
@@ -274,6 +299,23 @@ public class SpannerDialect extends Dialect {
         SharedSessionContractImplementor session)
         throws StaleObjectStateException, LockingStrategyException {
       // Do nothing. Cloud Spanner doesn't have have locking strategies.
+    }
+  }
+
+  /**
+   * A no-op {@link Exporter} which is responsible for returning empty Create and Drop SQL strings.
+   *
+   * @author Daniel Zou
+   */
+  static class EmptyExporter<T extends Exportable> implements Exporter<T> {
+    @Override
+    public String[] getSqlCreateStrings(T exportable, Metadata metadata) {
+      return new String[0];
+    }
+
+    @Override
+    public String[] getSqlDropStrings(T exportable, Metadata metadata) {
+      return new String[0];
     }
   }
 }

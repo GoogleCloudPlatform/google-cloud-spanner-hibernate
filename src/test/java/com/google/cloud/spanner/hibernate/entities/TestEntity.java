@@ -16,26 +16,41 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package com.google.cloud.spanner.hibernate.util;
+package com.google.cloud.spanner.hibernate.entities;
 
+import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
-import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
- * A test entity that has relationships with `TestEntity`.
+ * A test entity class used for generating schema statements.
  *
  * @author Chengyuan Zhao
  */
 @Entity
-public class SubTestEntity {
+@Table(name = "`test_table`")
+public class TestEntity {
 
-  @Id
-  String id;
+  @EmbeddedId
+  public IdClass id;
 
-  @ManyToOne
-  @JoinColumns({@JoinColumn(name = "id1"), @JoinColumn(name = "id2")})
-  TestEntity testEntity;
+  @Column(nullable = true)
+  public String stringVal;
+
+  @Column(name = "`boolColumn`")
+  public boolean boolVal;
+
+  public long longVal;
+
+  @Embeddable
+  public static class IdClass implements Serializable {
+
+    @Column(name = "`ID1`")
+    public long id1;
+
+    public String id2;
+  }
 }
