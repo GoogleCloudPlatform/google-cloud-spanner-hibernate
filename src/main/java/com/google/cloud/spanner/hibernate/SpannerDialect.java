@@ -50,9 +50,7 @@ public class SpannerDialect extends Dialect {
 
   private static final LockingStrategy LOCKING_STRATEGY = new DoNothingLockingStrategy();
 
-  private static final Exporter<Sequence> NOOP_SEQUENCE_EXPORTER = new EmptyExporter<>();
-  private static final Exporter<ForeignKey> NOOP_FK_EXPORTER = new EmptyExporter<>();
-  private static final Exporter<Constraint> NOOP_CONSTRAINT_EXPORTER = new EmptyExporter<>();
+  private static final Exporter NOOP_EXPORTER = new EmptyExporter();
 
   @Override
   public Exporter<Table> getTableExporter() {
@@ -259,17 +257,17 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public Exporter<Sequence> getSequenceExporter() {
-    return NOOP_SEQUENCE_EXPORTER;
+    return NOOP_EXPORTER;
   }
 
   @Override
   public Exporter<ForeignKey> getForeignKeyExporter() {
-    return NOOP_FK_EXPORTER;
+    return NOOP_EXPORTER;
   }
 
   @Override
   public Exporter<Constraint> getUniqueKeyExporter() {
-    return NOOP_CONSTRAINT_EXPORTER;
+    return NOOP_EXPORTER;
   }
 
   @Override
