@@ -18,17 +18,13 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.cloud.spanner.hibernate.SpannerDialect.DoNothingLockingStrategy;
 import org.hibernate.LockOptions;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 /**
  * Unit test for SpannerDialect.
@@ -40,9 +36,6 @@ public class SpannerDialectTest {
 
   private SpannerDialect spannerDialect;
 
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
-
   @Before
   public void setUp() {
     this.spannerDialect = new SpannerDialect();
@@ -50,283 +43,287 @@ public class SpannerDialectTest {
 
   @Test
   public void dropTableStringTest() {
-    assertEquals("drop table test_table", this.spannerDialect.getDropTableString("test_table"));
+    String dropTableString = this.spannerDialect.getDropTableString("test_table");
+    assertThat(dropTableString).isEqualTo("drop table test_table");
   }
 
   @Test
   public void getTableExporterTest() {
-    assertNotNull(this.spannerDialect.getTableExporter());
+    assertThat(this.spannerDialect.getTableExporter()).isNotNull();
   }
 
   /* DDL-related function tests */
 
   @Test
   public void canCreateCatalogTest() {
-    assertFalse(this.spannerDialect.canCreateCatalog());
+    assertThat(this.spannerDialect.canCreateCatalog()).isFalse();
   }
 
   @Test
   public void createCatalogStatementTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getCreateCatalogCommand("test");
+    assertThatThrownBy(() -> this.spannerDialect.getCreateCatalogCommand("test"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void createDropCatalogStatementTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getDropCatalogCommand("test");
+    assertThatThrownBy(() -> this.spannerDialect.getDropCatalogCommand("test"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void canCreateSchemaTest() {
-    assertFalse(this.spannerDialect.canCreateSchema());
+    assertThat(this.spannerDialect.canCreateSchema()).isFalse();
   }
 
   @Test
   public void createSchemaStatementTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getCreateSchemaCommand("test");
+    assertThatThrownBy(() -> this.spannerDialect.getCreateSchemaCommand("test"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void dropCatalogStatementTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getDropSchemaCommand("test");
+    assertThatThrownBy(() -> this.spannerDialect.getDropSchemaCommand("test"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getCurrentSchemaTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getCurrentSchemaCommand();
+    assertThatThrownBy(() -> this.spannerDialect.getCurrentSchemaCommand())
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getSchemaResolverTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getSchemaNameResolver();
+    assertThatThrownBy(() -> this.spannerDialect.getSchemaNameResolver())
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void hasAlterTableTest() {
-    assertTrue(this.spannerDialect.hasAlterTable());
+    assertThat(this.spannerDialect.hasAlterTable()).isTrue();
   }
 
   @Test
   public void dropConstraintsTest() {
-    assertFalse(this.spannerDialect.dropConstraints());
+    assertThat(this.spannerDialect.dropConstraints()).isFalse();
   }
 
   @Test
   public void qualifyIndexNameTest() {
-    assertFalse(this.spannerDialect.qualifyIndexName());
+    assertThat(this.spannerDialect.qualifyIndexName()).isFalse();
   }
 
   @Test
   public void getAddColumnStringTest() {
-    assertEquals("ADD COLUMN", this.spannerDialect.getAddColumnString());
+    assertThat(this.spannerDialect.getAddColumnString()).isEqualTo("ADD COLUMN");
   }
 
   @Test
   public void getAddColumnSuffixText() {
-    assertEquals("", this.spannerDialect.getAddColumnSuffixString());
+    assertThat(this.spannerDialect.getAddColumnSuffixString()).isEqualTo("");
   }
 
   @Test
   public void getDropKeyConstraintTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getDropForeignKeyString();
+    assertThatThrownBy(() -> this.spannerDialect.getDropForeignKeyString())
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getTableTypeString() {
-    assertEquals("", this.spannerDialect.getTableTypeString());
+    assertThat(this.spannerDialect.getTableTypeString()).isEqualTo("");
   }
 
   @Test
   public void getAddForeignKeyConstraintStringTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getAddForeignKeyConstraintString(null, null, null, null, false);
+    assertThatThrownBy(() -> this.spannerDialect.getAddForeignKeyConstraintString(
+        null, null, null, null, false))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getAddForeignKeyConstraintStringSimpifiedTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getAddForeignKeyConstraintString(null, null);
+    assertThatThrownBy(() -> this.spannerDialect.getAddForeignKeyConstraintString(null, null))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getAddPrimaryKeyConstraintStringTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getAddPrimaryKeyConstraintString(null);
+    assertThatThrownBy(() -> this.spannerDialect.getAddPrimaryKeyConstraintString(null))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void hasSelfReferentialForeignKeyBugTest() {
-    assertFalse(this.spannerDialect.hasSelfReferentialForeignKeyBug());
+    assertThat(this.spannerDialect.hasSelfReferentialForeignKeyBug()).isFalse();
   }
 
   @Test
   public void getNullColumnStringTest() {
-    assertEquals("", this.spannerDialect.getNullColumnString());
+    assertThat(this.spannerDialect.getNullColumnString()).isEqualTo("");
   }
 
   @Test
   public void supportsCommentOnTest() {
-    assertFalse(this.spannerDialect.supportsCommentOn());
+    assertThat(this.spannerDialect.supportsCommentOn()).isFalse();
   }
 
   @Test
   public void getTableCommentTEst() {
-    assertEquals("", this.spannerDialect.getTableComment("test"));
+    assertThat(this.spannerDialect.getTableComment("test")).isEqualTo("");
   }
 
   @Test
   public void getColumnCommentTEst() {
-    assertEquals("", this.spannerDialect.getColumnComment("test"));
+    assertThat(this.spannerDialect.getColumnComment("test")).isEqualTo("");
   }
 
   @Test
   public void supportsIfExistsBeforeTableNameTest() {
-    assertFalse(this.spannerDialect.supportsIfExistsBeforeTableName());
+    assertThat(this.spannerDialect.supportsIfExistsBeforeTableName()).isFalse();
   }
 
   @Test
   public void supportsIfExistsAfterTableNameTest() {
-    assertFalse(this.spannerDialect.supportsIfExistsAfterTableName());
+    assertThat(this.spannerDialect.supportsIfExistsAfterTableName()).isFalse();
   }
 
   @Test
   public void supportsIfExistsBeforeConstraintNameTest() {
-    assertFalse(this.spannerDialect.supportsIfExistsBeforeConstraintName());
+    assertThat(this.spannerDialect.supportsIfExistsBeforeConstraintName()).isFalse();
   }
 
   @Test
   public void supportsIfExistsAfterConstraintNameTest() {
-    assertFalse(this.spannerDialect.supportsIfExistsAfterConstraintName());
+    assertThat(this.spannerDialect.supportsIfExistsAfterConstraintName()).isFalse();
   }
 
   @Test
   public void supportsIfExistsAfterAlterTableTest() {
-    assertFalse(this.spannerDialect.supportsIfExistsAfterAlterTable());
+    assertThat(this.spannerDialect.supportsIfExistsAfterAlterTable()).isFalse();
   }
 
   @Test
   public void getDropStringTest() {
-    assertEquals("drop table test_table", this.spannerDialect.getDropTableString("test_table"));
+    String dropTableString = this.spannerDialect.getDropTableString("test_table");
+    assertThat(dropTableString).isEqualTo("drop table test_table");
   }
 
   @Test
   public void getCreateTableStringTest() {
-    assertEquals("create table", this.spannerDialect.getCreateTableString());
+    assertThat(this.spannerDialect.getCreateTableString()).isEqualTo("create table");
   }
 
   /* Lock acquisition functions */
   @Test
   public void supportsLockTimeoutsTest() {
-    assertFalse(this.spannerDialect.supportsLockTimeouts());
+    assertThat(this.spannerDialect.supportsLockTimeouts()).isFalse();
   }
 
   @Test
   public void getLockingStrategyTest() {
-    assertTrue(
-        this.spannerDialect.getLockingStrategy(null, null) instanceof DoNothingLockingStrategy);
+    assertThat(this.spannerDialect.getLockingStrategy(null, null))
+        .isInstanceOf(DoNothingLockingStrategy.class);
   }
 
   @Test
   public void getForUpdateStringLockOptionsTest() {
-    assertEquals("", this.spannerDialect.getForUpdateString((LockOptions) null));
+    assertThat(this.spannerDialect.getForUpdateString((LockOptions) null)).isEqualTo("");
   }
 
   @Test
   public void getForUpdateStringTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getForUpdateString();
+    assertThatThrownBy(() -> this.spannerDialect.getForUpdateString())
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getWriteLockStringTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getWriteLockString(1);
+    assertThatThrownBy(() -> this.spannerDialect.getWriteLockString(1))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getWriteLockStringAliasTimeoutTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getWriteLockString("a", 1);
+    assertThatThrownBy(() -> this.spannerDialect.getWriteLockString("a", 1))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getReadLockStringTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getReadLockString(1);
+    assertThatThrownBy(() -> this.spannerDialect.getReadLockString(1))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getReadLockStringAliasTimeoutTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getReadLockString("a", 1);
+    assertThatThrownBy(() -> this.spannerDialect.getReadLockString("a", 1))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void supportsOuterJoinForUpdateTest() {
-    assertFalse(this.spannerDialect.supportsOuterJoinForUpdate());
+    assertThat(this.spannerDialect.supportsOuterJoinForUpdate()).isFalse();
   }
 
   @Test
   public void isLockTimeoutParameterizedTest() {
-    assertFalse(this.spannerDialect.isLockTimeoutParameterized());
+    assertThat(this.spannerDialect.isLockTimeoutParameterized()).isFalse();
   }
 
   @Test
   public void forUpdateOfColumnsTest() {
-    assertFalse(this.spannerDialect.forUpdateOfColumns());
+    assertThat(this.spannerDialect.forUpdateOfColumns()).isFalse();
   }
 
   @Test
   public void getForUpdateStringAliasTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getForUpdateString("a");
+    assertThatThrownBy(() -> this.spannerDialect.getForUpdateString("a"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getForUpdateStringAliasLockOptionsTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getForUpdateString("a", null);
+    assertThatThrownBy(() -> this.spannerDialect.getForUpdateString("a", null))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getForUpdateNowaitStringTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getForUpdateNowaitString();
+    assertThatThrownBy(() -> this.spannerDialect.getForUpdateNowaitString())
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getForUpdateSkipLockedStringTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getForUpdateSkipLockedString();
+    assertThatThrownBy(() -> this.spannerDialect.getForUpdateSkipLockedString())
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getForUpdateNowaitStringAliasTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getForUpdateNowaitString("a");
+    assertThatThrownBy(() -> this.spannerDialect.getForUpdateNowaitString("a"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getForUpdateSkipLockedStringAliasTest() {
-    this.expectedException.expect(UnsupportedOperationException.class);
-    this.spannerDialect.getForUpdateSkipLockedString("a");
+    assertThatThrownBy(() -> this.spannerDialect.getForUpdateSkipLockedString("a"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void appendLockHintTest() {
-    assertEquals("original_table_name",
-        this.spannerDialect.appendLockHint((LockOptions) null, "original_table_name"));
+    String lockHint = this.spannerDialect.appendLockHint((LockOptions) null, "original_table_name");
+    assertThat(lockHint).isEqualTo("original_table_name");
   }
 
   @Test
   public void applyLocksToSqlTest() {
-    assertEquals("original statement",
-        this.spannerDialect.applyLocksToSql("original statement", null, null));
+    String originalStatement = this.spannerDialect.applyLocksToSql(
+        "original statement", null, null);
+    assertThat(originalStatement).isEqualTo("original statement");
   }
 }

@@ -18,7 +18,8 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.cloud.spanner.hibernate.entities.TestEntity;
 import java.io.File;
@@ -36,9 +37,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 /**
  * Tests for SpannerTableExporter.
@@ -46,9 +45,6 @@ import org.junit.rules.ExpectedException;
  * @author Chengyuan Zhao
  */
 public class SpannerTableExporterTests {
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   private Metadata metadata;
 
@@ -73,7 +69,7 @@ public class SpannerTableExporterTests {
     File scriptFile = new File(testFileName);
     scriptFile.deleteOnExit();
     List<String> statements = Files.readAllLines(scriptFile.toPath());
-    assertEquals("drop table `test_table`", statements.get(0));
+    assertThat(statements.get(0)).isEqualTo("drop table `test_table`");
   }
 
   @Test
@@ -84,31 +80,43 @@ public class SpannerTableExporterTests {
     File scriptFile = new File(testFileName);
     scriptFile.deleteOnExit();
     List<String> statements = Files.readAllLines(scriptFile.toPath());
+
     // The types in the following string need to be updated when SpannerDialect
     // implementation maps types.
-    assertEquals("create table `test_table` "
+    String expectedCreateString = "create table `test_table` "
         + "(`ID1` bigint not null,id2 varchar(255) not null,"
         + "`boolColumn` boolean,longVal bigint not null,stringVal varchar(255)) "
-        + "PRIMARY KEY (`ID1`,id2)", statements.get(0));
+        + "PRIMARY KEY (`ID1`,id2)";
+
+    assertThat(statements.get(0)).isEqualTo(expectedCreateString);
   }
 
   @Test
   public void generateCreateStringsEmptyEntityTest() {
-    this.expectedException.expect(AnnotationException.class);
-    this.expectedException.expectMessage("No identifier specified for entity:");
-    new SchemaExport().setOutputFile("unused")
-        .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT),
-            new MetadataSources(this.registry).addAnnotatedClass(EmptyEntity.class)
-                .buildMetadata());
+    Metadata metadata = new MetadataSources(this.registry)
+        .addAnnotatedClass(EmptyEntity.class)
+        .buildMetadata();
+
+    assertThatThrownBy(() ->
+        new SchemaExport()
+            .setOutputFile("unused")
+            .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata))
+        .isInstanceOf(AnnotationException.class)
+        .hasMessage("No identifier specified for entity:");
   }
 
   @Test
   public void generateCreateStringsNoPkEntityTest() {
-    this.expectedException.expect(AnnotationException.class);
-    this.expectedException.expectMessage("No identifier specified for entity:");
-    new SchemaExport().setOutputFile("unused")
-        .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT),
-            new MetadataSources(this.registry).addAnnotatedClass(NoPkEntity.class).buildMetadata());
+    Metadata metadata = new MetadataSources(this.registry)
+        .addAnnotatedClass(NoPkEntity.class)
+        .buildMetadata();
+
+    assertThatThrownBy(() ->
+        new SchemaExport()
+            .setOutputFile("unused")
+            .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata))
+        .isInstanceOf(AnnotationException.class)
+        .hasMessage("No identifier specified for entity:");
   }
 
   @Entity
