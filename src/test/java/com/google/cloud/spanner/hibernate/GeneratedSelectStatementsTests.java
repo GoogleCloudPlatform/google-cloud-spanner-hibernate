@@ -18,7 +18,7 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.cloud.spanner.hibernate.entities.SubTestEntity;
 import com.google.cloud.spanner.hibernate.entities.TestEntity;
@@ -37,9 +37,7 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.query.Query;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 /**
  * These tests use SpannerDialect and Hibernate-core to generate the final SELECT statements that
@@ -48,9 +46,6 @@ import org.junit.rules.ExpectedException;
  * @author Chengyuan Zhao
  */
 public class GeneratedSelectStatementsTests {
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   private Metadata metadata;
 
@@ -108,11 +103,12 @@ public class GeneratedSelectStatementsTests {
     } catch (OptimisticLockException exception) {
       // This exception is expected because the real Transaction is created by the real Session
       // but the mock driver cannot satisfy it.
-      assertEquals(
-          "insert into test_table (boolVal, longVal, stringVal, id1, id2) values (?, ?, ?, ?, ?)",
+      String preparedStatement =
           this.jdbcMockObjectFactory.getMockConnection()
               .getPreparedStatementResultSetHandler().getPreparedStatements().stream()
-              .map(MockPreparedStatement::getSQL).findFirst().get());
+              .map(MockPreparedStatement::getSQL).findFirst().get();
+      assertThat(preparedStatement).isEqualTo(
+          "insert into test_table (boolVal, longVal, stringVal, id1, id2) values (?, ?, ?, ?, ?)");
     }
   }
 
@@ -149,7 +145,7 @@ public class GeneratedSelectStatementsTests {
         .map(MockPreparedStatement::getSQL).collect(
             Collectors.toList());
 
-    assertEquals(executedStatement, statements.get(0));
+    assertThat(statements.get(0)).isEqualTo(executedStatement);
   }
 
   private void testUpdateStatementTranslation(String updateStatement,
