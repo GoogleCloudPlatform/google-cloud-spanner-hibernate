@@ -23,11 +23,16 @@ import java.util.Map;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.StaleObjectStateException;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.model.relational.AuxiliaryDatabaseObject;
+import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.LockingStrategyException;
 import org.hibernate.engine.jdbc.env.spi.SchemaNameResolver;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.mapping.Constraint;
+import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.tool.schema.spi.Exporter;
@@ -37,6 +42,7 @@ import org.hibernate.tool.schema.spi.Exporter;
  *
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
+ * @author Daniel Zou
  */
 public class SpannerDialect extends Dialect {
 
@@ -243,6 +249,53 @@ public class SpannerDialect extends Dialect {
   public String getForUpdateSkipLockedString(String aliases) {
     throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
         + " acquisition.");
+  }
+
+  /* Unsupported Hibernate Exporters */
+
+  @Override
+  public Exporter<Sequence> getSequenceExporter() {
+    return new Exporter<Sequence>() {
+      @Override
+      public String[] getSqlCreateStrings(Sequence exportable, Metadata metadata) {
+        return new String[0];
+      }
+
+      @Override
+      public String[] getSqlDropStrings(Sequence exportable, Metadata metadata) {
+        return new String[0];
+      }
+    };
+  }
+
+  @Override
+  public Exporter<ForeignKey> getForeignKeyExporter() {
+    return new Exporter<ForeignKey>() {
+      @Override
+      public String[] getSqlCreateStrings(ForeignKey exportable, Metadata metadata) {
+        return new String[0];
+      }
+
+      @Override
+      public String[] getSqlDropStrings(ForeignKey exportable, Metadata metadata) {
+        return new String[0];
+      }
+    };
+  }
+
+  @Override
+  public Exporter<Constraint> getUniqueKeyExporter() {
+    return new Exporter<Constraint>() {
+      @Override
+      public String[] getSqlCreateStrings(Constraint exportable, Metadata metadata) {
+        return new String[0];
+      }
+
+      @Override
+      public String[] getSqlDropStrings(Constraint exportable, Metadata metadata) {
+        return new String[0];
+      }
+    };
   }
 
   @Override
