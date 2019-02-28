@@ -326,4 +326,49 @@ public class SpannerDialectTest {
         "original statement", null, null);
     assertThat(originalStatement).isEqualTo("original statement");
   }
+
+  @Test
+  public void supportsUniqueTest() {
+    assertThat(this.spannerDialect.supportsUnique()).isFalse();
+  }
+
+  @Test
+  public void supportsNotNullUniqueTest() {
+    assertThat(this.spannerDialect.supportsNotNullUnique()).isFalse();
+  }
+
+  @Test
+  public void supportsUniqueConstraintInCreateAlterTableTest() {
+    assertThat(this.spannerDialect.supportsUniqueConstraintInCreateAlterTable()).isFalse();
+  }
+
+  @Test
+  public void getAddUniqueConstraintStringTest() {
+    assertThat(this.spannerDialect.getAddUniqueConstraintString(null)).isEmpty();
+  }
+
+  @Test
+  public void supportsCascadeDeleteTest() {
+    assertThat(this.spannerDialect.supportsCascadeDelete()).isFalse();
+  }
+
+  @Test
+  public void supportsCircularCascadeDeleteConstraintsTest() {
+    assertThat(this.spannerDialect.supportsCircularCascadeDeleteConstraints()).isFalse();
+  }
+
+  @Test
+  public void getUniqueDelegateTest() {
+    assertThat(
+        this.spannerDialect.getUniqueDelegate().getAlterTableToAddUniqueKeyCommand(null, null))
+        .isEmpty();
+    assertThat(this.spannerDialect.getUniqueDelegate().getColumnDefinitionUniquenessFragment(null))
+        .isEmpty();
+    assertThat(
+        this.spannerDialect.getUniqueDelegate().getTableCreationUniqueConstraintsFragment(null))
+        .isEmpty();
+    assertThat(
+        this.spannerDialect.getUniqueDelegate().getAlterTableToDropUniqueKeyCommand(null, null))
+        .isEmpty();
+  }
 }
