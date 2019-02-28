@@ -51,6 +51,12 @@ public class SpannerTableExporter implements Exporter<Table> {
     /* The current implementation does not support interleaved tables for collections
      * or UNIQUE constraints/indexes for relationships
      * */
+
+    if (!table.hasPrimaryKey()) {
+      throw new UnsupportedOperationException("Cloud Spanner requires tables and entities to have"
+          + " at least one ID column to act as the Primary Key.");
+    }
+
     String createTableTemplate = this.spannerDialect.getCreateTableString()
         + " {0} ({1}) PRIMARY KEY ({2})";
 
