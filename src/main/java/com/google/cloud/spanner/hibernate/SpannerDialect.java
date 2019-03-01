@@ -29,11 +29,14 @@ import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.LockingStrategyException;
+import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.env.spi.SchemaNameResolver;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Constraint;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
+import org.hibernate.mapping.UniqueKey;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.tool.schema.spi.Exporter;
 
@@ -51,6 +54,8 @@ public class SpannerDialect extends Dialect {
   private static final LockingStrategy LOCKING_STRATEGY = new DoNothingLockingStrategy();
 
   private static final Exporter NOOP_EXPORTER = new EmptyExporter();
+
+  private static final UniqueDelegate NOOP_UNIQUE_DELEGATE = new DoNothingUniqueDelegate();
 
   @Override
   public Exporter<Table> getTableExporter() {
@@ -277,6 +282,56 @@ public class SpannerDialect extends Dialect {
   }
 
   @Override
+  public UniqueDelegate getUniqueDelegate() {
+    return NOOP_UNIQUE_DELEGATE;
+  }
+
+  /**
+   * The Cloud Spanner Hibernate Dialect does not currently support UNIQUE restrictions.
+   *
+   * @return {@code false}.
+   */
+  @Override
+  public boolean supportsUnique() {
+    return false;
+  }
+
+  /**
+   * The Cloud Spanner Hibernate Dialect does not currently support UNIQUE restrictions.
+   *
+   * @return {@code false}.
+   */
+  @Override
+  public boolean supportsNotNullUnique() {
+    return false;
+  }
+
+  /**
+   * The Cloud Spanner Hibernate Dialect does not currently support UNIQUE restrictions.
+   *
+   * @return {@code false}.
+   */
+  @Override
+  public boolean supportsUniqueConstraintInCreateAlterTable() {
+    return false;
+  }
+
+  @Override
+  public String getAddUniqueConstraintString(String constraintName) {
+    return "";
+  }
+
+  @Override
+  public boolean supportsCircularCascadeDeleteConstraints() {
+    return false;
+  }
+
+  @Override
+  public boolean supportsCascadeDelete() {
+    return false;
+  }
+
+  @Override
   public char openQuote() {
     return '`';
   }
@@ -308,6 +363,7 @@ public class SpannerDialect extends Dialect {
    * @author Daniel Zou
    */
   static class EmptyExporter<T extends Exportable> implements Exporter<T> {
+
     @Override
     public String[] getSqlCreateStrings(T exportable, Metadata metadata) {
       return new String[0];
@@ -316,6 +372,35 @@ public class SpannerDialect extends Dialect {
     @Override
     public String[] getSqlDropStrings(T exportable, Metadata metadata) {
       return new String[0];
+    }
+  }
+
+  /**
+   * A no-op delegate for generating Unique-Constraints. Cloud Spanner offers unique-restrictions
+   * via interleaved indexes with the "UNIQUE" option. This is not currently supported.
+   *
+   * @author Chengyuan Zhao
+   */
+  static class DoNothingUniqueDelegate implements UniqueDelegate {
+
+    @Override
+    public String getColumnDefinitionUniquenessFragment(Column column) {
+      return "";
+    }
+
+    @Override
+    public String getTableCreationUniqueConstraintsFragment(Table table) {
+      return "";
+    }
+
+    @Override
+    public String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
+      return "";
+    }
+
+    @Override
+    public String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
+      return "";
     }
   }
 }
