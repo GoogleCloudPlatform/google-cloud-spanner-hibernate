@@ -22,14 +22,20 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
  * A test entity that uses features in Hibernate that are unsupported in Spanner.
  *
  * @author Daniel Zou
+ * @author Chengyuan Zhao
  */
 @Entity
+@Table(indexes = {
+    @Index(columnList = "name", name = "name_index")
+})
 public class Employee {
 
   @Id

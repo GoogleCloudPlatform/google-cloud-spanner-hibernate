@@ -77,8 +77,9 @@ public class GeneratedCreateTableStatementsTests {
         .getExecutedStatements();
 
     assertThat(sqlStrings).containsExactly(
+        "drop table Employee",
         "create table Employee "
             + "(id bigint not null,name varchar(255),manager_id bigint) PRIMARY KEY (id)",
-        "drop table Employee");
+        "create index name_index on Employee (name)");
   }
 }
