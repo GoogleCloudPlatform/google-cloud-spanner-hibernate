@@ -19,12 +19,14 @@
 package com.google.cloud.spanner.hibernate;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.Column;
+import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 import org.hibernate.tool.schema.spi.Exporter;
 
@@ -79,12 +81,23 @@ public class SpannerTableExporter implements Exporter<Table> {
 
   @Override
   public String[] getSqlDropStrings(Table table, Metadata metadata) {
-    /* Cloud Spanner requires examining the metadata to find all indexes and interleaved tables.
+    /**
+     * Cloud Spanner requires examining the metadata to find all indexes and interleaved tables.
      * These must be dropped before the given table can be dropped.
      *
-     * The current implementation does not support indexes or interleaved tables and indexes.
-     * */
+     * The current implementation does not support interleaved tables.
+     */
 
-    return new String[]{this.spannerDialect.getDropTableString(table.getQuotedName())};
+    ArrayList<String> dropStrings = new ArrayList<>();
+
+    Iterator<Index> iteratorIdx = table.getIndexIterator();
+    while (iteratorIdx.hasNext()) {
+      Index curr = iteratorIdx.next();
+      dropStrings.add("drop index " + curr.getName());
+    }
+
+    dropStrings.add(this.spannerDialect.getDropTableString(table.getQuotedName()));
+
+    return dropStrings.toArray(new String[0]);
   }
 }

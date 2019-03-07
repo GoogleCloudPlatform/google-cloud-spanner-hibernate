@@ -21,6 +21,7 @@ package com.google.cloud.spanner.hibernate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.google.cloud.spanner.hibernate.entities.Employee;
 import com.google.cloud.spanner.hibernate.entities.TestEntity;
 import java.io.File;
 import java.io.IOException;
@@ -70,6 +71,22 @@ public class SpannerTableExporterTests {
     scriptFile.deleteOnExit();
     List<String> statements = Files.readAllLines(scriptFile.toPath());
     assertThat(statements.get(0)).isEqualTo("drop table `test_table`");
+  }
+
+  @Test
+  public void generateDeleteStringsWithIndices() throws IOException {
+    Metadata employeeMetadata =
+        new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
+
+    String testFileName = UUID.randomUUID().toString();
+    new SchemaExport().setOutputFile(testFileName)
+        .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), employeeMetadata);
+    File scriptFile = new File(testFileName);
+    scriptFile.deleteOnExit();
+    List<String> statements = Files.readAllLines(scriptFile.toPath());
+
+    assertThat(statements.get(0)).isEqualTo("drop index name_index");
+    assertThat(statements.get(1)).isEqualTo("drop table Employee");
   }
 
   @Test
