@@ -55,8 +55,9 @@ public class SpannerTableExporter implements Exporter<Table> {
      * */
 
     if (!table.hasPrimaryKey()) {
-      throw new UnsupportedOperationException("Cloud Spanner requires tables and entities to have"
-          + " at least one ID column to act as the Primary Key.");
+      throw new UnsupportedOperationException("Cloud Spanner requires tables and entities to have "
+          + "at least one ID column to act as the Primary Key. "
+          + "Unsupported Table: " + table.getName());
     }
 
     String createTableTemplate = this.spannerDialect.getCreateTableString()
@@ -81,10 +82,8 @@ public class SpannerTableExporter implements Exporter<Table> {
 
   @Override
   public String[] getSqlDropStrings(Table table, Metadata metadata) {
-    /**
-     * Cloud Spanner requires examining the metadata to find all indexes and interleaved tables.
+    /* Cloud Spanner requires examining the metadata to find all indexes and interleaved tables.
      * These must be dropped before the given table can be dropped.
-     *
      * The current implementation does not support interleaved tables.
      */
 
