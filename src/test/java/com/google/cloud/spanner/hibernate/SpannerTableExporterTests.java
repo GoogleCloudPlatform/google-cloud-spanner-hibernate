@@ -70,7 +70,8 @@ public class SpannerTableExporterTests {
     File scriptFile = new File(testFileName);
     scriptFile.deleteOnExit();
     List<String> statements = Files.readAllLines(scriptFile.toPath());
-    assertThat(statements.get(0)).isEqualTo("drop table `test_table`");
+    assertThat(statements)
+        .containsExactly("drop table `TestEntity_stringList`", "drop table `test_table`");
   }
 
   @Test
@@ -85,8 +86,7 @@ public class SpannerTableExporterTests {
     scriptFile.deleteOnExit();
     List<String> statements = Files.readAllLines(scriptFile.toPath());
 
-    assertThat(statements.get(0)).isEqualTo("drop index name_index");
-    assertThat(statements.get(1)).isEqualTo("drop table Employee");
+    assertThat(statements).containsExactly("drop index name_index", "drop table Employee");
   }
 
   @Test
@@ -100,40 +100,49 @@ public class SpannerTableExporterTests {
 
     // The types in the following string need to be updated when SpannerDialect
     // implementation maps types.
-    String expectedCreateString = "create table `test_table` "
-        + "(`ID1` bigint not null,id2 varchar(255) not null,"
-        + "`boolColumn` boolean,longVal bigint not null,stringVal varchar(255)) "
-        + "PRIMARY KEY (`ID1`,id2)";
+    String expectedCreateString = "create table `test_table` (`ID1` INT64 not null,id2"
+        + " STRING(255) not null,`boolColumn` BOOL,longVal INT64 not null,stringVal"
+        + " STRING(255)) PRIMARY KEY (`ID1`,id2)";
 
-    assertThat(statements.get(0)).isEqualTo(expectedCreateString);
+    String expectedCollectionCreateString = "create table `TestEntity_stringList` "
+        + "(`TestEntity_ID1` INT64 not null,`TestEntity_id2` STRING(255) not null,"
+        + "stringList STRING(255)) PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList)";
+
+    assertThat(statements)
+        .containsExactlyInAnyOrder(expectedCreateString, expectedCollectionCreateString);
   }
 
   @Test
   public void generateCreateStringsEmptyEntityTest() {
-    Metadata metadata = new MetadataSources(this.registry)
-        .addAnnotatedClass(EmptyEntity.class)
-        .buildMetadata();
-
-    assertThatThrownBy(() ->
+    assertThatThrownBy(() -> {
+      Metadata metadata = new MetadataSources(this.registry)
+          .addAnnotatedClass(EmptyEntity.class)
+          .buildMetadata();
         new SchemaExport()
             .setOutputFile("unused")
-            .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata))
+            .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata);
+    })
         .isInstanceOf(AnnotationException.class)
-        .hasMessage("No identifier specified for entity:");
+        .hasMessage(
+            "No identifier specified for entity: "
+                + "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$EmptyEntity");
   }
 
   @Test
   public void generateCreateStringsNoPkEntityTest() {
-    Metadata metadata = new MetadataSources(this.registry)
-        .addAnnotatedClass(NoPkEntity.class)
-        .buildMetadata();
+    assertThatThrownBy(() -> {
+      Metadata metadata = new MetadataSources(this.registry)
+          .addAnnotatedClass(NoPkEntity.class)
+          .buildMetadata();
 
-    assertThatThrownBy(() ->
-        new SchemaExport()
+      new SchemaExport()
             .setOutputFile("unused")
-            .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata))
+          .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata);
+    })
         .isInstanceOf(AnnotationException.class)
-        .hasMessage("No identifier specified for entity:");
+        .hasMessage(
+            "No identifier specified for entity: "
+                + "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$NoPkEntity");
   }
 
   @Entity

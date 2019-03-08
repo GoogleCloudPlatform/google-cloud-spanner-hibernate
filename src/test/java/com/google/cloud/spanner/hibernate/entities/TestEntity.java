@@ -19,7 +19,9 @@
 package com.google.cloud.spanner.hibernate.entities;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -44,6 +46,9 @@ public class TestEntity {
   public boolean boolVal;
 
   public long longVal;
+
+  @ElementCollection
+  List<String> stringList;
 
   @Embeddable
   public static class IdClass implements Serializable {
