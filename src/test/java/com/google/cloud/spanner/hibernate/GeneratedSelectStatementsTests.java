@@ -70,6 +70,7 @@ public class GeneratedSelectStatementsTests {
         .applySetting("hibernate.connection.url", "unused")
         .applySetting("hibernate.connection.username", "unused")
         .applySetting("hibernate.connection.password", "unused")
+        .applySetting("hibernate.hbm2ddl.auto", "create")
         .build();
     this.metadata =
         new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class)
@@ -83,8 +84,8 @@ public class GeneratedSelectStatementsTests {
       Query q = x.createQuery("select s from SubTestEntity s");
       q.setLockMode(LockModeType.PESSIMISTIC_READ);
       q.list();
-    }, "select subtestent0_.id as id1_0_, subtestent0_.id1 as id2_0_, "
-        + "subtestent0_.id2 as id3_0_ from SubTestEntity subtestent0_");
+    }, "select subtestent0_.id as id1_1_, subtestent0_.id1 as id2_1_, "
+        + "subtestent0_.id2 as id3_1_ from SubTestEntity subtestent0_");
   }
 
   @Test
@@ -124,10 +125,10 @@ public class GeneratedSelectStatementsTests {
   public void selectJoinTest() {
     testReadStatementTranslation(
         "select s from SubTestEntity s inner join s.testEntity",
-        "select subtestent0_.id as id1_0_, subtestent0_.id1 as id2_0_, "
-        + "subtestent0_.id2 as id3_0_ from SubTestEntity subtestent0_ inner join `test_table` "
-        + "testentity1_ on subtestent0_.id1=testentity1_.`ID1` "
-            + "and subtestent0_.id2=testentity1_.id2");
+        "select subtestent0_.id as id1_1_, subtestent0_.id1 "
+            + "as id2_1_, subtestent0_.id2 as id3_1_ from SubTestEntity subtestent0_ inner "
+            + "join `test_table` testentity1_ on subtestent0_.id1=testentity1_.`ID1`"
+            + " and subtestent0_.id2=testentity1_.id2");
   }
 
   private void openSessionAndDo(Consumer<Session> func) {
