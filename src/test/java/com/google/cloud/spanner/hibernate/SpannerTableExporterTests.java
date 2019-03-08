@@ -118,9 +118,9 @@ public class SpannerTableExporterTests {
       Metadata metadata = new MetadataSources(this.registry)
           .addAnnotatedClass(EmptyEntity.class)
           .buildMetadata();
-        new SchemaExport()
-            .setOutputFile("unused")
-            .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata);
+      new SchemaExport()
+          .setOutputFile("unused")
+          .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata);
     })
         .isInstanceOf(AnnotationException.class)
         .hasMessage(
@@ -136,7 +136,7 @@ public class SpannerTableExporterTests {
           .buildMetadata();
 
       new SchemaExport()
-            .setOutputFile("unused")
+          .setOutputFile("unused")
           .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata);
     })
         .isInstanceOf(AnnotationException.class)
