@@ -27,7 +27,7 @@
 
 		<dependency>
 			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-spanner-hibernate</artifactId>
+			<artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
 			<version>0.1.0-SNAPSHOT</version>
 		</dependency>
 
