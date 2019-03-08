@@ -32,7 +32,7 @@ import org.junit.Test;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
-public class SpannerDialectTest {
+public class SpannerDialectTests {
 
   private SpannerDialect spannerDialect;
 
