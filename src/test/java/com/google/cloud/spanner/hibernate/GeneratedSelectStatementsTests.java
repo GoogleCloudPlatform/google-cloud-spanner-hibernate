@@ -70,6 +70,7 @@ public class GeneratedSelectStatementsTests {
         .applySetting("hibernate.connection.url", "unused")
         .applySetting("hibernate.connection.username", "unused")
         .applySetting("hibernate.connection.password", "unused")
+        .applySetting("hibernate.hbm2ddl.auto", "create")
         .build();
     this.metadata =
         new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class)

@@ -81,10 +81,15 @@ public class SpannerTableExporter implements Exporter<Table> {
 
     StringJoiner colsAndTypes = new StringJoiner(",");
 
-    ((Iterator<Column>) table.getColumnIterator()).forEachRemaining(col -> colsAndTypes
+    ((Iterator<Column>) table.getColumnIterator()).forEachRemaining(col ->{
+
+      if(col.getQuotedName().equals("`boolColumn`")){
+        col.setName("blahblahblah");
+      }
+      colsAndTypes
         .add(col.getQuotedName()
             + " " + col.getSqlType(this.spannerDialect, metadata)
-            + (col.isNullable() ? this.spannerDialect.getNullColumnString() : " not null")));
+            + (col.isNullable() ? this.spannerDialect.getNullColumnString() : " not null"));});
 
     return new String[]{
         MessageFormat.format(this.createTableTemplate, table.getQuotedName(),
