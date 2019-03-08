@@ -108,7 +108,8 @@ public class GeneratedSelectStatementsTests {
               .getPreparedStatementResultSetHandler().getPreparedStatements().stream()
               .map(MockPreparedStatement::getSQL).findFirst().get();
       assertThat(preparedStatement).isEqualTo(
-          "insert into `test_table` (`boolColumn`, longVal, stringVal, `ID1`, id2) values (?, ?, ?, ?, ?)");
+          "insert into `test_table` (`boolColumn`, longVal, "
+              + "stringVal, `ID1`, id2) values (?, ?, ?, ?, ?)");
     }
   }
 
