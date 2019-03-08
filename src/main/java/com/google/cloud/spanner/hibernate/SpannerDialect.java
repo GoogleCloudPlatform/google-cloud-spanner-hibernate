@@ -21,7 +21,6 @@ package com.google.cloud.spanner.hibernate;
 import java.io.Serializable;
 import java.sql.Types;
 import java.util.Map;
-
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.StaleObjectStateException;
@@ -379,8 +378,7 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public String getForUpdateString() {
-    throw new UnsupportedOperationException("Cloud Spanner does not support selecting for lock"
-        + " acquisition.");
+    return "";
   }
 
   @Override

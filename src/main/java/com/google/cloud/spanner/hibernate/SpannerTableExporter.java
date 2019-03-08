@@ -60,15 +60,10 @@ public class SpannerTableExporter implements Exporter<Table> {
 
     Table containingTable = getContainingTableForCollection(metadata, table);
 
-    if (containingTable == null && !table.hasPrimaryKey()) {
-      throw new UnsupportedOperationException("Cloud Spanner requires tables and entities to have "
-          + "at least one ID column to act as the Primary Key. "
-          + "Unsupported Table: " + table.getName());
-    }
-
-    /* If the table is for a collection then it will only have parent-table key columns plus
-      one value column and all must be part of the key */
-    Iterable<Column> keyColumns = containingTable == null ? table.getPrimaryKey().getColumns()
+    /* Hibernate uses tables w/o PK for sequence tables and collection tables. In both cases
+     * it makes sense to make all columns part of the key. */
+    Iterable<Column> keyColumns = containingTable == null && table.hasPrimaryKey()
+        ? table.getPrimaryKey().getColumns()
         : table::getColumnIterator;
     return getTableString(table, metadata, keyColumns);
   }

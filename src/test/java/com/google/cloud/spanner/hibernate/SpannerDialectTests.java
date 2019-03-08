@@ -235,8 +235,7 @@ public class SpannerDialectTests {
 
   @Test
   public void getForUpdateStringTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getForUpdateString())
-        .isInstanceOf(UnsupportedOperationException.class);
+    assertThat(this.spannerDialect.getForUpdateString((LockOptions) null)).isEqualTo("");
   }
 
   @Test
