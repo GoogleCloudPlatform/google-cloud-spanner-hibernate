@@ -108,7 +108,7 @@ public class GeneratedSelectStatementsTests {
               .getPreparedStatementResultSetHandler().getPreparedStatements().stream()
               .map(MockPreparedStatement::getSQL).findFirst().get();
       assertThat(preparedStatement).isEqualTo(
-          "insert into test_table (boolVal, longVal, stringVal, id1, id2) values (?, ?, ?, ?, ?)");
+          "insert into `test_table` (`boolColumn`, longVal, stringVal, `ID1`, id2) values (?, ?, ?, ?, ?)");
     }
   }
 
@@ -116,7 +116,7 @@ public class GeneratedSelectStatementsTests {
   public void deleteDmlTest() {
     testUpdateStatementTranslation(
         "delete TestEntity where boolVal = true",
-        "delete from test_table where boolVal=TRUE");
+        "delete from `test_table` where `boolColumn`=TRUE");
   }
 
   @Test
@@ -124,8 +124,8 @@ public class GeneratedSelectStatementsTests {
     testReadStatementTranslation(
         "select s from SubTestEntity s inner join s.testEntity",
         "select subtestent0_.id as id1_0_, subtestent0_.id1 as id2_0_, "
-        + "subtestent0_.id2 as id3_0_ from SubTestEntity subtestent0_ inner join test_table "
-        + "testentity1_ on subtestent0_.id1=testentity1_.id1 "
+        + "subtestent0_.id2 as id3_0_ from SubTestEntity subtestent0_ inner join `test_table` "
+        + "testentity1_ on subtestent0_.id1=testentity1_.`ID1` "
             + "and subtestent0_.id2=testentity1_.id2");
   }
 

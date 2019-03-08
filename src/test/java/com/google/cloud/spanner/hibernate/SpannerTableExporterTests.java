@@ -101,8 +101,8 @@ public class SpannerTableExporterTests {
     // The types in the following string need to be updated when SpannerDialect
     // implementation maps types.
     String expectedCreateString = "create table `test_table` "
-        + "(`ID1` bigint not null,id2 varchar(255) not null,"
-        + "`boolColumn` boolean,longVal bigint not null,stringVal varchar(255)) "
+        + "(`ID1` INT64 not null,id2 STRING(255) not null,"
+        + "`boolColumn` BOOL,longVal INT64 not null,stringVal STRING(255)) "
         + "PRIMARY KEY (`ID1`,id2)";
 
     assertThat(statements.get(0)).isEqualTo(expectedCreateString);
@@ -110,30 +110,22 @@ public class SpannerTableExporterTests {
 
   @Test
   public void generateCreateStringsEmptyEntityTest() {
-    Metadata metadata = new MetadataSources(this.registry)
-        .addAnnotatedClass(EmptyEntity.class)
-        .buildMetadata();
-
     assertThatThrownBy(() ->
-        new SchemaExport()
-            .setOutputFile("unused")
-            .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata))
+        new MetadataSources(this.registry)
+            .addAnnotatedClass(EmptyEntity.class)
+            .buildMetadata())
         .isInstanceOf(AnnotationException.class)
-        .hasMessage("No identifier specified for entity:");
+        .hasMessageContaining("No identifier specified for entity:");
   }
 
   @Test
   public void generateCreateStringsNoPkEntityTest() {
-    Metadata metadata = new MetadataSources(this.registry)
-        .addAnnotatedClass(NoPkEntity.class)
-        .buildMetadata();
-
     assertThatThrownBy(() ->
-        new SchemaExport()
-            .setOutputFile("unused")
-            .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata))
+        new MetadataSources(this.registry)
+            .addAnnotatedClass(NoPkEntity.class)
+            .buildMetadata())
         .isInstanceOf(AnnotationException.class)
-        .hasMessage("No identifier specified for entity:");
+        .hasMessageContaining("No identifier specified for entity:");
   }
 
   @Entity
