@@ -91,8 +91,7 @@ public class SpannerTableExporter implements Exporter<Table> {
 
     ArrayList<String> statements = new ArrayList<>();
     statements.add(MessageFormat.format(this.createTableTemplate, table.getQuotedName(),
-            colsAndTypes.toString(),
-        primaryKeyColNames));
+        colsAndTypes.toString(), primaryKeyColNames));
 
     // Hibernate requires the special hibernate_sequence table to be populated with an initial val.
     if (table.getName().equals(SequenceStyleGenerator.DEF_SEQUENCE_NAME)) {

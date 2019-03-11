@@ -90,8 +90,8 @@ public class SpannerDialect extends Dialect {
     registerColumnType(Types.NCLOB, "STRING(MAX)");
     registerColumnType(Types.BLOB, "BYTES(MAX)");
 
-    registerColumnType(Types.DECIMAL, "STRING(MAX)");
-    registerColumnType(Types.NUMERIC, "STRING(MAX)");
+    registerColumnType(Types.DECIMAL, "FLOAT64");
+    registerColumnType(Types.NUMERIC, "FLOAT64");
 
     registerFunction("ANY_VALUE", new StandardSQLFunction("ANY_VALUE"));
     registerFunction("COUNTIF", new StandardSQLFunction("COUNTIF", StandardBasicTypes.LONG));
