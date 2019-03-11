@@ -91,7 +91,8 @@ public class SpannerTableExporter implements Exporter<Table> {
 
     return new String[]{
         MessageFormat.format(this.createTableTemplate, table.getQuotedName(),
-            colsAndTypes.toString(), primaryKeyColNames)};
+            colsAndTypes.toString(),
+            primaryKeyColNames)};
   }
 
   private Table getContainingTableForCollection(Metadata metadata, Table collectionTable) {
