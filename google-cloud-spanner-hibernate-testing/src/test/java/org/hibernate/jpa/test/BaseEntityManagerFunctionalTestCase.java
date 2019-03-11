@@ -28,7 +28,7 @@ import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.spi.Bootstrap;
 import org.hibernate.jpa.boot.spi.PersistenceUnitDescriptor;
 import org.hibernate.testing.junit4.BaseUnitTestCase;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 
 /**
@@ -45,10 +45,10 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 	private static final Dialect dialect = Dialect.getDialect();
 
 	private StandardServiceRegistryImpl serviceRegistry;
-	private SessionFactoryImplementor entityManagerFactory;
+	private static SessionFactoryImplementor entityManagerFactory;
 
-	private EntityManager em;
-	private ArrayList<EntityManager> isolatedEms = new ArrayList<EntityManager>();
+	private static EntityManager em;
+	private static ArrayList<EntityManager> isolatedEms = new ArrayList<EntityManager>();
 
 	protected Dialect getDialect() {
 		return dialect;
@@ -62,20 +62,27 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 		return serviceRegistry;
 	}
 
-	@Before
+	private static boolean isInitialized;
+
+	@AfterClass
 	@SuppressWarnings( {"UnusedDeclaration"})
-	public void buildEntityManagerFactory() {
-		log.trace( "Building EntityManagerFactory" );
+	public static void releaseResources() {
+		try {
+			releaseUnclosedEntityManagers();
+		} finally {
+			if (entityManagerFactory != null && entityManagerFactory.isOpen()) {
+				entityManagerFactory.close();
+			}
+		}
+		// Note we don't destroy the service registry as we are not the ones creating it
+	}
 
-		entityManagerFactory =  Bootstrap.getEntityManagerFactoryBuilder(
-				buildPersistenceUnitDescriptor(),
-				buildSettings()
-		).build().unwrap( SessionFactoryImplementor.class );
+	private static void releaseUnclosedEntityManagers() {
+		releaseUnclosedEntityManager(em);
 
-		serviceRegistry = (StandardServiceRegistryImpl) entityManagerFactory.getServiceRegistry()
-				.getParentServiceRegistry();
-
-		afterEntityManagerFactoryBuilt();
+		for (EntityManager isolatedEm : isolatedEms) {
+			releaseUnclosedEntityManager(isolatedEm);
+		}
 	}
 
 	private PersistenceUnitDescriptor buildPersistenceUnitDescriptor() {
@@ -253,30 +260,7 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 		return true;
 	}
 
-
-	@After
-	@SuppressWarnings( {"UnusedDeclaration"})
-	public void releaseResources() {
-		try {
-			releaseUnclosedEntityManagers();
-		}
-		finally {
-			if ( entityManagerFactory != null && entityManagerFactory.isOpen()) {
-				entityManagerFactory.close();
-			}
-		}
-		// Note we don't destroy the service registry as we are not the ones creating it
-	}
-
-	private void releaseUnclosedEntityManagers() {
-		releaseUnclosedEntityManager( this.em );
-
-		for ( EntityManager isolatedEm : isolatedEms ) {
-			releaseUnclosedEntityManager( isolatedEm );
-		}
-	}
-
-	private void releaseUnclosedEntityManager(EntityManager em) {
+	private static void releaseUnclosedEntityManager(EntityManager em) {
 		if ( em == null ) {
 			return;
 		}
@@ -286,14 +270,41 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 
 		if ( em.getTransaction().isActive() ) {
 			em.getTransaction().rollback();
-            log.warn("You left an open transaction! Fix your test case. For now, we are closing it for you.");
+			System.out.println(
+					"You left an open transaction! Fix your test case. For now, we are closing it for you.");
 		}
 		if ( em.isOpen() ) {
 			// as we open an EM before the test runs, it will still be open if the test uses a custom EM.
 			// or, the person may have forgotten to close. So, do not raise a "fail", but log the fact.
 			em.close();
-            log.warn("The EntityManager is not closed. Closing it.");
+			System.out.println("The EntityManager is not closed. Closing it.");
 		}
+	}
+
+	protected void doIfNotInitialized(Runnable runnable) {
+		if (!isInitialized) {
+			runnable.run();
+			isInitialized = true;
+		}
+	}
+
+	@Before
+	@SuppressWarnings({"UnusedDeclaration"})
+	public void buildEntityManagerFactory() {
+		if (entityManagerFactory == null) {
+			log.trace("Building EntityManagerFactory");
+
+			entityManagerFactory = Bootstrap.getEntityManagerFactoryBuilder(
+					buildPersistenceUnitDescriptor(),
+					buildSettings()
+			).build().unwrap(SessionFactoryImplementor.class);
+
+			serviceRegistry = (StandardServiceRegistryImpl) entityManagerFactory.getServiceRegistry()
+					.getParentServiceRegistry();
+
+			afterEntityManagerFactoryBuilt();
+		}
+
 	}
 
 	protected EntityManager getOrCreateEntityManager() {
