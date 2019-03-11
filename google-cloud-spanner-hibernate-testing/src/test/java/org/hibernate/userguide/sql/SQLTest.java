@@ -121,12 +121,12 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
 
 			CreditCardPayment creditCardPayment = new CreditCardPayment();
 			creditCardPayment.setCompleted( true );
-			creditCardPayment.setAmount( BigDecimal.ZERO );
+			creditCardPayment.setAmount( 0L );
 			creditCardPayment.setPerson( person1 );
 
 			WireTransferPayment wireTransferPayment = new WireTransferPayment();
 			wireTransferPayment.setCompleted( true );
-			wireTransferPayment.setAmount( BigDecimal.valueOf( 100 ) );
+			wireTransferPayment.setAmount( 100L );
 			wireTransferPayment.setPerson( person2 );
 
 			entityManager.persist( creditCardPayment );

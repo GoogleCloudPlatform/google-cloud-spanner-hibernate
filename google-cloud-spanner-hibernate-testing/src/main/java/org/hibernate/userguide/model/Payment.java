@@ -6,7 +6,6 @@
  */
 package org.hibernate.userguide.model;
 
-import java.math.BigDecimal;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -26,7 +25,7 @@ public class Payment {
     @GeneratedValue
     private Long id;
 
-    private BigDecimal amount;
+    private Long amount;
 
     private boolean completed;
 
@@ -45,11 +44,11 @@ public class Payment {
         this.id = id;
     }
 
-    public BigDecimal getAmount() {
+    public Long getAmount() {
         return amount;
     }
 
-    public void setAmount(BigDecimal amount) {
+    public void setAmount(Long amount) {
         this.amount = amount;
     }
 
