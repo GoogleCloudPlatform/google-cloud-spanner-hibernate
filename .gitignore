@@ -6,5 +6,4 @@ target
 .idea
 
 # Ignores generated files through testing
-testing/hibernate-orm
-testing/.gradle
+**/transaction.log
