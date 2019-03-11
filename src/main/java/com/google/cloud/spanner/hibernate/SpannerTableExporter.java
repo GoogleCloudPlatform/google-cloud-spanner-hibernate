@@ -20,6 +20,7 @@ package com.google.cloud.spanner.hibernate;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -60,11 +61,18 @@ public class SpannerTableExporter implements Exporter<Table> {
 
     Table containingTable = getContainingTableForCollection(metadata, table);
 
-    /* Hibernate uses tables w/o PK for sequence tables and collection tables. In both cases
-     * it makes sense to make all columns part of the key. */
-    Iterable<Column> keyColumns = containingTable == null && table.hasPrimaryKey()
-        ? table.getPrimaryKey().getColumns()
-        : table::getColumnIterator;
+    Iterable<Column> keyColumns;
+
+    if (containingTable == null && table.hasPrimaryKey()) {
+      // a typical table that corresponds to an entity type
+      keyColumns = table.getPrimaryKey().getColumns();
+    } else if (containingTable != null) {
+      // a table that is actually an element collection property
+      keyColumns = table::getColumnIterator;
+    } else {
+      // the case corresponding to a sequence-table that will only have 1 row.
+      keyColumns = Collections.emptyList();
+    }
     return getTableString(table, metadata, keyColumns);
   }
 
