@@ -26,6 +26,7 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.hibernate.boot.Metadata;
+import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
@@ -42,7 +43,6 @@ public class SpannerTableExporter implements Exporter<Table> {
   private final SpannerDialect spannerDialect;
 
   private final String createTableTemplate;
-
 
   /**
    * Constructor.
@@ -63,7 +63,7 @@ public class SpannerTableExporter implements Exporter<Table> {
 
     Iterable<Column> keyColumns;
 
-    if (containingTable == null && table.hasPrimaryKey()) {
+    if (table.hasPrimaryKey()) {
       // a typical table that corresponds to an entity type
       keyColumns = table.getPrimaryKey().getColumns();
     } else if (containingTable != null) {
@@ -89,10 +89,17 @@ public class SpannerTableExporter implements Exporter<Table> {
             + " " + col.getSqlType(this.spannerDialect, metadata)
             + (col.isNullable() ? this.spannerDialect.getNullColumnString() : " not null")));
 
-    return new String[]{
-        MessageFormat.format(this.createTableTemplate, table.getQuotedName(),
-            colsAndTypes.toString(),
-            primaryKeyColNames)};
+    ArrayList<String> statements = new ArrayList<>();
+    statements.add(MessageFormat.format(this.createTableTemplate, table.getQuotedName(),
+        colsAndTypes.toString(), primaryKeyColNames));
+
+    // Hibernate requires the special hibernate_sequence table to be populated with an initial val.
+    if (table.getName().equals(SequenceStyleGenerator.DEF_SEQUENCE_NAME)) {
+      statements.add("INSERT INTO " + SequenceStyleGenerator.DEF_SEQUENCE_NAME + " ("
+          + SequenceStyleGenerator.DEF_VALUE_COLUMN + ") VALUES(1)");
+    }
+
+    return statements.toArray(new String[0]);
   }
 
   private Table getContainingTableForCollection(Metadata metadata, Table collectionTable) {
