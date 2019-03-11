@@ -19,6 +19,12 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
 		</dependency>
@@ -27,12 +33,6 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-testing</artifactId>
 			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
