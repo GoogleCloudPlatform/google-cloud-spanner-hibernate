@@ -86,7 +86,8 @@ public class SpannerTableExporterTests {
     scriptFile.deleteOnExit();
     List<String> statements = Files.readAllLines(scriptFile.toPath());
 
-    assertThat(statements).containsExactly("drop index name_index", "drop table Employee");
+    assertThat(statements).containsExactly("drop index name_index", "drop table Employee",
+        "drop table hibernate_sequence");
   }
 
   @Test

@@ -33,8 +33,6 @@ import org.junit.Test;
 
 public class GeneratedCreateTableStatementsTests {
 
-  private Metadata metadata;
-
   private StandardServiceRegistry registry;
 
   private JDBCMockObjectFactory jdbcMockObjectFactory;
@@ -58,17 +56,16 @@ public class GeneratedCreateTableStatementsTests {
         .applySetting("hibernate.connection.password", "unused")
         .applySetting("hibernate.hbm2ddl.auto", "create")
         .build();
-
-    this.metadata =
-        new MetadataSources(this.registry)
-            .addAnnotatedClass(Employee.class)
-            .buildMetadata();
   }
-
 
   @Test
   public void testUnsupportedExportersNoop() {
-    Session session = this.metadata.buildSessionFactory().openSession();
+    Metadata metadata =
+        new MetadataSources(this.registry)
+            .addAnnotatedClass(Employee.class)
+            .buildMetadata();
+
+    Session session = metadata.buildSessionFactory().openSession();
     session.beginTransaction();
     session.close();
 
@@ -79,8 +76,11 @@ public class GeneratedCreateTableStatementsTests {
     assertThat(sqlStrings).containsExactly(
         "drop index name_index",
         "drop table Employee",
+        "drop table hibernate_sequence",
         "create table Employee "
             + "(id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
+        "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+        "INSERT INTO hibernate_sequence (next_val) VALUES(1)",
         "create index name_index on Employee (name)");
   }
 }
