@@ -12,4 +12,11 @@
 
 	<artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
 	<name>Google Cloud Spanner Hibernate Dialect</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+		</dependency>
+	</dependencies>
 </project>
