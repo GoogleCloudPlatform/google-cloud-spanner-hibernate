@@ -288,6 +288,12 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 		}
 	}
 
+	/*
+	The entityManagerFactory in this method has been changed from original. It is now STATIC
+	because the teardown method annotated @AfterClass is now run just once and AfterClass
+	methods must be static. The entityManagerFactory is the only dependency of that method and it
+	needed to become a static single reference as a result.
+	 */
 	@Before
 	@SuppressWarnings({"UnusedDeclaration"})
 	public void buildEntityManagerFactory() {
