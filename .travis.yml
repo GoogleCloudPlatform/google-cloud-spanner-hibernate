@@ -22,7 +22,7 @@ before_install:
     tar -xzf travis.tar.gz;
     export GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json;
     export GOOGLE_CLOUD_PROJECT=cloud-spanner-hibernate-ci;
-    export INTEGRATION_TEST_FLAGS="-Dit.hibernate=true"
+    export INTEGRATION_TEST_FLAGS="-Dit.hibernate=true";
 
 script:
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
