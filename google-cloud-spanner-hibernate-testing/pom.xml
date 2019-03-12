@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>integration-testing</artifactId>
+	<artifactId>google-cloud-spanner-hibernate-testing</artifactId>
 	<name>Google Cloud Spanner Hibernate Integration Testing</name>
 
 	<dependencies>
