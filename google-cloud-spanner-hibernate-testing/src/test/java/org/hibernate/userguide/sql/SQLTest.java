@@ -13,7 +13,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -73,85 +72,93 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
 
 	@Before
 	public void init() {
-		doInJPA( this::entityManagerFactory, entityManager -> {
-			Person person1 = new Person("John Doe" );
-			person1.setNickName( "JD" );
-			person1.setAddress( "Earth" );
-			person1.setCreatedOn( Timestamp.from( LocalDateTime.of( 2000, 1, 1, 0, 0, 0 ).toInstant( ZoneOffset.UTC ) )) ;
-			person1.getAddresses().put( AddressType.HOME, "Home address" );
-			person1.getAddresses().put( AddressType.OFFICE, "Office address" );
-			entityManager.persist(person1);
+    doIfNotInitialized(() -> {
+      doInJPA(this::entityManagerFactory, entityManager -> {
+        Person person1 = new Person("John Doe");
+        person1.setNickName("JD");
+        person1.setAddress("Earth");
+        person1.setCreatedOn(
+            Timestamp.from(LocalDateTime.of(2000, 1, 1, 0, 0, 0).toInstant(ZoneOffset.UTC)));
+        person1.getAddresses().put(AddressType.HOME, "Home address");
+        person1.getAddresses().put(AddressType.OFFICE, "Office address");
+        entityManager.persist(person1);
 
-			Person person2 = new Person("Mrs. John Doe" );
-			person2.setAddress( "Earth" );
-			person2.setCreatedOn( Timestamp.from( LocalDateTime.of( 2000, 1, 2, 12, 0, 0 ).toInstant( ZoneOffset.UTC ) )) ;
-			entityManager.persist(person2);
+        Person person2 = new Person("Mrs. John Doe");
+        person2.setAddress("Earth");
+        person2.setCreatedOn(
+            Timestamp.from(LocalDateTime.of(2000, 1, 2, 12, 0, 0).toInstant(ZoneOffset.UTC)));
+        entityManager.persist(person2);
 
-			Person person3 = new Person("Dr_ John Doe" );
-			entityManager.persist(person3);
+        Person person3 = new Person("Dr_ John Doe");
+        entityManager.persist(person3);
 
-			Phone phone1 = new Phone( "123-456-7890" );
-			phone1.setId( 1L );
-			phone1.setType( PhoneType.MOBILE );
-			person1.addPhone( phone1 );
-			phone1.getRepairTimestamps().add( Timestamp.from( LocalDateTime.of( 2005, 1, 1, 12, 0, 0 ).toInstant( ZoneOffset.UTC ) ) );
-			phone1.getRepairTimestamps().add( Timestamp.from( LocalDateTime.of( 2006, 1, 1, 12, 0, 0 ).toInstant( ZoneOffset.UTC ) ) );
+        Phone phone1 = new Phone("123-456-7890");
+        phone1.setId(1L);
+        phone1.setType(PhoneType.MOBILE);
+        person1.addPhone(phone1);
+        phone1.getRepairTimestamps()
+            .add(Timestamp.from(LocalDateTime.of(2005, 1, 1, 12, 0, 0).toInstant(ZoneOffset.UTC)));
+        phone1.getRepairTimestamps()
+            .add(Timestamp.from(LocalDateTime.of(2006, 1, 1, 12, 0, 0).toInstant(ZoneOffset.UTC)));
 
-			Call call11 = new Call();
-			call11.setDuration( 12 );
-			call11.setTimestamp( Timestamp.from( LocalDateTime.of( 2000, 1, 1, 0, 0, 0 ).toInstant( ZoneOffset.UTC ) ) );
+        Call call11 = new Call();
+        call11.setDuration(12);
+        call11.setTimestamp(
+            Timestamp.from(LocalDateTime.of(2000, 1, 1, 0, 0, 0).toInstant(ZoneOffset.UTC)));
 
-			Call call12 = new Call();
-			call12.setDuration( 33 );
-			call12.setTimestamp( Timestamp.from( LocalDateTime.of( 2000, 1, 1, 1, 0, 0 ).toInstant( ZoneOffset.UTC ) ) );
+        Call call12 = new Call();
+        call12.setDuration(33);
+        call12.setTimestamp(
+            Timestamp.from(LocalDateTime.of(2000, 1, 1, 1, 0, 0).toInstant(ZoneOffset.UTC)));
 
-			phone1.addCall(call11);
-			phone1.addCall(call12);
+        phone1.addCall(call11);
+        phone1.addCall(call12);
 
-			Phone phone2 = new Phone( "098_765-4321" );
-			phone2.setId( 2L );
-			phone2.setType( PhoneType.LAND_LINE );
+        Phone phone2 = new Phone("098_765-4321");
+        phone2.setId(2L);
+        phone2.setType(PhoneType.LAND_LINE);
 
-			Phone phone3 = new Phone( "098-765-4320" );
-			phone3.setId( 3L );
-			phone3.setType( PhoneType.LAND_LINE );
+        Phone phone3 = new Phone("098-765-4320");
+        phone3.setId(3L);
+        phone3.setType(PhoneType.LAND_LINE);
 
-			person2.addPhone( phone2 );
-			person2.addPhone( phone3 );
+        person2.addPhone(phone2);
+        person2.addPhone(phone3);
 
-			CreditCardPayment creditCardPayment = new CreditCardPayment();
-			creditCardPayment.setCompleted( true );
-			creditCardPayment.setAmount( BigDecimal.ZERO );
-			creditCardPayment.setPerson( person1 );
+        CreditCardPayment creditCardPayment = new CreditCardPayment();
+        creditCardPayment.setCompleted(true);
+        creditCardPayment.setAmount(0L);
+        creditCardPayment.setPerson(person1);
 
-			WireTransferPayment wireTransferPayment = new WireTransferPayment();
-			wireTransferPayment.setCompleted( true );
-			wireTransferPayment.setAmount( BigDecimal.valueOf( 100 ) );
-			wireTransferPayment.setPerson( person2 );
+        WireTransferPayment wireTransferPayment = new WireTransferPayment();
+        wireTransferPayment.setCompleted(true);
+        wireTransferPayment.setAmount(100L);
+        wireTransferPayment.setPerson(person2);
 
-			entityManager.persist( creditCardPayment );
-			entityManager.persist( wireTransferPayment );
+        entityManager.persist(creditCardPayment);
+        entityManager.persist(wireTransferPayment);
 
-			Partner partner = new Partner( "John Doe" );
-			entityManager.persist( partner );
+        Partner partner = new Partner("John Doe");
+        entityManager.persist(partner);
 
-			Captain captain = new Captain();
-			captain.setId( new Identity() );
-			captain.getId().setFirstname( "Jean-Luc" );
-			captain.getId().setLastname( "Picard" );
+        Captain captain = new Captain();
+        captain.setId(new Identity());
+        captain.getId().setFirstname("Jean-Luc");
+        captain.getId().setLastname("Picard");
 
-			entityManager.persist( captain );
+        entityManager.persist(captain);
 
-			SpaceShip spaceShip = new SpaceShip();
-			spaceShip.setName( "Enterprise" );
-			spaceShip.setDimensions( new Dimensions() );
-			spaceShip.getDimensions().setLength( 100 );
-			spaceShip.getDimensions().setWidth( 20 );
-			spaceShip.setModel( "E-1" );
-			spaceShip.setSpeed( 150 );
-			spaceShip.setCaptain( captain );
-			entityManager.persist( spaceShip );
-		});
+        SpaceShip spaceShip = new SpaceShip();
+        spaceShip.setName("Enterprise");
+        spaceShip.setDimensions(new Dimensions());
+        spaceShip.getDimensions().setLength(100);
+        spaceShip.getDimensions().setWidth(20);
+        spaceShip.setModel("E-1");
+        spaceShip.setSpeed(150);
+        spaceShip.setCaptain(captain);
+        entityManager.persist(spaceShip);
+      });
+    });
 	}
 
 	@Test
@@ -403,27 +410,6 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Test
-	@RequiresDialect(H2Dialect.class)
-	@RequiresDialect(Oracle8iDialect.class)
-	@RequiresDialect(PostgreSQL82Dialect.class)
-	public void test_sql_jpa_entity_associations_query_one_to_many_join_example() {
-		doInJPA( this::entityManagerFactory, entityManager -> {
-			//tag::sql-jpa-entity-associations-query-one-to-many-join-example[]
-			List<Phone> phones = entityManager.createNativeQuery(
-				"SELECT * " +
-				"FROM Phone ph " +
-				"JOIN phone_call c ON c.phone_id = ph.id", Phone.class )
-			.getResultList();
-
-			for(Phone phone : phones) {
-				List<Call> calls = phone.getCalls();
-			}
-			//end::sql-jpa-entity-associations-query-one-to-many-join-example[]
-			assertEquals(2, phones.size());
-		});
-	}
-
-	@Test
 	public void test_sql_hibernate_entity_associations_query_one_to_many_join_example_1() {
 		try {
 			doInJPA( this::entityManagerFactory, entityManager -> {
@@ -447,31 +433,6 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
 			log.error( "HHH-10504", e );
 			//See issue https://hibernate.atlassian.net/browse/HHH-10504
 		}
-	}
-
-	@Test
-	@RequiresDialect(H2Dialect.class)
-	@RequiresDialect(Oracle8iDialect.class)
-	@RequiresDialect(PostgreSQL82Dialect.class)
-	public void test_sql_hibernate_entity_associations_query_one_to_many_join_example_2() {
-		doInJPA( this::entityManagerFactory, entityManager -> {
-			Session session = entityManager.unwrap( Session.class );
-			//tag::sql-hibernate-entity-associations-query-one-to-many-join-example[]
-			List<Object[]> tuples = session.createNativeQuery(
-				"SELECT * " +
-				"FROM Phone ph " +
-				"JOIN phone_call c ON c.phone_id = ph.id" )
-			.addEntity("phone", Phone.class )
-			.addJoin( "c", "phone.calls")
-			.list();
-
-			for(Object[] tuple : tuples) {
-				Phone phone = (Phone) tuple[0];
-				Call call = (Call) tuple[1];
-			}
-			//end::sql-hibernate-entity-associations-query-one-to-many-join-example[]
-			assertEquals(2, tuples.size());
-		});
 	}
 
 	@Test
@@ -541,7 +502,7 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
 			Session session = entityManager.unwrap( Session.class );
 			//tag::sql-hibernate-dto-query-example[]
 			List<PersonSummaryDTO> dtos = session.createNativeQuery(
-				"SELECT p.id as \"id\", p.name as \"name\" " +
+				"SELECT p.id as id, p.name as name " +
 				"FROM Person p")
 			.setResultTransformer( Transformers.aliasToBean( PersonSummaryDTO.class ) )
 			.list();
@@ -722,49 +683,6 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
 			.list();
 			//end::sql-hibernate-entity-named-query-example[]
 			assertEquals(1, persons.size());
-		});
-	}
-
-	@Test
-	@RequiresDialect(H2Dialect.class)
-	@RequiresDialect(Oracle8iDialect.class)
-	@RequiresDialect(PostgreSQL82Dialect.class)
-	public void test_sql_jpa_entity_associations_named_query_example() {
-		doInJPA( this::entityManagerFactory, entityManager -> {
-			//tag::sql-jpa-entity-associations_named-query-example[]
-			List<Object[]> tuples = entityManager.createNamedQuery(
-				"find_person_with_phones_by_name" )
-			.setParameter("name", "J%")
-			.getResultList();
-
-			for(Object[] tuple : tuples) {
-				Person person = (Person) tuple[0];
-				Phone phone = (Phone) tuple[1];
-			}
-			//end::sql-jpa-entity-associations_named-query-example[]
-			assertEquals(1, tuples.size());
-		});
-	}
-
-	@Test
-	@RequiresDialect(H2Dialect.class)
-	@RequiresDialect(Oracle8iDialect.class)
-	@RequiresDialect(PostgreSQL82Dialect.class)
-	public void test_sql_hibernate_entity_associations_named_query_example() {
-		doInJPA( this::entityManagerFactory, entityManager -> {
-			Session session = entityManager.unwrap( Session.class );
-			//tag::sql-hibernate-entity-associations_named-query-example[]
-			List<Object[]> tuples = session.getNamedQuery(
-				"find_person_with_phones_by_name" )
-			.setParameter("name", "J%")
-			.list();
-
-			for(Object[] tuple : tuples) {
-				Person person = (Person) tuple[0];
-				Phone phone = (Phone) tuple[1];
-			}
-			//end::sql-hibernate-entity-associations_named-query-example[]
-			assertEquals(1, tuples.size());
 		});
 	}
 
