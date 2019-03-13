@@ -77,12 +77,12 @@ import javax.persistence.Version;
         name = "find_person_by_name",
         query =
             "SELECT " +
-            "   p.id AS \"id\", " +
-            "   p.name AS \"name\", " +
-            "   p.nickName AS \"nickName\", " +
-            "   p.address AS \"address\", " +
-            "   p.createdOn AS \"createdOn\", " +
-            "   p.version AS \"version\" " +
+            "   p.id , " +
+            "   p.name , " +
+            "   p.nickName , " +
+            "   p.address , " +
+            "   p.createdOn , " +
+            "   p.version " +
             "FROM Person p " +
             "WHERE p.name LIKE :name",
         resultClass = Person.class
