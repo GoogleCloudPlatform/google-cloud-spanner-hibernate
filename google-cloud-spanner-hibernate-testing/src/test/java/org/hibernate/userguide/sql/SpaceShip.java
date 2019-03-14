@@ -31,7 +31,7 @@ import javax.persistence.SqlResultSetMapping;
     @NamedNativeQuery(name = "find_all_spaceships",
         query =
             "SELECT " +
-            "   name as \"name\", " +
+            "   name," +
             "   model, " +
             "   speed, " +
             "   lname as lastn, " +
