@@ -81,11 +81,12 @@ public class GeneratedSelectStatementsTests {
   public void selectLockAcquisitionTest() {
     // the translated statement must NOT show locking statements.
     testStatementTranslation(x -> {
-      Query q = x.createQuery("select s from SubTestEntity s");
+      Query q = x.createQuery("select s from SubTestEntity s")
+          .setFirstResult(8).setMaxResults(15);
       q.setLockMode(LockModeType.PESSIMISTIC_READ);
       q.list();
     }, "select subtestent0_.id as id1_1_, subtestent0_.id1 as id2_1_, "
-        + "subtestent0_.id2 as id3_1_ from SubTestEntity subtestent0_");
+        + "subtestent0_.id2 as id3_1_ from SubTestEntity subtestent0_ limit ? offset ?");
   }
 
   @Test

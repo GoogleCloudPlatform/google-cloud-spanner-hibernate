@@ -530,6 +530,28 @@ public class SpannerDialect extends Dialect {
     return '`';
   }
 
+  /* Limits and offsets */
+
+  @Override
+  public boolean supportsLimit() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsLimitOffset() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsVariableLimit() {
+    return true;
+  }
+
+  @Override
+  public String getLimitString(String sql, boolean hasOffset) {
+    return sql + (hasOffset ? " limit ? offset ?" : " limit ?");
+  }
+
   /**
    * A locking strategy for the Cloud Spanner dialect that does nothing. Cloud Spanner does not
    * support locking.
