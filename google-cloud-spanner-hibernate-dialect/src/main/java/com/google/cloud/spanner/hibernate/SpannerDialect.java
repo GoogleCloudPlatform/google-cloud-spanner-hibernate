@@ -161,7 +161,7 @@ public class SpannerDialect extends Dialect {
 
     registerFunction("CURRENT_DATE",
         new StandardSQLFunction("CURRENT_DATE", StandardBasicTypes.DATE));
-    registerFunction( "EXTRACT", new SQLFunctionTemplate(StandardBasicTypes.LONG, "extract(?1 ?2 ?3)"));
+    registerFunction("EXTRACT", new SQLFunctionTemplate(StandardBasicTypes.LONG, "extract(?1 ?2 ?3)"));
     registerFunction("DATE", new StandardSQLFunction("DATE", StandardBasicTypes.DATE));
     registerFunction("DATE_ADD", new StandardSQLFunction("DATE_ADD", StandardBasicTypes.DATE));
     registerFunction("DATE_SUB", new StandardSQLFunction("DATE_SUB", StandardBasicTypes.DATE));
@@ -533,6 +533,30 @@ public class SpannerDialect extends Dialect {
   public char closeQuote() {
     return '`';
   }
+
+  /* Limits and offsets */
+
+  @Override
+  public boolean supportsLimit() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsLimitOffset() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsVariableLimit() {
+    return true;
+  }
+
+  @Override
+  public String getLimitString(String sql, boolean hasOffset) {
+    return sql + (hasOffset ? " limit ? offset ?" : " limit ?");
+  }
+
+  /* Type conversion and casting */
 
   @Override
   public String getCastTypeName(int code) {

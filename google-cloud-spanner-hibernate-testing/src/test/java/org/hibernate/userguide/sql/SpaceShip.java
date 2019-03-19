@@ -50,7 +50,7 @@ import javax.persistence.SqlResultSetMapping;
         entityClass = SpaceShip.class,
         fields = {
             @FieldResult(name = "name", column = "name"),
-            @FieldResult(name = "org/hibernate/userguide/model", column = "org/hibernate/userguide/model"),
+            @FieldResult(name = "model", column = "model"),
             @FieldResult(name = "speed", column = "speed"),
             @FieldResult(name = "captain.lastname", column = "lastn"),
             @FieldResult(name = "captain.firstname", column = "firstn"),
