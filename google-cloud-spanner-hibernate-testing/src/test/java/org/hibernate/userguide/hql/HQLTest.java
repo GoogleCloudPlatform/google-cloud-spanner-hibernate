@@ -128,8 +128,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 
 	@Test
 	public void test_hql_select_simplest_example() {
-
-				doInJPA( this::entityManagerFactory, entityManager -> {
+		doInJPA( this::entityManagerFactory, entityManager -> {
 						Session session = entityManager.unwrap( Session.class );
 			List<Object> objects = session.createQuery(
 				"from java.lang.Object" )
