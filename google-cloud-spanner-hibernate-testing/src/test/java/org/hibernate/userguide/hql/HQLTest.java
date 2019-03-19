@@ -1314,7 +1314,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Test
-  @Ignore
+	@Ignore
 	// Uses bit_length function
 	public void test_hql_bit_length_function_example() {
 		doInJPA( this::entityManagerFactory, entityManager -> {
@@ -2037,7 +2037,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Test
-  @Ignore
+	@Ignore
 	// Uses LIKE + ESCAPE; Spanner does not support specifying custom escape character.
 	public void test_hql_like_predicate_escape_example() {
 		doInJPA( this::entityManagerFactory, entityManager -> {
@@ -2323,7 +2323,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Test
-  @Ignore
+	@Ignore
 	// Failed to group by entity
 	public void test_hql_group_by_example_3() {
 
@@ -2345,7 +2345,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 
 	@Test
 	@Ignore
-  // Failed to group by entity
+	// Failed to group by entity
 	public void test_hql_group_by_example_4() {
 
 		doInJPA( this::entityManagerFactory, entityManager -> {
