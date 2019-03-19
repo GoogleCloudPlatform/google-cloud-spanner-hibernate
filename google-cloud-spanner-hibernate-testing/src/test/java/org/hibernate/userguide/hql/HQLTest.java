@@ -11,6 +11,7 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.dialect.*;
 import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
+import org.hibernate.testing.RequiresDialect;
 import org.hibernate.testing.SkipForDialect;
 import org.hibernate.type.StringType;
 import org.hibernate.userguide.model.*;
@@ -1286,6 +1287,32 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Test
+	public void test_hql_current_date_function_example_sql_server() {
+		doInJPA( this::entityManagerFactory, entityManager -> {
+			List<Call> calls = entityManager.createQuery(
+					"select c " +
+							"from Call c " +
+							"where c.timestamp = current_date()", Call.class )
+					.getResultList();
+			assertEquals(0, calls.size());
+		});
+	}
+
+	@Test
+	public void test_hql_current_time_function_example() {
+		doInJPA( this::entityManagerFactory, entityManager -> {
+			//tag::hql-current-time-function-example[]
+			List<Call> calls = entityManager.createQuery(
+					"select c " +
+							"from Call c " +
+							"where c.timestamp = current_time", Call.class )
+					.getResultList();
+			//end::hql-current-time-function-example[]
+			assertEquals(0, calls.size());
+		});
+	}
+
+	@Test
 	public void test_hql_current_timestamp_function_example() {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 			//tag::hql-current-timestamp-function-example[]
@@ -1296,6 +1323,22 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 			.getResultList();
 			//end::hql-current-timestamp-function-example[]
 			assertEquals(0, calls.size());
+		});
+	}
+
+	@Test
+	@RequiresDialect(H2Dialect.class)
+	@RequiresDialect(Oracle8iDialect.class)
+	@RequiresDialect(MySQL5Dialect.class)
+	public void test_hql_bit_length_function_example() {
+		doInJPA( this::entityManagerFactory, entityManager -> {
+			//tag::hql-bit-length-function-example[]
+			List<Number> bits = entityManager.createQuery(
+					"select bit_length( c.duration ) " +
+							"from Call c ", Number.class )
+					.getResultList();
+			//end::hql-bit-length-function-example[]
+			assertEquals(2, bits.size());
 		});
 	}
 
@@ -1427,6 +1470,24 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 				"where :phone member of p.phones", Person.class )
 			.setParameter( "phone", phone )
 			.getResultList();
+			//end::hql-collection-expressions-example[]
+			assertEquals(1, persons.size());
+		});
+	}
+
+	@Test
+	public void test_hql_collection_expressions_example_5() {
+		doInJPA( this::entityManagerFactory, entityManager -> {
+			Call call = entityManager.createQuery( "select c from Call c", Call.class).getResultList().get( 0 );
+			Phone phone = call.getPhone();
+			//tag::hql-collection-expressions-example[]
+
+			List<Person> persons = entityManager.createQuery(
+					"select p " +
+							"from Person p " +
+							"where :phone = some elements ( p.phones )", Person.class )
+					.setParameter( "phone", phone )
+					.getResultList();
 			//end::hql-collection-expressions-example[]
 			assertEquals(1, persons.size());
 		});
@@ -1884,6 +1945,27 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Test
+	public void test_hql_all_subquery_comparison_qualifier_example() {
+
+		doInJPA( this::entityManagerFactory, entityManager -> {
+			//tag::hql-all-subquery-comparison-qualifier-example[]
+			// select all persons with all calls shorter than 50 seconds
+			List<Person> persons = entityManager.createQuery(
+					"select distinct p.person " +
+							"from Phone p " +
+							"join p.calls c " +
+							"where 50 > all ( " +
+							"	select duration" +
+							"	from Call" +
+							"	where phone = p " +
+							") ", Person.class )
+					.getResultList();
+			//end::hql-all-subquery-comparison-qualifier-example[]
+			assertEquals(1, persons.size());
+		});
+	}
+
+	@Test
 	public void test_hql_null_predicate_example_1() {
 
 		doInJPA( this::entityManagerFactory, entityManager -> {
@@ -1948,6 +2030,21 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Test
+	public void test_hql_like_predicate_escape_example() {
+		doInJPA( this::entityManagerFactory, entityManager -> {
+			//tag::hql-like-predicate-escape-example[]
+			// find any person with a name starting with "Dr_"
+			List<Person> persons = entityManager.createQuery(
+					"select p " +
+							"from Person p " +
+							"where p.name like 'Dr|_%' escape '|'", Person.class )
+					.getResultList();
+			//end::hql-like-predicate-escape-example[]
+			assertEquals(1, persons.size());
+		});
+	}
+
+	@Test
 	public void test_hql_between_predicate_example_1() {
 
 		doInJPA( this::entityManagerFactory, entityManager -> {
@@ -1960,6 +2057,25 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 			.getResultList();
 			//end::hql-between-predicate-example[]
 			assertEquals(1, persons.size());
+		});
+	}
+
+	@Test
+	@RequiresDialect(H2Dialect.class)
+	@RequiresDialect(PostgreSQL81Dialect.class)
+	@RequiresDialect(MySQL5Dialect.class)
+	public void test_hql_between_predicate_example_2() {
+
+		doInJPA( this::entityManagerFactory, entityManager -> {
+			//tag::hql-between-predicate-example[]
+
+			List<Person> persons = entityManager.createQuery(
+					"select p " +
+							"from Person p " +
+							"where p.createdOn between '1999-01-01' and '2001-01-02'", Person.class )
+					.getResultList();
+			//end::hql-between-predicate-example[]
+			assertEquals(2, persons.size());
 		});
 	}
 
@@ -2197,6 +2313,56 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 			.getResultList();
 			//end::hql-group-by-example[]
 			assertEquals(1, personTotalCallDurations.size());
+		});
+	}
+
+	@Test
+	@RequiresDialect(H2Dialect.class)
+	@RequiresDialect(PostgreSQL81Dialect.class)
+	@RequiresDialect(MySQL5Dialect.class)
+	public void test_hql_group_by_example_3() {
+
+		doInJPA( this::entityManagerFactory, entityManager -> {
+			//tag::hql-group-by-example[]
+
+			//It's even possible to group by entities!
+			List<Object[]> personTotalCallDurations = entityManager.createQuery(
+					"select p, sum( c.duration ) " +
+							"from Call c " +
+							"join c.phone ph " +
+							"join ph.person p " +
+							"group by p", Object[].class )
+					.getResultList();
+			//end::hql-group-by-example[]
+			assertEquals(1, personTotalCallDurations.size());
+		});
+	}
+
+	@Test
+	@RequiresDialect(H2Dialect.class)
+	@RequiresDialect(PostgreSQL81Dialect.class)
+	@RequiresDialect(MySQL5Dialect.class)
+	public void test_hql_group_by_example_4() {
+
+		doInJPA( this::entityManagerFactory, entityManager -> {
+
+			Call call11 = new Call();
+			call11.setDuration( 10 );
+			call11.setTimestamp( Timestamp.from( LocalDateTime.of( 2000, 1, 1, 0, 0, 0 ).toInstant( ZoneOffset.UTC ) ) );
+
+			Phone phone = entityManager.createQuery( "select p from Phone p where p.calls is empty ", Phone.class).getResultList().get( 0 );
+
+			phone.addCall(call11);
+			entityManager.flush();
+			entityManager.clear();
+
+			List<Object[]> personTotalCallDurations = entityManager.createQuery(
+					"select p, sum( c.duration ) " +
+							"from Call c " +
+							"join c.phone p " +
+							"group by p", Object[].class )
+					.getResultList();
+			assertEquals(2, personTotalCallDurations.size());
 		});
 	}
 
