@@ -177,6 +177,8 @@ public class SpannerDialect extends Dialect {
     registerFunction("PARSE_DATE", new StandardSQLFunction("PARSE_DATE", StandardBasicTypes.DATE));
     registerFunction("UNIX_DATE", new StandardSQLFunction("UNIX_DATE", StandardBasicTypes.LONG));
 
+    registerFunction("CURRENT_TIME",
+        new StandardSQLFunction("CURRENT_TIMESTAMP", StandardBasicTypes.TIMESTAMP));
     registerFunction("CURRENT_TIMESTAMP",
         new StandardSQLFunction("CURRENT_TIMESTAMP", StandardBasicTypes.TIMESTAMP));
     registerFunction("STRING", new StandardSQLFunction("STRING", StandardBasicTypes.STRING));
