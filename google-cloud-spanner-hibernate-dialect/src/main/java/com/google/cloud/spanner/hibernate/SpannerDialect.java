@@ -21,6 +21,7 @@ package com.google.cloud.spanner.hibernate;
 import java.io.Serializable;
 import java.sql.Types;
 import java.util.Map;
+
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.StaleObjectStateException;
@@ -138,7 +139,8 @@ public class SpannerDialect extends Dialect {
         new StandardSQLFunction("SAFE_CONVERT_BYTES_TO_STRING", StandardBasicTypes.STRING));
     registerFunction("STARTS_WITH",
         new StandardSQLFunction("STARTS_WITH", StandardBasicTypes.BOOLEAN));
-    registerFunction( "STR", new SQLFunctionTemplate(StandardBasicTypes.STRING, "cast(?1 as string)"));
+    registerFunction("STR",
+        new SQLFunctionTemplate(StandardBasicTypes.STRING, "cast(?1 as string)"));
     registerFunction("STRPOS", new StandardSQLFunction("STRPOS", StandardBasicTypes.LONG));
     registerFunction("SUBSTR", new StandardSQLFunction("SUBSTR", StandardBasicTypes.STRING));
     registerFunction("SUBSTRING", new StandardSQLFunction("SUBSTR", StandardBasicTypes.STRING));
@@ -161,7 +163,8 @@ public class SpannerDialect extends Dialect {
 
     registerFunction("CURRENT_DATE",
         new StandardSQLFunction("CURRENT_DATE", StandardBasicTypes.DATE));
-    registerFunction("EXTRACT", new SQLFunctionTemplate(StandardBasicTypes.LONG, "extract(?1 ?2 ?3)"));
+    registerFunction("EXTRACT",
+        new SQLFunctionTemplate(StandardBasicTypes.LONG, "extract(?1 ?2 ?3)"));
     registerFunction("DATE", new StandardSQLFunction("DATE", StandardBasicTypes.DATE));
     registerFunction("DATE_ADD", new StandardSQLFunction("DATE_ADD", StandardBasicTypes.DATE));
     registerFunction("DATE_SUB", new StandardSQLFunction("DATE_SUB", StandardBasicTypes.DATE));
