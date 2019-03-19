@@ -97,8 +97,18 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 			if (entityManagerFactory != null && entityManagerFactory.isOpen()) {
 				entityManagerFactory.close();
 			}
+
+			entityManagerFactory = null;
+			isInitialized = false;
 		}
 		// Note we don't destroy the service registry as we are not the ones creating it
+	}
+
+	protected void doIfNotInitialized(Runnable runnable) {
+		if (!isInitialized) {
+			runnable.run();
+			isInitialized = true;
+		}
 	}
 
 	private static void releaseUnclosedEntityManagers() {
@@ -302,13 +312,6 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 			// or, the person may have forgotten to close. So, do not raise a "fail", but log the fact.
 			em.close();
 			System.out.println("The EntityManager is not closed. Closing it.");
-		}
-	}
-
-	protected void doIfNotInitialized(Runnable runnable) {
-		if (!isInitialized) {
-			runnable.run();
-			isInitialized = true;
 		}
 	}
 
