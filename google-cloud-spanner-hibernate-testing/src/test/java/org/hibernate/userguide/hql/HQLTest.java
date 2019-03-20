@@ -921,6 +921,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 
 	@Test
 	@Ignore
+	// #55
 	// TODO: Test fails due to quote literals in string: 'Joe''s'; figure out if there
 	// is a way to enhance dialect to modify escaping.
 	public void test_hql_string_literals_example_2() {
@@ -1315,7 +1316,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 
 	@Test
 	@Ignore
-	// Uses bit_length function
+	// Uses bit_length function. #62
 	public void test_hql_bit_length_function_example() {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 			//tag::hql-bit-length-function-example[]
@@ -1463,7 +1464,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 
 	@Test
 	@Ignore
-	// Uses SOME keyword.
+	// Uses SOME keyword. #60
 	public void test_hql_collection_expressions_example_5() {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 			Call call = entityManager.createQuery( "select c from Call c", Call.class).getResultList().get( 0 );
@@ -1513,7 +1514,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 
 	@Test
 	@Ignore
-	// Uses ALL keyword
+	// Uses ALL keyword. #59
 	public void test_hql_collection_expressions_example_8() {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 			//tag::hql-collection-expressions-example[]
@@ -1951,7 +1952,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 
 	@Test
 	@Ignore
-	// Uses ALL keyword
+	// Uses ALL keyword. #59
 	public void test_hql_all_subquery_comparison_qualifier_example() {
 
 		doInJPA( this::entityManagerFactory, entityManager -> {
@@ -2038,6 +2039,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 
 	@Test
 	@Ignore
+	// #61
 	// Uses LIKE + ESCAPE; Spanner does not support specifying custom escape character.
 	public void test_hql_like_predicate_escape_example() {
 		doInJPA( this::entityManagerFactory, entityManager -> {
@@ -2324,7 +2326,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 
 	@Test
 	@Ignore
-	// Failed to group by entity
+	// Failed to group by entity. #56
 	public void test_hql_group_by_example_3() {
 
 		doInJPA( this::entityManagerFactory, entityManager -> {
@@ -2345,7 +2347,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 
 	@Test
 	@Ignore
-	// Failed to group by entity
+	// Failed to group by entity. #56
 	public void test_hql_group_by_example_4() {
 
 		doInJPA( this::entityManagerFactory, entityManager -> {
