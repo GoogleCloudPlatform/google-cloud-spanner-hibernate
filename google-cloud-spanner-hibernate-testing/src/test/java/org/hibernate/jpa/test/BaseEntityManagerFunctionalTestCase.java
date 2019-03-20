@@ -64,6 +64,30 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 
 	private static boolean isInitialized;
 
+	/**
+	 * The entityManagerFactory in this method has been changed from original. It is now STATIC
+	 * because the teardown method annotated @AfterClass is now run just once and AfterClass
+	 * methods must be static. The entityManagerFactory is the only dependency of that method and it
+	 * needed to become a static single reference as a result.
+	 */
+	@Before
+	@SuppressWarnings({"UnusedDeclaration"})
+	public void buildEntityManagerFactory() {
+		if (entityManagerFactory == null) {
+			log.trace("Building EntityManagerFactory");
+
+			entityManagerFactory = Bootstrap.getEntityManagerFactoryBuilder(
+					buildPersistenceUnitDescriptor(),
+					buildSettings()
+			).build().unwrap(SessionFactoryImplementor.class);
+
+			serviceRegistry = (StandardServiceRegistryImpl) entityManagerFactory.getServiceRegistry()
+					.getParentServiceRegistry();
+
+			afterEntityManagerFactoryBuilt();
+		}
+	}
+
 	@AfterClass
 	@SuppressWarnings( {"UnusedDeclaration"})
 	public static void releaseResources() {
@@ -73,8 +97,18 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 			if (entityManagerFactory != null && entityManagerFactory.isOpen()) {
 				entityManagerFactory.close();
 			}
+
+			entityManagerFactory = null;
+			isInitialized = false;
 		}
 		// Note we don't destroy the service registry as we are not the ones creating it
+	}
+
+	protected void doIfNotInitialized(Runnable runnable) {
+		if (!isInitialized) {
+			runnable.run();
+			isInitialized = true;
+		}
 	}
 
 	private static void releaseUnclosedEntityManagers() {
@@ -279,38 +313,6 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 			em.close();
 			System.out.println("The EntityManager is not closed. Closing it.");
 		}
-	}
-
-	protected void doIfNotInitialized(Runnable runnable) {
-		if (!isInitialized) {
-			runnable.run();
-			isInitialized = true;
-		}
-	}
-
-	/*
-	The entityManagerFactory in this method has been changed from original. It is now STATIC
-	because the teardown method annotated @AfterClass is now run just once and AfterClass
-	methods must be static. The entityManagerFactory is the only dependency of that method and it
-	needed to become a static single reference as a result.
-	 */
-	@Before
-	@SuppressWarnings({"UnusedDeclaration"})
-	public void buildEntityManagerFactory() {
-		if (entityManagerFactory == null) {
-			log.trace("Building EntityManagerFactory");
-
-			entityManagerFactory = Bootstrap.getEntityManagerFactoryBuilder(
-					buildPersistenceUnitDescriptor(),
-					buildSettings()
-			).build().unwrap(SessionFactoryImplementor.class);
-
-			serviceRegistry = (StandardServiceRegistryImpl) entityManagerFactory.getServiceRegistry()
-					.getParentServiceRegistry();
-
-			afterEntityManagerFactoryBuilt();
-		}
-
 	}
 
 	protected EntityManager getOrCreateEntityManager() {

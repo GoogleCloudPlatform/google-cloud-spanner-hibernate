@@ -21,6 +21,7 @@ package com.google.cloud.spanner.hibernate;
 import java.io.Serializable;
 import java.sql.Types;
 import java.util.Map;
+
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.StaleObjectStateException;
@@ -28,6 +29,7 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.relational.Exportable;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.function.SQLFunctionTemplate;
 import org.hibernate.dialect.function.StandardSQLFunction;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.LockingStrategyException;
@@ -121,6 +123,7 @@ public class SpannerDialect extends Dialect {
     registerFunction("FROM_HEX", new StandardSQLFunction("FROM_HEX", StandardBasicTypes.BINARY));
     registerFunction("LENGTH", new StandardSQLFunction("LENGTH", StandardBasicTypes.LONG));
     registerFunction("LPAD", new StandardSQLFunction("LPAD"));
+    registerFunction("LOCATE", new StandardSQLFunction("STRPOS", StandardBasicTypes.LONG));
     registerFunction("LOWER", new StandardSQLFunction("LOWER"));
     registerFunction("LTRIM", new StandardSQLFunction("LTRIM"));
     registerFunction("REGEXP_CONTAINS",
@@ -136,8 +139,11 @@ public class SpannerDialect extends Dialect {
         new StandardSQLFunction("SAFE_CONVERT_BYTES_TO_STRING", StandardBasicTypes.STRING));
     registerFunction("STARTS_WITH",
         new StandardSQLFunction("STARTS_WITH", StandardBasicTypes.BOOLEAN));
+    registerFunction("STR",
+        new SQLFunctionTemplate(StandardBasicTypes.STRING, "cast(?1 as string)"));
     registerFunction("STRPOS", new StandardSQLFunction("STRPOS", StandardBasicTypes.LONG));
-    registerFunction("SUBSTR", new StandardSQLFunction("SUBSTR"));
+    registerFunction("SUBSTR", new StandardSQLFunction("SUBSTR", StandardBasicTypes.STRING));
+    registerFunction("SUBSTRING", new StandardSQLFunction("SUBSTR", StandardBasicTypes.STRING));
     registerFunction("TO_BASE64", new StandardSQLFunction("TO_BASE64", StandardBasicTypes.STRING));
 
     registerFunction("TO_HEX", new StandardSQLFunction("TO_HEX", StandardBasicTypes.STRING));
@@ -157,7 +163,8 @@ public class SpannerDialect extends Dialect {
 
     registerFunction("CURRENT_DATE",
         new StandardSQLFunction("CURRENT_DATE", StandardBasicTypes.DATE));
-    registerFunction("EXTRACT", new StandardSQLFunction("EXTRACT", StandardBasicTypes.LONG));
+    registerFunction("EXTRACT",
+        new SQLFunctionTemplate(StandardBasicTypes.LONG, "extract(?1 ?2 ?3)"));
     registerFunction("DATE", new StandardSQLFunction("DATE", StandardBasicTypes.DATE));
     registerFunction("DATE_ADD", new StandardSQLFunction("DATE_ADD", StandardBasicTypes.DATE));
     registerFunction("DATE_SUB", new StandardSQLFunction("DATE_SUB", StandardBasicTypes.DATE));
@@ -170,6 +177,8 @@ public class SpannerDialect extends Dialect {
     registerFunction("PARSE_DATE", new StandardSQLFunction("PARSE_DATE", StandardBasicTypes.DATE));
     registerFunction("UNIX_DATE", new StandardSQLFunction("UNIX_DATE", StandardBasicTypes.LONG));
 
+    registerFunction("CURRENT_TIME",
+        new StandardSQLFunction("CURRENT_TIMESTAMP", StandardBasicTypes.TIMESTAMP));
     registerFunction("CURRENT_TIMESTAMP",
         new StandardSQLFunction("CURRENT_TIMESTAMP", StandardBasicTypes.TIMESTAMP));
     registerFunction("STRING", new StandardSQLFunction("STRING", StandardBasicTypes.STRING));
@@ -550,6 +559,18 @@ public class SpannerDialect extends Dialect {
   @Override
   public String getLimitString(String sql, boolean hasOffset) {
     return sql + (hasOffset ? " limit ? offset ?" : " limit ?");
+  }
+
+  /* Type conversion and casting */
+
+  @Override
+  public String getCastTypeName(int code) {
+    switch (code) {
+      case Types.VARCHAR:
+        return "STRING";
+      default:
+        return super.getCastTypeName(code);
+    }
   }
 
   /**
