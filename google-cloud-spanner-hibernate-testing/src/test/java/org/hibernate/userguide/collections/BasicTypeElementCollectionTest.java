@@ -14,6 +14,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -74,6 +75,15 @@ public class BasicTypeElementCollectionTest extends BaseEntityManagerFunctionalT
 			person.getPhones().remove( 0 );
 			//end::collections-value-type-collection-remove-example[]
 		} );
+	}
+
+	/**
+	 * The tests in this class alter the state of the tables and require explicit cleanup after each
+	 * instead of just at the end of the class.
+	 */
+	@After
+	public void cleanTables() {
+		releaseResources();
 	}
 
 	//tag::collections-collection-proxy-entity-example[]
