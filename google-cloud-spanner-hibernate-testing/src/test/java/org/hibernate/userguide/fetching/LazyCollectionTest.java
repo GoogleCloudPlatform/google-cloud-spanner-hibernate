@@ -21,6 +21,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -68,7 +69,7 @@ public class LazyCollectionTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::fetching-LazyCollection-domain-model-example[]
-	@Entity(name = "Department")
+	@Entity(name = "Department_lazy_collection")
 	public static class Department {
 
 		@Id
@@ -106,7 +107,7 @@ public class LazyCollectionTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::fetching-LazyCollection-domain-model-example[]
 	}
 
-	@Entity(name = "Employee")
+	@Entity(name = "Employee_lazy_collection")
 	public static class Employee {
 
 		@Id

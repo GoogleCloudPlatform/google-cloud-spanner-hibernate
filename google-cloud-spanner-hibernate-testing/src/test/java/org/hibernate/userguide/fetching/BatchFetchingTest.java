@@ -17,6 +17,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -56,14 +57,14 @@ public class BatchFetchingTest extends BaseEntityManagerFunctionalTestCase {
 			//tag::fetching-batch-fetching-example[]
 			List<Department> departments = entityManager.createQuery(
 				"select d " +
-				"from Department d " +
+				"from Department_batch_fetching d " +
 				"inner join d.employees e " +
 				"where e.name like 'John%'", Department.class)
 			.getResultList();
 
 			for ( Department department : departments ) {
 				log.infof(
-					"Department %d has {} employees",
+					"Department_batch_fetching %d has {} employees",
 					department.getId(),
 					department.getEmployees().size()
 				);
@@ -73,7 +74,7 @@ public class BatchFetchingTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::fetching-batch-mapping-example[]
-	@Entity(name = "Department")
+	@Entity(name = "Department_batch_fetching")
 	public static class Department {
 
 		@Id
@@ -96,7 +97,7 @@ public class BatchFetchingTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::fetching-batch-mapping-example[]
 	}
 
-	@Entity(name = "Employee")
+	@Entity(name = "Employee_batch_fetching")
 	public static class Employee {
 
 		@Id

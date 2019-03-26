@@ -21,6 +21,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -64,7 +65,7 @@ public class FetchModeJoinTest extends BaseEntityManagerFunctionalTestCase {
 		} );
 	}
 
-	@Entity(name = "Department")
+	@Entity(name = "Department_fetch_mode_join")
 	public static class Department {
 
 		@Id
@@ -95,7 +96,7 @@ public class FetchModeJoinTest extends BaseEntityManagerFunctionalTestCase {
 		}
 	}
 
-	@Entity(name = "Employee")
+	@Entity(name = "Employee_fetch_mode_join")
 	public static class Employee {
 
 		@Id
