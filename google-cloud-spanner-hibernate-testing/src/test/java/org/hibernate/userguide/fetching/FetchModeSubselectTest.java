@@ -21,6 +21,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -42,7 +43,7 @@ public class FetchModeSubselectTest extends BaseEntityManagerFunctionalTestCase 
 			for ( long i = 0; i < 2; i++ ) {
 				Department department = new Department();
 				department.id = i + 1;
-				department.name = String.format( "Department %d", department.id );
+				department.name = String.format( "Department_fetch_mode_subselect %d", department.id );
 				entityManager.persist( department );
 
 				for ( long j = 0; j < 3; j++ ) {
@@ -58,9 +59,9 @@ public class FetchModeSubselectTest extends BaseEntityManagerFunctionalTestCase 
 			//tag::fetching-strategies-fetch-mode-subselect-example[]
 			List<Department> departments = entityManager.createQuery(
 				"select d " +
-				"from Department d " +
+				"from Department_fetch_mode_subselect d " +
 				"where d.name like :token", Department.class )
-			.setParameter( "token", "Department%" )
+			.setParameter( "token", "Department_fetch_mode_subselect%" )
 			.getResultList();
 
 			log.infof( "Fetched %d Departments", departments.size());
@@ -72,7 +73,7 @@ public class FetchModeSubselectTest extends BaseEntityManagerFunctionalTestCase 
 		} );
 	}
 
-	@Entity(name = "Department")
+	@Entity(name = "Department_fetch_mode_subselect")
 	public static class Department {
 
 		@Id
@@ -113,7 +114,7 @@ public class FetchModeSubselectTest extends BaseEntityManagerFunctionalTestCase 
 		}
 	}
 
-	@Entity(name = "Employee")
+	@Entity(name = "Employee_fetch_mode_subselect")
 	public static class Employee {
 
 		@Id
