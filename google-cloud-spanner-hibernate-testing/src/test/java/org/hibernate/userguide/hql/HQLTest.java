@@ -63,7 +63,6 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 
 	@Before
 	public void init() {
-		doIfNotInitialized(() -> {
 			doInJPA(this::entityManagerFactory, entityManager -> {
 				Person person1 = new Person("John Doe");
 				person1.setNickName("JD");
@@ -123,7 +122,6 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 				entityManager.persist(creditCardPayment);
 				entityManager.persist(wireTransferPayment);
 			});
-		});
 	}
 
 	@Test

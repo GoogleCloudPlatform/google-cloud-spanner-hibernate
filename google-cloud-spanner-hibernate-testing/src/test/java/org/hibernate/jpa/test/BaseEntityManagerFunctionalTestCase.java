@@ -6,6 +6,8 @@
  */
 package org.hibernate.jpa.test;
 
+import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
@@ -27,7 +30,11 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.spi.Bootstrap;
 import org.hibernate.jpa.boot.spi.PersistenceUnitDescriptor;
+import org.hibernate.metamodel.internal.MetamodelImpl;
+import org.hibernate.persister.collection.AbstractCollectionPersister;
+import org.hibernate.persister.collection.BasicCollectionPersister;
 import org.hibernate.testing.junit4.BaseUnitTestCase;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 
@@ -62,9 +69,23 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 		return serviceRegistry;
 	}
 
-	private static boolean isInitialized;
+  public void cleanTables() {
+    doInJPA( this::entityManagerFactory, entityManager -> {
+      ((MetamodelImpl)entityManager.getMetamodel()).collectionPersisters().values().forEach(x->{
+         entityManager.createNativeQuery("DELETE FROM "+ ((AbstractCollectionPersister) x).getTableName()+ " where 1=1").executeUpdate();
+      });
 
-	/**
+
+      Arrays.stream(getAnnotatedClasses()).forEach(x->{
+        String name = x.getAnnotation(Entity.class).name();
+        if(name!= null && !name.isEmpty()){
+          entityManager.createQuery("DELETE FROM "+ name + " where 1=1").executeUpdate();
+        }
+      });
+    } );
+  }
+
+  /**
 	 * The entityManagerFactory in this method has been changed from original. It is now STATIC
 	 * because the teardown method annotated @AfterClass is now run just once and AfterClass
 	 * methods must be static. The entityManagerFactory is the only dependency of that method and it
@@ -86,6 +107,7 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 
 			afterEntityManagerFactoryBuilt();
 		}
+    cleanTables();
 	}
 
 	@AfterClass
@@ -99,16 +121,8 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 			}
 
 			entityManagerFactory = null;
-			isInitialized = false;
 		}
 		// Note we don't destroy the service registry as we are not the ones creating it
-	}
-
-	protected void doIfNotInitialized(Runnable runnable) {
-		if (!isInitialized) {
-			runnable.run();
-			isInitialized = true;
-		}
 	}
 
 	private static void releaseUnclosedEntityManagers() {
@@ -221,7 +235,7 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 		addMappings( settings );
 
 		if ( createSchema() ) {
-			settings.put( org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO, "create-drop" );
+			settings.put( org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO, "update" );
 		}
 		settings.put( org.hibernate.cfg.AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
 		settings.put( org.hibernate.cfg.AvailableSettings.DIALECT, getDialect().getClass().getName() );

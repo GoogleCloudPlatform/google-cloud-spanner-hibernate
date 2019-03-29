@@ -7,8 +7,10 @@
 package org.hibernate.userguide.collections;
 
 import static org.hibernate.testing.transaction.TransactionUtil.doInHibernate;
+import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -16,6 +18,8 @@ import org.hibernate.annotations.Type;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.testing.junit4.BaseCoreFunctionalTestCase;
 import org.hibernate.userguide.collections.type.CommaDelimitedStringsType;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -53,6 +57,13 @@ public class BasicTypeCollectionTest extends BaseCoreFunctionalTestCase {
 			typeContributions.contributeType( new CommaDelimitedStringsType() );
 		} );
 		return configuration;
+	}
+
+	@Before
+	public void cleanTables() {
+		doInHibernate( this::sessionFactory, entityManager -> {
+			Arrays.stream(getAnnotatedClasses()).forEach(x-> entityManager.createQuery("DELETE FROM "+ x.getAnnotation(Entity.class).name() + " where 1=1").executeUpdate());
+		} );
 	}
 
 	//tag::collections-comma-delimited-collection-example[]

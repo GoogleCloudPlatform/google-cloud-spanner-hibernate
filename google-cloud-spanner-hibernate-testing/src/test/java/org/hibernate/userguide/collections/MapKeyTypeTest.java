@@ -98,8 +98,8 @@ public class MapKeyTypeTest extends BaseEntityManagerFunctionalTestCase {
 		}
 	}
 
-	@Entity
-	@Table(name = "person_map_key_type")
+	@Entity(name = "person_map_key_type")
+	@Table
 	private static class PersonDummy {
 
 		@Id
@@ -107,7 +107,7 @@ public class MapKeyTypeTest extends BaseEntityManagerFunctionalTestCase {
 
 		@ElementCollection
 		@CollectionTable(
-			name = "call_register",
+				name = "call_register_map_key_test",
 			joinColumns = @JoinColumn(name = "person_id")
 		)
 		@MapKeyColumn( name = "call_timestamp_epoch" )
@@ -124,8 +124,8 @@ public class MapKeyTypeTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::collections-map-custom-key-type-mapping-example[]
-	@Entity
-	@Table(name = "person_map_key_type")
+	@Entity(name = "person_map_key_type")
+	@Table
 	public static class Person {
 
 		@Id
@@ -133,7 +133,7 @@ public class MapKeyTypeTest extends BaseEntityManagerFunctionalTestCase {
 
 		@ElementCollection
 		@CollectionTable(
-			name = "call_register",
+				name = "call_register_map_key_test",
 			joinColumns = @JoinColumn(name = "person_id")
 		)
 		@MapKeyType(

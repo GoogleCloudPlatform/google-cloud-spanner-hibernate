@@ -8,9 +8,12 @@ package org.hibernate.userguide.collections;
 
 import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
 
+import java.util.Arrays;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -41,6 +44,11 @@ public class ArrayTest extends BaseEntityManagerFunctionalTestCase {
 			phones[0] = "072-122-9876";
 			person.setPhones( phones );
 		} );
+	}
+
+	@Before
+	public void clean() {
+		cleanTables();
 	}
 
 	//tag::collections-array-binary-example[]

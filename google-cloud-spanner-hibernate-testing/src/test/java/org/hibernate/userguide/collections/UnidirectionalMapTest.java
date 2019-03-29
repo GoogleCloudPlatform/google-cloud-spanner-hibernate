@@ -57,7 +57,7 @@ public class UnidirectionalMapTest extends BaseEntityManagerFunctionalTestCase {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 			Person person = entityManager.find( Person.class, 1L );
 			Map<Date, Phone> phones = person.getPhoneRegister();
-			Assert.assertEquals( 5, phones.size() );
+			Assert.assertEquals( 2, phones.size() );
 		} );
 	}
 
@@ -75,7 +75,7 @@ public class UnidirectionalMapTest extends BaseEntityManagerFunctionalTestCase {
 
 		@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 		@JoinTable(
-			name = "phone_register",
+			name = "phone_register_unidirectional_map",
 			joinColumns = @JoinColumn(name = "phone_id"),
 			inverseJoinColumns = @JoinColumn(name = "person_id"))
 		@MapKey(name = "since")

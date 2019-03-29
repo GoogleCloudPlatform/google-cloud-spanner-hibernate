@@ -48,17 +48,10 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
     };
   }
 
-  @BeforeClass
-  public static void prepare() {
-    assumeThat(System.getProperty("it.hibernate"))
-        .as("Hibernate integration tests are disabled. "
-            + "Please use '-Dit.hibernate' to enable them.")
-        .isEqualTo("true");
-  }
-
   @Before
-  public void init() {
-    doIfNotInitialized(() -> {
+  @Override
+  public void buildEntityManagerFactory() {
+    super.buildEntityManagerFactory();
       doInJPA(this::entityManagerFactory, entityManager -> {
         Person person1 = new Person("John Doe");
         person1.setNickName("JD");
@@ -144,7 +137,6 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
         spaceShip.setCaptain(captain);
         entityManager.persist(spaceShip);
       });
-    });
   }
 
   @Test

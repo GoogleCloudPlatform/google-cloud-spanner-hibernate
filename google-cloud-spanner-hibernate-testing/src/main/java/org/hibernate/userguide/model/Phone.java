@@ -72,7 +72,7 @@ import org.hibernate.annotations.NamedQuery;
 )
 //end::sql-multiple-scalar-values-dto-NamedNativeQuery-hibernate-example[]
 //tag::hql-examples-domain-model-example[]
-@Entity
+@Entity (name = "Phone")
 public class Phone {
 
     @Id
