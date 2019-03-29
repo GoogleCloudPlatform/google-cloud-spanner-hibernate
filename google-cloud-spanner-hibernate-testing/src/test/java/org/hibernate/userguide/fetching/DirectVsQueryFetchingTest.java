@@ -67,7 +67,7 @@ public class DirectVsQueryFetchingTest extends BaseEntityManagerFunctionalTestCa
 
 	//tag::fetching-direct-vs-query-domain-model-example[]
 	@Entity(name = "Department")
-	public static class Department {
+	private static class Department {
 
 		@Id
 		private Long id;
@@ -76,7 +76,7 @@ public class DirectVsQueryFetchingTest extends BaseEntityManagerFunctionalTestCa
 	}
 
 	@Entity(name = "Employee")
-	public static class Employee {
+	private static class Employee {
 
 		@Id
 		private Long id;

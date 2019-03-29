@@ -74,7 +74,7 @@ public class FetchModeSubselectTest extends BaseEntityManagerFunctionalTestCase 
 	}
 
 	@Entity(name = "Department_fetch_mode_subselect")
-	public static class Department {
+	private static class Department {
 
 		@Id
 		private Long id;
@@ -115,7 +115,7 @@ public class FetchModeSubselectTest extends BaseEntityManagerFunctionalTestCase 
 	}
 
 	@Entity(name = "Employee_fetch_mode_subselect")
-	public static class Employee {
+	private static class Employee {
 
 		@Id
 		@GeneratedValue

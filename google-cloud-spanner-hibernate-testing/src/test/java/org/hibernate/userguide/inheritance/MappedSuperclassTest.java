@@ -102,8 +102,8 @@ public class MappedSuperclassTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::entity-inheritance-mapped-superclass-example[]
 	}
 
-	@Entity(name = "DebitAccount")
-	public static class DebitAccount extends Account {
+	@Entity(name = "DebitAccount_mapped_superclass")
+	private static class DebitAccount extends Account {
 
 		private BigDecimal overdraftFee;
 
@@ -121,8 +121,8 @@ public class MappedSuperclassTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::entity-inheritance-mapped-superclass-example[]
 	}
 
-	@Entity(name = "CreditAccount")
-	public static class CreditAccount extends Account {
+	@Entity(name = "CreditAccount_mapped_superclass")
+	private static class CreditAccount extends Account {
 
 		private BigDecimal creditLimit;
 

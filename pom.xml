@@ -69,8 +69,6 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <parallel>classes</parallel>
-          <useUnlimitedThreads>true</useUnlimitedThreads>
           <includes>
             <include>**/*Tests.java</include>
             <include>**/*Test.java</include>

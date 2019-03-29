@@ -55,16 +55,16 @@ public class JoinTableTest extends BaseEntityManagerFunctionalTestCase {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 			//tag::entity-inheritance-joined-table-query-example[]
 			List<Account> accounts = entityManager
-				.createQuery( "select a from Account a" )
+				.createQuery( "select a from Account_join_table a" )
 				.getResultList();
 			//end::entity-inheritance-joined-table-query-example[]
 		} );
 	}
 
 	//tag::entity-inheritance-joined-table-example[]
-	@Entity(name = "Account")
+	@Entity(name = "Account_join_table")
 	@Inheritance(strategy = InheritanceType.JOINED)
-	public static class Account {
+	private static class Account {
 
 		@Id
 		private Long id;
@@ -113,7 +113,7 @@ public class JoinTableTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::entity-inheritance-joined-table-example[]
 	}
 
-	@Entity(name = "DebitAccount")
+	@Entity(name = "DebitAccount_join_table")
 	public static class DebitAccount extends Account {
 
 		private BigDecimal overdraftFee;
@@ -132,7 +132,7 @@ public class JoinTableTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::entity-inheritance-joined-table-example[]
 	}
 
-	@Entity(name = "CreditAccount")
+	@Entity(name = "CreditAccount_join_table")
 	public static class CreditAccount extends Account {
 
 		private BigDecimal creditLimit;

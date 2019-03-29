@@ -55,16 +55,16 @@ public class TablePerClassTest extends BaseEntityManagerFunctionalTestCase {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 			//tag::entity-inheritance-table-per-class-query-example[]
 			List<Account> accounts = entityManager
-				.createQuery( "select a from Account a" )
+				.createQuery( "select a from Account_table_per_class a" )
 				.getResultList();
 			//end::entity-inheritance-table-per-class-query-example[]
 		} );
 	}
 
 	//tag::entity-inheritance-table-per-class-example[]
-	@Entity(name = "Account")
+	@Entity(name = "Account_table_per_class")
 	@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-	public static class Account {
+	private static class Account {
 
 		@Id
 		private Long id;
@@ -113,8 +113,8 @@ public class TablePerClassTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::entity-inheritance-table-per-class-example[]
 	}
 
-	@Entity(name = "DebitAccount")
-	public static class DebitAccount extends Account {
+	@Entity(name = "DebitAccount_table_per_class")
+	private static class DebitAccount extends Account {
 
 		private BigDecimal overdraftFee;
 
@@ -132,8 +132,8 @@ public class TablePerClassTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::entity-inheritance-table-per-class-example[]
 	}
 
-	@Entity(name = "CreditAccount")
-	public static class CreditAccount extends Account {
+	@Entity(name = "CreditAccount_table_per_class")
+	private static class CreditAccount extends Account {
 
 		private BigDecimal creditLimit;
 

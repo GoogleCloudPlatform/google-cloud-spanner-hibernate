@@ -58,7 +58,7 @@ public class JoinTablePrimaryKeyJoinColumnTest extends BaseEntityManagerFunction
 	//tag::entity-inheritance-joined-table-primary-key-join-column-example[]
 	@Entity(name = "Account")
 	@Inheritance(strategy = InheritanceType.JOINED)
-	public static class Account {
+	private static class Account {
 
 		@Id
 		private Long id;
@@ -109,7 +109,7 @@ public class JoinTablePrimaryKeyJoinColumnTest extends BaseEntityManagerFunction
 
 	@Entity(name = "DebitAccount")
 	@PrimaryKeyJoinColumn(name = "account_id")
-	public static class DebitAccount extends Account {
+	private static class DebitAccount extends Account {
 
 		private BigDecimal overdraftFee;
 
@@ -129,7 +129,7 @@ public class JoinTablePrimaryKeyJoinColumnTest extends BaseEntityManagerFunction
 
 	@Entity(name = "CreditAccount")
 	@PrimaryKeyJoinColumn(name = "account_id")
-	public static class CreditAccount extends Account {
+	private static class CreditAccount extends Account {
 
 		private BigDecimal creditLimit;
 

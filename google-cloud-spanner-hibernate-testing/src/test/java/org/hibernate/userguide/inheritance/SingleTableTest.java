@@ -57,16 +57,16 @@ public class SingleTableTest extends BaseEntityManagerFunctionalTestCase {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 			//tag::entity-inheritance-single-table-query-example[]
 			List<Account> accounts = entityManager
-				.createQuery( "select a from Account a" )
+				.createQuery( "select a from Account_single_table a" )
 				.getResultList();
 			//end::entity-inheritance-single-table-query-example[]
 		} );
 	}
 
 	//tag::entity-inheritance-single-table-example[]
-	@Entity(name = "Account")
+	@Entity(name = "Account_single_table")
 	@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-	public static class Account {
+	private static class Account {
 
 		@Id
 		private Long id;
@@ -115,8 +115,8 @@ public class SingleTableTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::entity-inheritance-single-table-example[]
 	}
 
-	@Entity(name = "DebitAccount")
-	public static class DebitAccount extends Account {
+	@Entity(name = "DebitAccount_single_table")
+	private static class DebitAccount extends Account {
 
 		private BigDecimal overdraftFee;
 
@@ -134,8 +134,8 @@ public class SingleTableTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::entity-inheritance-single-table-example[]
 	}
 
-	@Entity(name = "CreditAccount")
-	public static class CreditAccount extends Account {
+	@Entity(name = "CreditAccount_single_table")
+	private static class CreditAccount extends Account {
 
 		private BigDecimal creditLimit;
 
