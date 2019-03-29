@@ -63,8 +63,8 @@ public class ElementCollectionMapTest extends BaseEntityManagerFunctionalTestCas
 		MOBILE
 	}
 
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_element_collection_map")
+	private static class Person {
 
 		@Id
 		private Long id;

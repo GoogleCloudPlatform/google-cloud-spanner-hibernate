@@ -56,8 +56,8 @@ public class BasicTypeCollectionTest extends BaseCoreFunctionalTestCase {
 	}
 
 	//tag::collections-comma-delimited-collection-example[]
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_base_type_collection")
+	private static class Person {
 
 		@Id
 		private Long id;

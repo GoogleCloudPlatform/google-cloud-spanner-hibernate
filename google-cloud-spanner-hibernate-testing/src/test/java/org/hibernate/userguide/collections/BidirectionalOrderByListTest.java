@@ -50,8 +50,8 @@ public class BidirectionalOrderByListTest extends BaseEntityManagerFunctionalTes
 		} );
 	}
 
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_bidirectional_order_by_list")
+	private static class Person {
 
 		@Id
 		private Long id;
@@ -84,8 +84,8 @@ public class BidirectionalOrderByListTest extends BaseEntityManagerFunctionalTes
 		}
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone {
+	@Entity(name = "Phone_bidirectional_order_by_list")
+	private static class Phone {
 
 		@Id
 		private Long id;

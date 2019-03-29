@@ -77,18 +77,9 @@ public class BasicTypeElementCollectionTest extends BaseEntityManagerFunctionalT
 		} );
 	}
 
-	/**
-	 * The tests in this class alter the state of the tables and require explicit cleanup after each
-	 * instead of just at the end of the class.
-	 */
-	@After
-	public void cleanTables() {
-		releaseResources();
-	}
-
 	//tag::collections-collection-proxy-entity-example[]
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_type_element_collection")
+	private static class Person {
 
 		@Id
 		private Long id;

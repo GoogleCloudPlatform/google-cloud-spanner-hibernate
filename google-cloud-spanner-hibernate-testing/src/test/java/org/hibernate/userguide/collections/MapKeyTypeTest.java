@@ -99,8 +99,8 @@ public class MapKeyTypeTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity
-	@Table(name = "person")
-	public static class PersonDummy {
+	@Table(name = "person_map_key_type")
+	private static class PersonDummy {
 
 		@Id
 		private Long id;
@@ -125,7 +125,7 @@ public class MapKeyTypeTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::collections-map-custom-key-type-mapping-example[]
 	@Entity
-	@Table(name = "person")
+	@Table(name = "person_map_key_type")
 	public static class Person {
 
 		@Id

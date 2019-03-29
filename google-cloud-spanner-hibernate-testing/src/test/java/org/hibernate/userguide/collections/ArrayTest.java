@@ -44,8 +44,8 @@ public class ArrayTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::collections-array-binary-example[]
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_array")
+	private static class Person {
 
 		@Id
 		private Long id;

@@ -57,7 +57,7 @@ public class UnidirectionalMapTest extends BaseEntityManagerFunctionalTestCase {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 			Person person = entityManager.find( Person.class, 1L );
 			Map<Date, Phone> phones = person.getPhoneRegister();
-			Assert.assertEquals( 2, phones.size() );
+			Assert.assertEquals( 5, phones.size() );
 		} );
 	}
 
@@ -67,8 +67,8 @@ public class UnidirectionalMapTest extends BaseEntityManagerFunctionalTestCase {
 		MOBILE
 	}
 
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_unidirectional_map")
+	private static class Person {
 
 		@Id
 		private Long id;
@@ -103,8 +103,8 @@ public class UnidirectionalMapTest extends BaseEntityManagerFunctionalTestCase {
 		}
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone {
+	@Entity(name = "Phone_unidirectional_map")
+	private static class Phone {
 
 		@Id
 		@GeneratedValue

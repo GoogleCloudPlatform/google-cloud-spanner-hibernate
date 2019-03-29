@@ -71,8 +71,8 @@ public class MapKeyClassTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::collections-map-key-class-mapping-example[]
 	@Entity
-	@Table(name = "person")
-	public static class Person {
+	@Table(name = "person_map_key_class")
+	private static class Person {
 
 		@Id
 		private Long id;

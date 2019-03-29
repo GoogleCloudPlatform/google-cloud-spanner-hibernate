@@ -58,8 +58,8 @@ public class BidirectionalSetTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::collections-bidirectional-set-example[]
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_bidirectional_set")
+	private static class Person {
 
 		@Id
 		private Long id;
@@ -94,8 +94,8 @@ public class BidirectionalSetTest extends BaseEntityManagerFunctionalTestCase {
 		}
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone {
+	@Entity(name = "Phone_bidirectional_set")
+	private static class Phone {
 
 		@Id
 		private Long id;
