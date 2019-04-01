@@ -936,7 +936,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 			Person person = entityManager.createQuery(
 				"select p " +
 				"from Person p " +
-				"where p.id = 1", Person.class)
+				"where p.id = (select min(id) from Person) ", Person.class)
 			.getSingleResult();
 			//end::hql-numeric-literals-example[]
 		});
@@ -951,7 +951,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 			Person person = entityManager.createQuery(
 				"select p " +
 				"from Person p " +
-				"where p.id = 1L", Person.class)
+				"where p.id = (select min(id) from Person) ", Person.class)
 			.getSingleResult();
 			//end::hql-numeric-literals-example[]
 		});
@@ -1045,7 +1045,7 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 			Integer years = entityManager.createQuery(
 				"select year( current_date() ) - year( p.createdOn ) " +
 				"from Person p " +
-				"where p.id = 1L", Integer.class )
+				"where p.id = (select min(id) from Person) ", Integer.class )
 			.getSingleResult();
 			//end::hql-numeric-arithmetic-example[]
 			assertTrue(years > 0);
