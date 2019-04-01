@@ -76,9 +76,10 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 
       Arrays.stream(getAnnotatedClasses()).forEach(x->{
         String name = x.getAnnotation(Entity.class).name();
-        if(name!= null && !name.isEmpty()){
-          entityManager.createQuery("DELETE FROM "+ name + " where 1=1").executeUpdate();
-        }
+        if (name == null || name.isEmpty()){
+        	name = x.getSimpleName();
+				}
+					entityManager.createQuery("DELETE FROM " + name + " where 1=1").executeUpdate();
       });
     } );
   }
