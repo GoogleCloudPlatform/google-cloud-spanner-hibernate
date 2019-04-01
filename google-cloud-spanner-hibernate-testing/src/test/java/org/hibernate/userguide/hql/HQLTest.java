@@ -53,14 +53,6 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 		};
 	}
 
-	@BeforeClass
-	public static void prepare() {
-		assumeThat(System.getProperty("it.hibernate"))
-				.as("Hibernate integration tests are disabled. "
-						+ "Please use '-Dit.hibernate' to enable them.")
-				.isEqualTo("true");
-	}
-
 	@Before
 	public void init() {
 			doInJPA(this::entityManagerFactory, entityManager -> {

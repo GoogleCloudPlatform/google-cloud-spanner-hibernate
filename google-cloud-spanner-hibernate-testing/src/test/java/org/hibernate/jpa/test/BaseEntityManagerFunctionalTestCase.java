@@ -71,10 +71,8 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 
   public void cleanTables() {
     doInJPA( this::entityManagerFactory, entityManager -> {
-      ((MetamodelImpl)entityManager.getMetamodel()).collectionPersisters().values().forEach(x->{
-         entityManager.createNativeQuery("DELETE FROM "+ ((AbstractCollectionPersister) x).getTableName()+ " where 1=1").executeUpdate();
-      });
 
+			((MetamodelImpl)entityManager.getMetamodel()).collectionPersisters().values().forEach(x-> entityManager.createNativeQuery("DELETE FROM "+ ((AbstractCollectionPersister) x).getTableName()+ " where 1=1").executeUpdate());
 
       Arrays.stream(getAnnotatedClasses()).forEach(x->{
         String name = x.getAnnotation(Entity.class).name();

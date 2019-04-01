@@ -38,16 +38,16 @@ public class SingleTableTest extends BaseEntityManagerFunctionalTestCase {
 			DebitAccount debitAccount = new DebitAccount();
 			debitAccount.setId( 1L );
 			debitAccount.setOwner( "John Doe" );
-			debitAccount.setBalance( BigDecimal.valueOf( 100 ) );
-			debitAccount.setInterestRate( BigDecimal.valueOf( 1.5d ) );
-			debitAccount.setOverdraftFee( BigDecimal.valueOf( 25 ) );
+			debitAccount.setBalance( 100  );
+			debitAccount.setInterestRate(  1.5d );
+			debitAccount.setOverdraftFee( 25 );
 
 			CreditAccount creditAccount = new CreditAccount();
 			creditAccount.setId( 2L );
 			creditAccount.setOwner( "John Doe" );
-			creditAccount.setBalance( BigDecimal.valueOf( 1000 ) );
-			creditAccount.setInterestRate( BigDecimal.valueOf( 1.9d ) );
-			creditAccount.setCreditLimit( BigDecimal.valueOf( 5000 ) );
+			creditAccount.setBalance(  1000 );
+			creditAccount.setInterestRate( 1.9  );
+			creditAccount.setCreditLimit( 5000  );
 
 			entityManager.persist( debitAccount );
 			entityManager.persist( creditAccount );
@@ -73,9 +73,9 @@ public class SingleTableTest extends BaseEntityManagerFunctionalTestCase {
 
 		private String owner;
 
-		private BigDecimal balance;
+		private double balance;
 
-		private BigDecimal interestRate;
+		private double interestRate;
 
 		//Getters and setters are omitted for brevity
 
@@ -97,19 +97,19 @@ public class SingleTableTest extends BaseEntityManagerFunctionalTestCase {
 			this.owner = owner;
 		}
 
-		public BigDecimal getBalance() {
+		public double getBalance() {
 			return balance;
 		}
 
-		public void setBalance(BigDecimal balance) {
+		public void setBalance(double balance) {
 			this.balance = balance;
 		}
 
-		public BigDecimal getInterestRate() {
+		public double getInterestRate() {
 			return interestRate;
 		}
 
-		public void setInterestRate(BigDecimal interestRate) {
+		public void setInterestRate(double interestRate) {
 			this.interestRate = interestRate;
 		}
 	//tag::entity-inheritance-single-table-example[]
@@ -118,17 +118,17 @@ public class SingleTableTest extends BaseEntityManagerFunctionalTestCase {
 	@Entity(name = "DebitAccount_single_table")
 	private static class DebitAccount extends Account {
 
-		private BigDecimal overdraftFee;
+		private double overdraftFee;
 
 		//Getters and setters are omitted for brevity
 
 	//end::entity-inheritance-single-table-example[]
 
-		public BigDecimal getOverdraftFee() {
+		public double getOverdraftFee() {
 			return overdraftFee;
 		}
 
-		public void setOverdraftFee(BigDecimal overdraftFee) {
+		public void setOverdraftFee(double overdraftFee) {
 			this.overdraftFee = overdraftFee;
 		}
 	//tag::entity-inheritance-single-table-example[]
@@ -137,17 +137,17 @@ public class SingleTableTest extends BaseEntityManagerFunctionalTestCase {
 	@Entity(name = "CreditAccount_single_table")
 	private static class CreditAccount extends Account {
 
-		private BigDecimal creditLimit;
+		private double creditLimit;
 
 		//Getters and setters are omitted for brevity
 
 	//end::entity-inheritance-single-table-example[]
 
-		public BigDecimal getCreditLimit() {
+		public double getCreditLimit() {
 			return creditLimit;
 		}
 
-		public void setCreditLimit(BigDecimal creditLimit) {
+		public void setCreditLimit(double creditLimit) {
 			this.creditLimit = creditLimit;
 		}
 	//tag::entity-inheritance-single-table-example[]
