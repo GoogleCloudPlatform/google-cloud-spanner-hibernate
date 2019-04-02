@@ -140,7 +140,7 @@ public class GraphFetchingTest extends BaseEntityManagerFunctionalTestCase {
 		attributeNodes = @NamedAttributeNode("projects")
 	)
 	//end::fetching-strategies-dynamic-fetching-entity-graph-mapping-example[]
-	public static class Employee {
+	private static class Employee {
 
 		@Id
 		private Long id;

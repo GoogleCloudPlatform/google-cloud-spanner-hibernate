@@ -61,8 +61,8 @@ public class QueueTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::collections-custom-collection-mapping-example[]
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_queue")
+	private static class Person {
 
 		@Id
 		private Long id;
@@ -88,8 +88,8 @@ public class QueueTest extends BaseEntityManagerFunctionalTestCase {
 		}
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone implements Comparable<Phone> {
+	@Entity(name = "Phone_queue")
+	private static class Phone implements Comparable<Phone> {
 
 		@Id
 		private Long id;

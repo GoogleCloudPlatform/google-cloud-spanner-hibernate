@@ -70,7 +70,7 @@ public class LazyCollectionTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::fetching-LazyCollection-domain-model-example[]
 	@Entity(name = "Department_lazy_collection")
-	public static class Department {
+	private static class Department {
 
 		@Id
 		private Long id;
@@ -108,7 +108,7 @@ public class LazyCollectionTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "Employee_lazy_collection")
-	public static class Employee {
+	private static class Employee {
 
 		@Id
 		private Long id;

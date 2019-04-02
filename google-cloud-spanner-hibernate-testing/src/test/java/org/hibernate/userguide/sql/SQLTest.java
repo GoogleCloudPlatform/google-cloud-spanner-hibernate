@@ -16,6 +16,7 @@ import org.hibernate.type.StringType;
 import org.hibernate.userguide.model.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.persistence.PersistenceException;
@@ -48,17 +49,10 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
     };
   }
 
-  @BeforeClass
-  public static void prepare() {
-    assumeThat(System.getProperty("it.hibernate"))
-        .as("Hibernate integration tests are disabled. "
-            + "Please use '-Dit.hibernate' to enable them.")
-        .isEqualTo("true");
-  }
-
   @Before
-  public void init() {
-    doIfNotInitialized(() -> {
+  @Override
+  public void buildEntityManagerFactory() {
+    super.buildEntityManagerFactory();
       doInJPA(this::entityManagerFactory, entityManager -> {
         Person person1 = new Person("John Doe");
         person1.setNickName("JD");
@@ -144,7 +138,6 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
         spaceShip.setCaptain(captain);
         entityManager.persist(spaceShip);
       });
-    });
   }
 
   @Test
@@ -337,7 +330,7 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
     doInJPA(this::entityManagerFactory, entityManager -> {
       //tag::sql-jpa-entity-associations-query-many-to-one-join-example[]
       List<Phone> phones = entityManager.createNativeQuery(
-          "SELECT * " +
+          "SELECT ph.* " +
               "FROM Phone ph " +
               "JOIN Person pr ON ph.person_id = pr.id", Phone.class)
           .getResultList();
@@ -350,7 +343,14 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
     });
   }
 
+  /**
+   * This test cannot run for Spanner. It attempts to map both person and phone
+   * from single row but they have overlapping column names.
+   *
+   * The previous driver worked but it had a BUG that reused the same column for both cases.
+   */
   @Test
+  @Ignore
   public void test_sql_hibernate_entity_associations_query_many_to_one_join_example() {
     doInJPA(this::entityManagerFactory, entityManager -> {
       Session session = entityManager.unwrap(Session.class);
@@ -379,7 +379,7 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
       Session session = entityManager.unwrap(Session.class);
       //tag::sql-hibernate-entity-associations-query-many-to-one-join-result-transformer-example[]
       List<Person> persons = session.createNativeQuery(
-          "SELECT * " +
+          "SELECT pr.*, ph.phone_number ,ph.person_id , ph.phone_type " +
               "FROM Phone ph " +
               "JOIN Person pr ON ph.person_id = pr.id")
           .addEntity("phone", Phone.class)
@@ -493,13 +493,20 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
     });
   }
 
+  /**
+   * This test cannot run for Spanner. It attempts to map both person and payment
+   * from single row but they have overlapping column names.
+   *
+   * The previous driver worked but it had a BUG that reused the same column for both cases.
+   */
   @Test
+  @Ignore
   public void test_sql_hibernate_inheritance_query_example() {
     doInJPA(this::entityManagerFactory, entityManager -> {
       Session session = entityManager.unwrap(Session.class);
       //tag::sql-hibernate-inheritance-query-example[]
       List<CreditCardPayment> payments = session.createNativeQuery(
-          "SELECT * " +
+          "SELECT cp.*, p.amount, p.completed , p.person_id " +
               "FROM Payment p " +
               "JOIN CreditCardPayment cp on cp.id = p.id")
           .addEntity(CreditCardPayment.class)

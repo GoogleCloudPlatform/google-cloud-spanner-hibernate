@@ -44,8 +44,8 @@ public class EmbeddableTypeElementCollectionTest extends BaseEntityManagerFuncti
 	}
 
 	//tag::collections-embeddable-type-collection-lifecycle-entity-example[]
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_embeddabletype_element_collection")
+	private static class Person {
 
 		@Id
 		private Long id;

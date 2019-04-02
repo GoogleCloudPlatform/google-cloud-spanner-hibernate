@@ -57,8 +57,8 @@ public class UnidirectionalSetTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::collections-unidirectional-set-example[]
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_unidirectional_set")
+	private static class Person {
 
 		@Id
 		private Long id;
@@ -82,8 +82,8 @@ public class UnidirectionalSetTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::collections-unidirectional-set-example[]
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone {
+	@Entity(name = "Phone_unidirectional_set")
+	private static class Phone {
 
 		@Id
 		private Long id;

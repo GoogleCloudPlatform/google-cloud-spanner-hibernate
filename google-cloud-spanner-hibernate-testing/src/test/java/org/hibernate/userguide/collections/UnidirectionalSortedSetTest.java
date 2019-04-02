@@ -60,8 +60,8 @@ public class UnidirectionalSortedSetTest extends BaseEntityManagerFunctionalTest
 	}
 
 	//tag::collections-unidirectional-sorted-set-natural-comparator-example[]
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_unidirectional_sorted_set")
+	private static class Person {
 
 		@Id
 		private Long id;
@@ -87,8 +87,8 @@ public class UnidirectionalSortedSetTest extends BaseEntityManagerFunctionalTest
 	//tag::collections-unidirectional-sorted-set-natural-comparator-example[]
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone implements Comparable<Phone> {
+	@Entity(name = "Phone_unidirectional_sorted_set")
+	private static class Phone implements Comparable<Phone> {
 
 		@Id
 		private Long id;

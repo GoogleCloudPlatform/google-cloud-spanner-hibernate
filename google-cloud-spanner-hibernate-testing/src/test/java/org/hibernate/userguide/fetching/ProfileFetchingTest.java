@@ -84,7 +84,7 @@ public class ProfileFetchingTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "Department")
-	public static class Department {
+	private static class Department {
 
 		@Id
 		private Long id;
@@ -135,7 +135,7 @@ public class ProfileFetchingTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "Project")
-	public class Project {
+	private class Project {
 
 		@Id
 		private Long id;

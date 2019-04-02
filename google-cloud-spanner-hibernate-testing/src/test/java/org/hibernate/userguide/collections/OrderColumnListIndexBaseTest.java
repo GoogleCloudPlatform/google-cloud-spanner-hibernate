@@ -48,8 +48,8 @@ public class OrderColumnListIndexBaseTest extends BaseEntityManagerFunctionalTes
 		} );
 	}
 
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_order_column_list_index_base")
+	private static class Person {
 
 		@Id
 		private Long id;
@@ -83,8 +83,8 @@ public class OrderColumnListIndexBaseTest extends BaseEntityManagerFunctionalTes
 		}
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone {
+	@Entity(name = "Phone_order_column_list_index_base")
+	private static class Phone {
 
 		@Id
 		private Long id;

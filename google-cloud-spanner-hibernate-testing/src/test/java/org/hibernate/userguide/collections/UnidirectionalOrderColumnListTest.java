@@ -46,8 +46,8 @@ public class UnidirectionalOrderColumnListTest extends BaseEntityManagerFunction
 		} );
 	}
 
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_unidirectional_order_column_list")
+	private static class Person {
 
 		@Id
 		private Long id;
@@ -70,8 +70,8 @@ public class UnidirectionalOrderColumnListTest extends BaseEntityManagerFunction
 		}
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone {
+	@Entity(name = "Phone_unidirectional_order_column_list")
+	private static class Phone {
 
 		@Id
 		private Long id;

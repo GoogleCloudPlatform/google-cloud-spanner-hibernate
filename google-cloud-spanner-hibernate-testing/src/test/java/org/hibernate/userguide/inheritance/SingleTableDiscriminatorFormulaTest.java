@@ -62,7 +62,7 @@ public class SingleTableDiscriminatorFormulaTest extends BaseEntityManagerFuncti
 	}
 
 	//tag::entity-inheritance-single-table-discriminator-formula-example[]
-	@Entity(name = "Account")
+	@Entity(name = "Account_single_table_discrim")
 	@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 	@DiscriminatorFormula(
 		"case when debitKey is not null " +
@@ -74,7 +74,7 @@ public class SingleTableDiscriminatorFormulaTest extends BaseEntityManagerFuncti
 		"   end ) " +
 		"end "
 	)
-	public static class Account {
+	private static class Account {
 
 		@Id
 		private Long id;
@@ -123,9 +123,9 @@ public class SingleTableDiscriminatorFormulaTest extends BaseEntityManagerFuncti
 	//tag::entity-inheritance-single-table-discriminator-formula-example[]
 	}
 
-	@Entity(name = "DebitAccount")
+	@Entity(name = "DebitAccount_single_table_discrim")
 	@DiscriminatorValue(value = "Debit")
-	public static class DebitAccount extends Account {
+	private static class DebitAccount extends Account {
 
 		private String debitKey;
 
@@ -156,9 +156,9 @@ public class SingleTableDiscriminatorFormulaTest extends BaseEntityManagerFuncti
 	//tag::entity-inheritance-single-table-discriminator-formula-example[]
 	}
 
-	@Entity(name = "CreditAccount")
+	@Entity(name = "CreditAccount_single_table_discrim")
 	@DiscriminatorValue(value = "Credit")
-	public static class CreditAccount extends Account {
+	private static class CreditAccount extends Account {
 
 		private String creditKey;
 
