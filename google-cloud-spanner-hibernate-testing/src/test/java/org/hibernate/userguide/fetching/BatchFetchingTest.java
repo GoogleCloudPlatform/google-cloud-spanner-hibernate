@@ -75,7 +75,7 @@ public class BatchFetchingTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::fetching-batch-mapping-example[]
 	@Entity(name = "Department_batch_fetching")
-	public static class Department {
+	private static class Department {
 
 		@Id
 		private Long id;
@@ -98,7 +98,7 @@ public class BatchFetchingTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "Employee_batch_fetching")
-	public static class Employee {
+	private static class Employee {
 
 		@Id
 		private Long id;

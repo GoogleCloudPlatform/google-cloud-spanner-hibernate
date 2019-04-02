@@ -71,7 +71,7 @@ public class FetchModeSelectTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::fetching-strategies-fetch-mode-select-mapping-example[]
 	@Entity(name = "Department_fetch_mode_select")
-	public static class Department {
+	private static class Department {
 
 		@Id
 		private Long id;
@@ -103,7 +103,7 @@ public class FetchModeSelectTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "Employee_fetch_mode_select")
-	public static class Employee {
+	private static class Employee {
 
 		@Id
 		@GeneratedValue

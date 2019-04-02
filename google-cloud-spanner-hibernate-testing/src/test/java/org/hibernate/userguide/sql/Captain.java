@@ -15,7 +15,7 @@ import javax.persistence.Entity;
  * @author Vlad MIhalcea
  */
 //tag::sql-composite-key-entity-associations_named-query-example[]
-@Entity
+@Entity(name="captain")
 public class Captain {
 
     @EmbeddedId

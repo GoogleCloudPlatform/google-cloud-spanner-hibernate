@@ -47,8 +47,8 @@ public class BasicTypeOrderColumnElementCollectionTest extends BaseEntityManager
 		} );
 	}
 
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_type_order_column_element_collection")
+	private static class Person {
 
 		@Id
 		private Long id;

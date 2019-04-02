@@ -67,15 +67,15 @@ public class UnidirectionalMapTest extends BaseEntityManagerFunctionalTestCase {
 		MOBILE
 	}
 
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_unidirectional_map")
+	private static class Person {
 
 		@Id
 		private Long id;
 
 		@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 		@JoinTable(
-			name = "phone_register",
+			name = "phone_register_unidirectional_map",
 			joinColumns = @JoinColumn(name = "phone_id"),
 			inverseJoinColumns = @JoinColumn(name = "person_id"))
 		@MapKey(name = "since")
@@ -103,8 +103,8 @@ public class UnidirectionalMapTest extends BaseEntityManagerFunctionalTestCase {
 		}
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone {
+	@Entity(name = "Phone_unidirectional_map")
+	private static class Phone {
 
 		@Id
 		@GeneratedValue

@@ -26,7 +26,7 @@ import javax.persistence.SqlResultSetMapping;
  * @author Vlad MIhalcea
  */
 //tag::sql-composite-key-entity-associations_named-query-example[]
-@Entity
+@Entity(name ="spaceship")
 @NamedNativeQueries({
     @NamedNativeQuery(name = "find_all_spaceships",
         query =

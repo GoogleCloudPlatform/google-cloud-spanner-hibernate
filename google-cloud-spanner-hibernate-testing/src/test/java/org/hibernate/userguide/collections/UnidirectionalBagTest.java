@@ -48,8 +48,8 @@ public class UnidirectionalBagTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::collections-unidirectional-bag-example[]
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_unidirectional_bag")
+	private static class Person {
 
 		@Id
 		private Long id;
@@ -74,8 +74,8 @@ public class UnidirectionalBagTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::collections-unidirectional-bag-example[]
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone {
+	@Entity(name = "Phone_unidirectional_bag")
+	private static class Phone {
 
 		@Id
 		private Long id;

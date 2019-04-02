@@ -9,12 +9,14 @@ package org.hibernate.userguide.collections;
 import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -77,18 +79,9 @@ public class BasicTypeElementCollectionTest extends BaseEntityManagerFunctionalT
 		} );
 	}
 
-	/**
-	 * The tests in this class alter the state of the tables and require explicit cleanup after each
-	 * instead of just at the end of the class.
-	 */
-	@After
-	public void cleanTables() {
-		releaseResources();
-	}
-
 	//tag::collections-collection-proxy-entity-example[]
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_type_element_collection")
+	private static class Person {
 
 		@Id
 		private Long id;

@@ -15,7 +15,7 @@ import javax.persistence.Version;
  * @author Vlad Mihalcea
  */
 //tag::hql-examples-domain-model-example[]
-@Entity
+@Entity(name = "Partner")
 public class Partner {
 
 	@Id

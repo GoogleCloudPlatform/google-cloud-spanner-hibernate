@@ -66,7 +66,7 @@ public class FetchModeJoinTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "Department_fetch_mode_join")
-	public static class Department {
+	private static class Department {
 
 		@Id
 		private Long id;
@@ -97,7 +97,7 @@ public class FetchModeJoinTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "Employee_fetch_mode_join")
-	public static class Employee {
+	private static class Employee {
 
 		@Id
 		@GeneratedValue

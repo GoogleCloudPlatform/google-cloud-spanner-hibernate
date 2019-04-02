@@ -49,8 +49,8 @@ public class BidirectionalBagTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::collections-bidirectional-bag-example[]
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_bidirectional_bag")
+	private static class Person {
 
 		@Id
 		private Long id;
@@ -85,8 +85,8 @@ public class BidirectionalBagTest extends BaseEntityManagerFunctionalTestCase {
 		}
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone {
+	@Entity(name = "Phone_bidirectional_bag")
+	private static class Phone {
 
 		@Id
 		private Long id;

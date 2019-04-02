@@ -31,8 +31,7 @@ public class ElementCollectionMapTest extends BaseEntityManagerFunctionalTestCas
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
-				Person.class,
-				Phone.class,
+				Person.class
 		};
 	}
 
@@ -63,8 +62,8 @@ public class ElementCollectionMapTest extends BaseEntityManagerFunctionalTestCas
 		MOBILE
 	}
 
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_element_collection_map")
+	private static class Person {
 
 		@Id
 		private Long id;

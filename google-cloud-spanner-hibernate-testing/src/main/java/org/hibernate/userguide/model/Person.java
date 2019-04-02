@@ -193,7 +193,7 @@ import javax.persistence.Version;
     )
 )
 //end::sql-sp-ref-cursor-oracle-named-query-example[]
-@Entity
+@Entity(name = "Person")
 public class Person {
 
     @Id

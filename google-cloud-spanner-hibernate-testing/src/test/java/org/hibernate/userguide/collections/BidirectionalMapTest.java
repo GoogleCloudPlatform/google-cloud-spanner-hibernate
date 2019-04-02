@@ -61,8 +61,8 @@ public class BidirectionalMapTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::collections-map-bidirectional-example[]
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_bidirectional_map")
+	private static class Person {
 
 		@Id
 		private Long id;
@@ -94,8 +94,8 @@ public class BidirectionalMapTest extends BaseEntityManagerFunctionalTestCase {
 		}
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone {
+	@Entity(name = "Phone_bidirectional_map")
+	private static class Phone {
 
 		@Id
 		@GeneratedValue

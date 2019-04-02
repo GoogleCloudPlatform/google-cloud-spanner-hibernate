@@ -36,12 +36,13 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.simba</groupId>
-			<artifactId>simba-jdbc-spanner</artifactId>
-			<version>1.0</version>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-spanner</artifactId>
+			<version>0.66.1-beta-SNAPSHOT</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/libs/CloudSpannerJDBC42.jar</systemPath>
+			<systemPath>${project.basedir}/libs/test-driver.jar</systemPath>
 		</dependency>
+
 	</dependencies>
 
 	<build>

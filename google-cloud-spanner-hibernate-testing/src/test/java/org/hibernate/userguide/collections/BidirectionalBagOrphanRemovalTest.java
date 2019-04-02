@@ -46,8 +46,8 @@ public class BidirectionalBagOrphanRemovalTest extends BaseEntityManagerFunction
 		} );
 	}
 
-	@Entity(name = "Person")
-	public static class Person {
+	@Entity(name = "Person_bidirectional_bag_orphan_removal")
+	private static class Person {
 
 		@Id
 		private Long id;
@@ -79,8 +79,8 @@ public class BidirectionalBagOrphanRemovalTest extends BaseEntityManagerFunction
 		}
 	}
 
-	@Entity(name = "Phone")
-	public static class Phone {
+	@Entity(name = "Phone_bidirectional_bag_orphan_removal")
+	private static class Phone {
 
 		@Id
 		private Long id;
