@@ -62,7 +62,7 @@ public class BitSetTypeTest extends BaseCoreFunctionalTestCase {
 	}
 
 	//tag::basic-custom-type-BitSetType-mapping-example[]
-	@Entity(name = "Product")
+	@Entity(name = "Product_BitSetTypeTest")
 	public static class Product {
 
 		@Id

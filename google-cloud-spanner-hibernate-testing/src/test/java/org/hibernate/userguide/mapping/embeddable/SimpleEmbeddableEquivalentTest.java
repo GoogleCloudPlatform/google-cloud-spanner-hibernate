@@ -44,7 +44,7 @@ public class SimpleEmbeddableEquivalentTest extends BaseEntityManagerFunctionalT
 	}
 
 	//tag::embeddable-type-mapping-example[]
-	@Entity(name = "Book")
+	@Entity(name = "Book_SimpleEmbeddableEquivalentTest")
 	public static class Book {
 
 		@Id

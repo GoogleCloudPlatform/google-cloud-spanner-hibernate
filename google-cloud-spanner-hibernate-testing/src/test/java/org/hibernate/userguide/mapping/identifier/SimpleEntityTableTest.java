@@ -31,12 +31,7 @@ public class SimpleEntityTableTest extends BaseEntityManagerFunctionalTestCase {
     }
 
     //tag::entity-pojo-table-mapping-example[]
-    @Entity(name = "Book")
-    @Table(
-            catalog = "public",
-            schema = "store",
-            name = "book"
-    )
+    @Entity(name = "Book_SimpleEntityTableTest")
     public static class Book {
 
         @Id

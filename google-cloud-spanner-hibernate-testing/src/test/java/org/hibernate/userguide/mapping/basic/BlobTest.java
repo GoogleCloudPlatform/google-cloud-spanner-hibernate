@@ -88,7 +88,7 @@ public class BlobTest extends BaseEntityManagerFunctionalTestCase {
 
 
     //tag::basic-blob-example[]
-    @Entity(name = "Product")
+    @Entity(name = "Product_BlobTest")
     public static class Product {
 
         @Id

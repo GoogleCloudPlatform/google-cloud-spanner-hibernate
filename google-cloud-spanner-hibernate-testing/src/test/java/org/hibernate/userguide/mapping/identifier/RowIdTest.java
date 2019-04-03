@@ -50,7 +50,7 @@ public class RowIdTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::identifiers-rowid-mapping[]
-	@Entity(name = "Product")
+	@Entity(name = "Product_RowIdTest")
 	@RowId("ROWID")
 	public static class Product {
 

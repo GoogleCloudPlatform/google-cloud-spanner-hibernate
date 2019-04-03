@@ -65,7 +65,7 @@ public class IdClassTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::identifiers-basic-idclass-mapping-example[]
-	@Entity(name = "SystemUser")
+	@Entity(name = "SystemUser_IdClassTest")
 	@IdClass( PK.class )
 	public static class SystemUser {
 

@@ -65,7 +65,7 @@ public class GeneratedTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::mapping-generated-Generated-example[]
-	@Entity(name = "Person")
+	@Entity(name = "Person_GeneratedTest")
 	public static class Person {
 
 		@Id

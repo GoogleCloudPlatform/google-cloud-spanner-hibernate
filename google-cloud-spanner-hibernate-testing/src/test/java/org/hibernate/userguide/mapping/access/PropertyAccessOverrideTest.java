@@ -38,7 +38,7 @@ public class PropertyAccessOverrideTest extends BaseEntityManagerFunctionalTestC
 	}
 
 	//tag::access-property-override-mapping-example[]
-	@Entity(name = "Book")
+	@Entity(name = "Book_PropertyAccessOverrideTest")
 	public static class Book {
 
 		private Long id;

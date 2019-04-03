@@ -44,7 +44,7 @@ public class DateWithTemporalDateTest extends BaseEntityManagerFunctionalTestCas
 		@GeneratedValue
 		private Long id;
 
-		@Column(name = "`timestamp`")
+		@Column(name = "`date`")
 		@Temporal(TemporalType.DATE)
 		private Date timestamp;
 

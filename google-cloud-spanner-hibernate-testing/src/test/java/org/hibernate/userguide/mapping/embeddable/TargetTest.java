@@ -33,6 +33,7 @@ public class TargetTest extends BaseEntityManagerFunctionalTestCase {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 
 			City cluj = new City();
+			cluj.setId(1);
 			cluj.setName( "Cluj" );
 			cluj.setCoordinates( new GPS( 46.77120, 23.62360 ) );
 
@@ -84,11 +85,10 @@ public class TargetTest extends BaseEntityManagerFunctionalTestCase {
 		}
 	}
 
-	@Entity(name = "City")
+	@Entity(name = "City_EmbeddableTargetTest")
 	public static class City {
 
 		@Id
-		@GeneratedValue
 		private Long id;
 
 		private String name;
@@ -103,6 +103,10 @@ public class TargetTest extends BaseEntityManagerFunctionalTestCase {
 		
 		public Long getId() {
 			return id;
+		}
+
+		public void setId(long id) {
+			this.id = id;
 		}
 
 		public String getName() {

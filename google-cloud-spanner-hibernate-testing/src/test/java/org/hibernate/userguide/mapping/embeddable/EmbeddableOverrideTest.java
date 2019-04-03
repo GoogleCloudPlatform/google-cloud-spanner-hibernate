@@ -59,7 +59,7 @@ public class EmbeddableOverrideTest extends BaseEntityManagerFunctionalTestCase 
 	}
 
 	//tag::embeddable-type-override-mapping-example[]
-	@Entity(name = "Book")
+	@Entity(name = "Book_EmbeddableOverrideTest")
 	@AttributeOverrides({
 		@AttributeOverride(
 			name = "ebookPublisher.name",

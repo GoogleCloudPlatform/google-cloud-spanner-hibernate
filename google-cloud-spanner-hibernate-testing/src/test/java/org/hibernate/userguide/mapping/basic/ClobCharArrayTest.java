@@ -46,7 +46,7 @@ public class ClobCharArrayTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::basic-clob-char-array-example[]
-	@Entity(name = "Product")
+	@Entity(name = "Product_ClobCharArrayTest")
 	public static class Product {
 
 		@Id

@@ -37,7 +37,7 @@ public class ExplicitColumnNamingTest extends BaseEntityManagerFunctionalTestCas
 	}
 
 	//tag::basic-annotation-explicit-column-example[]
-	@Entity(name = "Product")
+	@Entity(name = "Product_ExplicitColumnNamingtest")
 	public class Product {
 
 		@Id

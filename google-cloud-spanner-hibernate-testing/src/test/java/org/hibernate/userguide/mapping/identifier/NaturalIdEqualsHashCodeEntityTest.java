@@ -101,7 +101,7 @@ public class NaturalIdEqualsHashCodeEntityTest extends BaseEntityManagerFunction
 	//tag::entity-pojo-natural-id-equals-hashcode-example[]
 	}
 
-	@Entity(name = "Book")
+	@Entity(name = "Book_NaturalIdEqualsHashCodeEntityTest")
 	public static class Book {
 
 		@Id

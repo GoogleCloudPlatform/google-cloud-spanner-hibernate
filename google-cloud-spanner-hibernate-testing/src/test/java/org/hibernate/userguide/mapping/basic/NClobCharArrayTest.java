@@ -58,7 +58,7 @@ public class NClobCharArrayTest extends BaseEntityManagerFunctionalTestCase {
     }
 
     //tag::basic-nclob-char-array-example[]
-    @Entity(name = "Product")
+    @Entity(name = "Product_NClobCharArrayTest")
     public static class Product {
 
         @Id
