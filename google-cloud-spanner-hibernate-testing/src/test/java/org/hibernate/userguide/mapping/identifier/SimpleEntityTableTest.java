@@ -32,7 +32,7 @@ public class SimpleEntityTableTest extends BaseEntityManagerFunctionalTestCase {
 
     //tag::entity-pojo-table-mapping-example[]
     @Entity(name = "Book_SimpleEntityTableTest")
-    public static class Book {
+    private static class Book {
 
         @Id
         private Long id;

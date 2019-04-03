@@ -8,7 +8,7 @@ package org.hibernate.userguide.mapping.basic;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.testing.junit4.BaseCoreFunctionalTestCase;
+import org.hibernate.jpa.test.BaseCoreFunctionalTestCase;
 import org.junit.Test;
 
 import javax.persistence.*;
@@ -106,7 +106,7 @@ public class BitSetUserTypeTest extends BaseCoreFunctionalTestCase {
 	)
 	//tag::basic-custom-type-BitSetUserType-mapping-example[]
 	@Entity(name = "Product_BitSetUserTypeTest")
-	public static class Product {
+	private static class Product {
 
 		@Id
 		private Integer id;

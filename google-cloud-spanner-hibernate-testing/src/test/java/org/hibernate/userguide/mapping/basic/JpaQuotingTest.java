@@ -42,7 +42,7 @@ public class JpaQuotingTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::basic-jpa-quoting-example[]
 	@Entity(name = "Product_JpaQuotingTest")
-	public static class Product {
+	private static class Product {
 
 		@Id
 		private Long id;

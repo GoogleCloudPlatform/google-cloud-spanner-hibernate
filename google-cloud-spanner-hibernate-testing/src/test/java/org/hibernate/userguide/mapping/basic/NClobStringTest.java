@@ -59,7 +59,7 @@ public class NClobStringTest extends BaseEntityManagerFunctionalTestCase {
 
     //tag::basic-nclob-string-example[]
     @Entity(name = "Product_NClobStringTest")
-    public static class Product {
+    private static class Product {
 
         @Id
         private Integer id;

@@ -9,7 +9,7 @@ package org.hibernate.userguide.mapping.embeddable;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.boot.MetadataBuilder;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl;
-import org.hibernate.testing.junit4.BaseNonConfigCoreFunctionalTestCase;
+import org.hibernate.jpa.test.BaseNonConfigCoreFunctionalTestCase;
 import org.junit.Test;
 
 import javax.persistence.*;
@@ -68,7 +68,7 @@ public class EmbeddableImplicitOverrideTest
 
 	//tag::embeddable-multiple-namingstrategy-entity-mapping[]
 	@Entity(name = "Book_EmbeddableImplicitOverrideTest")
-	public static class Book {
+	private static class Book {
 
 		@Id
 		@GeneratedValue
@@ -163,8 +163,8 @@ public class EmbeddableImplicitOverrideTest
 	//tag::embeddable-multiple-namingstrategy-entity-mapping[]
 	}
 
-	@Entity(name = "Country")
-	public static class Country {
+	@Entity(name = "Country_EmbeddableImplicitOverrideTest")
+	private static class Country {
 
 		@Id
 		@GeneratedValue

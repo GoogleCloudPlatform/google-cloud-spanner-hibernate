@@ -57,7 +57,7 @@ public class ColumnTransformerTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::mapping-column-read-and-write-composite-type-example[]
 	@Entity(name = "Savings")
-	public static class Savings {
+	private static class Savings {
 
 		@Id
 		private Long id;

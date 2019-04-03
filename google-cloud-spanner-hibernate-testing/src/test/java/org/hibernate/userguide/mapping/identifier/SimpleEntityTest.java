@@ -144,8 +144,8 @@ public class SimpleEntityTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::entity-pojo-set-mapping-example[]
-	@Entity(name = "Library")
-	public static class Library {
+	@Entity(name = "Library_simple_entity_test")
+	private static class Library {
 
 		@Id
 		private Long id;
@@ -184,7 +184,7 @@ public class SimpleEntityTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::entity-pojo-mapping-example[]
 	@Entity(name = "Book_SimpleEntityTest")
-	public static class Book {
+	private static class Book {
 
 		//tag::entity-pojo-identifier-mapping-example[]
 		@Id

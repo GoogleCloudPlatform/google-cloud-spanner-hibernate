@@ -34,8 +34,8 @@ public class DateWithTemporalTimeTest extends BaseEntityManagerFunctionalTestCas
 		} );
 	}
 
-	@Entity(name = "DateEvent")
-	public static class DateEvent {
+	@Entity(name = "DateEvent_date_with_temporal_time")
+	private static class DateEvent {
 
 		@Id
 		@GeneratedValue

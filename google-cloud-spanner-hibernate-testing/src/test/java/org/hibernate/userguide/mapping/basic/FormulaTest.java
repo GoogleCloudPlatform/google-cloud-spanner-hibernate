@@ -49,7 +49,7 @@ public class FormulaTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::mapping-column-formula-example[]
 	@Entity(name = "Account_FormulaTest")
-	public static class Account {
+	private static class Account {
 
 		@Id
 		private Long id;

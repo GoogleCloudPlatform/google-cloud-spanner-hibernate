@@ -54,8 +54,8 @@ public class UpdateTimestampTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::mapping-generated-UpdateTimestamp-example[]
-	@Entity(name = "Bid")
-	public static class Bid {
+	@Entity(name = "Bid_update_timestamp")
+	private static class Bid {
 
 		@Id
 		private Long id;

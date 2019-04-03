@@ -46,7 +46,7 @@ public class PooledOptimizerTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::identifiers-generators-pooled-lo-optimizer-mapping-example[]
 	@Entity(name = "Product_PooledOptimizerTest")
-	public static class Product {
+	private static class Product {
 
 		@Id
 		@GeneratedValue(

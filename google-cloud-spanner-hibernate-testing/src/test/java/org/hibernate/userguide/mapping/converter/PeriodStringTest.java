@@ -52,8 +52,8 @@ public class PeriodStringTest extends BaseEntityManagerFunctionalTestCase {
     }
 
     //tag::basic-jpa-convert-period-string-converter-mapping-example[]
-    @Entity(name = "Event")
-    public static class Event {
+    @Entity(name = "Event_period_string")
+    private static class Event {
 
         @Id
         @GeneratedValue

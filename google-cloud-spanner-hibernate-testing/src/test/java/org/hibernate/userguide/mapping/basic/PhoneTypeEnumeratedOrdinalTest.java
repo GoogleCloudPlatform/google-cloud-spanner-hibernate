@@ -41,7 +41,7 @@ public class PhoneTypeEnumeratedOrdinalTest extends BaseEntityManagerFunctionalT
 
 	//tag::basic-enums-Enumerated-ordinal-example[]
 	@Entity(name = "Phone_EnumeratedOrdinalTest")
-	public static class Phone {
+	private static class Phone {
 
 		@Id
 		private Long id;

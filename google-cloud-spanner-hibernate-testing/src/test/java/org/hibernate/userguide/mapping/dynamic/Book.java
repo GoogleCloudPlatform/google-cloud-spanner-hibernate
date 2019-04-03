@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 //tag::access-field-mapping-example[]
-@Entity(name = "Book")
+@Entity(name = "Book_dynamic")
 public class Book {
 
 	@Id
