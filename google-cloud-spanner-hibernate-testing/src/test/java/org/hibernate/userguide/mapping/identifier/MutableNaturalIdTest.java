@@ -74,7 +74,7 @@ public class MutableNaturalIdTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::naturalid-mutable-mapping-example[]
 	@Entity(name = "Author_MutableNaturalIdTest")
-	public static class Author {
+	private static class Author {
 
 		@Id
 		private Long id;

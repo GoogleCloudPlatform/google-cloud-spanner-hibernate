@@ -70,8 +70,8 @@ public class InstantLiteralTest extends BaseEntityManagerFunctionalTestCase {
 		} );
 	}
 
-	@Entity(name = "DateEvent")
-	public static class DateEvent {
+	@Entity(name = "DateEvent_instant_literal")
+	private static class DateEvent {
 
 		@Id
 		@GeneratedValue

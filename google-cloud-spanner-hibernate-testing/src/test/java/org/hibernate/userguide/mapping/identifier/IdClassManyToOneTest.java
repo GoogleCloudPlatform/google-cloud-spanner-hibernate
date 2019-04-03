@@ -73,7 +73,7 @@ public class IdClassManyToOneTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::identifiers-basic-idclass-manytoone-mapping-example[]
 	@Entity(name = "SystemUser_IdClassManyToOneTest")
 	@IdClass( PK.class )
-	public static class SystemUser {
+	private static class SystemUser {
 
 		@Id
 		@ManyToOne(fetch = FetchType.LAZY)
@@ -109,8 +109,8 @@ public class IdClassManyToOneTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::identifiers-basic-idclass-manytoone-mapping-example[]
 	}
 
-	@Entity(name = "Subsystem")
-	public static class Subsystem {
+	@Entity(name = "Subsystem_id_class_many_to_one")
+	private static class Subsystem {
 
 		@Id
 		private String id;

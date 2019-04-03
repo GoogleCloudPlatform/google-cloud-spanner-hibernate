@@ -39,8 +39,8 @@ public class CalendarWithTemporalTimestampTest extends BaseEntityManagerFunction
 		} );
 	}
 
-	@Entity(name = "DateEvent")
-	public static class DateEvent {
+	@Entity(name = "DateEvent_calendar_with_temporal_timestamp")
+	private static class DateEvent {
 
 		@Id
 		@GeneratedValue

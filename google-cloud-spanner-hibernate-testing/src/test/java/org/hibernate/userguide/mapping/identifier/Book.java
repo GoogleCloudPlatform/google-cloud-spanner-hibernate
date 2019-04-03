@@ -13,7 +13,7 @@ import javax.persistence.Id;
  * @author Vlad Mihalcea
  */
 //tag::entity-pojo-mapping-implicit-name-example[]
-@Entity
+@Entity(name = "Book_identifier")
 public class Book {
 
 	@Id

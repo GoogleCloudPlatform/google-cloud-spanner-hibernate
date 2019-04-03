@@ -44,7 +44,7 @@ public class ElementCollectionAccessTest extends BaseEntityManagerFunctionalTest
 
 	//tag::access-element-collection-mapping-example[]
 	@Entity(name = "Book_ElementCollectionAccessTest")
-	public static class Book {
+	private static class Book {
 
 		@Id
 		private Long id;

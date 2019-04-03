@@ -46,7 +46,7 @@ public class SimpleEmbeddableTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::embeddable-type-mapping-example[]
 	@Entity(name = "Book_SimpleEmbeddableTest")
-	public static class Book {
+	private static class Book {
 
 		@Id
 		@GeneratedValue

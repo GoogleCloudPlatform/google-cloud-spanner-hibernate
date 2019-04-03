@@ -42,7 +42,7 @@ public class EmbeddableAccessTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::access-embedded-mapping-example[]
 	@Entity(name = "Book_EmbeddableAccessTest")
-	public static class Book {
+	private static class Book {
 
 		@Id
 		private Long id;

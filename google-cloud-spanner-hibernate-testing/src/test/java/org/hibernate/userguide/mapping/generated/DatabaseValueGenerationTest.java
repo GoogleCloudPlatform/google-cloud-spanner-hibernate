@@ -44,8 +44,8 @@ public class DatabaseValueGenerationTest extends BaseEntityManagerFunctionalTest
 	}
 
 	//tag::mapping-database-generated-value-example[]
-	@Entity(name = "Event")
-	public static class Event {
+	@Entity(name = "Event_database_value_generation")
+	private static class Event {
 
 		@Id
 		@GeneratedValue

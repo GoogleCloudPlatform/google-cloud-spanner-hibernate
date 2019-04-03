@@ -47,7 +47,7 @@ public class ClobStringTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::basic-clob-string-example[]
 	@Entity(name = "Product_ClobStringTest")
-	public static class Product {
+	private static class Product {
 
 		@Id
 		private Integer id;

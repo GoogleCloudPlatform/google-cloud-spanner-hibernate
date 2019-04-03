@@ -46,8 +46,8 @@ public class AssignedIdentifierTest extends BaseEntityManagerFunctionalTestCase 
 	}
 
 	//tag::identifiers-simple-assigned-mapping-example[]
-	@Entity(name = "Book")
-	public static class Book {
+	@Entity(name = "Book_assigned_identifier")
+	private static class Book {
 
 		@Id
 		private Long id;

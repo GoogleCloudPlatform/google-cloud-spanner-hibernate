@@ -64,7 +64,7 @@ public class EmbeddedIdTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::identifiers-basic-embeddedid-mapping-example[]
 	@Entity(name = "SystemUser_EmbeddedIdTest")
-	public static class SystemUser {
+	private static class SystemUser {
 
 		@EmbeddedId
 		private PK pk;
