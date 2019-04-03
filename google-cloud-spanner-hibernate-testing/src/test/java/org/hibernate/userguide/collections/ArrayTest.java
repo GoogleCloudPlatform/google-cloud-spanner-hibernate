@@ -46,11 +46,6 @@ public class ArrayTest extends BaseEntityManagerFunctionalTestCase {
 		} );
 	}
 
-	@Before
-	public void clean() {
-		cleanTables();
-	}
-
 	//tag::collections-array-binary-example[]
 	@Entity(name = "Person_array")
 	private static class Person {
