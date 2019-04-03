@@ -38,7 +38,7 @@ public class EnumerationConverterTest extends BaseEntityManagerFunctionalTestCas
 
 	//tag::basic-enums-attribute-converter-example[]
 	@Entity(name = "Person_EnumerationConverterTest")
-	public static class Person {
+	private static class Person {
 
 		@Id
 		private Long id;

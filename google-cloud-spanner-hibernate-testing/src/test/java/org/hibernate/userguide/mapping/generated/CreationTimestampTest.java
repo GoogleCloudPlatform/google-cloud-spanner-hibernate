@@ -41,8 +41,8 @@ public class CreationTimestampTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::mapping-generated-CreationTimestamp-example[]
-	@Entity(name = "Event")
-	public static class Event {
+	@Entity(name = "Event_creation_timestamp")
+	private static class Event {
 
 		@Id
 		@GeneratedValue

@@ -80,7 +80,7 @@ public class EmbeddableOverrideTest extends BaseEntityManagerFunctionalTestCase 
 			joinColumns = @JoinColumn(name = "paper_back_publisher_country_id")
 		)
 	})
-	public static class Book {
+	private static class Book {
 
 		@Id
 		@GeneratedValue
@@ -178,8 +178,8 @@ public class EmbeddableOverrideTest extends BaseEntityManagerFunctionalTestCase 
 	//tag::embeddable-type-association-mapping-example[]
 	}
 
-	@Entity(name = "Country")
-	public static class Country {
+	@Entity(name = "Country_embeddable_override")
+	private static class Country {
 
 		@Id
 		@GeneratedValue

@@ -72,7 +72,7 @@ public class EmbeddedIdManyToOneTest extends BaseEntityManagerFunctionalTestCase
 
 	//tag::identifiers-basic-embeddedid-manytoone-mapping-example[]
 	@Entity(name = "SystemUser_EmbeddedIdManyToOneTest")
-	public static class SystemUser {
+	private static class SystemUser {
 
 		@EmbeddedId
 		private PK pk;
@@ -100,8 +100,8 @@ public class EmbeddedIdManyToOneTest extends BaseEntityManagerFunctionalTestCase
 	//tag::identifiers-basic-embeddedid-manytoone-mapping-example[]
 	}
 
-	@Entity(name = "Subsystem")
-	public static class Subsystem {
+	@Entity(name = "Subsystem_embedded_id_many_to_one")
+	private static class Subsystem {
 
 		@Id
 		private String id;

@@ -65,7 +65,7 @@ public class SimpleNaturalIdTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::naturalid-simple-basic-attribute-mapping-example[]
 	@Entity(name = "Book_SimpleNaturalIdTest")
-	public static class Book {
+	private static class Book {
 
 		@Id
 		private Long id;

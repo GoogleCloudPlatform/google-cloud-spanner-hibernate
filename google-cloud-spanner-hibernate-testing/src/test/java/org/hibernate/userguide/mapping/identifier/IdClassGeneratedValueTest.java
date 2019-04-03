@@ -62,7 +62,7 @@ public class IdClassGeneratedValueTest extends BaseEntityManagerFunctionalTestCa
 	//tag::identifiers-basic-idclass-generatedvalue-mapping-example[]
 	@Entity(name = "SystemUser_IdClassGeneratedValueTest")
 	@IdClass( PK.class )
-	public static class SystemUser {
+	private static class SystemUser {
 
 		@Id
 		private String subsystem;

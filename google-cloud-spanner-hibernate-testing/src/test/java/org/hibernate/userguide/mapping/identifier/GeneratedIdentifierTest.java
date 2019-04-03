@@ -46,8 +46,8 @@ public class GeneratedIdentifierTest extends BaseEntityManagerFunctionalTestCase
 	}
 
 	//tag::identifiers-simple-generated-mapping-example[]
-	@Entity(name = "Book")
-	public static class Book {
+	@Entity(name = "Book_generated_identifier")
+	private static class Book {
 
 		@Id
 		@GeneratedValue

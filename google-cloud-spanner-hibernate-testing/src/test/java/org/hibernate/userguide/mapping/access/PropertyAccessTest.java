@@ -39,8 +39,8 @@ public class PropertyAccessTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::access-property-mapping-example[]
-	@Entity(name = "Book")
-	public static class Book {
+	@Entity(name = "Book_propery_access")
+	private static class Book {
 
 		private Long id;
 

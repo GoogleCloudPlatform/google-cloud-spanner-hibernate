@@ -38,8 +38,8 @@ public class TypeCategoryTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::mapping-types-basic-example[]
-	@Entity(name = "Contact")
-	public static class Contact {
+	@Entity(name = "Contact_type_category")
+	private static class Contact {
 
 		@Id
 		private Integer id;
