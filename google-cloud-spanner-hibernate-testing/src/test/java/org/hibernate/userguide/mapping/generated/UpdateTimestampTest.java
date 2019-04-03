@@ -35,6 +35,7 @@ public class UpdateTimestampTest extends BaseEntityManagerFunctionalTestCase {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 			//tag::mapping-generated-UpdateTimestamp-persist-example[]
 			Bid bid = new Bid();
+			bid.setId(1L);
 			bid.setUpdatedBy( "John Doe" );
 			bid.setCents( 150 * 100L );
 			entityManager.persist( bid );
@@ -57,7 +58,6 @@ public class UpdateTimestampTest extends BaseEntityManagerFunctionalTestCase {
 	public static class Bid {
 
 		@Id
-		@GeneratedValue
 		private Long id;
 
 		@Column(name = "updated_on")

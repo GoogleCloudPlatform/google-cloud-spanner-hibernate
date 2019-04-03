@@ -67,7 +67,7 @@ public class EmbeddableImplicitOverrideTest
 	}
 
 	//tag::embeddable-multiple-namingstrategy-entity-mapping[]
-	@Entity(name = "Book")
+	@Entity(name = "Book_EmbeddableImplicitOverrideTest")
 	public static class Book {
 
 		@Id

@@ -33,6 +33,7 @@ public class TargetTest extends BaseEntityManagerFunctionalTestCase {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 
 			City cluj = new City();
+			cluj.setId(666);
 			cluj.setName( "Cluj" );
 			cluj.setCoordinates( new GPS( 46.77120, 23.62360 ) );
 
@@ -44,7 +45,7 @@ public class TargetTest extends BaseEntityManagerFunctionalTestCase {
 		//tag::mapping-Target-fetching-example[]
 		doInJPA( this::entityManagerFactory, entityManager -> {
 
-			City cluj = entityManager.find( City.class, 1L );
+			City cluj = entityManager.find( City.class, 666L );
 
 			assertEquals( 46.77120, cluj.getCoordinates().x(), 0.00001 );
 			assertEquals( 23.62360, cluj.getCoordinates().y(), 0.00001 );
@@ -84,11 +85,10 @@ public class TargetTest extends BaseEntityManagerFunctionalTestCase {
 		}
 	}
 
-	@Entity(name = "City")
+	@Entity(name = "City_BasicTargetTest")
 	public static class City {
 
 		@Id
-		@GeneratedValue
 		private Long id;
 
 		private String name;
@@ -103,6 +103,10 @@ public class TargetTest extends BaseEntityManagerFunctionalTestCase {
 		
 		public Long getId() {
 			return id;
+		}
+
+		public void setId(long id) {
+			this.id = id;
 		}
 
 		public String getName() {

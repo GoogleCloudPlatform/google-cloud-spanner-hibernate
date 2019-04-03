@@ -39,7 +39,7 @@ public class EnumerationCustomTypeTest extends BaseEntityManagerFunctionalTestCa
 	}
 
 	//tag::basic-enums-custom-type-example[]
-	@Entity(name = "Person")
+	@Entity(name = "Person_EnumerationCustomTypeTest")
 	public static class Person {
 
 		@Id

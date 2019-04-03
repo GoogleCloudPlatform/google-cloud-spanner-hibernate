@@ -43,7 +43,7 @@ public class SequenceGeneratorUnnamedTest extends BaseEntityManagerFunctionalTes
 	}
 
 	//tag::identifiers-generators-sequence-mapping-example[]
-	@Entity(name = "Product")
+	@Entity(name = "Product_")
 	public static class Product {
 
 		@Id

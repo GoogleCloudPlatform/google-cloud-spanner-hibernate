@@ -83,7 +83,7 @@ public class CompositeNaturalIdTest extends BaseEntityManagerFunctionalTestCase 
 	}
 
 	//tag::naturalid-single-embedded-attribute-mapping-example[]
-	@Entity(name = "Book")
+	@Entity(name = "Book_CompositeNaturalIdTest")
 	public static class Book {
 
 		@Id

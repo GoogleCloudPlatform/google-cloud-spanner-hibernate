@@ -45,7 +45,7 @@ public class PooledOptimizerTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::identifiers-generators-pooled-lo-optimizer-mapping-example[]
-	@Entity(name = "Product")
+	@Entity(name = "Product_PooledOptimizerTest")
 	public static class Product {
 
 		@Id
@@ -57,7 +57,7 @@ public class PooledOptimizerTest extends BaseEntityManagerFunctionalTestCase {
 			name = "product_generator",
 			strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
 			parameters = {
-				@Parameter(name = "sequence_name", value = "product_sequence"),
+				@Parameter(name = "sequence_name", value = "hibernate_sequence"),
 				@Parameter(name = "initial_value", value = "1"),
 				@Parameter(name = "increment_size", value = "3"),
 				@Parameter(name = "optimizer", value = "pooled-lo")

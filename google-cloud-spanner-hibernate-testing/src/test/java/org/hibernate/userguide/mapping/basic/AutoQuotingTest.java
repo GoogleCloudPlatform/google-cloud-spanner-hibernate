@@ -49,7 +49,7 @@ public class AutoQuotingTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::basic-auto-quoting-example[]
-	@Entity(name = "Product")
+	@Entity(name = "Product_AutoQuotingTest")
 	public static class Product {
 
 		@Id

@@ -73,7 +73,7 @@ public class MoneyConverterTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::basic-jpa-convert-money-converter-mapping-example[]
 
-	@Entity(name = "Account")
+	@Entity(name = "Account_MoneyConverterTest")
 	public static class Account {
 
 		@Id

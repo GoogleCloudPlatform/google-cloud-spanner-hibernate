@@ -129,8 +129,7 @@ public class SubselectTest extends BaseEntityManagerFunctionalTestCase {
 		//tag::mapping-Subselect-example[]
 	}
 
-	@Entity(name = "Account")
-	@Table(name = "account")
+	@Entity(name = "Account_SubselectTest")
 	public static class Account {
 
 		@Id
@@ -171,8 +170,7 @@ public class SubselectTest extends BaseEntityManagerFunctionalTestCase {
 		//tag::mapping-Subselect-example[]
 	}
 
-	@Entity(name = "AccountTransaction")
-	@Table(name = "account_transaction")
+	@Entity(name = "AccountTransaction_SubselectTest")
 	public static class AccountTransaction {
 
 		@Id
@@ -230,10 +228,10 @@ public class SubselectTest extends BaseEntityManagerFunctionalTestCase {
 		"select " +
 		"	a.id as id, " +
 		"	concat(concat(c.first_name, ' '), c.last_name) as clientName, " +
-		"	sum(at.cents) as balance " +
-		"from account a " +
+		"	sum(at_.cents) as balance " +
+		"from Account_SubselectTest a " +
 		"join client c on c.id = a.client_id " +
-		"join account_transaction at on a.id = at.account_id " +
+		"join AccountTransaction_SubselectTest at_ on a.id = at_.account_id " +
 		"group by a.id, concat(concat(c.first_name, ' '), c.last_name)"
 	)
 	@Synchronize( {"client", "account", "account_transaction"} )

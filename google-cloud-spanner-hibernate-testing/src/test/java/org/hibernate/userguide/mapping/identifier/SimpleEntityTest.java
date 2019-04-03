@@ -183,7 +183,7 @@ public class SimpleEntityTest extends BaseEntityManagerFunctionalTestCase {
 	//end::entity-pojo-set-mapping-example[]
 
 	//tag::entity-pojo-mapping-example[]
-	@Entity(name = "Book")
+	@Entity(name = "Book_SimpleEntityTest")
 	public static class Book {
 
 		//tag::entity-pojo-identifier-mapping-example[]

@@ -31,8 +31,20 @@
 
 		<dependency>
 			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-jcache</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-testing</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- used in CacheableNaturalIdTest -->
+		<dependency>
+			<groupId>org.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>3.7.0</version>
 		</dependency>
 
 		<dependency>

@@ -38,7 +38,7 @@ public class PhoneTypeEnumeratedStringTest extends BaseEntityManagerFunctionalTe
 	}
 
 	//tag::basic-enums-Enumerated-string-example[]
-	@Entity(name = "Phone")
+	@Entity(name = "Phone_EnumeratedStringTest")
 	public static class Phone {
 
 		@Id
