@@ -6,6 +6,7 @@
  */
 package org.hibernate.jpa.test;
 
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
 
 import java.net.URL;
@@ -37,6 +38,7 @@ import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.testing.junit4.BaseUnitTestCase;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
 /**
  * A base class for all ejb tests.
@@ -56,6 +58,14 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   private static EntityManager em;
   private static ArrayList<EntityManager> isolatedEms = new ArrayList<EntityManager>();
   private StandardServiceRegistryImpl serviceRegistry;
+
+  @BeforeClass
+  public static void prepare() {
+    assumeThat(System.getProperty("it.hibernate"))
+        .as("Hibernate integration tests are disabled. "
+            + "Please use '-Dit.hibernate' to enable them.")
+        .isEqualTo("true");
+  }
 
   @AfterClass
   @SuppressWarnings({"UnusedDeclaration"})
