@@ -90,7 +90,7 @@ public class GeneratorTypeTest extends BaseEntityManagerFunctionalTestCase {
 	}
 	
 	@Entity(name = "Person_GeneratorTypeTest")
-	public static class Person {
+	private static class Person {
 
 		@Id
 		private Long id;

@@ -99,7 +99,7 @@ public class ParentTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::embeddable-Parent-example[]
 
 	@Entity(name = "City_EmbeddableParentTest")
-	public static class City {
+	private static class City {
 
 		@Id
 		private Long id;

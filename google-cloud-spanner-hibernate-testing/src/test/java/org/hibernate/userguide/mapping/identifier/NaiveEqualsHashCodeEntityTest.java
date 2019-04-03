@@ -96,8 +96,8 @@ public class NaiveEqualsHashCodeEntityTest extends BaseEntityManagerFunctionalTe
 	}
 
 	//tag::entity-pojo-naive-equals-hashcode-example[]
-	@Entity(name = "Library")
-	public static class Library {
+	@Entity(name = "Library_naive_equals_hash_code")
+	private static class Library {
 
 		@Id
 		private Long id;
@@ -133,8 +133,8 @@ public class NaiveEqualsHashCodeEntityTest extends BaseEntityManagerFunctionalTe
 	//tag::entity-pojo-naive-equals-hashcode-example[]
 	}
 
-	@Entity(name = "Book")
-	public static class Book {
+	@Entity(name = "Book_naive_equals_hash_code")
+	private static class Book {
 
 		@Id
 		@GeneratedValue

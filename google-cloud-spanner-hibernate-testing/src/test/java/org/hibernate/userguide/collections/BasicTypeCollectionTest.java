@@ -16,9 +16,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import org.hibernate.annotations.Type;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.testing.junit4.BaseCoreFunctionalTestCase;
+import org.hibernate.jpa.test.BaseCoreFunctionalTestCase;
 import org.hibernate.userguide.collections.type.CommaDelimitedStringsType;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 

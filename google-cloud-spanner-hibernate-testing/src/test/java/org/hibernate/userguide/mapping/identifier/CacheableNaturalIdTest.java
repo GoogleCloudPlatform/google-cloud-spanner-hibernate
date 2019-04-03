@@ -83,7 +83,7 @@ public class CacheableNaturalIdTest extends BaseEntityManagerFunctionalTestCase 
 	//tag::naturalid-cacheable-mapping-example[]
 	@Entity(name = "Book_CacheableNaturalIdTest")
 	@NaturalIdCache
-	public static class Book {
+	private static class Book {
 
 		@Id
 		private Long id;

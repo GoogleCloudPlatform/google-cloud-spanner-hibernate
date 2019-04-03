@@ -86,7 +86,7 @@ public class TargetTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "City_EmbeddableTargetTest")
-	public static class City {
+	private static class City {
 
 		@Id
 		private Long id;

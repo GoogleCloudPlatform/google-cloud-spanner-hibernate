@@ -45,7 +45,7 @@ public class UuidGeneratedValueTest extends BaseEntityManagerFunctionalTestCase 
 
 	//tag::identifiers-generators-uuid-mapping-example[]
 	@Entity(name = "Book_UuidGeneratedValueTest")
-	public static class Book {
+	private static class Book {
 
 		@Id
 		@GeneratedValue

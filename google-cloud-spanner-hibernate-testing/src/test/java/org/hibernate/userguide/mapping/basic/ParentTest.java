@@ -99,7 +99,7 @@ public class ParentTest extends BaseEntityManagerFunctionalTestCase {
 	//tag::mapping-Parent-example[]
 
 	@Entity(name = "City_BasicParentTest")
-	public static class City {
+	private static class City {
 
 		@Id
 		private Long id;
