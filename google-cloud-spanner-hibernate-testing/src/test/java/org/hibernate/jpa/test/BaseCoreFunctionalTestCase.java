@@ -56,7 +56,9 @@ import org.hibernate.testing.junit4.Helper;
 import org.hibernate.testing.transaction.TransactionUtil2;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.hibernate.testing.transaction.TransactionUtil.doInHibernate;
 import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
 import static org.junit.Assert.fail;
@@ -131,6 +133,14 @@ public abstract class BaseCoreFunctionalTestCase extends BaseUnitTestCase {
   }
 
   // before/after test class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  @BeforeClass
+  public static void prepare() {
+    assumeThat(System.getProperty("it.hibernate"))
+        .as("Hibernate integration tests are disabled. "
+            + "Please use '-Dit.hibernate' to enable them.")
+        .isEqualTo("true");
+  }
 
   @BeforeClassOnce
   @SuppressWarnings( {"UnusedDeclaration"})
