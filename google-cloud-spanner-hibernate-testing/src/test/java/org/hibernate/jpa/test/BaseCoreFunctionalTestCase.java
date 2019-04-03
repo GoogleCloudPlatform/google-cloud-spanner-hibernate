@@ -10,17 +10,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Consumer;
+import javax.persistence.Entity;
 import javax.persistence.SharedCacheMode;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Interceptor;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.annotations.Subselect;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl;
 import org.hibernate.boot.registry.BootstrapServiceRegistry;
 import org.hibernate.boot.registry.BootstrapServiceRegistryBuilder;
@@ -38,6 +41,8 @@ import org.hibernate.internal.util.StringHelper;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.jdbc.Work;
+import org.hibernate.metamodel.internal.MetamodelImpl;
+import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.resource.transaction.spi.TransactionCoordinator;
 
 import org.hibernate.testing.AfterClassOnce;
@@ -53,6 +58,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import static org.hibernate.testing.transaction.TransactionUtil.doInHibernate;
+import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
 import static org.junit.Assert.fail;
 
 /**
@@ -98,6 +104,31 @@ public abstract class BaseCoreFunctionalTestCase extends BaseUnitTestCase {
     return session;
   }
 
+  public void cleanTables() {
+    doInJPA(this::sessionFactory, entityManager -> {
+
+      ((MetamodelImpl) entityManager.getMetamodel()).collectionPersisters()
+          .values()
+          .forEach(x -> {
+            String deleteQuery = getDeleteQuery(((AbstractCollectionPersister) x).getTableName());
+            entityManager.createNativeQuery(deleteQuery).executeUpdate();
+          });
+
+      Arrays.stream(getAnnotatedClasses())
+          .filter(entity -> entity.getAnnotation(Subselect.class) == null)
+          .forEach(x -> {
+            String name = x.getAnnotation(Entity.class).name();
+            if (name == null || name.isEmpty()) {
+              name = x.getSimpleName();
+            }
+            entityManager.createQuery(getDeleteQuery(name)).executeUpdate();
+          });
+    });
+  }
+
+  private String getDeleteQuery(String tableName) {
+    return "DELETE FROM " + tableName + " where 1=1";
+  }
 
   // before/after test class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -165,7 +196,7 @@ public abstract class BaseCoreFunctionalTestCase extends BaseUnitTestCase {
     configuration.setProperty( AvailableSettings.CACHE_REGION_FACTORY, CachingRegionFactory.class.getName() );
     configuration.setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
     if ( createSchema() ) {
-      configuration.setProperty( Environment.HBM2DDL_AUTO, "drop" );
+      configuration.setProperty( Environment.HBM2DDL_AUTO, "update" );
       final String secondSchemaName = createSecondSchema();
       if ( StringHelper.isNotEmpty( secondSchemaName ) ) {
         if ( !( getDialect() instanceof H2Dialect ) ) {

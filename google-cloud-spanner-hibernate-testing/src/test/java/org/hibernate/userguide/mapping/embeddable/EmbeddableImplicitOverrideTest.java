@@ -9,7 +9,7 @@ package org.hibernate.userguide.mapping.embeddable;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.boot.MetadataBuilder;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl;
-import org.hibernate.jpa.test.BaseNonConfigCoreFunctionalTestCase;
+import org.hibernate.testing.junit4.BaseNonConfigCoreFunctionalTestCase;
 import org.junit.Test;
 
 import javax.persistence.*;
