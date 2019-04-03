@@ -59,7 +59,7 @@ public class NationalizedTest extends BaseEntityManagerFunctionalTestCase {
 
     //tag::basic-nationalized-example[]
     @Entity(name = "Product_NationalizedTest")
-    public static class Product {
+    private static class Product {
 
         @Id
         private Integer id;

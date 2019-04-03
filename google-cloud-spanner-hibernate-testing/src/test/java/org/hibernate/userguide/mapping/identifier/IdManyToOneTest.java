@@ -68,7 +68,7 @@ public class IdManyToOneTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::identifiers-composite-id-mapping-example[]
 	@Entity(name = "Book_IdManyToOneTest")
-	public static class Book implements Serializable {
+	private static class Book implements Serializable {
 
 		@Id
 		@ManyToOne(fetch = FetchType.LAZY)
@@ -140,7 +140,7 @@ public class IdManyToOneTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "Author_IdManyToOneTest")
-	public static class Author implements Serializable {
+	private static class Author implements Serializable {
 
 		@Id
 		private String name;
@@ -177,7 +177,7 @@ public class IdManyToOneTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "Publisher_IdManyToOneTest")
-	public static class Publisher implements Serializable {
+	private static class Publisher implements Serializable {
 
 		@Id
 		private String name;

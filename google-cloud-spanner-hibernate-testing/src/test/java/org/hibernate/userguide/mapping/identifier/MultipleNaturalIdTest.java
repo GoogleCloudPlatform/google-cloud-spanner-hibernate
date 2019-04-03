@@ -69,7 +69,7 @@ public class MultipleNaturalIdTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::naturalid-multiple-attribute-mapping-example[]
 	@Entity(name = "Book_MultipleNaturalIdTest")
-	public static class Book {
+	private static class Book {
 
 		@Id
 		private Long id;
@@ -131,7 +131,7 @@ public class MultipleNaturalIdTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "Publisher_MultipleNaturalIdTest")
-	public static class Publisher implements Serializable {
+	private static class Publisher implements Serializable {
 
 		@Id
 		private Long id;

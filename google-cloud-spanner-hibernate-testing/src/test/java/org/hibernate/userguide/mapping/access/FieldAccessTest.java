@@ -39,8 +39,8 @@ public class FieldAccessTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::access-field-mapping-example[]
-	@Entity(name = "Book")
-	public static class Book {
+	@Entity(name = "Book_field_access")
+	private static class Book {
 
 		@Id
 		private Long id;

@@ -51,7 +51,7 @@ public class NestedEmbeddableTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "Book_NestedEmbeddableTest")
-	public static class Book {
+	private static class Book {
 
 		@Id
 		@GeneratedValue

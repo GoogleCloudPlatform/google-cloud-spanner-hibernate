@@ -7,7 +7,7 @@
 package org.hibernate.userguide.mapping.basic;
 
 import org.hibernate.annotations.TypeDef;
-import org.hibernate.testing.junit4.BaseCoreFunctionalTestCase;
+import org.hibernate.jpa.test.BaseCoreFunctionalTestCase;
 import org.junit.Test;
 
 import javax.persistence.Entity;
@@ -56,7 +56,7 @@ public class BitSetTypeDefTest extends BaseCoreFunctionalTestCase {
 		defaultForType = BitSet.class,
 		typeClass = BitSetType.class
 	)
-	public static class Product {
+	private static class Product {
 
 		@Id
 		private Integer id;

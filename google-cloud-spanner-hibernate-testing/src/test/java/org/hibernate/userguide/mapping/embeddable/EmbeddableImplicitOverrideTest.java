@@ -68,7 +68,7 @@ public class EmbeddableImplicitOverrideTest
 
 	//tag::embeddable-multiple-namingstrategy-entity-mapping[]
 	@Entity(name = "Book_EmbeddableImplicitOverrideTest")
-	public static class Book {
+	private static class Book {
 
 		@Id
 		@GeneratedValue
@@ -163,8 +163,8 @@ public class EmbeddableImplicitOverrideTest
 	//tag::embeddable-multiple-namingstrategy-entity-mapping[]
 	}
 
-	@Entity(name = "Country")
-	public static class Country {
+	@Entity(name = "Country_EmbeddableImplicitOverrideTest")
+	private static class Country {
 
 		@Id
 		@GeneratedValue

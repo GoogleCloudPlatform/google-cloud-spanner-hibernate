@@ -44,8 +44,8 @@ public class InMemoryValueGenerationTest extends BaseEntityManagerFunctionalTest
 	}
 
 	//tag::mapping-in-memory-generated-value-example[]
-	@Entity(name = "Event")
-	public static class Event {
+	@Entity(name = "Event_in_memory_value_generation")
+	private static class Event {
 
 		@Id
 		@GeneratedValue

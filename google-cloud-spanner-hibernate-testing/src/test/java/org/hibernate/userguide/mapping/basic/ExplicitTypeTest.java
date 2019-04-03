@@ -35,7 +35,7 @@ public class ExplicitTypeTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::basic-type-annotation-example[]
 	@Entity(name = "Product_ExplicitTypeTest")
-	public class Product {
+	private class Product {
 
 		@Id
 		private Integer id;

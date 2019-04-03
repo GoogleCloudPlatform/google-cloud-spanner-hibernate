@@ -34,12 +34,12 @@ public class EntityTableSchemaTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::mapping-entity-table-schema-postgresql-example[]
-	@Entity(name = "Book")
+	@Entity(name = "Book_entity_table_schema")
 	@Table(
 		schema = "library",
 		name = "book"
 	)
-	public static class Book {
+	private static class Book {
 
 		@Id
 		private Long id;

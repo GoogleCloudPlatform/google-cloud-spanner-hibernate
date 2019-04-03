@@ -37,8 +37,8 @@ public class DateWithTemporalDateTest extends BaseEntityManagerFunctionalTestCas
 	}
 
 	//tag::basic-datetime-temporal-date-example[]
-	@Entity(name = "DateEvent")
-	public static class DateEvent {
+	@Entity(name = "DateEvent_with_temporate_date")
+	private static class DateEvent {
 
 		@Id
 		@GeneratedValue
