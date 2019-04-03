@@ -50,7 +50,7 @@ public class BitSetTypeDefTest extends BaseCoreFunctionalTestCase {
 	}
 
 	//tag::basic-custom-type-BitSetTypeDef-mapping-example[]
-	@Entity(name = "Product")
+	@Entity(name = "Product_BitSetTypeDefTest")
 	@TypeDef(
 		name = "bitset",
 		defaultForType = BitSet.class,

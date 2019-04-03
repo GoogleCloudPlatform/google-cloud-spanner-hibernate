@@ -14,7 +14,7 @@ import javax.persistence.Id;
  * @author Vlad Mihalcea
  */
 //tag::identifiers-composite-generated-mapping-example[]
-@Entity
+@Entity(name = "Event_WithCompositeId")
 class Event {
 
     @Id

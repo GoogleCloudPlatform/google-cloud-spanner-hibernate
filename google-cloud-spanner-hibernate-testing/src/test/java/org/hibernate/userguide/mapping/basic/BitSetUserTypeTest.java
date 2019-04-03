@@ -88,9 +88,9 @@ public class BitSetUserTypeTest extends BaseCoreFunctionalTestCase {
 		name = "find_person_by_bitset",
 		query =
 			"SELECT " +
-			"   pr.id AS \"pr.id\", " +
-			"   pr.bitset AS \"pr.bitset\" " +
-			"FROM Product pr " +
+			"   pr.id AS pr_id, " +
+			"   pr.bitset AS pr_bitset " +
+			"FROM Product_BitSetUserTypeTest pr " +
 			"WHERE pr.id = :id",
 		resultSetMapping = "Person"
 	)
@@ -99,13 +99,13 @@ public class BitSetUserTypeTest extends BaseCoreFunctionalTestCase {
 		classes = @ConstructorResult(
 			targetClass = Product.class,
 			columns = {
-				@ColumnResult(name = "pr.id"),
-				@ColumnResult(name = "pr.bitset", type = BitSetUserType.class)
+				@ColumnResult(name = "pr_id"),
+				@ColumnResult(name = "pr_bitset", type = BitSetUserType.class)
 			}
 		)
 	)
 	//tag::basic-custom-type-BitSetUserType-mapping-example[]
-	@Entity(name = "Product")
+	@Entity(name = "Product_BitSetUserTypeTest")
 	public static class Product {
 
 		@Id

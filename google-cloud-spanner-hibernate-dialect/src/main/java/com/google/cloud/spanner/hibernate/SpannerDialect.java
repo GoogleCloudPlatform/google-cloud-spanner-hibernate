@@ -79,6 +79,7 @@ public class SpannerDialect extends Dialect {
     registerColumnType(Types.INTEGER, "INT64");
     registerColumnType(Types.CHAR, "STRING(1)");
     registerColumnType(Types.VARCHAR, STRING_MAX_LENGTH, "STRING($l)");
+    registerColumnType(Types.NVARCHAR, STRING_MAX_LENGTH, "STRING($l)");
     registerColumnType(Types.FLOAT, "FLOAT64");
     registerColumnType(Types.DOUBLE, "FLOAT64");
     registerColumnType(Types.DATE, "DATE");

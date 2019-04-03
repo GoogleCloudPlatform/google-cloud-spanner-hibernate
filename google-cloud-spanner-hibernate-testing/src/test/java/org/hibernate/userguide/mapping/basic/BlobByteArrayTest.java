@@ -47,7 +47,7 @@ public class BlobByteArrayTest extends BaseEntityManagerFunctionalTestCase {
     }
 
     //tag::basic-blob-byte-array-example[]
-    @Entity(name = "Product")
+    @Entity(name = "Product_BlobByteArrayTest")
     public static class Product {
 
         @Id

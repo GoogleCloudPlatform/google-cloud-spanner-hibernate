@@ -101,7 +101,7 @@ public class NClobTest extends BaseEntityManagerFunctionalTestCase {
 
 
     //tag::basic-nclob-example[]
-    @Entity(name = "Product")
+    @Entity(name = "Product_NClobTest")
     public static class Product {
 
         @Id

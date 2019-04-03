@@ -10,7 +10,9 @@ import org.hibernate.Session;
 import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
@@ -23,7 +25,7 @@ public class DynamicEntityTest extends BaseEntityManagerFunctionalTestCase {
 	@Override
 	protected String[] getMappings() {
 		return new String[] {
-				"org/hibernate/userguide/mapping/dynamic/Book.hbm.xml"
+				"Book.hbm.xml"
 		};
 	}
 
@@ -34,6 +36,11 @@ public class DynamicEntityTest extends BaseEntityManagerFunctionalTestCase {
 		settings.put( "hibernate.default_entity_mode", "dynamic-map" );
 		//end::mapping-model-dynamic-setting-example[]
 		return settings;
+	}
+
+	@Override
+	protected List<String> getExtraTablesToClear() {
+		return Collections.singletonList("Book_DynamicEntityTest");
 	}
 
 	@Test
@@ -48,7 +55,7 @@ public class DynamicEntityTest extends BaseEntityManagerFunctionalTestCase {
 
 			entityManager
 				.unwrap(Session.class)
-				.save( "Book", book );
+				.save( "Book_DynamicEntityTest", book );
 			//end::mapping-model-dynamic-example[]
 		} );
 	}

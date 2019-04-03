@@ -34,6 +34,7 @@ public class ParentTest extends BaseEntityManagerFunctionalTestCase {
 		doInJPA( this::entityManagerFactory, entityManager -> {
 
 			City cluj = new City();
+			cluj.setId(888);
 			cluj.setName( "Cluj" );
 			cluj.setCoordinates( new GPS( 46.77120, 23.62360 ) );
 
@@ -45,7 +46,7 @@ public class ParentTest extends BaseEntityManagerFunctionalTestCase {
 		//tag::embeddable-Parent-fetching-example[]
 		doInJPA( this::entityManagerFactory, entityManager -> {
 
-			City cluj = entityManager.find( City.class, 1L );
+			City cluj = entityManager.find( City.class, 888L );
 
 			assertSame( cluj, cluj.getCoordinates().getCity() );
 		} );
@@ -97,11 +98,10 @@ public class ParentTest extends BaseEntityManagerFunctionalTestCase {
 
 	//tag::embeddable-Parent-example[]
 
-	@Entity(name = "City")
+	@Entity(name = "City_EmbeddableParentTest")
 	public static class City {
 
 		@Id
-		@GeneratedValue
 		private Long id;
 
 		private String name;
@@ -116,6 +116,10 @@ public class ParentTest extends BaseEntityManagerFunctionalTestCase {
 		
 		public Long getId() {
 			return id;
+		}
+
+		public void setId(long id) {
+			this.id = id;
 		}
 
 		public String getName() {

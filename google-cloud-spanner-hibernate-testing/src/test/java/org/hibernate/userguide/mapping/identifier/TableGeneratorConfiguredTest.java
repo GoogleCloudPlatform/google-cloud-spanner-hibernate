@@ -39,7 +39,7 @@ public class TableGeneratorConfiguredTest extends BaseEntityManagerFunctionalTes
 	}
 
 	//tag::identifiers-generators-table-mapping-example[]
-	@Entity(name = "Product")
+	@Entity(name = "Product_TableGeneratorConfiguredTest")
 	public static class Product {
 
 		@Id

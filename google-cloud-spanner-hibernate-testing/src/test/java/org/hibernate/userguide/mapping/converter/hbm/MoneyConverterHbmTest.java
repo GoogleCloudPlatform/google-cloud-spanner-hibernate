@@ -9,6 +9,9 @@ package org.hibernate.userguide.mapping.converter.hbm;
 import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.List;
+
 import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
 
 /**
@@ -38,9 +41,14 @@ public class MoneyConverterHbmTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Override
+	protected List<String> getExtraTablesToClear() {
+		return Collections.singletonList("account_MoneyConverterHbmTest");
+	}
+
+	@Override
 	protected String[] getMappings() {
 		return new String[] {
-				"org/hibernate/userguide/mapping/converter/hbm/MoneyConverterHbmTest.hbm.xml"
+				"MoneyConverterHbmTest.hbm.xml"
 		};
 	}
 }

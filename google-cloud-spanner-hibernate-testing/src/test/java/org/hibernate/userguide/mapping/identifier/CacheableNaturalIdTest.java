@@ -12,8 +12,11 @@ import org.hibernate.annotations.NaturalIdCache;
 import org.hibernate.cache.jcache.JCacheHelper;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.cache.Caching;
 import javax.cache.configuration.MutableConfiguration;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -78,7 +81,7 @@ public class CacheableNaturalIdTest extends BaseEntityManagerFunctionalTestCase 
 	}
 
 	//tag::naturalid-cacheable-mapping-example[]
-	@Entity(name = "Book")
+	@Entity(name = "Book_CacheableNaturalIdTest")
 	@NaturalIdCache
 	public static class Book {
 

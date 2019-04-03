@@ -71,7 +71,7 @@ public class IdClassManyToOneTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	//tag::identifiers-basic-idclass-manytoone-mapping-example[]
-	@Entity(name = "SystemUser")
+	@Entity(name = "SystemUser_IdClassManyToOneTest")
 	@IdClass( PK.class )
 	public static class SystemUser {
 

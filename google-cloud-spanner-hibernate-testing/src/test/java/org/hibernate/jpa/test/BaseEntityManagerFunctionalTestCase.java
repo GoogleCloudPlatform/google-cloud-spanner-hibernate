@@ -21,6 +21,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceUnitTransactionType;
+
+import org.hibernate.annotations.Subselect;
 import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
 import org.hibernate.bytecode.enhance.spi.EnhancementContext;
 import org.hibernate.cfg.AvailableSettings;
@@ -114,19 +116,36 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   public void cleanTables() {
     doInJPA(this::entityManagerFactory, entityManager -> {
 
-      ((MetamodelImpl) entityManager.getMetamodel()).collectionPersisters().values().forEach(
-          x -> entityManager.createNativeQuery(
-              "DELETE FROM " + ((AbstractCollectionPersister) x).getTableName() + " where 1=1")
-              .executeUpdate());
+      ((MetamodelImpl) entityManager.getMetamodel()).collectionPersisters()
+          .values()
+          .forEach(x -> {
+            String deleteQuery = getDeleteQuery(((AbstractCollectionPersister) x).getTableName());
+            entityManager.createNativeQuery(deleteQuery).executeUpdate();
+          });
 
-      Arrays.stream(getAnnotatedClasses()).forEach(x -> {
-        String name = x.getAnnotation(Entity.class).name();
-        if (name == null || name.isEmpty()) {
-          name = x.getSimpleName();
-        }
-        entityManager.createQuery("DELETE FROM " + name + " where 1=1").executeUpdate();
-      });
+      Arrays.stream(getAnnotatedClasses())
+          .filter(entity -> entity.getAnnotation(Subselect.class) == null)
+          .forEach(x -> {
+            String name = x.getAnnotation(Entity.class).name();
+            if (name == null || name.isEmpty()) {
+              name = x.getSimpleName();
+            }
+            entityManager.createQuery(getDeleteQuery(name)).executeUpdate();
+          });
+
+      for (String extraTable : getExtraTablesToClear()) {
+        entityManager.createNativeQuery(getDeleteQuery(extraTable)).executeUpdate();
+      }
     });
+  }
+
+  /** Returns a list of extra tables that need to be cleared before each test is run. */
+  protected List<String> getExtraTablesToClear() {
+    return new ArrayList<>();
+  }
+
+  private String getDeleteQuery(String tableName) {
+    return "DELETE FROM " + tableName + " where 1=1";
   }
 
   /**
