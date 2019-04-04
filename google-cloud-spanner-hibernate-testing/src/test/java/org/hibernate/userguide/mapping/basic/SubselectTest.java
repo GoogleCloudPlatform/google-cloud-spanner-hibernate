@@ -55,7 +55,7 @@ public class SubselectTest extends BaseEntityManagerFunctionalTestCase {
 
 			AccountSummary summary = entityManager.createQuery(
 				"select s " +
-				"from AccountSummary s " +
+				"from Account_SubselectTest s " +
 				"where s.id = :id", AccountSummary.class)
 			.setParameter( "id", account.getId() )
 			.getSingleResult();

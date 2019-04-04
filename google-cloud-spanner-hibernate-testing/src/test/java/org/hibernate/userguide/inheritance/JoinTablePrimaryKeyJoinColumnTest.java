@@ -51,12 +51,13 @@ public class JoinTablePrimaryKeyJoinColumnTest extends BaseEntityManagerFunction
 
 		doInJPA( this::entityManagerFactory, entityManager -> {
 			List<Account> accounts =
-					entityManager.createQuery( "select a from Account a" ).getResultList();
+					entityManager.createQuery( "select a from "
+							+ "Account_join_table_primary_key_join_column a" ).getResultList();
 		} );
 	}
 
 	//tag::entity-inheritance-joined-table-primary-key-join-column-example[]
-	@Entity(name = "Account")
+	@Entity(name = "Account_join_table_primary_key_join_column")
 	@Inheritance(strategy = InheritanceType.JOINED)
 	private static class Account {
 
@@ -107,7 +108,7 @@ public class JoinTablePrimaryKeyJoinColumnTest extends BaseEntityManagerFunction
 	//tag::entity-inheritance-joined-table-primary-key-join-column-example[]
 	}
 
-	@Entity(name = "DebitAccount")
+	@Entity(name = "DebitAccount_join_table_primary_key_join_column")
 	@PrimaryKeyJoinColumn(name = "account_id")
 	private static class DebitAccount extends Account {
 
@@ -127,7 +128,7 @@ public class JoinTablePrimaryKeyJoinColumnTest extends BaseEntityManagerFunction
 	//tag::entity-inheritance-joined-table-primary-key-join-column-example[]
 	}
 
-	@Entity(name = "CreditAccount")
+	@Entity(name = "CreditAccount_join_table_primary_key_join_column")
 	@PrimaryKeyJoinColumn(name = "account_id")
 	private static class CreditAccount extends Account {
 
