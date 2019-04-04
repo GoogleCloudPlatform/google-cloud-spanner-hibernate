@@ -50,7 +50,7 @@
 		<dependency>
 			<groupId>com.google.cloud</groupId>
 			<artifactId>google-cloud-spanner</artifactId>
-			<version>0.66.1-beta-SNAPSHOT</version>
+			<version>0.80.1-alpha-SNAPSHOT</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/libs/test-driver.jar</systemPath>
 		</dependency>
