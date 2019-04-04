@@ -106,7 +106,7 @@ public class BitSetUserTypeTest extends BaseCoreFunctionalTestCase {
 	)
 	//tag::basic-custom-type-BitSetUserType-mapping-example[]
 	@Entity(name = "Product_BitSetUserTypeTest")
-	private static class Product {
+	public static class Product {
 
 		@Id
 		private Integer id;
