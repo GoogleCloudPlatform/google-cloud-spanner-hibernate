@@ -3,7 +3,7 @@
 This is a dialect compatible with https://hibernate.org/orm/releases/5.4/[Hibernate 5.4] for the Google Cloud Spanner database service.
 The `SpannerDialect` produces SQL, DML, and DDL statements for most common entity types and relationships using standard Hibernate and Java Persistence annotations.
 
-However, please see the following sections for important details and differences due to Cloud Spanner's features and data model.
+Please see the following sections for important details and differences due to Cloud Spanner's features and data model.
 
 === Quick Set-Up
 
@@ -39,6 +39,9 @@ hibernate.connection.url=jdbc:cloudspanner:/projects/{INSERT_PROJECT_ID}/instanc
 
 The service account JSON credentials file's location should be in the `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
 
+The dialect and driver are compatible with all values (`create`, `create-drop`, and `update`) of the `hibernate.hbm2ddl.auto` setting.
+
+
 === Spanner Dialect
 
 The `SpannerDialect` supports most of the standard Hibernate and Java Persistence annotations but there are important differences in features because of differences in https://cloud.google.com/spanner/docs/schema-and-data-model[Cloud Spanner's data model] from traditional SQL databases.
@@ -65,7 +68,32 @@ However, Hibernate-side cascading operations such as `@ManyToOne(cascade = {Casc
 Cloud Spanner does not support constraints.
 As a result, `SpannerDialect` does not currently support any constraints such as `FOREIGN KEY`, `UNIQUE`, or `ON DELETE CASCADE`.
 
-NOTE: Hibernate doesn't directly rely on the existence of constraints to perform its operations.
+NOTE: Hibernate doesn't directly rely on the existence of constraints to perform its operations and leaves the enforcement relationship links to the database.
+
+
+==== Collections
+
+`SpannerDialect` supports collection properties annotated with `@ElementCollection`.
+However, as with inter-object-relationships, foreign-key-columns in collection tables do not have the Foreign Key constraint.
+
+==== Table Catalogs and Schemas
+
+Cloud Spanner does not support table names with Catalog and Schema components:
+
+[source, java]
+----
+// Not supported: `public.store.book` is not a valid Cloud Spanner table name.
+@Table(
+  catalog = "public",
+  schema = "store",
+  name = "book"
+)
+
+// Supported.
+@Table(
+  name = "book"
+)
+----
 
 
 ==== @ColumnDefault
