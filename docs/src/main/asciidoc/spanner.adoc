@@ -1,0 +1,121 @@
+= Hibernate for Google Cloud Spanner
+
+This is a dialect compatible with https://hibernate.org/orm/releases/5.4/[Hibernate 5.4] for the Google Cloud Spanner database service.
+The `SpannerDialect` produces SQL, DML, and DDL statements for most common entity types and relationships using standard Hibernate and Java Persistence annotations.
+
+However, please see the following sections for important details and differences due to Cloud Spanner's features and data model.
+
+=== Quick Set-Up
+
+Maven coordinates for the dialect:
+
+[source,xml]
+----
+<dependency>
+  <groupId>com.google.cloud</groupId>
+  <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
+  <version> TBD </version>
+</dependency>
+----
+
+Maven coordinates for the official Cloud Spanner Driver:
+
+[source,xml]
+----
+<dependency>
+  <groupId>com.google.cloud</groupId>
+  <artifactId>google-cloud-spanner</artifactId>
+  <version> TBD </version>
+</dependency>
+----
+
+Configuring the `SpannerDialect` and a Cloud Spanner Driver class is typical of all Hibernate dialects in the `hibernate.properties` file:
+
+----
+hibernate.dialect=com.google.cloud.spanner.hibernate.SpannerDialect
+hibernate.connection.driver_class=com.google.cloud.spanner.jdbc.JdbcDriver
+hibernate.connection.url=jdbc:cloudspanner:/projects/{INSERT_PROJECT_ID}/instances/{INSERT_INSTANCE_ID}/databases/{INSERT_DATABASE_ID}
+----
+
+The service account JSON credentials file's location should be in the `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
+
+=== Spanner Dialect
+
+The `SpannerDialect` supports most of the standard Hibernate and Java Persistence annotations but there are important differences in features because of differences in https://cloud.google.com/spanner/docs/schema-and-data-model[Cloud Spanner's data model] from traditional SQL databases.
+
+
+==== Relationships
+
+The dialect supports all of the standard relational annotations:
+
+- `@OneToOne`
+- `@OneToMany`
+- `@ManyToOne`
+- `@ManyToMany`
+
+These can be used via `@JoinTable` or `@JoinColumn`.
+However, because Cloud Spanner does not support Foreign Keys, foreign-key-columns are just regular columns in Cloud Spanner.
+
+NOTE: The lack of foreign keys also means database-side cascading deletes are not supported via the `@OnDelete(action = OnDeleteAction.CASCADE)` annotation because there is no `ON DELETE CASCADE` constraint in Cloud Spanner DDL.
+However, Hibernate-side cascading operations such as `@ManyToOne(cascade = {CascadeType.ALL})` are supported.
+
+
+==== Constraints
+
+Cloud Spanner does not support constraints.
+As a result, `SpannerDialect` does not currently support any constraints such as `FOREIGN KEY`, `UNIQUE`, or `ON DELETE CASCADE`.
+
+NOTE: Hibernate doesn't directly rely on the existence of constraints to perform its operations.
+
+
+==== @ColumnDefault
+
+The dialect does not currently set default values based on the https://docs.jboss.org/hibernate/orm/5.4/javadocs/org/hibernate/annotations/ColumnDefault.html[`@ColumnDefault`] annotation,
+because `null` values aren't specially handled and are stored just like other values by Cloud Spanner and its driver.
+
+
+==== Decimal and Numeric Types
+
+Cloud Spanner does not provide native support for https://cloud.google.com/spanner/docs/storing-numeric-data[arbitrary-precision decimal numbers], but does provide some alternative approaches.
+As a result, the driver and dialect do not support decimal and arbitrary-precision Java types that Hibernate maps to Java Persistence types `java.sql.Type` of `NUMERIC` and `DECIMAL` such as `java.math.BigDecimal`.
+
+
+==== Subclasses using `InheritanceType.JOINED`
+
+If you are using entities that are related by inheritance with the `@Inheritance(strategy = InheritanceType.JOINED)`:
+
+[source, java]
+----
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+public class Payment {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private Long amount;
+}
+
+@Entity
+public class WireTransferPayment extends Payment {
+}
+
+@Entity
+public class CreditCardPayment extends Payment {
+}
+----
+
+You must set the `hibernate.hql.bulk_id_strategy` setting in `hibernate.properties` to one of the following classes:
+
+- `InlineIdsInClauseBulkIdStrategy`
+- `InlineIdsSubSelectValueListBulkIdStrategy`
+- `InlineIdsOrClauseBulkIdStrategy`
+- `CteValuesListBulkIdStrategy`
+
+This is because Hibernate's default behavior attempts to create intermediate tables to handle delete and update operations on the multiple tables that represent a `JOINED` inheritance hierarchy, but these table creations statements do not conform to Cloud Spanner DDL.
+Using one of the `Inline` bulk-ID strategy classes given above resolves this issue.
+
+
+
+
