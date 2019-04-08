@@ -46,6 +46,16 @@ The dialect and driver are compatible with all values (`create`, `create-drop`, 
 
 The `SpannerDialect` supports most of the standard Hibernate and Java Persistence annotations but there are important differences in features because of differences in https://cloud.google.com/spanner/docs/schema-and-data-model[Cloud Spanner's data model] from traditional SQL databases.
 
+These are unsupported features in the Cloud Spanner Hibernate Dialect.
+Please see the following sections for details:
+[options="header"]
+|===
+| Unsupported Feature | Description
+| Constraints | No support for `FOREIGN KEY`, `UNIQUE`, or `ON DELETE CASCADE`. Cloud Spanner does not enforce relationship links outside of Hibernate.
+| Catalog and schema in table names | Tables names cannot contain periods or other punctuation.
+| Column default values | Cloud Spanner treats `null` like any other value and it gets no special handling.
+| Decimal or arbitrary-precision numbers | Cloud Spanner does not support `java.sql` types of `NUMERIC` or `DECIMAL`
+|===
 
 ==== Relationships
 
@@ -70,11 +80,41 @@ As a result, `SpannerDialect` does not currently support any constraints such as
 
 NOTE: Hibernate doesn't directly rely on the existence of constraints to perform its operations and leaves the enforcement relationship links to the database.
 
+The lack of the foreign key constraint affects relationships and collection properties annotated with `@ElementCollection`.
 
-==== Collections
 
-`SpannerDialect` supports collection properties annotated with `@ElementCollection`.
-However, as with inter-object-relationships, foreign-key-columns in collection tables do not have the Foreign Key constraint.
+==== Generated IDs
+
+Hibernate's `@GeneratedValue` annotation for `long` properties is supported but not recommended:
+[source, java]
+----
+@Entity
+public class Employee {
+
+  @Id
+  @GeneratedValue
+  public Long id;
+}
+----
+
+This results in sequential IDs that are https://cloud.google.com/spanner/docs/schema-and-data-model#primary_keys[not optimal for Cloud Spanner] and requires locking of the `hibernate_sequence` table for inserts.
+
+You can use locally-generated UUID key values instead:
+[source, java]
+----
+@Entity
+public class Employee {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  @Type(type="uuid-char")
+  public UUID id;
+}
+----
+
+The `@Type(type="uuid-char")` annotation specifies that this UUID value will be stored in Cloud Spanner as a `STRING` column.
+Leaving out this annotation will cause a `BYTES` column to be used.
+
 
 ==== Table Catalogs and Schemas
 
@@ -96,7 +136,7 @@ Cloud Spanner does not support table names with Catalog and Schema components:
 ----
 
 
-==== @ColumnDefault
+==== Column Default Values
 
 The dialect does not currently set default values based on the https://docs.jboss.org/hibernate/orm/5.4/javadocs/org/hibernate/annotations/ColumnDefault.html[`@ColumnDefault`] annotation,
 because `null` values aren't specially handled and are stored just like other values by Cloud Spanner and its driver.
@@ -141,7 +181,7 @@ You must set the `hibernate.hql.bulk_id_strategy` setting in `hibernate.properti
 - `InlineIdsOrClauseBulkIdStrategy`
 - `CteValuesListBulkIdStrategy`
 
-This is because Hibernate's default behavior attempts to create intermediate tables to handle delete and update operations on the multiple tables that represent a `JOINED` inheritance hierarchy, but these table creations statements do not conform to Cloud Spanner DDL.
+This is because Hibernate's default behavior (`PersistentTableBulkIdStrategy`) attempts to create intermediate tables to handle delete and update operations on the multiple tables that represent a `JOINED` inheritance hierarchy, but these table creations statements do not conform to Cloud Spanner DDL.
 Using one of the `Inline` bulk-ID strategy classes given above resolves this issue.
 
 
