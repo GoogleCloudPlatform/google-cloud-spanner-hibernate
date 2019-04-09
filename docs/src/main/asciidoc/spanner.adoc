@@ -37,7 +37,7 @@ hibernate.connection.driver_class=com.google.cloud.spanner.jdbc.JdbcDriver
 hibernate.connection.url=jdbc:cloudspanner:/projects/{INSERT_PROJECT_ID}/instances/{INSERT_INSTANCE_ID}/databases/{INSERT_DATABASE_ID}
 ----
 
-The https://cloud.google.com/docs/authentication/getting-started[service account JSON credentials] file's location should be in the `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
+The https://cloud.google.com/docs/authentication/getting-started[service account JSON credentials] file location should be in the `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
 The driver will use default credentials set in the Google Cloud SDK `gcloud` application otherwise.
 
 The dialect and driver are compatible with all values (`create`, `create-drop`, and `update`) of the `hibernate.hbm2ddl.auto` setting.
