@@ -119,7 +119,7 @@ Leaving out this annotation causes a `BYTES` column to be used.
 
 ==== Table Catalogs and Schemas
 
-Cloud Spanner does not support table names with Catalog and Schema components:
+Cloud Spanner does not support table names with catalog and schema components:
 
 [source, java]
 ----
