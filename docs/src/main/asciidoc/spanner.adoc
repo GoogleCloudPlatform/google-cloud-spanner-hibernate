@@ -93,7 +93,7 @@ Hibernate's `@GeneratedValue` annotation for `long` properties is supported but 
 public class Employee {
 
   @Id
-  @GeneratedValue
+  @GeneratedValue // DON'T DO THIS, IT'S SLOW
   public Long id;
 }
 ----
