@@ -60,7 +60,7 @@ Please see the following sections for details:
 
 ==== Relationships
 
-The dialect supports all of the standard relational annotations:
+The dialect supports all of the standard entity relationships:
 
 - `@OneToOne`
 - `@OneToMany`
