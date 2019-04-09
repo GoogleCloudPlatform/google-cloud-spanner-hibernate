@@ -146,7 +146,7 @@ because `null` values aren't specially handled and are stored just like other va
 ==== Decimal and Numeric Types
 
 Cloud Spanner does not provide native support for https://cloud.google.com/spanner/docs/storing-numeric-data[arbitrary-precision decimal numbers], but does provide some alternative approaches.
-As a result, the driver and dialect do not support decimal and arbitrary-precision Java types that Hibernate maps to Java Persistence types `java.sql.Type` of `NUMERIC` and `DECIMAL` such as `java.math.BigDecimal`.
+As a result, the driver and dialect do not support decimal and arbitrary-precision Java types such as `java.math.BigInteger` and `java.math.BigDecimal`.
 
 
 ==== Subclasses using `InheritanceType.JOINED`
