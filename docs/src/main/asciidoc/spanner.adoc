@@ -123,7 +123,7 @@ Cloud Spanner does not support table names with Catalog and Schema components:
 
 [source, java]
 ----
-// Not supported: `public.store.book` is not a valid Cloud Spanner table name.
+// Not supported: `public.store.book` is not a valid Cloud Spanner table name reference.
 @Table(
   catalog = "public",
   schema = "store",
