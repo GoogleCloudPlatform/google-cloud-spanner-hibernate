@@ -70,7 +70,7 @@ The dialect supports all of the standard entity relationships:
 These can be used via `@JoinTable` or `@JoinColumn`.
 However, because Cloud Spanner does not support foreign key constraints, foreign-key-columns are just regular columns in Cloud Spanner.
 
-NOTE: The lack of foreign keys also means database-side cascading deletes are not supported via the `@OnDelete(action = OnDeleteAction.CASCADE)` annotation because there is no `ON DELETE CASCADE` constraint in Cloud Spanner DDL.
+NOTE: The lack of foreign key constraints also means database-side cascading deletes are not supported via the `@OnDelete(action = OnDeleteAction.CASCADE)` annotation because there is no `ON DELETE CASCADE` constraint in Cloud Spanner DDL.
 However, Hibernate-side cascading operations such as `@ManyToOne(cascade = {CascadeType.ALL})` are supported.
 
 
