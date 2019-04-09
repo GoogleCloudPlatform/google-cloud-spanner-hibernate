@@ -53,7 +53,7 @@ Please see the following sections for details:
 |===
 | Unsupported Feature | Description
 | Constraints | No support for `FOREIGN KEY`, `UNIQUE`, or `ON DELETE CASCADE`. Cloud Spanner does not enforce relationship links outside of Hibernate.
-| Catalog and schema in table names | Tables names cannot contain periods or other punctuation.
+| Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
 | Column default values | Cloud Spanner treats `null` like any other value and it gets no special handling.
 | Big-decimal or arbitrary-precision numbers | The dialect does not support `java.math.BigDecimal` because Cloud Spanner doesn't have SQL `NUMERIC` or `DECIMAL` support.
 |===
