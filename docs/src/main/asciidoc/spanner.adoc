@@ -140,7 +140,7 @@ Cloud Spanner does not support table names with Catalog and Schema components:
 ==== Column Default Values
 
 The dialect does not currently set default values based on the https://docs.jboss.org/hibernate/orm/5.4/javadocs/org/hibernate/annotations/ColumnDefault.html[`@ColumnDefault`] annotation,
-because `null` values aren't specially handled and are stored just like other values by Cloud Spanner and its driver.
+because `NULL` values aren't specially handled and are stored just like other values by Cloud Spanner and its driver.
 
 
 ==== Decimal and Numeric Types
