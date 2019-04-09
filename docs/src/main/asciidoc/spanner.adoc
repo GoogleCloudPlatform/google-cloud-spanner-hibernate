@@ -145,7 +145,7 @@ because `NULL` values aren't specially handled and are stored just like other va
 
 ==== Decimal and Numeric Types
 
-Cloud Spanner does not provide native support for https://cloud.google.com/spanner/docs/storing-numeric-data[arbitrary-precision decimal numbers], but does provide some alternative approaches.
+Cloud Spanner does not provide native support for https://cloud.google.com/spanner/docs/storing-numeric-data[arbitrary-precision decimal numbers], such as `NUMERIC` and `DECIMAL`.
 As a result, the driver and dialect do not support decimal and arbitrary-precision Java types such as `java.math.BigInteger` and `java.math.BigDecimal`.
 
 
