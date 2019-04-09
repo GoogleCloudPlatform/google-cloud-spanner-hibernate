@@ -100,7 +100,7 @@ public class Employee {
 
 This results in sequential IDs that are https://cloud.google.com/spanner/docs/schema-and-data-model#primary_keys[not optimal for Cloud Spanner] and requires locking of the `hibernate_sequence` table for inserts.
 
-You can use locally-generated UUID key values instead:
+You should use locally-generated UUID key values instead:
 [source, java]
 ----
 @Entity
