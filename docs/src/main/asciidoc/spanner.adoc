@@ -76,7 +76,7 @@ However, Hibernate-side cascading operations such as `@ManyToOne(cascade = {Casc
 
 ==== Constraints
 
-Cloud Spanner does not support constraints.
+Cloud Spanner does not support database constraints.
 As a result, `SpannerDialect` does not currently support any constraints such as `FOREIGN KEY`, `UNIQUE`, or `ON DELETE CASCADE`.
 
 NOTE: Hibernate doesn't directly rely on the existence of constraints to perform its operations and leaves the enforcement relationship links to the database.
