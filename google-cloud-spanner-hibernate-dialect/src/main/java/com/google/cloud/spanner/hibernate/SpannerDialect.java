@@ -1,11 +1,26 @@
 /*
- * Hibernate, Relational Persistence for Idiomatic Java
+ * Copyright 2019 Google LLC
  *
- * License: GNU Lesser General Public License (LGPL), version 2.1 or later.
- * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
+
 package com.google.cloud.spanner.hibernate;
 
+import java.io.Serializable;
+import java.sql.Types;
+import java.util.Map;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.StaleObjectStateException;
@@ -18,15 +33,16 @@ import org.hibernate.engine.jdbc.env.spi.SchemaNameResolver;
 import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.metamodel.model.domain.spi.Lockable;
-import org.hibernate.metamodel.model.relational.spi.*;
+import org.hibernate.metamodel.model.relational.spi.Column;
+import org.hibernate.metamodel.model.relational.spi.Exportable;
+import org.hibernate.metamodel.model.relational.spi.ExportableTable;
+import org.hibernate.metamodel.model.relational.spi.ForeignKey;
+import org.hibernate.metamodel.model.relational.spi.Sequence;
+import org.hibernate.metamodel.model.relational.spi.UniqueKey;
 import org.hibernate.query.sqm.mutation.spi.idtable.IdTable;
 import org.hibernate.query.sqm.produce.function.SqmFunctionRegistry;
 import org.hibernate.tool.schema.spi.Exporter;
 import org.hibernate.type.spi.StandardSpiBasicTypes;
-
-import java.io.Serializable;
-import java.sql.Types;
-import java.util.Map;
 
 /**
  * Hibernate Dialect implementation for Cloud Spanner.

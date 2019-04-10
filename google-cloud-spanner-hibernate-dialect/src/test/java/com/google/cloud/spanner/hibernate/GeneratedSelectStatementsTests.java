@@ -128,7 +128,7 @@ public class GeneratedSelectStatementsTests {
 
   @Test
   @Ignore
-  // The Join statements generated are non deterministic; the variables can come in different orders.
+  // The Join statements generated aren't deterministic; variables can come in different orders.
   public void selectJoinTest() {
     List<String> sqlStrings = getStatementTranslation(
         x -> x.createQuery("select s from SubTestEntity s inner join s.testEntity").list());

@@ -23,24 +23,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.cloud.spanner.hibernate.entities.Employee;
 import com.google.cloud.spanner.hibernate.entities.TestEntity;
-import java.io.File;
+import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.persistence.Entity;
-
-import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
 import org.hibernate.AnnotationException;
 import org.hibernate.Session;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.hibernate.tool.schema.TargetType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -117,7 +110,10 @@ public class SpannerTableExporterTests {
         .collect(Collectors.toList());
 
     assertThat(sqlStrings)
-        .containsExactly("drop index name_index", "drop table Employee", "drop table hibernate_sequence");
+        .containsExactly(
+            "drop index name_index",
+            "drop table Employee",
+            "drop table hibernate_sequence");
   }
 
   @Test
@@ -138,13 +134,14 @@ public class SpannerTableExporterTests {
         .filter(statement -> statement.startsWith("create"))
         .collect(Collectors.toList());
 
-    String expectedCreateString = "create table `test_table` (`boolColumn` BOOL,`ID1` " +
-        "INT64 not null,id2 STRING(255) not null,longVal INT64 not null," +
-        "stringVal STRING(255)) PRIMARY KEY (`ID1`,id2)";
+    String expectedCreateString = "create table `test_table` (`boolColumn` BOOL,`ID1` "
+        + "INT64 not null,id2 STRING(255) not null,longVal INT64 not null,"
+        + "stringVal STRING(255)) PRIMARY KEY (`ID1`,id2)";
 
-    String expectedCollectionCreateString = "create table TestEntity_stringList " +
-        "(stringList STRING(255),`TestEntity_ID1` INT64 not null," +
-        "TestEntity_id2 STRING(255) not null) PRIMARY KEY (stringList,`TestEntity_ID1`,TestEntity_id2)";
+    String expectedCollectionCreateString = "create table TestEntity_stringList "
+        + "(stringList STRING(255),`TestEntity_ID1` INT64 not null,"
+        + "TestEntity_id2 STRING(255) not null) "
+        + "PRIMARY KEY (stringList,`TestEntity_ID1`,TestEntity_id2)";
 
     assertThat(sqlStrings)
         .containsExactlyInAnyOrder(expectedCreateString, expectedCollectionCreateString);
