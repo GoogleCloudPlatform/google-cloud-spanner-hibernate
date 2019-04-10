@@ -1,49 +1,32 @@
 /*
- * Copyright 2019 Google LLC
+ * Hibernate, Relational Persistence for Idiomatic Java
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later.
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-
 package com.google.cloud.spanner.hibernate;
-
-import java.io.Serializable;
-import java.sql.Types;
-import java.util.Map;
 
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.StaleObjectStateException;
-import org.hibernate.boot.Metadata;
-import org.hibernate.boot.model.relational.Exportable;
-import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.function.SQLFunctionTemplate;
-import org.hibernate.dialect.function.StandardSQLFunction;
+import org.hibernate.dialect.function.CommonFunctionFactory;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.LockingStrategyException;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.env.spi.SchemaNameResolver;
+import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.mapping.Column;
-import org.hibernate.mapping.Constraint;
-import org.hibernate.mapping.ForeignKey;
-import org.hibernate.mapping.Table;
-import org.hibernate.mapping.UniqueKey;
-import org.hibernate.persister.entity.Lockable;
+import org.hibernate.metamodel.model.domain.spi.Lockable;
+import org.hibernate.metamodel.model.relational.spi.*;
+import org.hibernate.query.sqm.mutation.spi.idtable.IdTable;
+import org.hibernate.query.sqm.produce.function.SqmFunctionRegistry;
 import org.hibernate.tool.schema.spi.Exporter;
-import org.hibernate.type.StandardBasicTypes;
+import org.hibernate.type.spi.StandardSpiBasicTypes;
+
+import java.io.Serializable;
+import java.sql.Types;
+import java.util.Map;
 
 /**
  * Hibernate Dialect implementation for Cloud Spanner.
@@ -59,11 +42,12 @@ public class SpannerDialect extends Dialect {
 
   private static final int BYTES_MAX_LENGTH = 10485760;
 
-  private final SpannerTableExporter spannerTableExporter = new SpannerTableExporter(this);
+  private final SpannerDialectTableExporter spannerTableExporter =
+      new SpannerDialectTableExporter(this);
 
   private static final LockingStrategy LOCKING_STRATEGY = new DoNothingLockingStrategy();
 
-  private static final Exporter NOOP_EXPORTER = new EmptyExporter();
+  private static final EmptyExporter NOOP_EXPORTER = new EmptyExporter();
 
   private static final UniqueDelegate NOOP_UNIQUE_DELEGATE = new DoNothingUniqueDelegate();
 
@@ -95,170 +79,398 @@ public class SpannerDialect extends Dialect {
 
     registerColumnType(Types.DECIMAL, "FLOAT64");
     registerColumnType(Types.NUMERIC, "FLOAT64");
-
-    registerFunction("ANY_VALUE", new StandardSQLFunction("ANY_VALUE"));
-    registerFunction("COUNTIF", new StandardSQLFunction("COUNTIF", StandardBasicTypes.LONG));
-
-    registerFunction("CONCAT", new StandardSQLFunction("CONCAT"));
-    registerFunction("STRING_AGG",
-        new StandardSQLFunction("STRING_AGG", StandardBasicTypes.STRING));
-    registerFunction("FARM_FINGERPRINT",
-        new StandardSQLFunction("FARM_FINGERPRINT", StandardBasicTypes.LONG));
-    registerFunction("SHA1", new StandardSQLFunction("SHA1", StandardBasicTypes.BINARY));
-    registerFunction("SHA256", new StandardSQLFunction("SHA256", StandardBasicTypes.BINARY));
-    registerFunction("SHA512", new StandardSQLFunction("SHA512", StandardBasicTypes.BINARY));
-    registerFunction("BYTE_LENGTH",
-        new StandardSQLFunction("BYTE_LENGTH", StandardBasicTypes.LONG));
-    registerFunction("CHAR_LENGTH",
-        new StandardSQLFunction("CHAR_LENGTH", StandardBasicTypes.LONG));
-    registerFunction("CHARACTER_LENGTH",
-        new StandardSQLFunction("CHARACTER_LENGTH", StandardBasicTypes.LONG));
-    registerFunction("CODE_POINTS_TO_BYTES",
-        new StandardSQLFunction("CODE_POINTS_TO_BYTES", StandardBasicTypes.BINARY));
-    registerFunction("CODE_POINTS_TO_STRING",
-        new StandardSQLFunction("CODE_POINTS_TO_STRING", StandardBasicTypes.STRING));
-    registerFunction("ENDS_WITH", new StandardSQLFunction("ENDS_WITH", StandardBasicTypes.BOOLEAN));
-    registerFunction("FORMAT", new StandardSQLFunction("FORMAT", StandardBasicTypes.STRING));
-    registerFunction("FROM_BASE64",
-        new StandardSQLFunction("FROM_BASE64", StandardBasicTypes.BINARY));
-    registerFunction("FROM_HEX", new StandardSQLFunction("FROM_HEX", StandardBasicTypes.BINARY));
-    registerFunction("LENGTH", new StandardSQLFunction("LENGTH", StandardBasicTypes.LONG));
-    registerFunction("LPAD", new StandardSQLFunction("LPAD"));
-    registerFunction("LOCATE", new StandardSQLFunction("STRPOS", StandardBasicTypes.LONG));
-    registerFunction("LOWER", new StandardSQLFunction("LOWER"));
-    registerFunction("LTRIM", new StandardSQLFunction("LTRIM"));
-    registerFunction("REGEXP_CONTAINS",
-        new StandardSQLFunction("REGEXP_CONTAINS", StandardBasicTypes.BOOLEAN));
-    registerFunction("REGEXP_EXTRACT", new StandardSQLFunction("REGEXP_EXTRACT"));
-    registerFunction("REGEXP_REPLACE", new StandardSQLFunction("REGEXP_REPLACE"));
-    registerFunction("REPLACE", new StandardSQLFunction("REPLACE"));
-    registerFunction("REPEAT", new StandardSQLFunction("REPEAT"));
-    registerFunction("REVERSE", new StandardSQLFunction("REVERSE"));
-    registerFunction("RPAD", new StandardSQLFunction("RPAD"));
-    registerFunction("RTRIM", new StandardSQLFunction("RTRIM"));
-    registerFunction("SAFE_CONVERT_BYTES_TO_STRING",
-        new StandardSQLFunction("SAFE_CONVERT_BYTES_TO_STRING", StandardBasicTypes.STRING));
-    registerFunction("STARTS_WITH",
-        new StandardSQLFunction("STARTS_WITH", StandardBasicTypes.BOOLEAN));
-    registerFunction("STR",
-        new SQLFunctionTemplate(StandardBasicTypes.STRING, "cast(?1 as string)"));
-    registerFunction("STRPOS", new StandardSQLFunction("STRPOS", StandardBasicTypes.LONG));
-    registerFunction("SUBSTR", new StandardSQLFunction("SUBSTR", StandardBasicTypes.STRING));
-    registerFunction("SUBSTRING", new StandardSQLFunction("SUBSTR", StandardBasicTypes.STRING));
-    registerFunction("TO_BASE64", new StandardSQLFunction("TO_BASE64", StandardBasicTypes.STRING));
-
-    registerFunction("TO_HEX", new StandardSQLFunction("TO_HEX", StandardBasicTypes.STRING));
-    registerFunction("TRIM", new StandardSQLFunction("TRIM"));
-    registerFunction("UPPER", new StandardSQLFunction("UPPER"));
-    registerFunction("JSON_QUERY",
-        new StandardSQLFunction("JSON_QUERY", StandardBasicTypes.STRING));
-    registerFunction("JSON_VALUE",
-        new StandardSQLFunction("JSON_VALUE", StandardBasicTypes.STRING));
-    registerFunction("ARRAY_CONCAT", new StandardSQLFunction("ARRAY_CONCAT"));
-    registerFunction("ARRAY_LENGTH",
-        new StandardSQLFunction("ARRAY_LENGTH", StandardBasicTypes.LONG));
-    registerFunction("ARRAY_TO_STRING",
-        new StandardSQLFunction("ARRAY_TO_STRING", StandardBasicTypes.STRING));
-
-    registerFunction("ARRAY_REVERSE", new StandardSQLFunction("ARRAY_REVERSE"));
-
-    registerFunction("CURRENT_DATE",
-        new StandardSQLFunction("CURRENT_DATE", StandardBasicTypes.DATE));
-    registerFunction("EXTRACT",
-        new SQLFunctionTemplate(StandardBasicTypes.LONG, "extract(?1 ?2 ?3)"));
-    registerFunction("DATE", new StandardSQLFunction("DATE", StandardBasicTypes.DATE));
-    registerFunction("DATE_ADD", new StandardSQLFunction("DATE_ADD", StandardBasicTypes.DATE));
-    registerFunction("DATE_SUB", new StandardSQLFunction("DATE_SUB", StandardBasicTypes.DATE));
-    registerFunction("DATE_DIFF", new StandardSQLFunction("DATE_DIFF", StandardBasicTypes.LONG));
-    registerFunction("DATE_TRUNC", new StandardSQLFunction("DATE_TRUNC", StandardBasicTypes.DATE));
-    registerFunction("DATE_FROM_UNIX_DATE",
-        new StandardSQLFunction("DATE_FROM_UNIX_DATE", StandardBasicTypes.DATE));
-    registerFunction("FORMAT_DATE",
-        new StandardSQLFunction("FORMAT_DATE", StandardBasicTypes.STRING));
-    registerFunction("PARSE_DATE", new StandardSQLFunction("PARSE_DATE", StandardBasicTypes.DATE));
-    registerFunction("UNIX_DATE", new StandardSQLFunction("UNIX_DATE", StandardBasicTypes.LONG));
-
-    registerFunction("CURRENT_TIME",
-        new StandardSQLFunction("CURRENT_TIMESTAMP", StandardBasicTypes.TIMESTAMP));
-    registerFunction("CURRENT_TIMESTAMP",
-        new StandardSQLFunction("CURRENT_TIMESTAMP", StandardBasicTypes.TIMESTAMP));
-    registerFunction("STRING", new StandardSQLFunction("STRING", StandardBasicTypes.STRING));
-    registerFunction("TIMESTAMP",
-        new StandardSQLFunction("TIMESTAMP", StandardBasicTypes.TIMESTAMP));
-    registerFunction("TIMESTAMP_ADD",
-        new StandardSQLFunction("TIMESTAMP_ADD", StandardBasicTypes.TIMESTAMP));
-    registerFunction("TIMESTAMP_SUB",
-        new StandardSQLFunction("TIMESTAMP_SUB", StandardBasicTypes.TIMESTAMP));
-    registerFunction("TIMESTAMP_DIFF",
-        new StandardSQLFunction("TIMESTAMP_DIFF", StandardBasicTypes.LONG));
-    registerFunction("TIMESTAMP_TRUNC",
-        new StandardSQLFunction("TIMESTAMP_TRUNC", StandardBasicTypes.TIMESTAMP));
-    registerFunction("FORMAT_TIMESTAMP",
-        new StandardSQLFunction("FORMAT_TIMESTAMP", StandardBasicTypes.STRING));
-    registerFunction("PARSE_TIMESTAMP",
-        new StandardSQLFunction("PARSE_TIMESTAMP", StandardBasicTypes.TIMESTAMP));
-    registerFunction("TIMESTAMP_SECONDS",
-        new StandardSQLFunction("TIMESTAMP_SECONDS", StandardBasicTypes.TIMESTAMP));
-    registerFunction("TIMESTAMP_MILLIS",
-        new StandardSQLFunction("TIMESTAMP_MILLIS", StandardBasicTypes.TIMESTAMP));
-    registerFunction("TIMESTAMP_MICROS",
-        new StandardSQLFunction("TIMESTAMP_MICROS", StandardBasicTypes.TIMESTAMP));
-    registerFunction("UNIX_SECONDS",
-        new StandardSQLFunction("UNIX_SECONDS", StandardBasicTypes.LONG));
-    registerFunction("UNIX_MILLIS",
-        new StandardSQLFunction("UNIX_MILLIS", StandardBasicTypes.LONG));
-    registerFunction("UNIX_MICROS",
-        new StandardSQLFunction("UNIX_MICROS", StandardBasicTypes.LONG));
-    registerFunction("PARSE_TIMESTAMP",
-        new StandardSQLFunction("PARSE_TIMESTAMP", StandardBasicTypes.TIMESTAMP));
-
-    registerFunction("BIT_AND", new StandardSQLFunction("BIT_AND", StandardBasicTypes.LONG));
-    registerFunction("BIT_OR", new StandardSQLFunction("BIT_OR", StandardBasicTypes.LONG));
-    registerFunction("BIT_XOR", new StandardSQLFunction("BIT_XOR", StandardBasicTypes.LONG));
-    registerFunction("LOGICAL_AND",
-        new StandardSQLFunction("LOGICAL_AND", StandardBasicTypes.BOOLEAN));
-    registerFunction("LOGICAL_OR",
-        new StandardSQLFunction("LOGICAL_OR", StandardBasicTypes.BOOLEAN));
-
-    registerFunction("IS_INF", new StandardSQLFunction("IS_INF", StandardBasicTypes.BOOLEAN));
-    registerFunction("IS_NAN", new StandardSQLFunction("IS_NAN", StandardBasicTypes.BOOLEAN));
-
-    registerFunction("SIGN", new StandardSQLFunction("SIGN"));
-    registerFunction("IEEE_DIVIDE",
-        new StandardSQLFunction("IEEE_DIVIDE", StandardBasicTypes.DOUBLE));
-    registerFunction("SQRT", new StandardSQLFunction("SQRT", StandardBasicTypes.DOUBLE));
-    registerFunction("POW", new StandardSQLFunction("POW", StandardBasicTypes.DOUBLE));
-    registerFunction("POWER", new StandardSQLFunction("POWER", StandardBasicTypes.DOUBLE));
-    registerFunction("EXP", new StandardSQLFunction("EXP", StandardBasicTypes.DOUBLE));
-    registerFunction("LN", new StandardSQLFunction("LN", StandardBasicTypes.DOUBLE));
-    registerFunction("LOG", new StandardSQLFunction("LOG", StandardBasicTypes.DOUBLE));
-    registerFunction("LOG10", new StandardSQLFunction("LOG10", StandardBasicTypes.DOUBLE));
-    registerFunction("GREATEST", new StandardSQLFunction("GREATEST"));
-    registerFunction("LEAST", new StandardSQLFunction("LEAST"));
-    registerFunction("DIV", new StandardSQLFunction("DIV", StandardBasicTypes.LONG));
-    registerFunction("MOD", new StandardSQLFunction("MOD", StandardBasicTypes.LONG));
-    registerFunction("ROUND", new StandardSQLFunction("ROUND", StandardBasicTypes.DOUBLE));
-    registerFunction("TRUNC", new StandardSQLFunction("TRUNC", StandardBasicTypes.DOUBLE));
-    registerFunction("CEIL", new StandardSQLFunction("CEIL", StandardBasicTypes.DOUBLE));
-    registerFunction("CEILING", new StandardSQLFunction("CEILING", StandardBasicTypes.DOUBLE));
-    registerFunction("FLOOR", new StandardSQLFunction("FLOOR", StandardBasicTypes.DOUBLE));
-    registerFunction("COS", new StandardSQLFunction("COS", StandardBasicTypes.DOUBLE));
-    registerFunction("COSH", new StandardSQLFunction("COSH", StandardBasicTypes.DOUBLE));
-    registerFunction("ACOS", new StandardSQLFunction("ACOS", StandardBasicTypes.DOUBLE));
-    registerFunction("ACOSH", new StandardSQLFunction("ACOSH", StandardBasicTypes.DOUBLE));
-    registerFunction("SIN", new StandardSQLFunction("SIN", StandardBasicTypes.DOUBLE));
-    registerFunction("SINH", new StandardSQLFunction("SINH", StandardBasicTypes.DOUBLE));
-    registerFunction("ASIN", new StandardSQLFunction("ASIN", StandardBasicTypes.DOUBLE));
-    registerFunction("ASINH", new StandardSQLFunction("ASINH", StandardBasicTypes.DOUBLE));
-    registerFunction("TAN", new StandardSQLFunction("TAN", StandardBasicTypes.DOUBLE));
-    registerFunction("TANH", new StandardSQLFunction("TANH", StandardBasicTypes.DOUBLE));
-    registerFunction("ATAN", new StandardSQLFunction("ATAN", StandardBasicTypes.DOUBLE));
-    registerFunction("ATANH", new StandardSQLFunction("ATANH", StandardBasicTypes.DOUBLE));
-    registerFunction("ATAN2", new StandardSQLFunction("ATAN2", StandardBasicTypes.DOUBLE));
   }
 
   @Override
-  public Exporter<Table> getTableExporter() {
+  public void initializeFunctionRegistry(SqmFunctionRegistry registry) {
+    super.initializeFunctionRegistry(registry);
+
+    // Aggregate Functions
+    registry.namedTemplateBuilder("ANY_VALUE")
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("ARRAY_AGG")
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("BIT_AND")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("BIT_OR")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("BIT_XOR")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("COUNTIF")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("LOGICAL_AND")
+        .setInvariantType(StandardSpiBasicTypes.BOOLEAN)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("LOGICAL_OR")
+        .setInvariantType(StandardSpiBasicTypes.BOOLEAN)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("STRING_AGG")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .setArgumentCountBetween(1, 2)
+        .register();
+
+    // Mathematical Functions
+    CommonFunctionFactory.abs(registry);
+    CommonFunctionFactory.sign(registry);
+    CommonFunctionFactory.cos(registry);
+    CommonFunctionFactory.cosh(registry);
+    CommonFunctionFactory.acos(registry);
+    registry.namedTemplateBuilder("ACOSH")
+        .setInvariantType(StandardSpiBasicTypes.DOUBLE)
+        .setExactArgumentCount(1)
+        .register();
+    CommonFunctionFactory.sin(registry);
+    CommonFunctionFactory.sinh(registry);
+    CommonFunctionFactory.asin(registry);
+    registry.namedTemplateBuilder("ASINH")
+        .setInvariantType(StandardSpiBasicTypes.DOUBLE)
+        .setExactArgumentCount(1)
+        .register();
+    CommonFunctionFactory.tan(registry);
+    CommonFunctionFactory.tanh(registry);
+    CommonFunctionFactory.atan(registry);
+    registry.namedTemplateBuilder("ATANH")
+        .setInvariantType(StandardSpiBasicTypes.DOUBLE)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("ATAN2")
+        .setInvariantType(StandardSpiBasicTypes.DOUBLE)
+        .setExactArgumentCount(2)
+        .register();
+    CommonFunctionFactory.exp(registry);
+    CommonFunctionFactory.ln(registry);
+    CommonFunctionFactory.sqrt(registry);
+
+    registry.namedTemplateBuilder("IS_INF")
+        .setInvariantType(StandardSpiBasicTypes.BOOLEAN)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("IS_NAN")
+        .setInvariantType(StandardSpiBasicTypes.BOOLEAN)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("IEEE_DIVIDE")
+        .setInvariantType(StandardSpiBasicTypes.DOUBLE)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("POW")
+        .setInvariantType(StandardSpiBasicTypes.DOUBLE)
+        .setExactArgumentCount(2)
+        .register();
+    registry.registerAlternateKey("POWER", "POW");
+    registry.namedTemplateBuilder("LOG")
+        .setInvariantType(StandardSpiBasicTypes.DOUBLE)
+        .setArgumentCountBetween(1, 2)
+        .register();
+    registry.namedTemplateBuilder("LOG10")
+        .setInvariantType(StandardSpiBasicTypes.DOUBLE)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("GREATEST")
+        .register();
+    registry.namedTemplateBuilder("LEAST")
+        .register();
+    registry.namedTemplateBuilder("DIV")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("MOD")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("ROUND")
+        .setInvariantType(StandardSpiBasicTypes.DOUBLE)
+        .setArgumentCountBetween(1, 2)
+        .register();
+    registry.namedTemplateBuilder("TRUNC")
+        .setInvariantType(StandardSpiBasicTypes.DOUBLE)
+        .setArgumentCountBetween(1, 2)
+        .register();
+    registry.namedTemplateBuilder("CEIL")
+        .setInvariantType(StandardSpiBasicTypes.DOUBLE)
+        .setExactArgumentCount(1)
+        .register();
+    registry.registerAlternateKey("CEILING", "CEIL");
+    registry.namedTemplateBuilder("FLOOR")
+        .setInvariantType(StandardSpiBasicTypes.DOUBLE)
+        .setExactArgumentCount(1)
+        .register();
+
+    // Hash Functions
+    registry.namedTemplateBuilder("FARM_FINGERPRINT")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("SHA1")
+        .setInvariantType(StandardSpiBasicTypes.BINARY)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("SHA256")
+        .setInvariantType(StandardSpiBasicTypes.BINARY)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("SHA512")
+        .setInvariantType(StandardSpiBasicTypes.BINARY)
+        .setExactArgumentCount(1)
+        .register();
+
+    // String Functions
+    registry.registerPattern("str", "cast(?1 as string)");
+    registry.namedTemplateBuilder("BYTE_LENGTH")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("CHAR_LENGTH")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+    registry.registerAlternateKey("CHARACTER_LENGTH", "CHAR_LENGTH");
+    registry.namedTemplateBuilder("CODE_POINTS_TO_BYTES")
+        .setInvariantType(StandardSpiBasicTypes.BINARY)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("CODE_POINTS_TO_STRING")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("ENDS_WITH")
+        .setInvariantType(StandardSpiBasicTypes.BOOLEAN)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("FORMAT")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .register();
+    registry.namedTemplateBuilder("FROM_BASE64")
+        .setInvariantType(StandardSpiBasicTypes.BINARY)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("FROM_HEX")
+        .setInvariantType(StandardSpiBasicTypes.BINARY)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("LENGTH")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("LPAD")
+        .setArgumentCountBetween(2, 3)
+        .register();
+    registry.namedTemplateBuilder("LOWER")
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("LTRIM")
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("REGEXP_CONTAINS")
+        .setInvariantType(StandardSpiBasicTypes.BOOLEAN)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("REGEXP_EXTRACT")
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("REGEXP_EXTRACT_ALL")
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("REGEXP_REPLACE")
+        .setExactArgumentCount(3)
+        .register();
+    registry.namedTemplateBuilder("REPLACE")
+        .setExactArgumentCount(3)
+        .register();
+    registry.namedTemplateBuilder("REPEAT")
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("REVERSE")
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("RPAD")
+        .setArgumentCountBetween(2, 3)
+        .register();
+    registry.namedTemplateBuilder("RTRIM")
+        .setArgumentCountBetween(1, 2)
+        .register();
+    registry.namedTemplateBuilder("SAFE_CONVERT_BYTES_TO_STRING")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("SPLIT")
+        .setArgumentCountBetween(1, 2)
+        .register();
+    registry.namedTemplateBuilder("STARTS_WITH")
+        .setInvariantType(StandardSpiBasicTypes.BOOLEAN)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("STRPOS")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("SUBSTR")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .setArgumentCountBetween(2, 3)
+        .register();
+    registry.registerAlternateKey("SUBSTRING", "SUBSTR");
+    registry.namedTemplateBuilder("TO_BASE64")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("TO_CODE_POINTS")
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("TO_HEX")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("TRIM")
+        .setArgumentCountBetween(1, 2)
+        .register();
+    registry.namedTemplateBuilder("UPPER")
+        .setExactArgumentCount(1)
+        .register();
+
+    // JSON Functions
+    registry.namedTemplateBuilder("JSON_QUERY")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("JSON_VALUE")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .setExactArgumentCount(2)
+        .register();
+
+    // Array Functions
+    registry.namedTemplateBuilder("ARRAY")
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("ARRAY_CONCAT")
+        .register();
+    registry.namedTemplateBuilder("ARRAY_LENGTH")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("ARRAY_TO_STRING")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .setArgumentCountBetween(2, 3)
+        .register();
+    registry.namedTemplateBuilder("ARRAY_REVERSE")
+        .setExactArgumentCount(1)
+        .register();
+
+    // Date functions
+    registry.namedTemplateBuilder("CURRENT_DATE")
+        .setInvariantType(StandardSpiBasicTypes.DATE)
+        .setArgumentCountBetween(0, 1)
+        .register();
+    registry.namedTemplateBuilder("DATE")
+        .setInvariantType(StandardSpiBasicTypes.DATE)
+        .setArgumentCountBetween(1, 3)
+        .register();
+    registry.namedTemplateBuilder("DATE_ADD")
+        .setInvariantType(StandardSpiBasicTypes.DATE)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("DATE_SUB")
+        .setInvariantType(StandardSpiBasicTypes.DATE)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("DATE_DIFF")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(3)
+        .register();
+    registry.namedTemplateBuilder("DATE_TRUNC")
+        .setInvariantType(StandardSpiBasicTypes.DATE)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("DATE_FROM_UNIX_DATE")
+        .setInvariantType(StandardSpiBasicTypes.DATE)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("FORMAT_DATE")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("PARSE_DATE")
+        .setInvariantType(StandardSpiBasicTypes.DATE)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("UNIX_DATE")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+
+    // Timestamp functions
+    registry.registerNoArgs("CURRENT_TIMESTAMP", StandardSpiBasicTypes.TIMESTAMP);
+    registry.namedTemplateBuilder("STRING")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .setArgumentCountBetween(1, 2)
+        .register();
+    registry.namedTemplateBuilder("TIMESTAMP")
+        .setInvariantType(StandardSpiBasicTypes.TIMESTAMP)
+        .setArgumentCountBetween(1, 2)
+        .register();
+    registry.namedTemplateBuilder("TIMESTAMP_ADD")
+        .setInvariantType(StandardSpiBasicTypes.TIMESTAMP)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("TIMESTAMP_SUB")
+        .setInvariantType(StandardSpiBasicTypes.TIMESTAMP)
+        .setExactArgumentCount(2)
+        .register();
+    registry.namedTemplateBuilder("TIMESTAMP_DIFF")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(3)
+        .register();
+    registry.namedTemplateBuilder("TIMESTAMP_TRUNC")
+        .setInvariantType(StandardSpiBasicTypes.TIMESTAMP)
+        .setArgumentCountBetween(2, 3)
+        .register();
+    registry.namedTemplateBuilder("FORMAT_TIMESTAMP")
+        .setInvariantType(StandardSpiBasicTypes.STRING)
+        .setArgumentCountBetween(2, 3)
+        .register();
+    registry.namedTemplateBuilder("PARSE_TIMESTAMP")
+        .setInvariantType(StandardSpiBasicTypes.TIMESTAMP)
+        .setArgumentCountBetween(2, 3)
+        .register();
+    registry.namedTemplateBuilder("TIMESTAMP_SECONDS")
+        .setInvariantType(StandardSpiBasicTypes.TIMESTAMP)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("TIMESTAMP_MILLIS")
+        .setInvariantType(StandardSpiBasicTypes.TIMESTAMP)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("TIMESTAMP_MICROS")
+        .setInvariantType(StandardSpiBasicTypes.TIMESTAMP)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("UNIX_SECONDS")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("UNIX_MILLIS")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+    registry.namedTemplateBuilder("UNIX_MICROS")
+        .setInvariantType(StandardSpiBasicTypes.LONG)
+        .setExactArgumentCount(1)
+        .register();
+  }
+
+  @Override
+  public Exporter<ExportableTable> getTableExporter() {
     return this.spannerTableExporter;
   }
 
@@ -347,7 +559,8 @@ public class SpannerDialect extends Dialect {
   }
 
   @Override
-  public String getAddForeignKeyConstraintString(String constraintName,
+  public String getAddForeignKeyConstraintString(
+      String constraintName,
       String[] foreignKey,
       String referencedTable,
       String[] primaryKey,
@@ -470,12 +683,19 @@ public class SpannerDialect extends Dialect {
   }
 
   @Override
-  public Exporter<Constraint> getUniqueKeyExporter() {
+  public Exporter<UniqueKey> getUniqueKeyExporter() {
     return NOOP_EXPORTER;
   }
 
   @Override
-  public String applyLocksToSql(String sql, LockOptions aliasedLockOptions,
+  protected Exporter<IdTable> getIdTableExporter() {
+    return NOOP_EXPORTER;
+  }
+
+  @Override
+  public String applyLocksToSql(
+      String sql,
+      LockOptions aliasedLockOptions,
       Map<String, String[]> keyColumnNames) {
     return sql;
   }
@@ -575,6 +795,26 @@ public class SpannerDialect extends Dialect {
   }
 
   /**
+   * A no-op {@link Exporter} which is responsible for returning empty Create and Drop SQL strings.
+   *
+   * @author Daniel Zou
+   */
+  static class EmptyExporter<T extends Exportable> implements Exporter<T> {
+
+    @Override
+    public String[] getSqlCreateStrings(
+        T exportable, JdbcServices jdbcServices) {
+      return new String[0];
+    }
+
+    @Override
+    public String[] getSqlDropStrings(
+        T exportable, JdbcServices jdbcServices) {
+      return new String[0];
+    }
+  }
+
+  /**
    * A locking strategy for the Cloud Spanner dialect that does nothing. Cloud Spanner does not
    * support locking.
    *
@@ -584,27 +824,9 @@ public class SpannerDialect extends Dialect {
 
     @Override
     public void lock(Serializable id, Object version, Object object, int timeout,
-        SharedSessionContractImplementor session)
+                     SharedSessionContractImplementor session)
         throws StaleObjectStateException, LockingStrategyException {
       // Do nothing. Cloud Spanner doesn't have have locking strategies.
-    }
-  }
-
-  /**
-   * A no-op {@link Exporter} which is responsible for returning empty Create and Drop SQL strings.
-   *
-   * @author Daniel Zou
-   */
-  static class EmptyExporter<T extends Exportable> implements Exporter<T> {
-
-    @Override
-    public String[] getSqlCreateStrings(T exportable, Metadata metadata) {
-      return new String[0];
-    }
-
-    @Override
-    public String[] getSqlDropStrings(T exportable, Metadata metadata) {
-      return new String[0];
     }
   }
 
@@ -617,22 +839,26 @@ public class SpannerDialect extends Dialect {
   static class DoNothingUniqueDelegate implements UniqueDelegate {
 
     @Override
-    public String getColumnDefinitionUniquenessFragment(Column column) {
+    public String getColumnDefinitionUniquenessFragment(
+        Column column) {
       return "";
     }
 
     @Override
-    public String getTableCreationUniqueConstraintsFragment(Table table) {
+    public String getTableCreationUniqueConstraintsFragment(
+        ExportableTable table) {
       return "";
     }
 
     @Override
-    public String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
+    public String getAlterTableToAddUniqueKeyCommand(
+        UniqueKey uniqueKey, JdbcServices jdbcServices) {
       return "";
     }
 
     @Override
-    public String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
+    public String getAlterTableToDropUniqueKeyCommand(
+        UniqueKey uniqueKey, JdbcServices jdbcServices) {
       return "";
     }
   }

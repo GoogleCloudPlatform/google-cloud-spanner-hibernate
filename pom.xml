@@ -16,7 +16,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <hibernate.version>5.4.1.Final</hibernate.version>
+    <hibernate.version>6.0.0.Alpha2</hibernate.version>
   </properties>
 
   <name>Google Cloud Spanner Hibernate</name>
@@ -31,7 +31,7 @@
       <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-jcache</artifactId>
-        <version>${hibernate.version}</version>
+        <version>5.4.1.Final</version>
       </dependency>
       <dependency>
         <groupId>org.hibernate</groupId>

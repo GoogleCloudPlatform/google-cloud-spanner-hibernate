@@ -77,8 +77,8 @@ public class GeneratedCreateTableStatementsTests {
         "drop index name_index",
         "drop table Employee",
         "drop table hibernate_sequence",
-        "create table Employee "
-            + "(id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
+        "create table Employee (id INT64 not null,"
+            + "manager_id INT64,name STRING(255)) PRIMARY KEY (id)",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
         "INSERT INTO hibernate_sequence (next_val) VALUES(1)",
         "create index name_index on Employee (name)");

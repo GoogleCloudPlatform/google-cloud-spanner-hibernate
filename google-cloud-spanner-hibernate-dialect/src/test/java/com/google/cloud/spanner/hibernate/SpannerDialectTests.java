@@ -21,7 +21,6 @@ package com.google.cloud.spanner.hibernate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.cloud.spanner.hibernate.SpannerDialect.DoNothingLockingStrategy;
 import org.hibernate.LockOptions;
 import org.junit.Before;
 import org.junit.Test;
@@ -225,7 +224,7 @@ public class SpannerDialectTests {
   @Test
   public void getLockingStrategyTest() {
     assertThat(this.spannerDialect.getLockingStrategy(null, null))
-        .isInstanceOf(DoNothingLockingStrategy.class);
+        .isInstanceOf(SpannerDialect.DoNothingLockingStrategy.class);
   }
 
   @Test
