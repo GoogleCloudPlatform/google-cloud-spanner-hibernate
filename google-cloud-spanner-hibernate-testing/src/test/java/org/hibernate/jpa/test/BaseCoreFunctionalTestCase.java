@@ -370,6 +370,7 @@ public abstract class BaseCoreFunctionalTestCase extends BaseUnitTestCase {
   @Before
   public final void beforeTest() throws Exception {
     prepareTest();
+    cleanTables();
   }
 
   protected void prepareTest() throws Exception {
