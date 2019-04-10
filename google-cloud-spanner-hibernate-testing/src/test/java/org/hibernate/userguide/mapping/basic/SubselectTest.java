@@ -55,7 +55,7 @@ public class SubselectTest extends BaseEntityManagerFunctionalTestCase {
 
 			AccountSummary summary = entityManager.createQuery(
 				"select s " +
-				"from Account_SubselectTest s " +
+				"from AccountSummary_subselect s " +
 				"where s.id = :id", AccountSummary.class)
 			.setParameter( "id", account.getId() )
 			.getSingleResult();
@@ -130,7 +130,7 @@ public class SubselectTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Entity(name = "Account_SubselectTest")
-	private static class Account {
+	public static class Account {
 
 		@Id
 		private Long id;
@@ -230,11 +230,11 @@ public class SubselectTest extends BaseEntityManagerFunctionalTestCase {
 		"	concat(concat(c.first_name, ' '), c.last_name) as clientName, " +
 		"	sum(at_.cents) as balance " +
 		"from Account_SubselectTest a " +
-		"join client c on c.id = a.client_id " +
+		"join client_subselect c on c.id = a.client_id " +
 		"join AccountTransaction_SubselectTest at_ on a.id = at_.account_id " +
 		"group by a.id, concat(concat(c.first_name, ' '), c.last_name)"
 	)
-	@Synchronize( {"client", "account", "account_transaction"} )
+	@Synchronize( {"client_subselect", "Account_SubselectTest", "AccountTransaction_SubselectTest"} )
 	private static class AccountSummary {
 
 		@Id

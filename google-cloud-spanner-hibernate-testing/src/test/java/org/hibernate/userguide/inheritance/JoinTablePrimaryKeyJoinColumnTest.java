@@ -62,6 +62,7 @@ public class JoinTablePrimaryKeyJoinColumnTest extends BaseEntityManagerFunction
 	private static class Account {
 
 		@Id
+		@Column(name = "account_id")
 		private Long id;
 
 		private String owner;
