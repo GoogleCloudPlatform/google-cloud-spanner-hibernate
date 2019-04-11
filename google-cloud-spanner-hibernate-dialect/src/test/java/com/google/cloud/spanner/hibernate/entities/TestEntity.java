@@ -36,26 +36,26 @@ import javax.persistence.Table;
 @Table(name = "`test_table`")
 public class TestEntity {
 
-  @EmbeddedId
-  public IdClass id;
+	@EmbeddedId
+	public IdClass id;
 
-  @Column(nullable = true)
-  public String stringVal;
+	@Column(nullable = true)
+	public String stringVal;
 
-  @Column(name = "`boolColumn`")
-  public boolean boolVal;
+	@Column(name = "`boolColumn`")
+	public boolean boolVal;
 
-  public long longVal;
+	public long longVal;
 
-  @ElementCollection
-  List<String> stringList;
+	@ElementCollection
+	List<String> stringList;
 
-  @Embeddable
-  public static class IdClass implements Serializable {
+	@Embeddable
+	public static class IdClass implements Serializable {
 
-    @Column(name = "`ID1`")
-    public long id1;
+		@Column(name = "`ID1`")
+		public long id1;
 
-    public String id2;
-  }
+		public String id2;
+	}
 }

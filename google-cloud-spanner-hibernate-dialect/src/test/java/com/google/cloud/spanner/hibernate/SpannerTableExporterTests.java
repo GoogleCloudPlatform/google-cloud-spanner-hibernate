@@ -18,27 +18,27 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import com.google.cloud.spanner.hibernate.entities.Employee;
-import com.google.cloud.spanner.hibernate.entities.TestEntity;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.persistence.Entity;
+
 import org.hibernate.AnnotationException;
+import org.hibernate.Session;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.hibernate.tool.schema.TargetType;
+
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.cloud.spanner.hibernate.entities.Employee;
+import com.google.cloud.spanner.hibernate.entities.TestEntity;
+import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for SpannerTableExporter.
@@ -47,114 +47,145 @@ import org.junit.Test;
  */
 public class SpannerTableExporterTests {
 
-  private Metadata metadata;
+	private StandardServiceRegistry registry;
 
-  private StandardServiceRegistry registry;
+	private JDBCMockObjectFactory jdbcMockObjectFactory;
 
-  /**
-   * Set up the metadata for Hibernate to generate schema statements.
-   */
-  @Before
-  public void setup() {
-    this.registry = new StandardServiceRegistryBuilder()
-        .applySetting("hibernate.dialect", SpannerDialect.class.getName()).build();
-    this.metadata =
-        new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class).buildMetadata();
-  }
+	/**
+	 * Set up the metadata for Hibernate to generate schema statements.
+	 */
+	@Before
+	public void setup() {
+		this.jdbcMockObjectFactory = new JDBCMockObjectFactory();
+		this.jdbcMockObjectFactory.registerMockDriver();
+		this.jdbcMockObjectFactory.getMockDriver()
+				.setupConnection( this.jdbcMockObjectFactory.getMockConnection() );
 
-  @Test
-  public void generateDropStringsTest() throws IOException {
-    String testFileName = UUID.randomUUID().toString();
-    new SchemaExport().setOutputFile(testFileName)
-        .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
-    File scriptFile = new File(testFileName);
-    scriptFile.deleteOnExit();
-    List<String> statements = Files.readAllLines(scriptFile.toPath());
-    assertThat(statements)
-        .containsExactly("drop table `TestEntity_stringList`", "drop table `test_table`");
-  }
+		this.registry = new StandardServiceRegistryBuilder()
+				.applySetting( "hibernate.dialect", SpannerDialect.class.getName() )
+				// must NOT set a driver class name so that Hibernate will use java.sql.DriverManager
+				// and discover the only mock driver we have set up.
+				.applySetting( "hibernate.connection.url", "unused" )
+				.applySetting( "hibernate.connection.username", "unused" )
+				.applySetting( "hibernate.connection.password", "unused" )
+				.applySetting( "hibernate.hbm2ddl.auto", "create" )
+				.build();
+	}
 
-  @Test
-  public void generateDeleteStringsWithIndices() throws IOException {
-    Metadata employeeMetadata =
-        new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
+	@Test
+	public void generateDropStringsTest() throws IOException {
+		Metadata metadata =
+				new MetadataSources( this.registry )
+						.addAnnotatedClass( TestEntity.class )
+						.buildMetadata();
 
-    String testFileName = UUID.randomUUID().toString();
-    new SchemaExport().setOutputFile(testFileName)
-        .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), employeeMetadata);
-    File scriptFile = new File(testFileName);
-    scriptFile.deleteOnExit();
-    List<String> statements = Files.readAllLines(scriptFile.toPath());
+		Session session = metadata.buildSessionFactory().openSession();
+		session.beginTransaction();
+		session.close();
 
-    assertThat(statements).containsExactly("drop index name_index", "drop table Employee",
-        "drop table hibernate_sequence");
-  }
+		List<String> sqlStrings = this.jdbcMockObjectFactory.getMockConnection()
+				.getStatementResultSetHandler()
+				.getExecutedStatements()
+				.stream()
+				.filter( statement -> statement.startsWith( "drop" ) )
+				.collect( Collectors.toList() );
 
-  @Test
-  public void generateCreateStringsTest() throws IOException {
-    String testFileName = UUID.randomUUID().toString();
-    new SchemaExport().setOutputFile(testFileName)
-        .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
-    File scriptFile = new File(testFileName);
-    scriptFile.deleteOnExit();
-    List<String> statements = Files.readAllLines(scriptFile.toPath());
+		assertThat( sqlStrings )
+				.containsExactlyInAnyOrder( "drop table TestEntity_stringList", "drop table `test_table`" );
+	}
 
-    // The types in the following string need to be updated when SpannerDialect
-    // implementation maps types.
-    String expectedCreateString = "create table `test_table` (`ID1` INT64 not null,id2"
-        + " STRING(255) not null,`boolColumn` BOOL,longVal INT64 not null,stringVal"
-        + " STRING(255)) PRIMARY KEY (`ID1`,id2)";
+	@Test
+	public void generateDeleteStringsWithIndices() throws IOException {
+		Metadata metadata =
+				new MetadataSources( this.registry )
+						.addAnnotatedClass( Employee.class )
+						.buildMetadata();
 
-    String expectedCollectionCreateString = "create table `TestEntity_stringList` "
-        + "(`TestEntity_ID1` INT64 not null,`TestEntity_id2` STRING(255) not null,"
-        + "stringList STRING(255)) PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList)";
+		Session session = metadata.buildSessionFactory().openSession();
+		session.beginTransaction();
+		session.close();
 
-    assertThat(statements)
-        .containsExactlyInAnyOrder(expectedCreateString, expectedCollectionCreateString);
-  }
+		List<String> sqlStrings = this.jdbcMockObjectFactory.getMockConnection()
+				.getStatementResultSetHandler()
+				.getExecutedStatements()
+				.stream()
+				.filter( statement -> statement.startsWith( "drop" ) )
+				.collect( Collectors.toList() );
 
-  @Test
-  public void generateCreateStringsEmptyEntityTest() {
-    assertThatThrownBy(() -> {
-      Metadata metadata = new MetadataSources(this.registry)
-          .addAnnotatedClass(EmptyEntity.class)
-          .buildMetadata();
-      new SchemaExport()
-          .setOutputFile("unused")
-          .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata);
-    })
-        .isInstanceOf(AnnotationException.class)
-        .hasMessage(
-            "No identifier specified for entity: "
-                + "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$EmptyEntity");
-  }
+		assertThat( sqlStrings )
+				.containsExactly(
+						"drop index name_index",
+						"drop table Employee",
+						"drop table hibernate_sequence"
+				);
+	}
 
-  @Test
-  public void generateCreateStringsNoPkEntityTest() {
-    assertThatThrownBy(() -> {
-      Metadata metadata = new MetadataSources(this.registry)
-          .addAnnotatedClass(NoPkEntity.class)
-          .buildMetadata();
+	@Test
+	public void generateCreateStringsTest() throws IOException {
+		Metadata metadata =
+				new MetadataSources( this.registry )
+						.addAnnotatedClass( TestEntity.class )
+						.buildMetadata();
 
-      new SchemaExport()
-          .setOutputFile("unused")
-          .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata);
-    })
-        .isInstanceOf(AnnotationException.class)
-        .hasMessage(
-            "No identifier specified for entity: "
-                + "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$NoPkEntity");
-  }
+		Session session = metadata.buildSessionFactory().openSession();
+		session.beginTransaction();
+		session.close();
 
-  @Entity
-  class EmptyEntity {
-    // Intentionally empty
-  }
+		List<String> sqlStrings = this.jdbcMockObjectFactory.getMockConnection()
+				.getStatementResultSetHandler()
+				.getExecutedStatements()
+				.stream()
+				.filter( statement -> statement.startsWith( "create" ) )
+				.collect( Collectors.toList() );
 
-  @Entity
-  class NoPkEntity {
+		String expectedCreateString = "create table `test_table` (`boolColumn` BOOL,`ID1` "
+				+ "INT64 not null,id2 STRING(255) not null,longVal INT64 not null,"
+				+ "stringVal STRING(255)) PRIMARY KEY (`ID1`,id2)";
 
-    // Intentionally no primary key annotated
-    String value;
-  }
+		String expectedCollectionCreateString = "create table TestEntity_stringList "
+				+ "(stringList STRING(255),`TestEntity_ID1` INT64 not null,"
+				+ "TestEntity_id2 STRING(255) not null) "
+				+ "PRIMARY KEY (stringList,`TestEntity_ID1`,TestEntity_id2)";
+
+		assertThat( sqlStrings )
+				.containsExactlyInAnyOrder( expectedCreateString, expectedCollectionCreateString );
+	}
+
+	@Test
+	public void generateCreateStringsEmptyEntityTest() {
+		assertThatThrownBy( () -> {
+			new MetadataSources( this.registry )
+					.addAnnotatedClass( EmptyEntity.class )
+					.buildMetadata();
+		} )
+				.isInstanceOf( AnnotationException.class )
+				.hasMessage(
+						"No identifier specified for entity: "
+								+ "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$EmptyEntity" );
+	}
+
+	@Test
+	public void generateCreateStringsNoPkEntityTest() {
+		assertThatThrownBy( () -> {
+			new MetadataSources( this.registry )
+					.addAnnotatedClass( NoPkEntity.class )
+					.buildMetadata();
+		} )
+				.isInstanceOf( AnnotationException.class )
+				.hasMessage(
+						"No identifier specified for entity: "
+								+ "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$NoPkEntity" );
+	}
+
+	@Entity
+	class EmptyEntity {
+		// Intentionally empty
+	}
+
+	@Entity
+	class NoPkEntity {
+
+		// Intentionally no primary key annotated
+		String value;
+	}
 }

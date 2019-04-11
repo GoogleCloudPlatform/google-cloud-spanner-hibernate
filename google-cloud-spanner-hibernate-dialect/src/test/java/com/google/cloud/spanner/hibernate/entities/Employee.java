@@ -35,17 +35,17 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(indexes = {
-    @Index(columnList = "name", name = "name_index")
+		@Index(columnList = "name", name = "name_index")
 })
 public class Employee {
 
-  @Id
-  @GeneratedValue
-  public Long id;
+	@Id
+	@GeneratedValue
+	public Long id;
 
-  @ManyToOne(cascade = {CascadeType.ALL})
-  public Employee manager;
+	@ManyToOne(cascade = { CascadeType.ALL })
+	public Employee manager;
 
-  @Column(unique = true)
-  public String name;
+	@Column(unique = true)
+	public String name;
 }

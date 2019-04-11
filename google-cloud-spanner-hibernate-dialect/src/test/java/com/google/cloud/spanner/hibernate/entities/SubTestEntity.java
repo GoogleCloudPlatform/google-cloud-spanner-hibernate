@@ -32,10 +32,10 @@ import javax.persistence.ManyToOne;
 @Entity
 public class SubTestEntity {
 
-  @Id
-  String id;
+	@Id
+	String id;
 
-  @ManyToOne
-  @JoinColumns({@JoinColumn(name = "id1"), @JoinColumn(name = "id2")})
-  TestEntity testEntity;
+	@ManyToOne
+	@JoinColumns({ @JoinColumn(name = "id1"), @JoinColumn(name = "id2") })
+	TestEntity testEntity;
 }
