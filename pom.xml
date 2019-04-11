@@ -99,14 +99,14 @@
         </dependencies>
         <executions>
           <execution>
-            <id>validate-file-header</id>
+            <id>validate-style</id>
             <phase>validate</phase>
             <goals>
               <goal>check</goal>
             </goals>
             <configuration>
               <headerLocation>checkstyle/java.header</headerLocation>
-              <configLocation>checkstyle/custom-checks.xml</configLocation>
+              <configLocation>checkstyle/hibernate-style.xml</configLocation>
             </configuration>
           </execution>
         </executions>
