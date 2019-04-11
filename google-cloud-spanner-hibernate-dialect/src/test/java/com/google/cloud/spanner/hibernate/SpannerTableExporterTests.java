@@ -18,24 +18,27 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import com.google.cloud.spanner.hibernate.entities.Employee;
-import com.google.cloud.spanner.hibernate.entities.TestEntity;
-import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.Entity;
+
 import org.hibernate.AnnotationException;
 import org.hibernate.Session;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.cloud.spanner.hibernate.entities.Employee;
+import com.google.cloud.spanner.hibernate.entities.TestEntity;
+import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for SpannerTableExporter.
@@ -44,144 +47,145 @@ import org.junit.Test;
  */
 public class SpannerTableExporterTests {
 
-  private StandardServiceRegistry registry;
+	private StandardServiceRegistry registry;
 
-  private JDBCMockObjectFactory jdbcMockObjectFactory;
+	private JDBCMockObjectFactory jdbcMockObjectFactory;
 
-  /**
-   * Set up the metadata for Hibernate to generate schema statements.
-   */
-  @Before
-  public void setup() {
-    this.jdbcMockObjectFactory = new JDBCMockObjectFactory();
-    this.jdbcMockObjectFactory.registerMockDriver();
-    this.jdbcMockObjectFactory.getMockDriver()
-        .setupConnection(this.jdbcMockObjectFactory.getMockConnection());
+	/**
+	 * Set up the metadata for Hibernate to generate schema statements.
+	 */
+	@Before
+	public void setup() {
+		this.jdbcMockObjectFactory = new JDBCMockObjectFactory();
+		this.jdbcMockObjectFactory.registerMockDriver();
+		this.jdbcMockObjectFactory.getMockDriver()
+				.setupConnection( this.jdbcMockObjectFactory.getMockConnection() );
 
-    this.registry = new StandardServiceRegistryBuilder()
-        .applySetting("hibernate.dialect", SpannerDialect.class.getName())
-        // must NOT set a driver class name so that Hibernate will use java.sql.DriverManager
-        // and discover the only mock driver we have set up.
-        .applySetting("hibernate.connection.url", "unused")
-        .applySetting("hibernate.connection.username", "unused")
-        .applySetting("hibernate.connection.password", "unused")
-        .applySetting("hibernate.hbm2ddl.auto", "create")
-        .build();
-  }
+		this.registry = new StandardServiceRegistryBuilder()
+				.applySetting( "hibernate.dialect", SpannerDialect.class.getName() )
+				// must NOT set a driver class name so that Hibernate will use java.sql.DriverManager
+				// and discover the only mock driver we have set up.
+				.applySetting( "hibernate.connection.url", "unused" )
+				.applySetting( "hibernate.connection.username", "unused" )
+				.applySetting( "hibernate.connection.password", "unused" )
+				.applySetting( "hibernate.hbm2ddl.auto", "create" )
+				.build();
+	}
 
-  @Test
-  public void generateDropStringsTest() throws IOException {
-    Metadata metadata =
-        new MetadataSources(this.registry)
-            .addAnnotatedClass(TestEntity.class)
-            .buildMetadata();
+	@Test
+	public void generateDropStringsTest() throws IOException {
+		Metadata metadata =
+				new MetadataSources( this.registry )
+						.addAnnotatedClass( TestEntity.class )
+						.buildMetadata();
 
-    Session session = metadata.buildSessionFactory().openSession();
-    session.beginTransaction();
-    session.close();
+		Session session = metadata.buildSessionFactory().openSession();
+		session.beginTransaction();
+		session.close();
 
-    List<String> sqlStrings = this.jdbcMockObjectFactory.getMockConnection()
-        .getStatementResultSetHandler()
-        .getExecutedStatements()
-        .stream()
-        .filter(statement -> statement.startsWith("drop"))
-        .collect(Collectors.toList());
+		List<String> sqlStrings = this.jdbcMockObjectFactory.getMockConnection()
+				.getStatementResultSetHandler()
+				.getExecutedStatements()
+				.stream()
+				.filter( statement -> statement.startsWith( "drop" ) )
+				.collect( Collectors.toList() );
 
-    assertThat(sqlStrings)
-        .containsExactlyInAnyOrder("drop table TestEntity_stringList", "drop table `test_table`");
-  }
+		assertThat( sqlStrings )
+				.containsExactlyInAnyOrder( "drop table TestEntity_stringList", "drop table `test_table`" );
+	}
 
-  @Test
-  public void generateDeleteStringsWithIndices() throws IOException {
-    Metadata metadata =
-        new MetadataSources(this.registry)
-            .addAnnotatedClass(Employee.class)
-            .buildMetadata();
+	@Test
+	public void generateDeleteStringsWithIndices() throws IOException {
+		Metadata metadata =
+				new MetadataSources( this.registry )
+						.addAnnotatedClass( Employee.class )
+						.buildMetadata();
 
-    Session session = metadata.buildSessionFactory().openSession();
-    session.beginTransaction();
-    session.close();
+		Session session = metadata.buildSessionFactory().openSession();
+		session.beginTransaction();
+		session.close();
 
-    List<String> sqlStrings = this.jdbcMockObjectFactory.getMockConnection()
-        .getStatementResultSetHandler()
-        .getExecutedStatements()
-        .stream()
-        .filter(statement -> statement.startsWith("drop"))
-        .collect(Collectors.toList());
+		List<String> sqlStrings = this.jdbcMockObjectFactory.getMockConnection()
+				.getStatementResultSetHandler()
+				.getExecutedStatements()
+				.stream()
+				.filter( statement -> statement.startsWith( "drop" ) )
+				.collect( Collectors.toList() );
 
-    assertThat(sqlStrings)
-        .containsExactly(
-            "drop index name_index",
-            "drop table Employee",
-            "drop table hibernate_sequence");
-  }
+		assertThat( sqlStrings )
+				.containsExactly(
+						"drop index name_index",
+						"drop table Employee",
+						"drop table hibernate_sequence"
+				);
+	}
 
-  @Test
-  public void generateCreateStringsTest() throws IOException {
-    Metadata metadata =
-        new MetadataSources(this.registry)
-            .addAnnotatedClass(TestEntity.class)
-            .buildMetadata();
+	@Test
+	public void generateCreateStringsTest() throws IOException {
+		Metadata metadata =
+				new MetadataSources( this.registry )
+						.addAnnotatedClass( TestEntity.class )
+						.buildMetadata();
 
-    Session session = metadata.buildSessionFactory().openSession();
-    session.beginTransaction();
-    session.close();
+		Session session = metadata.buildSessionFactory().openSession();
+		session.beginTransaction();
+		session.close();
 
-    List<String> sqlStrings = this.jdbcMockObjectFactory.getMockConnection()
-        .getStatementResultSetHandler()
-        .getExecutedStatements()
-        .stream()
-        .filter(statement -> statement.startsWith("create"))
-        .collect(Collectors.toList());
+		List<String> sqlStrings = this.jdbcMockObjectFactory.getMockConnection()
+				.getStatementResultSetHandler()
+				.getExecutedStatements()
+				.stream()
+				.filter( statement -> statement.startsWith( "create" ) )
+				.collect( Collectors.toList() );
 
-    String expectedCreateString = "create table `test_table` (`boolColumn` BOOL,`ID1` "
-        + "INT64 not null,id2 STRING(255) not null,longVal INT64 not null,"
-        + "stringVal STRING(255)) PRIMARY KEY (`ID1`,id2)";
+		String expectedCreateString = "create table `test_table` (`boolColumn` BOOL,`ID1` "
+				+ "INT64 not null,id2 STRING(255) not null,longVal INT64 not null,"
+				+ "stringVal STRING(255)) PRIMARY KEY (`ID1`,id2)";
 
-    String expectedCollectionCreateString = "create table TestEntity_stringList "
-        + "(stringList STRING(255),`TestEntity_ID1` INT64 not null,"
-        + "TestEntity_id2 STRING(255) not null) "
-        + "PRIMARY KEY (stringList,`TestEntity_ID1`,TestEntity_id2)";
+		String expectedCollectionCreateString = "create table TestEntity_stringList "
+				+ "(stringList STRING(255),`TestEntity_ID1` INT64 not null,"
+				+ "TestEntity_id2 STRING(255) not null) "
+				+ "PRIMARY KEY (stringList,`TestEntity_ID1`,TestEntity_id2)";
 
-    assertThat(sqlStrings)
-        .containsExactlyInAnyOrder(expectedCreateString, expectedCollectionCreateString);
-  }
+		assertThat( sqlStrings )
+				.containsExactlyInAnyOrder( expectedCreateString, expectedCollectionCreateString );
+	}
 
-  @Test
-  public void generateCreateStringsEmptyEntityTest() {
-    assertThatThrownBy(() -> {
-      new MetadataSources(this.registry)
-          .addAnnotatedClass(EmptyEntity.class)
-          .buildMetadata();
-    })
-        .isInstanceOf(AnnotationException.class)
-        .hasMessage(
-            "No identifier specified for entity: "
-                + "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$EmptyEntity");
-  }
+	@Test
+	public void generateCreateStringsEmptyEntityTest() {
+		assertThatThrownBy( () -> {
+			new MetadataSources( this.registry )
+					.addAnnotatedClass( EmptyEntity.class )
+					.buildMetadata();
+		} )
+				.isInstanceOf( AnnotationException.class )
+				.hasMessage(
+						"No identifier specified for entity: "
+								+ "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$EmptyEntity" );
+	}
 
-  @Test
-  public void generateCreateStringsNoPkEntityTest() {
-    assertThatThrownBy(() -> {
-      new MetadataSources(this.registry)
-          .addAnnotatedClass(NoPkEntity.class)
-          .buildMetadata();
-    })
-        .isInstanceOf(AnnotationException.class)
-        .hasMessage(
-            "No identifier specified for entity: "
-                + "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$NoPkEntity");
-  }
+	@Test
+	public void generateCreateStringsNoPkEntityTest() {
+		assertThatThrownBy( () -> {
+			new MetadataSources( this.registry )
+					.addAnnotatedClass( NoPkEntity.class )
+					.buildMetadata();
+		} )
+				.isInstanceOf( AnnotationException.class )
+				.hasMessage(
+						"No identifier specified for entity: "
+								+ "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$NoPkEntity" );
+	}
 
-  @Entity
-  class EmptyEntity {
-    // Intentionally empty
-  }
+	@Entity
+	class EmptyEntity {
+		// Intentionally empty
+	}
 
-  @Entity
-  class NoPkEntity {
+	@Entity
+	class NoPkEntity {
 
-    // Intentionally no primary key annotated
-    String value;
-  }
+		// Intentionally no primary key annotated
+		String value;
+	}
 }
