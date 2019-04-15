@@ -1,0 +1,32 @@
+= Cloud Spanner Hibernate Example
+
+This sample application demonstrates using https://hibernate.org/orm/releases/5.4/[Hibernate 5.4] with https://cloud.google.com/spanner/[Google Cloud Spanner].
+
+
+== Setup & Configuration
+1. Create a Google Cloud Platform Project
+2. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account] with Cloud Spanner permission.
+Furnish a new JSON key and then set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
++
+Alternatively, have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized and logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials].
+
+3. Enable the https://console.cloud.google.com/apis/api/spanner.googleapis.com/overview[Cloud Spanner API]
+
+4. Create a Cloud Spanner instance and database in your project and insert those details into the connection string in `hibernate.cfg.xml`:
+`jdbc:cloudspanner:/projects/{YOUR_PROJECT_ID}/instances/{YOUR_INSTANCE_ID}/databases/{YOUR_DATABASE_ID}`
+
+== Run the Example
+Run the example `main` method in `SampleApplication.java`.
+
+This example opens a transaction and saves a `Person` entity without specifying its `UUID`.
+This insert query will appear in the application output:
+----
+Hibernate: insert into Person_Sample_Application (address, name, nickName, id) values (?, ?, ?, ?)
+----
+
+The saved entity is then retrieved using an HQL query, and the stored entity with the generated ID is printed:
+----
+Hibernate: select person0_.id as id1_0_, person0_.address as address2_0_, person0_.name as name3_0_, person0_.nickName as nickName4_0_ from Person_Sample_Application person0_
+
+Found saved Person with generated ID: 17b595bf-fe1b-4125-b6fa-d0fd8b9c1500;person;purson;address
+----
