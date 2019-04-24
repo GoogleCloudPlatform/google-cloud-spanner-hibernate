@@ -28,15 +28,31 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
 		</dependency>
-
-		<dependency>
-			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-spanner</artifactId>
-			<version>0.80.1-alpha-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/libs/test-driver.jar</systemPath>
-		</dependency>
-
 	</dependencies>
 
+	<profiles>
+		<profile>
+			<id>enable-tests</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+
+			<dependencies>
+				<dependency>
+					<groupId>com.google.cloud</groupId>
+					<artifactId>google-cloud-spanner</artifactId>
+					<version>0.80.1-alpha-SNAPSHOT</version>
+					<scope>system</scope>
+					<systemPath>${project.basedir}/libs/test-driver.jar</systemPath>
+				</dependency>
+			</dependencies>
+		</profile>
+
+		<profile>
+			<id>disable-integration-tests</id>
+			<properties>
+				<maven.test.skip>true</maven.test.skip>
+			</properties>
+		</profile>
+	</profiles>
 </project>
