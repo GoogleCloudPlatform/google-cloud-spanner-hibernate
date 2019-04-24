@@ -38,6 +38,7 @@ import org.hibernate.metamodel.internal.MetamodelImpl;
 import org.hibernate.metamodel.model.domain.internal.EntityTypeImpl;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.testing.junit4.BaseUnitTestCase;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 
@@ -59,6 +60,39 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   private static EntityManager em;
   private static ArrayList<EntityManager> isolatedEms = new ArrayList<EntityManager>();
   private StandardServiceRegistryImpl serviceRegistry;
+
+  /**
+   * The entityManagerFactory in this method has been changed from original. It is now STATIC
+   * because the teardown method annotated @AfterClass is now run just once and AfterClass methods
+   * must be static. The entityManagerFactory is the only dependency of that method and it needed to
+   * become a static single reference as a result.
+   */
+  @Before
+  @SuppressWarnings({"UnusedDeclaration"})
+  public void buildEntityManagerFactory() {
+    if (entityManagerFactory == null) {
+      log.trace("Building EntityManagerFactory");
+
+      entityManagerFactory = Bootstrap.getEntityManagerFactoryBuilder(
+          buildPersistenceUnitDescriptor(),
+          buildSettings()
+      ).build().unwrap(SessionFactoryImplementor.class);
+
+      serviceRegistry = (StandardServiceRegistryImpl) entityManagerFactory.getServiceRegistry()
+          .getParentServiceRegistry();
+
+      afterEntityManagerFactoryBuilt();
+    }
+    cleanTables();
+  }
+
+  @After
+  public void resetSequenceTable() {
+    doInJPA(this::entityManagerFactory, entityManager -> {
+      entityManager.createNativeQuery(
+          "UPDATE hibernate_sequence SET next_val = 0 WHERE 1=1").executeUpdate();
+    });
+  }
 
   @AfterClass
   @SuppressWarnings({"UnusedDeclaration"})
@@ -135,6 +169,7 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
       for (String extraTable : getExtraTablesToClear()) {
         entityManager.createNativeQuery(getDeleteQuery(extraTable)).executeUpdate();
       }
+
     });
   }
 
@@ -166,31 +201,6 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 
   private String getDeleteQuery(String tableName) {
     return "DELETE FROM " + tableName + " where 1=1";
-  }
-
-  /**
-   * The entityManagerFactory in this method has been changed from original. It is now STATIC
-   * because the teardown method annotated @AfterClass is now run just once and AfterClass methods
-   * must be static. The entityManagerFactory is the only dependency of that method and it needed to
-   * become a static single reference as a result.
-   */
-  @Before
-  @SuppressWarnings({"UnusedDeclaration"})
-  public void buildEntityManagerFactory() {
-    if (entityManagerFactory == null) {
-      log.trace("Building EntityManagerFactory");
-
-      entityManagerFactory = Bootstrap.getEntityManagerFactoryBuilder(
-          buildPersistenceUnitDescriptor(),
-          buildSettings()
-      ).build().unwrap(SessionFactoryImplementor.class);
-
-      serviceRegistry = (StandardServiceRegistryImpl) entityManagerFactory.getServiceRegistry()
-          .getParentServiceRegistry();
-
-      afterEntityManagerFactoryBuilt();
-    }
-    cleanTables();
   }
 
   private PersistenceUnitDescriptor buildPersistenceUnitDescriptor() {
