@@ -18,11 +18,12 @@ install:
 
 before_install:
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
-      openssl aes-256-cbc -K $encrypted_5bb5dbfd81fd_key -iv $encrypted_5bb5dbfd81fd_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
+      openssl aes-256-cbc -K $encrypted_d2c20fa49002_key -iv $encrypted_d2c20fa49002_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
       tar -xzf travis.tar.gz;
       export GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json;
       export GOOGLE_CLOUD_PROJECT=cloud-spanner-hibernate-ci;
       export INTEGRATION_TEST_FLAGS="-Dit.hibernate=true";
+      mv $TRAVIS_BUILD_DIR/travis/test-driver.jar google-cloud-spanner-hibernate-testing/
     fi;
 
 script:
