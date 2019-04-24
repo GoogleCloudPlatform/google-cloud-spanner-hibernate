@@ -6,6 +6,7 @@ jdk:
 branches:
   only:
   - master
+  - test
 
 addons:
   sonarcloud:
@@ -22,12 +23,12 @@ before_install:
       tar -xzf travis.tar.gz;
       export GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json;
       export GOOGLE_CLOUD_PROJECT=cloud-spanner-hibernate-ci;
-      export INTEGRATION_TEST_FLAGS="-Dit.hibernate=true";
+      export INTEGRATION_TEST_FLAGS="-Dit.hibernate=true -Dhibernate.show_sql=false";
       mv $TRAVIS_BUILD_DIR/travis/test-driver.jar google-cloud-spanner-hibernate-testing/libs/;
     fi;
 
 script:
-  - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
+  - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
     ./mvnw org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -B -V -q -Dsonar.projectKey=google-cloud-spanner-hibernate ${INTEGRATION_TEST_FLAGS};
     else
     ./mvnw verify -B -V -q;
