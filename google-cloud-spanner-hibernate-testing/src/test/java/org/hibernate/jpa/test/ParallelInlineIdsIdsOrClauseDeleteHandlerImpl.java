@@ -88,39 +88,30 @@ public class ParallelInlineIdsIdsOrClauseDeleteHandlerImpl extends
 
       Set<String> deletes = new HashSet<>();
 
-      try {
-        new ForkJoinPool(4).submit(()-> {
+      deletes.stream().forEach(delete -> {
+        if (delete == null) {
+          return;
+        }
 
-          deletes.parallelStream().forEach(delete -> {
-            if (delete == null) {
-              return;
-            }
+        if(deletes.contains(delete)) {
+          System.out.println("DELETE ALREADY ATTEMPTED: "+ delete);
+          return;
+        }
 
-            if(deletes.contains(delete)) {
-              System.out.println("DELETE ALREADY ATTEMPTED: "+ delete);
-              return;
-            }
+        try {
+          try (PreparedStatement ps = session
+              .getJdbcCoordinator().getStatementPreparer()
+              .prepareStatement(delete, false)) {
+            session
+                .getJdbcCoordinator().getResultSetReturn()
+                .executeUpdate(ps);
 
-            try {
-              try (PreparedStatement ps = session
-                  .getJdbcCoordinator().getStatementPreparer()
-                  .prepareStatement(delete, false)) {
-                session
-                    .getJdbcCoordinator().getResultSetReturn()
-                    .executeUpdate(ps);
-
-                deletes.add(delete);
-              }
-            } catch (SQLException e) {
-              throw convert(e, "error performing bulk delete", delete);
-            }
-          });
-        }).get();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      } catch (ExecutionException e) {
-        e.printStackTrace();
-      }
+            deletes.add(delete);
+          }
+        } catch (SQLException e) {
+          throw convert(e, "error performing bulk delete", delete);
+        }
+      });
 
     }
 

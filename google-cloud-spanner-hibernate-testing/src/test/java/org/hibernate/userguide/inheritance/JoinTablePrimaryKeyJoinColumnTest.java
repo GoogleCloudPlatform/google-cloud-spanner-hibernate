@@ -25,6 +25,7 @@ public class JoinTablePrimaryKeyJoinColumnTest extends BaseEntityManagerFunction
 		return new Class<?>[] {
 				DebitAccount.class,
 				CreditAccount.class,
+				Account.class
 		};
 	}
 

@@ -159,7 +159,12 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
             if (name == null || name.isEmpty()) {
               name = x.getSimpleName();
             }
-            entityManager.createQuery(getDeleteQuery(name)).executeUpdate();
+            try {
+              entityManager.createNativeQuery(getDeleteQuery(name)).executeUpdate();
+            }
+            catch (Exception e){
+              System.out.println("Could not clean table:" + e);
+            }
           });
 
       for (String extraTable : getExtraTablesToClear()) {

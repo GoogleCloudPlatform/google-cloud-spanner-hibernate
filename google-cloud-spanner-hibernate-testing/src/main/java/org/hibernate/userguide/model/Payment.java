@@ -17,7 +17,7 @@ import javax.persistence.ManyToOne;
  * @author Vlad Mihalcea
  */
 //tag::hql-examples-domain-model-example[]
-@Entity
+@Entity(name = "Payment")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Payment {
 
