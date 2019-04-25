@@ -152,11 +152,15 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
             entityManager.createNativeQuery(deleteQuery).executeUpdate();
           });
 
-      for (EntityType entityType : entityManager.getMetamodel().getEntities()) {
-        if (shouldDelete(entityType)) {
-          entityManager.createNativeQuery(getDeleteQuery(entityType.getName())).executeUpdate();
-        }
-      }
+      Arrays.stream(getAnnotatedClasses())
+          .filter(entity -> entity.getAnnotation(Subselect.class) == null)
+          .forEach(x -> {
+            String name = x.getAnnotation(Entity.class).name();
+            if (name == null || name.isEmpty()) {
+              name = x.getSimpleName();
+            }
+            entityManager.createQuery(getDeleteQuery(name)).executeUpdate();
+          });
 
       for (String extraTable : getExtraTablesToClear()) {
         entityManager.createNativeQuery(getDeleteQuery(extraTable)).executeUpdate();
