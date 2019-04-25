@@ -10,7 +10,11 @@ package org.hibernate.jpa.test;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
@@ -81,28 +85,43 @@ public class ParallelInlineIdsIdsOrClauseDeleteHandlerImpl extends
       }
 
       // Start performing the deletes
-      deletes.parallelStream().forEach(delete -> {
-        new Thread(
-            () -> {
-              if (delete == null) {
-                return;
-              }
 
-              try {
-                try (PreparedStatement ps = session
-                    .getJdbcCoordinator().getStatementPreparer()
-                    .prepareStatement(delete, false)) {
-                  session
-                      .getJdbcCoordinator().getResultSetReturn()
-                      .executeUpdate(ps);
-                }
-              } catch (SQLException e) {
-                throw convert(e, "error performing bulk delete", delete);
-              }
+      Set<String> deletes = new HashSet<>();
+
+      try {
+        new ForkJoinPool(4).submit(()-> {
+
+          deletes.parallelStream().forEach(delete -> {
+            if (delete == null) {
+              return;
             }
 
-        ).start();
-      });
+            if(deletes.contains(delete)) {
+              System.out.println("DELETE ALREADY ATTEMPTED: "+ delete);
+              return;
+            }
+
+            try {
+              try (PreparedStatement ps = session
+                  .getJdbcCoordinator().getStatementPreparer()
+                  .prepareStatement(delete, false)) {
+                session
+                    .getJdbcCoordinator().getResultSetReturn()
+                    .executeUpdate(ps);
+
+                deletes.add(delete);
+              }
+            } catch (SQLException e) {
+              throw convert(e, "error performing bulk delete", delete);
+            }
+          });
+        }).get();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      } catch (ExecutionException e) {
+        e.printStackTrace();
+      }
+
     }
 
     return values.getIds().size();

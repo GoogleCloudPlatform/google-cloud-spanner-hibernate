@@ -55,7 +55,8 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 			Phone.class,
 			Call.class,
 			CreditCardPayment.class,
-			WireTransferPayment.class
+			WireTransferPayment.class,
+			Payment.class
 		};
 	}
 
