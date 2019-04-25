@@ -34,12 +34,12 @@ import org.hibernate.hql.spi.id.inline.InlineIdsOrClauseBulkIdStrategy;
  * @author Vlad Mihalcea
  * @author Chengyuan Zhao
  */
-public class ParallelInlineIdsOrClauseBulkIdStrategy extends InlineIdsOrClauseBulkIdStrategy {
+public class NoopIdsClauseBulkStrategy extends InlineIdsOrClauseBulkIdStrategy {
 
   @Override
   public DeleteHandler buildDeleteHandler(
       SessionFactoryImplementor factory,
       HqlSqlWalker walker) {
-    return new ParallelInlineIdsIdsOrClauseDeleteHandlerImpl(factory, walker);
+    return new NoopBulkStrategyImpl(factory, walker);
   }
 }
