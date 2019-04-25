@@ -22,10 +22,7 @@ import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
 
 /**
- * Parallel Inline bulk-id delete handler that uses multiple identifier OR clauses.
- *
- * @author Vlad Mihalcea
- * @author Chengyuan Zhao
+ * @author Daniel Zou
  */
 public class NoopBulkStrategyImpl extends
     InlineIdsIdsOrClauseDeleteHandlerImpl {

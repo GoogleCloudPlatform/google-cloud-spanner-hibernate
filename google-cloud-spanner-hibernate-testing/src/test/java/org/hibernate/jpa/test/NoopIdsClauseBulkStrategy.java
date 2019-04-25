@@ -11,28 +11,7 @@ import org.hibernate.hql.internal.ast.HqlSqlWalker;
 import org.hibernate.hql.spi.id.inline.InlineIdsOrClauseBulkIdStrategy;
 
 /**
- * This bulk-id strategy inlines identifiers of the rows that need to be updated or deleted using
- * multiple identifier OR clauses.
- *
- * <pre>
- * delete
- * from
- *     Engineer
- * where
- *     (
- *         id = 0
- *         and companyName = 'Red Hat Europe'
- *     )
- *     or (
- *         id = 1
- *       and companyName = 'Red Hat USA'
- *   )
- * </pre>
- *
- * This executes deletes in parallel for faster operation.
- *
- * @author Vlad Mihalcea
- * @author Chengyuan Zhao
+ * @author Daniel Zou
  */
 public class NoopIdsClauseBulkStrategy extends InlineIdsOrClauseBulkIdStrategy {
 
