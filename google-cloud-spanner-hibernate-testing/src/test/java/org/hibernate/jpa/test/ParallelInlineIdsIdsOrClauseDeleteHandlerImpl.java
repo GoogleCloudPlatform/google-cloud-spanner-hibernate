@@ -81,7 +81,7 @@ public class ParallelInlineIdsIdsOrClauseDeleteHandlerImpl extends
       }
 
       // Start performing the deletes
-      deletes.strea().forEach(delete -> {
+      deletes.stream().forEach(delete -> {
         new Thread(
             () -> {
               if (delete == null) {
