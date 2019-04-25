@@ -56,6 +56,7 @@ import org.hibernate.testing.junit4.Helper;
 import org.hibernate.testing.transaction.TransactionUtil2;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
 import static org.hibernate.testing.transaction.TransactionUtil.doInHibernate;
 import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;

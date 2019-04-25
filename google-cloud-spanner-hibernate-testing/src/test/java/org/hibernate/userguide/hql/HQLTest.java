@@ -14,9 +14,11 @@ import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
 import org.hibernate.testing.SkipForDialect;
 import org.hibernate.type.StringType;
 import org.hibernate.userguide.model.*;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 
 import javax.persistence.FlushModeType;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.rules.TestName;
 
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
@@ -41,6 +44,9 @@ import static org.junit.Assert.*;
  * @author Vlad Mihalcea
  */
 public class HQLTest extends BaseEntityManagerFunctionalTestCase {
+
+	@Rule
+	public TestName testName = new TestName();
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
@@ -114,6 +120,11 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 				entityManager.persist(creditCardPayment);
 				entityManager.persist(wireTransferPayment);
 			});
+	}
+
+	@After
+	public void logTestCompletion() {
+		System.out.println("Completed HQL Test: " + testName.getMethodName());
 	}
 
 	@Test

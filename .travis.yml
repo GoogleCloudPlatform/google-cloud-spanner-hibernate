@@ -6,6 +6,7 @@ jdk:
 branches:
   only:
   - master
+  - test
 
 addons:
   sonarcloud:
@@ -14,21 +15,21 @@ addons:
       secure: "pNSuPozHIh/W3h/CYTYFb2r3iui2ecE+984LhAL+nuVaarUINRw9kiVzTOUkg0xpeSe9CmoGqSd5z0VsGNk3exDdaPm4+jeJvgluNRNaCQGYd0w0GiSMM1L2EigP78S61hA7EH7SjzAQfieBQxA/py6EOWiDIswdu5myGYp7zKashJOse8fXrkodBufAigxEjhm4eHT2z0IHUguw/UPBCNqNZQiD2ma4xCgK7AXbPcjDYxo9Z43wM5SacGZt0lHfFTjse8fRgWXDdvHIuRTrG4NCN0NpIrVQx8kWHzLkwzG2mSWtyXEzlh6a0wRF37/RZePGXc3yRIJKmoyvfpVdmzkJwgXzVgU6MPFH14Aa7FHa4GpjqPbk/Tx3E/FhyoLPsfXWF+RVq7XmG5+tZ6QabqDhtINFS4kPJrP7Ni6vePfOqg5ZOKQpDlQbnfNK/KasQ/RzyhsQOFc3CzEWJZOQJ2/af3a8AkbKrVsm5MbFCeQ7GSgv22PdAHGuJLuZJ5Qot2fcdlpWs+z++oYtEuvJafIETdBlgtXtbxMee2IsYD7sOvsYCWne4WP4Mfdh+YDNlGjrqLMV/QRjPKfe7Uaz2K7R6vzcoP8J7ou8SjfNtIpyvEkcwtjnYnzmYp+pS7olqprvXp+aqcQNLfi+Xqyuj0cHB8txTfCVHDvCdLw1WRE="
 
 install:
-  - ./mvnw -T 1.5C clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -q;
+  - ./mvnw clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -q -P disable-integration-tests;
 
 before_install:
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
-      openssl aes-256-cbc -K $encrypted_5bb5dbfd81fd_key -iv $encrypted_5bb5dbfd81fd_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
+      openssl aes-256-cbc -K $encrypted_d2c20fa49002_key -iv $encrypted_d2c20fa49002_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
       tar -xzf travis.tar.gz;
       export GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json;
       export GOOGLE_CLOUD_PROJECT=cloud-spanner-hibernate-ci;
-      export INTEGRATION_TEST_FLAGS="-Dit.hibernate=true";
+      mv $TRAVIS_BUILD_DIR/travis/test-driver.jar google-cloud-spanner-hibernate-testing/libs/;
     fi;
 
 script:
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
-    ./mvnw org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -B -V -q -Dsonar.projectKey=google-cloud-spanner-hibernate ${INTEGRATION_TEST_FLAGS};
+    ./mvnw org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -B -V -q -Dsonar.projectKey=google-cloud-spanner-hibernate -Dhibernate.show_sql=false;
     else
-    ./mvnw verify -B -V -q;
+    ./mvnw verify -B -V -q -P disable-integration-tests;
     fi;
 
