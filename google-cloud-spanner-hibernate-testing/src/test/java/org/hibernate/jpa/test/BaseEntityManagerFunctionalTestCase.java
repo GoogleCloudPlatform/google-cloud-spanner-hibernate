@@ -163,7 +163,13 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
           });
 
       for (EntityType entityType : entityManager.getMetamodel().getEntities()) {
-          entityManager.createNativeQuery(getDeleteQuery(entityType.getName())).executeUpdate();
+          try {
+            entityManager.createNativeQuery(getDeleteQuery(entityType.getName())).executeUpdate();
+          }
+          catch (Exception e){
+            // Hibernate entities may not always refer to real tables.
+            System.out.println("Clean up of table skipped: " + e);
+          }
       }
 
       for (String extraTable : getExtraTablesToClear()) {
