@@ -82,21 +82,26 @@ public class ParallelInlineIdsIdsOrClauseDeleteHandlerImpl extends
 
       // Start performing the deletes
       deletes.parallelStream().forEach(delete -> {
-        if (delete == null) {
-          return;
-        }
+        new Thread(
+            () -> {
+              if (delete == null) {
+                return;
+              }
 
-        try {
-          try (PreparedStatement ps = session
-              .getJdbcCoordinator().getStatementPreparer()
-              .prepareStatement(delete, false)) {
-            session
-                .getJdbcCoordinator().getResultSetReturn()
-                .executeUpdate(ps);
-          }
-        } catch (SQLException e) {
-          throw convert(e, "error performing bulk delete", delete);
-        }
+              try {
+                try (PreparedStatement ps = session
+                    .getJdbcCoordinator().getStatementPreparer()
+                    .prepareStatement(delete, false)) {
+                  session
+                      .getJdbcCoordinator().getResultSetReturn()
+                      .executeUpdate(ps);
+                }
+              } catch (SQLException e) {
+                throw convert(e, "error performing bulk delete", delete);
+              }
+            }
+
+        ).start();
       });
     }
 
