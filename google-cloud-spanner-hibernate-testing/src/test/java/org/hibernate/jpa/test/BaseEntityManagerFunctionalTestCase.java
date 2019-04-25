@@ -86,14 +86,6 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
     cleanTables();
   }
 
-  @After
-  public void resetSequenceTable() {
-    doInJPA(this::entityManagerFactory, entityManager -> {
-      entityManager.createNativeQuery(
-          "UPDATE hibernate_sequence SET next_val = 0 WHERE 1=1").executeUpdate();
-    });
-  }
-
   @AfterClass
   @SuppressWarnings({"UnusedDeclaration"})
   public static void releaseResources() {
