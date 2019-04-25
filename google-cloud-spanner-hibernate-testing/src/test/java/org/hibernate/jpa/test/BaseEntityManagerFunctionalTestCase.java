@@ -169,27 +169,6 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
     });
   }
 
-  /**
-   * Returns whether an Entity type generates a new table whose contents must be cleared.
-   */
-  private boolean shouldDelete(EntityType entityType) {
-    if (entityType.getSupertype() != null
-        && entityType.getSupertype().getJavaType().getAnnotation(Inheritance.class) != null) {
-      String inheritanceAnnotation =
-          entityType.getSupertype().getJavaType().getAnnotation(Inheritance.class).toString();
-
-      if (inheritanceAnnotation.equals("@javax.persistence.Inheritance(strategy=SINGLE_TABLE)")) {
-        return false;
-      }
-    }
-
-    if (entityType.getJavaType().getAnnotation(Subselect.class) != null) {
-      return false;
-    }
-
-    return true;
-  }
-
   /** Returns a list of extra tables that need to be cleared before each test is run. */
   protected List<String> getExtraTablesToClear() {
     return new ArrayList<>();
