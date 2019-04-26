@@ -19,6 +19,7 @@ import javax.persistence.Table;
  */
 //tag::hql-examples-domain-model-example[]
 @Entity
+@Table(name = "phone_call")
 public class Call {
 
     @Id

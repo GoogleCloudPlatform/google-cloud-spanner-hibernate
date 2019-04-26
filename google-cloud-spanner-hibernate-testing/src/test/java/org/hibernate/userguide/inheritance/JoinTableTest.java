@@ -28,6 +28,7 @@ public class JoinTableTest extends BaseEntityManagerFunctionalTestCase {
 		return new Class<?>[] {
 				DebitAccount.class,
 				CreditAccount.class,
+				Account.class
 		};
 	}
 

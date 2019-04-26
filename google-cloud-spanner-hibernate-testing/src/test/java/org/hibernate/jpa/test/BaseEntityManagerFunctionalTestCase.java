@@ -86,14 +86,6 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
     cleanTables();
   }
 
-  @After
-  public void resetSequenceTable() {
-    doInJPA(this::entityManagerFactory, entityManager -> {
-      entityManager.createNativeQuery(
-          "UPDATE hibernate_sequence SET next_val = 0 WHERE 1=1").executeUpdate();
-    });
-  }
-
   @AfterClass
   @SuppressWarnings({"UnusedDeclaration"})
   public static void releaseResources() {
@@ -159,12 +151,25 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
             String deleteQuery = getDeleteQuery(((AbstractCollectionPersister) x).getTableName());
             entityManager.createNativeQuery(deleteQuery).executeUpdate();
           });
-
-      for (EntityType entityType : entityManager.getMetamodel().getEntities()) {
-        if (shouldDelete(entityType)) {
-          entityManager.createNativeQuery(getDeleteQuery(entityType.getName())).executeUpdate();
-        }
-      }
+    });
+    Arrays.stream(getAnnotatedClasses())
+        .filter(entity -> entity.getAnnotation(Subselect.class) == null)
+        .forEach(x -> {
+          String name = x.getAnnotation(Entity.class).name();
+          if (name == null || name.isEmpty()) {
+            name = x.getSimpleName();
+          }
+          try {
+              String finalName = name;
+              doInJPA(this::entityManagerFactory, entityManager -> {
+                entityManager.createNativeQuery(getDeleteQuery(finalName)).executeUpdate();
+              });
+          }
+          catch (Exception e){
+            System.out.println("Could not clean table:" + e);
+          }
+        });
+    doInJPA(this::entityManagerFactory, entityManager -> {
 
       for (String extraTable : getExtraTablesToClear()) {
         entityManager.createNativeQuery(getDeleteQuery(extraTable)).executeUpdate();
@@ -173,34 +178,13 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
     });
   }
 
-  /**
-   * Returns whether an Entity type generates a new table whose contents must be cleared.
-   */
-  private boolean shouldDelete(EntityType entityType) {
-    if (entityType.getSupertype() != null
-        && entityType.getSupertype().getJavaType().getAnnotation(Inheritance.class) != null) {
-      String inheritanceAnnotation =
-          entityType.getSupertype().getJavaType().getAnnotation(Inheritance.class).toString();
-
-      if (inheritanceAnnotation.equals("@javax.persistence.Inheritance(strategy=SINGLE_TABLE)")) {
-        return false;
-      }
-    }
-
-    if (entityType.getJavaType().getAnnotation(Subselect.class) != null) {
-      return false;
-    }
-
-    return true;
-  }
-
   /** Returns a list of extra tables that need to be cleared before each test is run. */
   protected List<String> getExtraTablesToClear() {
     return new ArrayList<>();
   }
 
   private String getDeleteQuery(String tableName) {
-    return "DELETE FROM " + tableName + " where 1=1";
+    return "hibernate_sequence".equals(tableName) ? "": "DELETE FROM " + tableName + " where 1=1";
   }
 
   private PersistenceUnitDescriptor buildPersistenceUnitDescriptor() {

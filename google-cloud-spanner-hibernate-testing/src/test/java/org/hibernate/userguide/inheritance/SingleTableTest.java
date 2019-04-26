@@ -28,6 +28,7 @@ public class SingleTableTest extends BaseEntityManagerFunctionalTestCase {
 		return new Class<?>[] {
 				DebitAccount.class,
 				CreditAccount.class,
+				Account.class
 		};
 	}
 

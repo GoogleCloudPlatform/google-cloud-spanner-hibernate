@@ -45,7 +45,6 @@ public class NaiveEqualsHashCodeEntityTest extends BaseEntityManagerFunctionalTe
 	}
 
 	@Test
-	@Ignore // Test is flaky; seems like it sometimes flushes the commits and sometimes doesn't
 	public void testPersist() {
 
 		//tag::entity-pojo-naive-equals-hashcode-persist-example[]

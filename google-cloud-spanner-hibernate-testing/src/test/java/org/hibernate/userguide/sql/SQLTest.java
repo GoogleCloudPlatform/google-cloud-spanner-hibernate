@@ -44,6 +44,7 @@ public class SQLTest extends BaseEntityManagerFunctionalTestCase {
         Call.class,
         CreditCardPayment.class,
         WireTransferPayment.class,
+        Payment.class,
         SpaceShip.class,
         Captain.class,
     };
