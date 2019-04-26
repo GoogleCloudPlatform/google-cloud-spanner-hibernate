@@ -151,21 +151,25 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
             String deleteQuery = getDeleteQuery(((AbstractCollectionPersister) x).getTableName());
             entityManager.createNativeQuery(deleteQuery).executeUpdate();
           });
-
-      Arrays.stream(getAnnotatedClasses())
-          .filter(entity -> entity.getAnnotation(Subselect.class) == null)
-          .forEach(x -> {
-            String name = x.getAnnotation(Entity.class).name();
-            if (name == null || name.isEmpty()) {
-              name = x.getSimpleName();
-            }
-            try {
-              entityManager.createNativeQuery(getDeleteQuery(name)).executeUpdate();
-            }
-            catch (Exception e){
-              System.out.println("Could not clean table:" + e);
-            }
-          });
+    });
+    Arrays.stream(getAnnotatedClasses())
+        .filter(entity -> entity.getAnnotation(Subselect.class) == null)
+        .forEach(x -> {
+          String name = x.getAnnotation(Entity.class).name();
+          if (name == null || name.isEmpty()) {
+            name = x.getSimpleName();
+          }
+          try {
+              String finalName = name;
+              doInJPA(this::entityManagerFactory, entityManager -> {
+                entityManager.createNativeQuery(getDeleteQuery(finalName)).executeUpdate();
+              });
+          }
+          catch (Exception e){
+            System.out.println("Could not clean table:" + e);
+          }
+        });
+    doInJPA(this::entityManagerFactory, entityManager -> {
 
       for (String extraTable : getExtraTablesToClear()) {
         entityManager.createNativeQuery(getDeleteQuery(extraTable)).executeUpdate();
@@ -180,7 +184,7 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   }
 
   private String getDeleteQuery(String tableName) {
-    return "DELETE FROM " + tableName + " where 1=1";
+    return "hibernate_sequence".equals(tableName) ? "": "DELETE FROM " + tableName + " where 1=1";
   }
 
   private PersistenceUnitDescriptor buildPersistenceUnitDescriptor() {
