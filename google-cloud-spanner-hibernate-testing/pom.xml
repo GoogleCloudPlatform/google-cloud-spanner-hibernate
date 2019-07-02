@@ -62,7 +62,7 @@
 					<artifactId>google-cloud-spanner</artifactId>
 					<version>0.80.1-alpha-SNAPSHOT</version>
 					<scope>system</scope>
-					<systemPath>${project.basedir}/libs/test-driver.jar</systemPath>
+					<systemPath>${maven.multiModuleProjectDirectory}/libs/test-driver.jar</systemPath>
 				</dependency>
 			</dependencies>
 		</profile>

@@ -10,8 +10,8 @@
 
   <modules>
     <module>docs</module>
-    <module>sample</module>
     <module>google-cloud-spanner-hibernate-dialect</module>
+    <module>google-cloud-spanner-hibernate-sample</module>
     <module>google-cloud-spanner-hibernate-testing</module>
   </modules>
 
