@@ -26,10 +26,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.mockrunner.base.NestedApplicationException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Enumeration;
 import java.util.Properties;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -52,6 +54,7 @@ public class SpannerServiceContributorTest {
     when(mockDriver.connect(any(), any())).thenReturn(mock(Connection.class));
 
     // make sure our mock driver is discovered by Hibernate
+    deregisterDrivers();
     DriverManager.registerDriver(mockDriver);
 
     StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
@@ -73,6 +76,17 @@ public class SpannerServiceContributorTest {
 
     // verify the the userAgent was passed in with properties
     assertThat(propertiesArgumentCaptor.getValue().getProperty("userAgent")).isEqualTo("sp-hib");
+  }
+
+  private void deregisterDrivers() {
+    try {
+      Enumeration<Driver> drivers = DriverManager.getDrivers();
+      while (drivers.hasMoreElements()) {
+        DriverManager.deregisterDriver(drivers.nextElement());
+      }
+    } catch (SQLException exc) {
+      throw new NestedApplicationException(exc);
+    }
   }
 
 }
