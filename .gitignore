@@ -8,3 +8,6 @@ target
 # Ignores generated files through testing
 **/transaction.log
 *.properties
+
+# local libs
+/libs
