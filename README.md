@@ -1,4 +1,4 @@
-# Hibernate ORM Dialect for Google Cloud Spanner
+# Google Cloud Spanner Dialect for Hibernate ORM
 
 [![experimental](http://badges.github.io/stability-badges/dist/experimental.svg)](http://github.com/badges/stability-badges)
 
