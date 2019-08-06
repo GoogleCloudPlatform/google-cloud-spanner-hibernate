@@ -1,4 +1,6 @@
-= Hibernate for Google Cloud Spanner
+# Google Cloud Spanner Dialect for Hibernate ORM
+
+http://github.com/badges/stability-badges[image:http://badges.github.io/stability-badges/dist/experimental.svg[experimental]]
 
 This is a dialect compatible with https://hibernate.org/orm/releases/5.4/[Hibernate 5.4] for the https://cloud.google.com/spanner/[Google Cloud Spanner] database service.
 The `SpannerDialect` produces SQL, DML, and DDL statements for most common entity types and relationships using standard Hibernate and Java Persistence annotations.
@@ -179,7 +181,5 @@ You must set the `hibernate.hql.bulk_id_strategy` setting in `hibernate.properti
 
 This is because Hibernate's default behavior (`PersistentTableBulkIdStrategy`) attempts to create intermediate tables to handle delete and update operations on the multiple tables that represent a `JOINED` inheritance hierarchy, but these table creations statements do not conform to Cloud Spanner DDL.
 Using one of the `Inline` bulk-ID strategy classes given above resolves this issue.
-
-
 
 
