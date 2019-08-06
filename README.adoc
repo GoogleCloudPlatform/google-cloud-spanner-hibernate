@@ -1,6 +1,6 @@
 # Google Cloud Spanner Dialect for Hibernate ORM
 
-[![experimental](http://badges.github.io/stability-badges/dist/experimental.svg)](http://github.com/badges/stability-badges)
+http://github.com/badges/stability-badges[image:http://badges.github.io/stability-badges/dist/experimental.svg[experimental]]
 
 This is a dialect compatible with https://hibernate.org/orm/releases/5.4/[Hibernate 5.4] for the https://cloud.google.com/spanner/[Google Cloud Spanner] database service.
 The `SpannerDialect` produces SQL, DML, and DDL statements for most common entity types and relationships using standard Hibernate and Java Persistence annotations.
