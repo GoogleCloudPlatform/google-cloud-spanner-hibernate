@@ -25,7 +25,6 @@ before_install:
       tar -xzf travis.tar.gz;
       export GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/admin.json;
       export GOOGLE_CLOUD_PROJECT=cloud-spanner-hibernate-ci;
-      mkdir -p libs && mv $TRAVIS_BUILD_DIR/test-driver.jar libs/;
     fi;
 
 script:

@@ -51,13 +51,6 @@ public class Person {
 
   }
 
-  public Person(UUID id, String name, String nickName, String address) {
-    this.id = id;
-    this.name = name;
-    this.nickName = nickName;
-    this.address = address;
-  }
-
   public UUID getId() {
     return id;
   }

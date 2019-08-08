@@ -37,6 +37,9 @@ public class SampleApplicationTests {
 
   private static ByteArrayOutputStream baos;
 
+  /**
+   * Redirect System.out to a stream we can capture for verification.
+   */
   @BeforeClass
   public static void setUp() {
     systemOut = System.out;

@@ -25,12 +25,16 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 /**
- * An example Hibernate application using the Cloud Spanner Dialect.
+ * An example Hibernate application using the Google Cloud Spanner Dialect for Hibernate ORM.
  *
  * @author Chengyuan Zhao
  */
 public class SampleApplication {
 
+  /**
+   * Main method that runs a simple console application that saves a {@link Person} entity and then
+   * retrieves it to print to the console.
+   */
   public static void main(String[] args) {
 
     final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
@@ -51,8 +55,6 @@ public class SampleApplication {
     session.save(person);
 
     session.getTransaction().commit();
-
-    session.beginTransaction();
 
     System.out.println(
         "Found saved Person with generated ID: " + session.createQuery("from Person").list()
