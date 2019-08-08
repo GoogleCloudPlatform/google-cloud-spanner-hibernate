@@ -11,19 +11,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
-  <name>Google Cloud Spanner Hibernate Dialect</name>
+  <name>Google Cloud Spanner Dialect for Hibernate ORM</name>
 
   <dependencies>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>1.10.19</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

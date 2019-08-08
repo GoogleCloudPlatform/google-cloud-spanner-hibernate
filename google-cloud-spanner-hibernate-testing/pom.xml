@@ -30,6 +30,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-spanner-jdbc</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-jcache</artifactId>
 		</dependency>
@@ -50,23 +55,6 @@
 	</dependencies>
 
 	<profiles>
-		<profile>
-			<id>enable-tests</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
-			<dependencies>
-				<dependency>
-					<groupId>com.google.cloud</groupId>
-					<artifactId>google-cloud-spanner</artifactId>
-					<version>0.80.1-alpha-SNAPSHOT</version>
-					<scope>system</scope>
-					<systemPath>${maven.multiModuleProjectDirectory}/libs/test-driver.jar</systemPath>
-				</dependency>
-			</dependencies>
-		</profile>
-
 		<profile>
 			<id>disable-integration-tests</id>
 			<properties>
