@@ -23,6 +23,71 @@
   </properties>
 
   <name>Google Cloud Spanner Dialect for Hibernate ORM Parent</name>
+  <description>The official implementation of a Hibernate Dialect for Cloud Spanner.</description>
+  <url>https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate</url>
+
+  <licenses>
+    <license>
+      <name>GNU Lesser General Public License version 2.1</name>
+      <url>https://opensource.org/licenses/LGPL-2.1</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>ChengyuanZhao</id>
+      <name>Chengyuan Zhao</name>
+      <email>cccz@google.com</email>
+      <organization>Google</organization>
+      <organizationUrl>http://www.google.com</organizationUrl>
+    </developer>
+    <developer>
+      <id>dmitry-s</id>
+      <name>Dmitry Solomakha</name>
+      <email>dsolomakha@google.com</email>
+      <organization>Google</organization>
+      <organizationUrl>http://www.google.com</organizationUrl>
+    </developer>
+    <developer>
+      <id>dzou</id>
+      <name>Daniel Zou</name>
+      <email>dzou@google.com</email>
+      <organization>Google</organization>
+      <organizationUrl>http://www.google.com</organizationUrl>
+    </developer>
+    <developer>
+      <id>elefeint</id>
+      <name>Elena Felder</name>
+      <email>elfel@google.com</email>
+      <organization>Google</organization>
+      <organizationUrl>http://www.google.com</organizationUrl>
+    </developer>
+    <developer>
+      <id>meltsufin</id>
+      <name>Mike Eltsufin</name>
+      <email>meltsufin@google.com</email>
+      <organization>Google</organization>
+      <organizationUrl>http://www.google.com</organizationUrl>
+    </developer>
+  </developers>
+
+  <organization>
+    <name>Google LLC</name>
+  </organization>
+
+  <scm>
+    <connection>scm:git:git@github.com:GoogleCloudPlatform/google-cloud-spanner-hibernate.git</connection>
+    <developerConnection>scm:git:git@github.com:GoogleCloudPlatform/google-cloud-spanner-hibernate.git</developerConnection>
+    <url>https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <dependencyManagement>
     <dependencies>
@@ -137,4 +202,59 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.2.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <configuration>
+                  <!-- ignore javadoc errors -->
+                  <additionalparam>-Xdoclint:none</additionalparam>
+                  <source>8</source>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.5</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
