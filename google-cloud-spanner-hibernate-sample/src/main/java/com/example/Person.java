@@ -100,12 +100,12 @@ public class Person {
 
   @Override
   public String toString() {
-    return "Person{" +
-        "\n id=" + id +
-        "\n name='" + name + '\'' +
-        "\n nickName='" + nickName + '\'' +
-        "\n address='" + address + '\'' +
-        "\n payment_amount=" + payment.getAmount() +
-        "\n}";
+    return "Person{"
+        + "\n id=" + id
+        + "\n name='" + name + '\''
+        + "\n nickName='" + nickName + '\''
+        + "\n address='" + address + '\''
+        + "\n payment_amount=" + payment.getAmount()
+        + "\n}";
   }
 }

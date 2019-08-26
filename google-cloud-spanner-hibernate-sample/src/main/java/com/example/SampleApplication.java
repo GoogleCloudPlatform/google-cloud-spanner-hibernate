@@ -39,13 +39,22 @@ public class SampleApplication {
    */
   public static void main(String[] args) {
 
-    final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+    // Create Hibernate environment objects.
+    StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
         .configure()
         .build();
     SessionFactory sessionFactory = new MetadataSources(registry).buildMetadata()
         .buildSessionFactory();
     Session session = sessionFactory.openSession();
 
+    // Save an entity into Spanner Table.
+    savePerson(session);
+  }
+
+  /**
+   * Saves a {@link Person} entity into a Spanner table.
+   */
+  public static void savePerson(Session session) {
     session.beginTransaction();
 
     WireTransferPayment payment = new WireTransferPayment();

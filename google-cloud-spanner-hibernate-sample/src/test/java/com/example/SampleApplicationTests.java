@@ -20,17 +20,12 @@ package com.example;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.List;
-import org.apache.tools.ant.util.TeeOutputStream;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -53,9 +48,9 @@ public class SampleApplicationTests {
 
   @Test
   public void testSample() {
-    SampleApplication.main(null);
-
     Session session = sessionFactory.openSession();
+    SampleApplication.savePerson(session);
+
     List<Person> savedPersons = session.createQuery("from Person", Person.class).list();
 
     assertThat(savedPersons).hasSize(1);
