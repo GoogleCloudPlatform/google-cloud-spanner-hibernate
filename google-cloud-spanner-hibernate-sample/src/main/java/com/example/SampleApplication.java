@@ -57,15 +57,21 @@ public class SampleApplication {
   public static void savePerson(Session session) {
     session.beginTransaction();
 
-    WireTransferPayment payment = new WireTransferPayment();
-    payment.setWireId("1234ab");
-    payment.setAmount(200L);
+    WireTransferPayment payment1 = new WireTransferPayment();
+    payment1.setWireId("1234ab");
+    payment1.setAmount(200L);
+
+    CreditCardPayment payment2 = new CreditCardPayment();
+    payment2.setCreditCardId("creditcardId");
+    payment2.setAmount(600L);
 
     Person person = new Person();
     person.setName("person");
     person.setNickName("purson");
     person.setAddress("address");
-    person.setPayment(payment);
+
+    person.addPayment(payment1);
+    person.addPayment(payment2);
 
     session.save(person);
     session.getTransaction().commit();

@@ -21,6 +21,7 @@ package com.example;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
@@ -60,8 +61,13 @@ public class SampleApplicationTests {
     assertThat(person.getNickName()).isEqualTo("purson");
     assertThat(person.getAddress()).isEqualTo("address");
 
-    Payment payment = person.getPayment();
-    assertThat(payment.getAmount()).isEqualTo(200L);
-    assertThat(payment).isInstanceOf(WireTransferPayment.class);
+    List<Payment> payments = person.getPayments();
+    assertThat(payments).hasSize(2);
+
+    List<Long> paymentAmounts =
+        payments.stream()
+            .map(Payment::getAmount)
+            .collect(Collectors.toList());
+    assertThat(paymentAmounts).containsExactlyInAnyOrder(200L, 600L);
   }
 }

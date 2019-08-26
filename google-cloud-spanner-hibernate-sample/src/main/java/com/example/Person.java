@@ -18,16 +18,17 @@
 
 package com.example;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import org.hibernate.annotations.Type;
-
 
 /**
  * An example person entity.
@@ -54,8 +55,8 @@ public class Person {
   private String address;
 
   // An example of an entity relationship.
-  @OneToOne(cascade = CascadeType.ALL)
-  private Payment payment;
+  @OneToMany(cascade = CascadeType.ALL)
+  private List<Payment> payments = new ArrayList<>();
 
   public Person() {}
 
@@ -91,12 +92,12 @@ public class Person {
     this.address = address;
   }
 
-  public Payment getPayment() {
-    return payment;
+  public List<Payment> getPayments() {
+    return payments;
   }
 
-  public void setPayment(Payment payment) {
-    this.payment = payment;
+  public void addPayment(Payment payment) {
+    this.payments.add(payment);
   }
 
   @Override
@@ -106,7 +107,7 @@ public class Person {
         + "\n name='" + name + '\''
         + "\n nickname='" + nickname + '\''
         + "\n address='" + address + '\''
-        + "\n payment_amount=" + payment.getAmount()
+        + "\n total_payments=" + payments.stream().mapToLong(Payment::getAmount).sum()
         + "\n}";
   }
 }
