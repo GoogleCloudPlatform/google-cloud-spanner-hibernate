@@ -13,6 +13,7 @@
 	<artifactId>google-cloud-spanner-hibernate-sample</artifactId>
 	<name>Google Cloud Spanner Hibernate Sample Application</name>
 
+	<!-- [START spanner_hibernate_dependencies] -->
 	<dependencies>
 		<dependency>
 			<groupId>com.google.cloud</groupId>
@@ -20,14 +21,15 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-core</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.google.cloud</groupId>
 			<artifactId>google-cloud-spanner-jdbc</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+		</dependency>
 	</dependencies>
+	<!-- [END spanner_hibernate_dependencies] -->
 
 	<profiles>
 		<profile>

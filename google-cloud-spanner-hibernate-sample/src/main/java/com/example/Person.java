@@ -23,6 +23,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 
@@ -33,13 +34,17 @@ import org.hibernate.annotations.Type;
  * @author Chengyuan Zhao
  */
 @Entity(name = "Person")
-@Table(name = "Person_Sample_Application")
+// [START spanner_hibernate_table_name]
+@Table(name = "PersonsTable")
+// [END spanner_hibernate_table_name]
 public class Person {
 
+  // [START spanner_hibernate_generated_ids]
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   @Type(type = "uuid-char")
   private UUID id;
+  // [END spanner_hibernate_generated_ids]
 
   private String name;
 
@@ -47,9 +52,11 @@ public class Person {
 
   private String address;
 
-  public Person() {
+  // An example of an entity relationship.
+  @OneToOne
+  private Payment payment;
 
-  }
+  public Person() {}
 
   public UUID getId() {
     return id;
@@ -83,8 +90,22 @@ public class Person {
     this.address = address;
   }
 
+  public Payment getPayment() {
+    return payment;
+  }
+
+  public void setPayment(Payment payment) {
+    this.payment = payment;
+  }
+
   @Override
   public String toString() {
-    return id + ";" + name + ";" + nickName + ";" + address;
+    return "Person{" +
+        "\n id=" + id +
+        "\n name='" + name + '\'' +
+        "\n nickName='" + nickName + '\'' +
+        "\n address='" + address + '\'' +
+        "\n payment_amount=" + payment.getAmount() +
+        "\n}";
   }
 }

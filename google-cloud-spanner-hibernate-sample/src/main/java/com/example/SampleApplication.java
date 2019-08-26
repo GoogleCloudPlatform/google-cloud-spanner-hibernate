@@ -18,6 +18,7 @@
 
 package com.example;
 
+import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
@@ -28,6 +29,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
  * An example Hibernate application using the Google Cloud Spanner Dialect for Hibernate ORM.
  *
  * @author Chengyuan Zhao
+ * @author Daniel Zou
  */
 public class SampleApplication {
 
@@ -46,19 +48,28 @@ public class SampleApplication {
 
     session.beginTransaction();
 
-    Person person = new Person();
+    WireTransferPayment payment = new WireTransferPayment();
+    payment.setWireId("1234ab");
+    payment.setAmount(200L);
 
+    Person person = new Person();
     person.setName("person");
     person.setNickName("purson");
     person.setAddress("address");
+    person.setPayment(payment);
 
+    session.save(payment);
     session.save(person);
-
     session.getTransaction().commit();
 
-    System.out.println(
-        "Found saved Person with generated ID: " + session.createQuery("from Person").list()
-            .get(0));
+    List<Person> personsInTable =
+        session.createQuery("from Person", Person.class).list();
 
+    System.out.println(
+        String.format("There are %d persons saved in the table:", personsInTable.size()));
+
+    for (Person personInTable : personsInTable) {
+      System.out.println(personInTable);
+    }
   }
 }

@@ -22,7 +22,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.List;
 import org.apache.tools.ant.util.TeeOutputStream;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -30,31 +37,36 @@ import org.junit.Test;
  * This verifies the sample application.
  *
  * @author Chengyuan Zhao
+ * @author Daniel Zou
  */
 public class SampleApplicationTests {
 
-  private static PrintStream systemOut;
+  private final StandardServiceRegistry registry =
+      new StandardServiceRegistryBuilder()
+          .configure()
+          .build();
 
-  private static ByteArrayOutputStream baos;
-
-  /**
-   * Redirect System.out to a stream we can capture for verification.
-   */
-  @BeforeClass
-  public static void setUp() {
-    systemOut = System.out;
-    baos = new ByteArrayOutputStream();
-    TeeOutputStream out = new TeeOutputStream(systemOut, baos);
-    System.setOut(new PrintStream(out));
-  }
+  private final SessionFactory sessionFactory =
+      new MetadataSources(registry)
+          .buildMetadata()
+          .buildSessionFactory();
 
   @Test
   public void testSample() {
     SampleApplication.main(null);
 
-    assertThat(baos.toString()).contains(
-        "insert into Person_Sample_Application (address, name, nickName, id) values (?, ?, ?, ?)");
-    assertThat(baos.toString()).contains("Found saved Person with generated ID:");
-    assertThat(baos.toString()).contains(";person;purson;address");
+    Session session = sessionFactory.openSession();
+    List<Person> savedPersons = session.createQuery("from Person", Person.class).list();
+
+    assertThat(savedPersons).hasSize(1);
+
+    Person person = savedPersons.get(0);
+    assertThat(person.getName()).isEqualTo("person");
+    assertThat(person.getNickName()).isEqualTo("purson");
+    assertThat(person.getAddress()).isEqualTo("address");
+
+    Payment payment = person.getPayment();
+    assertThat(payment.getAmount()).isEqualTo(200L);
+    assertThat(payment).isInstanceOf(WireTransferPayment.class);
   }
 }
