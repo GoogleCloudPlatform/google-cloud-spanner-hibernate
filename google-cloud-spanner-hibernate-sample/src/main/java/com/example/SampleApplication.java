@@ -67,7 +67,6 @@ public class SampleApplication {
     person.setAddress("address");
     person.setPayment(payment);
 
-    session.save(payment);
     session.save(person);
     session.getTransaction().commit();
 

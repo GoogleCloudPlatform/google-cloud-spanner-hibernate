@@ -19,6 +19,7 @@
 package com.example;
 
 import java.util.UUID;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -53,7 +54,7 @@ public class Person {
   private String address;
 
   // An example of an entity relationship.
-  @OneToOne
+  @OneToOne(cascade = CascadeType.ALL)
   private Payment payment;
 
   public Person() {}
