@@ -18,14 +18,17 @@
 
 package com.example;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import org.hibernate.annotations.Type;
-
 
 /**
  * An example person entity.
@@ -33,23 +36,29 @@ import org.hibernate.annotations.Type;
  * @author Chengyuan Zhao
  */
 @Entity(name = "Person")
-@Table(name = "Person_Sample_Application")
+// [START spanner_hibernate_table_name]
+@Table(name = "PersonsTable")
+// [END spanner_hibernate_table_name]
 public class Person {
 
+  // [START spanner_hibernate_generated_ids]
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   @Type(type = "uuid-char")
   private UUID id;
+  // [END spanner_hibernate_generated_ids]
 
   private String name;
 
-  private String nickName;
+  private String nickname;
 
   private String address;
 
-  public Person() {
+  // An example of an entity relationship.
+  @OneToMany(cascade = CascadeType.ALL)
+  private List<Payment> payments = new ArrayList<>();
 
-  }
+  public Person() {}
 
   public UUID getId() {
     return id;
@@ -68,11 +77,11 @@ public class Person {
   }
 
   public String getNickName() {
-    return nickName;
+    return nickname;
   }
 
-  public void setNickName(String nickName) {
-    this.nickName = nickName;
+  public void setNickName(String nickname) {
+    this.nickname = nickname;
   }
 
   public String getAddress() {
@@ -83,8 +92,22 @@ public class Person {
     this.address = address;
   }
 
+  public List<Payment> getPayments() {
+    return payments;
+  }
+
+  public void addPayment(Payment payment) {
+    this.payments.add(payment);
+  }
+
   @Override
   public String toString() {
-    return id + ";" + name + ";" + nickName + ";" + address;
+    return "Person{"
+        + "\n id=" + id
+        + "\n name='" + name + '\''
+        + "\n nickname='" + nickname + '\''
+        + "\n address='" + address + '\''
+        + "\n total_payments=" + payments.stream().mapToLong(Payment::getAmount).sum()
+        + "\n}";
   }
 }

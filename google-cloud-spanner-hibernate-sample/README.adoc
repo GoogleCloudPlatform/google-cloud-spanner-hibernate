@@ -19,14 +19,27 @@ Alternatively, have the https://cloud.google.com/sdk/[Google Cloud SDK] installe
 Run the example `main` method in `SampleApplication.java`.
 
 This example opens a transaction and saves a `Person` entity without specifying its `UUID`.
+It also saves an associated `Payment` record for the person.
+
 This insert query will appear in the application output:
 ----
-Hibernate: insert into Person_Sample_Application (address, name, nickName, id) values (?, ?, ?, ?)
+Hibernate: insert into Payment (amount, id) values (?, ?)
+Hibernate: insert into WireTransferPayment (wireId, id) values (?, ?)
+Hibernate: insert into PersonsTable (address, name, nickname, payment_id, id) values (?, ?, ?, ?, ?)
 ----
 
-The saved entity is then retrieved using an HQL query, and the stored entity with the generated ID is printed:
+The saved entities are then retrieved using an HQL query, and the stored person with the generated ID is printed:
 ----
-Hibernate: select person0_.id as id1_0_, person0_.address as address2_0_, person0_.name as name3_0_, person0_.nickName as nickName4_0_ from Person_Sample_Application person0_
+Hibernate: select person0_.id as id1_0_, person0_.address as address2_0_, person0_.name as name3_0_, person0_.nickname as nickname4_0_ from PersonsTable person0_
 
-Found saved Person with generated ID: 17b595bf-fe1b-4125-b6fa-d0fd8b9c1500;person;purson;address
+There are 1 persons saved in the table:
+Person{
+ id=688377a3-b884-4beb-886d-6e93317c5542
+ name='person'
+ nickname='purson'
+ address='address'
+ payment_amount=200
+}
 ----
+
+You will also be able to view the tables and data that Hibernate created in Spanner through the https://console.cloud.google.com/spanner[Google Cloud Platform Console].

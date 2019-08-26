@@ -18,6 +18,7 @@
 
 package com.example;
 
+import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
@@ -28,6 +29,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
  * An example Hibernate application using the Google Cloud Spanner Dialect for Hibernate ORM.
  *
  * @author Chengyuan Zhao
+ * @author Daniel Zou
  */
 public class SampleApplication {
 
@@ -37,28 +39,51 @@ public class SampleApplication {
    */
   public static void main(String[] args) {
 
-    final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+    // Create Hibernate environment objects.
+    StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
         .configure()
         .build();
     SessionFactory sessionFactory = new MetadataSources(registry).buildMetadata()
         .buildSessionFactory();
     Session session = sessionFactory.openSession();
 
+    // Save an entity into Spanner Table.
+    savePerson(session);
+  }
+
+  /**
+   * Saves a {@link Person} entity into a Spanner table.
+   */
+  public static void savePerson(Session session) {
     session.beginTransaction();
 
-    Person person = new Person();
+    WireTransferPayment payment1 = new WireTransferPayment();
+    payment1.setWireId("1234ab");
+    payment1.setAmount(200L);
 
+    CreditCardPayment payment2 = new CreditCardPayment();
+    payment2.setCreditCardId("creditcardId");
+    payment2.setAmount(600L);
+
+    Person person = new Person();
     person.setName("person");
     person.setNickName("purson");
     person.setAddress("address");
 
-    session.save(person);
+    person.addPayment(payment1);
+    person.addPayment(payment2);
 
+    session.save(person);
     session.getTransaction().commit();
 
-    System.out.println(
-        "Found saved Person with generated ID: " + session.createQuery("from Person").list()
-            .get(0));
+    List<Person> personsInTable =
+        session.createQuery("from Person", Person.class).list();
 
+    System.out.println(
+        String.format("There are %d persons saved in the table:", personsInTable.size()));
+
+    for (Person personInTable : personsInTable) {
+      System.out.println(personInTable);
+    }
   }
 }
