@@ -20,7 +20,7 @@ set -eo pipefail
 dir=$(dirname "$0")
 
 pushd $dir/../
-./mvnw verify -B -V -DskipITs
+./mvnw verify -B -V -P disable-integration-tests
 popd
 
 source $dir/release_snapshot.sh
