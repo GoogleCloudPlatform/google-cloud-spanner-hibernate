@@ -25,18 +25,18 @@ This insert query will appear in the application output:
 ----
 Hibernate: insert into Payment (amount, id) values (?, ?)
 Hibernate: insert into WireTransferPayment (wireId, id) values (?, ?)
-Hibernate: insert into PersonsTable (address, name, nickName, payment_id, id) values (?, ?, ?, ?, ?)
+Hibernate: insert into PersonsTable (address, name, nickname, payment_id, id) values (?, ?, ?, ?, ?)
 ----
 
 The saved entities are then retrieved using an HQL query, and the stored person with the generated ID is printed:
 ----
-Hibernate: select person0_.id as id1_0_, person0_.address as address2_0_, person0_.name as name3_0_, person0_.nickName as nickName4_0_ from PersonsTable person0_
+Hibernate: select person0_.id as id1_0_, person0_.address as address2_0_, person0_.name as name3_0_, person0_.nickname as nickname4_0_ from PersonsTable person0_
 
 There are 1 persons saved in the table:
 Person{
  id=688377a3-b884-4beb-886d-6e93317c5542
  name='person'
- nickName='purson'
+ nickname='purson'
  address='address'
  payment_amount=200
 }

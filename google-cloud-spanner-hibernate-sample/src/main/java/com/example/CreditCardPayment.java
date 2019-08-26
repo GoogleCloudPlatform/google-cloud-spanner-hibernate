@@ -18,10 +18,13 @@
 
 package com.example;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 
 @Entity
 class CreditCardPayment extends Payment {
+
+  @Column(name = "credit_card_id")
   private String creditCardId;
 
   public String getCreditCardId() {

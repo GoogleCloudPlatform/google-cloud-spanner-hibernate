@@ -18,10 +18,13 @@
 
 package com.example;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 
 @Entity
 class WireTransferPayment extends Payment {
+
+  @Column(name = "wire_id")
   private String wireId;
 
   public String getWireId() {

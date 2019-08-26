@@ -48,7 +48,7 @@ public class Person {
 
   private String name;
 
-  private String nickName;
+  private String nickname;
 
   private String address;
 
@@ -75,11 +75,11 @@ public class Person {
   }
 
   public String getNickName() {
-    return nickName;
+    return nickname;
   }
 
-  public void setNickName(String nickName) {
-    this.nickName = nickName;
+  public void setNickName(String nickname) {
+    this.nickname = nickname;
   }
 
   public String getAddress() {
@@ -103,7 +103,7 @@ public class Person {
     return "Person{"
         + "\n id=" + id
         + "\n name='" + name + '\''
-        + "\n nickName='" + nickName + '\''
+        + "\n nickname='" + nickname + '\''
         + "\n address='" + address + '\''
         + "\n payment_amount=" + payment.getAmount()
         + "\n}";
