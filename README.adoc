@@ -20,7 +20,7 @@ Maven coordinates for the dialect:
 </dependency>
 ----
 
-Maven coordinates for the official Cloud Spanner Driver:
+Maven coordinates for the official open source Cloud Spanner JDBC Driver:
 
 [source,xml]
 ----
