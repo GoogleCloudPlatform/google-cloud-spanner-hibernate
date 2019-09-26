@@ -20,7 +20,7 @@ Maven coordinates for the dialect:
 </dependency>
 ----
 
-Maven coordinates for the official https://cloud-dot-devsite.googleplex.com/spanner/docs/open-source-jdbc[open source Cloud Spanner JDBC Driver].
+Maven coordinates for the official https://cloud.google.com/spanner/docs/open-source-jdbc[open source Cloud Spanner JDBC Driver].
 
 [source,xml]
 ----
@@ -31,7 +31,7 @@ Maven coordinates for the official https://cloud-dot-devsite.googleplex.com/span
 </dependency>
 ----
 
-NOTE: Hibernate ORM with Cloud Spanner is officially supported only with the https://cloud-dot-devsite.googleplex.com/spanner/docs/open-source-jdbc[open source Cloud Spanner JDBC Driver]. It does not support the https://cloud-dot-devsite.googleplex.com/spanner/docs/partners/drivers[Simba JDBC driver] at this time.
+NOTE: Hibernate ORM with Cloud Spanner is officially supported only with the https://cloud.google.com/spanner/docs/open-source-jdbc[open source Cloud Spanner JDBC Driver]. It does not support the https://cloud.google.com/spanner/docs/partners/drivers[Simba JDBC driver] at this time.
 
 Configuring the `SpannerDialect` and a Cloud Spanner Driver class is typical of all Hibernate dialects in the `hibernate.properties` file:
 
