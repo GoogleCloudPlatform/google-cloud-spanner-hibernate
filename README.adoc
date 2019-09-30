@@ -77,6 +77,26 @@ However, because Cloud Spanner does not support foreign key constraints, foreign
 NOTE: The lack of foreign key constraints also means database-side cascading deletes are not supported via the `@OnDelete(action = OnDeleteAction.CASCADE)` annotation because there is no `ON DELETE CASCADE` constraint in Cloud Spanner DDL.
 However, Hibernate-side cascading operations such as `@ManyToOne(cascade = {CascadeType.ALL})` are supported.
 
+==== Optimizing Queries
+
+To take advantage of Cloud Spanner's full performance, consider using its https://cloud.google.com/spanner/docs/sql-best-practices[best practices].
+
+Because Hibernate's built-in HQL does not account for Spanner-specific features, you can construct queries directly from Cloud Spanner SQL instead:
+
+[source,java]
+----
+SQLQuery query = session.createSQLQuery("SELECT * FROM Singers AS s
+                                         JOIN@{FORCE_JOIN_ORDER=TRUE} Albums AS a
+                                         ON s.SingerId = a.Singerid
+                                         WHERE s.LastName LIKE '%x%'
+                                         AND a.AlbumTitle LIKE '%love%';");
+----
+
+==== Interleaved Tables
+
+Currently there is no support for Cloud Spanner's interleaved table feature.
+Hibernate ORM relationships are always constructed using join-tables and foreign keys by the framework.
+If your application would benefit from interleaved tables, we recommend that you manually create them and use types mapped to them in Hibernate. This enables the performance and database-enforced-constraint benefits from interleaved tables in Cloud Spanner, even though the Hibernate framework will not be aware of their relationship or any restrictions on operations between interleaved tables.
 
 ==== Constraints
 
@@ -139,6 +159,18 @@ Cloud Spanner does not support table names with catalog and schema components:
   name = "book"
 )
 ----
+
+Hibernate's `hibernate.hbm2ddl.auto` setting controls the framework's schema modification behavior that occurs during start-up.
+The following settings are available:
+
+- none: do nothing.
+- validate: validate the schema, makes no changes to the database.
+- update: update the schema.
+- create: creates the schema, destroying previous data.
+- create-drop: drop the schema when the `SessionFactory` is closed explicitly, typically when the application is stopped.
+
+Hibernate performs schema updates on each table and entity type on startup, which can take more than several minutes if there are many tables.
+To avoid schema updates keeping Hibernate from starting for several minutes, you can update schemas separately and use the `none` or `validate` settings.
 
 
 ==== Column Default Values
