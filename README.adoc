@@ -1,7 +1,5 @@
 # Google Cloud Spanner Dialect for Hibernate ORM
 
-http://github.com/badges/stability-badges[image:http://badges.github.io/stability-badges/dist/experimental.svg[experimental]]
-
 This is a dialect compatible with https://hibernate.org/orm/releases/5.4/[Hibernate 5.4] for the https://cloud.google.com/spanner/[Google Cloud Spanner] database service.
 The `SpannerDialect` produces SQL, DML, and DDL statements for most common entity types and relationships using standard Hibernate and Java Persistence annotations.
 
@@ -16,7 +14,7 @@ Maven coordinates for the dialect:
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
-  <version> TBD </version>
+  <version>0.1.0.BUILD-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -27,11 +25,23 @@ Maven coordinates for the official https://cloud.google.com/spanner/docs/open-so
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-jdbc</artifactId>
-  <version>0.1.0</version>
+  <version>1.7.0</version>
 </dependency>
 ----
 
 NOTE: Hibernate ORM with Cloud Spanner is officially supported only with the https://cloud.google.com/spanner/docs/open-source-jdbc[open source Cloud Spanner JDBC Driver]. It does not support the https://cloud.google.com/spanner/docs/partners/drivers[Simba JDBC driver] at this time.
+
+If you're using a `BUILD-SNAPSHOT` version of the dialect, please add the Sonatype Snapshots repository to your `pom.xml`:
+
+[source,xml]
+----
+<repository>
+  <id>snapshots-repo</id>
+  <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+  <releases><enabled>false</enabled></releases>
+  <snapshots><enabled>true</enabled></snapshots>
+</repository>
+----
 
 Configuring the `SpannerDialect` and a Cloud Spanner Driver class is typical of all Hibernate dialects in the `hibernate.properties` file:
 
