@@ -34,7 +34,7 @@ MAVEN_SETTINGS_FILE=$(realpath .)/settings.xml
 setup_environment_secrets
 create_settings_xml_file $MAVEN_SETTINGS_FILE
 
-mvn nexus-staging:release -B \
+./mvnw nexus-staging:release -B \
   --settings=settings.xml \
   -DstagingRepositoryId=${STAGING_REPOSITORY_ID}
 

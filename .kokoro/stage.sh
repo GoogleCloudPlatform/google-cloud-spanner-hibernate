@@ -32,7 +32,7 @@ create_settings_xml_file $MAVEN_SETTINGS_FILE
 ./mvnw verify -B -V -P disable-integration-tests
 
 # change to release version
-mvn versions:set -DremoveSnapshot
+./mvnw versions:set -DremoveSnapshot
 
 # stage release
 ./mvnw clean deploy -B \
