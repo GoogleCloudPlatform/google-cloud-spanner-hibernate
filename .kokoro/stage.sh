@@ -40,7 +40,7 @@ create_settings_xml_file $MAVEN_SETTINGS_FILE
   --settings ${MAVEN_SETTINGS_FILE} \
   -Dgpg.executable=gpg \
   -Dgpg.passphrase=${GPG_PASSPHRASE} \
-  -Dgpg.homedir=${GPG_HOMEDIR}
+  -Dgpg.homedir=${GPG_HOMEDIR} \
   -P release
 
 popd
