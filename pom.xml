@@ -158,7 +158,6 @@
             <serverId>ossrh</serverId>
             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
             <autoReleaseAfterClose>${deploy.autorelease}</autoReleaseAfterClose>
-            <skipLocalStaging>true</skipLocalStaging>
           </configuration>
         </plugin>
         <plugin>
