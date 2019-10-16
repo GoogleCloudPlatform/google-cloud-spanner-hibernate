@@ -25,6 +25,6 @@ The ID in this case is `comgooglecloud-1345`.
 
 . Open a PR to update the release version in the https://github.com/GoogleCloudPlatform/java-docs-samples/blob/master/spanner/hibernate/pom.xml[sample app]. Here's a https://github.com/GoogleCloudPlatform/java-docs-samples/pull/1617[sample PR].
 
-. https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/releases:[Create] a new release on GitHub.
+. https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/releases[Create] a new release on GitHub.
 
 . Increment the project base version. For example, from `0.1.0.BUILD-SNAPSHOT` to `0.2.0.BUILD-SNAPSHOT`.
