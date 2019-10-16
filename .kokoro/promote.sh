@@ -36,6 +36,7 @@ create_settings_xml_file $MAVEN_SETTINGS_FILE
 
 ./mvnw nexus-staging:release -B \
   --settings=settings.xml \
-  -DstagingRepositoryId=${STAGING_REPOSITORY_ID}
+  -DstagingRepositoryId=${STAGING_REPOSITORY_ID} \
+  -P release
 
 popd
