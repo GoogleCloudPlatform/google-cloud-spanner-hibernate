@@ -20,8 +20,8 @@ package com.google.cloud.spanner.hibernate;
 
 import java.io.Serializable;
 import java.sql.Types;
+import java.util.List;
 import java.util.Map;
-
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.StaleObjectStateException;
@@ -367,6 +367,19 @@ public class SpannerDialect extends Dialect {
   @Override
   public String getAddPrimaryKeyConstraintString(String constraintName) {
     throw new UnsupportedOperationException("Cannot add primary key constraint in Cloud Spanner.");
+  }
+
+  /* Query Hints */
+
+  @Override
+  public String getQueryHintString(String query, List<String> hintsList) {
+    String formattedHints = QueryHintProcessor.formatQueryHints(hintsList);
+    return getQueryHintString(query, formattedHints);
+  }
+
+  @Override
+  public String getQueryHintString(String query, String hints) {
+    return hints + " " + query;
   }
 
   /* Lock acquisition functions */
