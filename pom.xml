@@ -229,7 +229,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
-        <module>google-cloud-spanner-hibernate-sample</module>
+        <module>google-cloud-spanner-hibernate-samples</module>
         <module>google-cloud-spanner-hibernate-testing</module>
         <module>google-cloud-spanner-hibernate-dialect</module>
       </modules>
