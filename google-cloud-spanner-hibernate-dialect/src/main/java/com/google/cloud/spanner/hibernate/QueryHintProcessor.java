@@ -1,5 +1,7 @@
 package com.google.cloud.spanner.hibernate;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -13,15 +15,14 @@ final class QueryHintProcessor {
   /**
    * Set of all supported Spanner Join hints.
    */
-  private static final Set<String> JOIN_HINT_KEYS = CollectionUtils.setOf(
-      "FORCE_JOIN_ORDER",
-      "JOIN_METHOD"
-  );
+  private static final Set<String> JOIN_HINT_KEYS = new HashSet<>(
+      Arrays.asList("FORCE_JOIN_ORDER", "JOIN_METHOD"));
 
   /**
-   * The pattern that each hint should be written in; i.e. "HINT_KEY=HINT_VALUE".
+   * The pattern that each hint should be written in; i.e. "HINT_KEY_NAME=HINT_VALUE".
    */
-  private static final Pattern HINT_PATTERN = Pattern.compile("([a-zA-Z_]+)=([a-zA-Z_]+)");
+  private static final Pattern HINT_PATTERN =
+      Pattern.compile("\\s*([a-zA-Z_]+)\\s*=\\s*([a-zA-Z_]+)\\s*");
 
   static String formatQueryHints(List<String> queryHints) {
     if (queryHints.isEmpty()) {

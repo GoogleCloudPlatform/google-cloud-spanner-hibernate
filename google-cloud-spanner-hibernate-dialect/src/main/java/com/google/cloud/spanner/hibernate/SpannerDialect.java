@@ -379,7 +379,11 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public String getQueryHintString(String query, String hints) {
-    return hints + " " + query;
+    if (hints != null && !hints.isEmpty()) {
+      return hints + " " + query;
+    } else {
+      return query;
+    }
   }
 
   /* Lock acquisition functions */
