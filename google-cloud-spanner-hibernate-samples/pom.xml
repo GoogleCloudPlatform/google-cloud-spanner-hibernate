@@ -10,26 +10,13 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
+	<name>Google Cloud Spanner Hibernate Sample Applications</name>
 	<artifactId>google-cloud-spanner-hibernate-sample</artifactId>
-	<name>Google Cloud Spanner Hibernate Sample Application</name>
+	<packaging>pom</packaging>
 
-	<!-- [START spanner_hibernate_dependencies] -->
-	<dependencies>
-		<dependency>
-			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-spanner-jdbc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-core</artifactId>
-		</dependency>
-	</dependencies>
-	<!-- [END spanner_hibernate_dependencies] -->
+	<modules>
+		<module>basic-hibernate-sample</module>
+	</modules>
 
 	<profiles>
 		<profile>
