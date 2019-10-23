@@ -14,10 +14,6 @@
 	<artifactId>google-cloud-spanner-hibernate-sample</artifactId>
 	<packaging>pom</packaging>
 
-	<modules>
-		<module>basic-hibernate-sample</module>
-	</modules>
-
 	<profiles>
 		<profile>
 			<id>disable-integration-tests</id>
@@ -26,6 +22,10 @@
 			</properties>
 		</profile>
 	</profiles>
+
+	<modules>
+		<module>basic-hibernate-sample</module>
+	</modules>
 
 	<build>
 		<plugins>
