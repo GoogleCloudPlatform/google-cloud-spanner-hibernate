@@ -12,15 +12,6 @@
   <name>Google Cloud Spanner Hibernate Basic Sample</name>
   <artifactId>basic-hibernate-sample</artifactId>
 
-  <profiles>
-    <profile>
-      <id>disable-integration-tests</id>
-      <properties>
-        <maven.test.skip>true</maven.test.skip>
-      </properties>
-    </profile>
-  </profiles>
-
   <dependencies>
     <dependency>
       <groupId>com.google.cloud</groupId>
