@@ -18,15 +18,6 @@
 		<module>basic-hibernate-sample</module>
 	</modules>
 
-	<profiles>
-		<profile>
-			<id>disable-integration-tests</id>
-			<properties>
-				<maven.test.skip>true</maven.test.skip>
-			</properties>
-		</profile>
-	</profiles>
-
 	<build>
 		<plugins>
 			<plugin>
