@@ -25,7 +25,8 @@
 
 	<modules>
 		<module>basic-hibernate-sample</module>
-	</modules>
+    <module>spring-data-jpa-sample</module>
+  </modules>
 
 	<build>
 		<plugins>
