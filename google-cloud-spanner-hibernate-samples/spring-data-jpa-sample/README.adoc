@@ -18,13 +18,16 @@ This setting configures the connection URL which specifies the database that you
 # Spanner connection URL.
 # - ${PROJECT_ID} Replace with your GCP project ID
 # - ${INSTANCE_ID} Replace with your Spanner instance ID
-# - ${DATABASE_NAME} Replace with your Spanner database name within your Spanner instance
+# - ${DATABASE_NAME} Replace with the name of your Spanner database that you created inside your Spanner instance
 
 spring.datasource.url=jdbc:cloudspanner:/projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DATABASE_NAME}
 ----
 
 5. Open a terminal instance inside this directory and run `mvn spring-boot:run` to start the app.
-
-6. Try playing around with the UI and creating some fake customer data and orders.
 +
-You can view the data be populated in your Cloud Spanner database by navigating to your database in the http://console.cloud.google.com/spanner[Spanner Console] view.
+In the `application.properties` file, you'll see that the application is running with `spring.jpa.hibernate.ddl-auto=update` which allows Hibernate to create tables for you if they do not exist.
+On the very first time you run the app, Hibernate will automatically create the schema and missing tables based on the `@Entity` definitions.
+
+6. Visit http://localhost:8080/ and try playing around with the UI and creating some fake customer data and orders.
++
+You can view the data that was populated in your Cloud Spanner database by navigating to your database in the http://console.cloud.google.com/spanner[Spanner Console] view.
