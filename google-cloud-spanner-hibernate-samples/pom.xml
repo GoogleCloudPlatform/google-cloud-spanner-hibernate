@@ -11,7 +11,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<name>Google Cloud Spanner Hibernate Sample Applications</name>
-	<artifactId>google-cloud-spanner-hibernate-sample</artifactId>
+	<artifactId>google-cloud-spanner-hibernate-samples</artifactId>
 	<packaging>pom</packaging>
 
 	<profiles>
@@ -25,6 +25,7 @@
 
 	<modules>
 		<module>basic-hibernate-sample</module>
+		<module>spring-data-jpa-sample</module>
 	</modules>
 
 	<build>
