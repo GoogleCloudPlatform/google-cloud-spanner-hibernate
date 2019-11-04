@@ -1,3 +1,21 @@
+/*
+ * Copyright 2019 Google LLC
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
 package com.google.cloud.spanner.hibernate;
 
 import com.google.api.gax.longrunning.OperationFuture;
@@ -20,6 +38,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Runs common operations (reads, writes) on Spanner using the Spanner Client Libraries.
+ */
 public class ClientLibraryOperations {
   private static final String DDL_SMALL = "/ddl_strings/airport_ddl.txt";
   private static final String DDL_LARGE = "/ddl_strings/bulk_ddl.txt";
@@ -38,6 +59,9 @@ public class ClientLibraryOperations {
   private final DatabaseAdminClient databaseAdminClient;
   private final DatabaseClient databaseClient;
 
+  /**
+   * Constructs the {@link ClientLibraryOperations} object.
+   */
   public ClientLibraryOperations() {
     SpannerOptions spannerOptions = SpannerOptions.newBuilder().setProjectId(PROJECT_ID).build();
     this.spanner = spannerOptions.getService();
