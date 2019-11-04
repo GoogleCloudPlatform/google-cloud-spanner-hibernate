@@ -33,7 +33,7 @@ before_install:
 
 script:
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
-      ./mvnw org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -B -V Dsonar.projectKey=google-cloud-spanner-hibernate -Dhibernate.show_sql=false;
+      ./mvnw org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -B -V -Dsonar.projectKey=google-cloud-spanner-hibernate -Dhibernate.show_sql=false;
     else
       ./mvnw verify -B -V -P disable-integration-tests;
     fi;
