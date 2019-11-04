@@ -12,10 +12,6 @@
   <name>Google Cloud Spanner Hibernate Performance Testing</name>
   <artifactId>google-cloud-spanner-hibernate-performance-testing</artifactId>
 
-  <properties>
-    <log4j.version>1.2.17</log4j.version>
-    <google-cloud-spanner.version>1.43.0</google-cloud-spanner.version>
-  </properties>
 
   <dependencies>
     <dependency>
@@ -37,13 +33,11 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>${google-cloud-spanner.version}</version>
     </dependency>
 
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
-      <version>${log4j.version}</version>
     </dependency>
   </dependencies>
 

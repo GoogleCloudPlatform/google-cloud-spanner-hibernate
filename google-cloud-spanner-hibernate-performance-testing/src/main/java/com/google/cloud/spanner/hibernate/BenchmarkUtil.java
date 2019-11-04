@@ -28,18 +28,32 @@ public class BenchmarkUtil {
   private static final Logger LOGGER = Logger.getLogger(BenchmarkUtil.class);
 
   /**
-   * Utility method which executes a {@link Runnable} and logs the amount of time it took to run.
+   * Utility method which executes a {@link Runnable} and returns the amount of time it took to run.
    * @param runnable The action to run.
-   * @param description The description of the action.
+   * @return The time in milliseconds for the operation to run.
    */
-  public static void benchmark(Runnable runnable, String description) {
-    LOGGER.info(description);
+  public static long benchmark(Runnable runnable) {
     long startMs = System.currentTimeMillis();
     try {
       runnable.run();
     } catch (Exception e) {
-      throw new RuntimeException("Failed to benchmark code: " + description, e);
+      throw new RuntimeException("Failed to benchmark code.", e);
     }
-    LOGGER.info("Milliseconds taken: " + (System.currentTimeMillis() - startMs));
+    return System.currentTimeMillis() - startMs;
+  }
+
+  /**
+   * Utility method which executes a {@link Runnable}, returns the time taken, and logs the
+   * operation with the provided {@code description}.
+   * @param runnable The action to run.
+   * @param description The description of the action.
+   * @return The time in milliseconds for the operation to run.
+   */
+  public static long benchmark(Runnable runnable, String description) {
+    LOGGER.info(description);
+
+    long timeTaken = benchmark(runnable);
+    LOGGER.info("Milliseconds taken: " + timeTaken);
+    return timeTaken;
   }
 }
