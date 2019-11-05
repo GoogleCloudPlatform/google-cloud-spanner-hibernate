@@ -18,36 +18,43 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import static com.google.cloud.spanner.hibernate.BenchmarkUtil.benchmark;
-
 import org.apache.log4j.Logger;
 
 /**
- * Runs Spanner Client Library operations and benchmarks their performance.
+ * Runs and benchmarks common operations on Spanner using Hibernate.
  */
-public class ClientLibraryDriver {
+public class HibernateDriver {
 
-  private static final Logger LOGGER = Logger.getLogger(ClientLibraryDriver.class);
+  private static final Logger LOGGER = Logger.getLogger(HibernateDriver.class);
 
   /**
-   * Runs and benchmarks Spanner Client Library operations.
+   * Runs and benchmarks Hibernate operations.
    */
   public static void main(String[] args) {
+    LOGGER.info("Resetting the test database.");
     ClientLibraryOperations clientLibraryOperations = new ClientLibraryOperations();
-
-    LOGGER.info("Resetting the Spanner database to run the performance tests.");
     clientLibraryOperations.resetTestDatabase();
 
-    benchmark(clientLibraryOperations::createSingleTable, "Create a table.");
-    benchmark(
-        clientLibraryOperations::singleInsert, "Insert a record into a table.");
-    benchmark(
-        () -> clientLibraryOperations.batchInsert(1000),
-        "Insert 1000 records into a table.");
-    benchmark(
-        clientLibraryOperations::batchUpdate, "Updates 1000 records in a table.");
-    benchmark(
-        clientLibraryOperations::deleteSingleTable, "Drops a single table");
-    benchmark(clientLibraryOperations::runDdlLarge, "Running bulk DDL operations.");
+    HibernateOperations hibernateOperations = new HibernateOperations();
+
+    BenchmarkUtil.benchmark(
+        hibernateOperations::initializeEntityTables,
+        "Create 1 Spanner table from Hibernate entity classes.");
+
+    BenchmarkUtil.benchmark(
+        () -> hibernateOperations.insertRows(1),
+        "Insert a single row through persisting a Hibernate entity.");
+
+    BenchmarkUtil.benchmark(
+        () -> hibernateOperations.insertRows(1000),
+        "Insert 1000 rows by saving Hibernate entities.");
+
+    BenchmarkUtil.benchmark(
+        () -> hibernateOperations.updateRows(1),
+        "Update 1 row by saving Hibernate entities.");
+
+    BenchmarkUtil.benchmark(
+        () -> hibernateOperations.updateRows(1000),
+        "Update 1000 row by saving Hibernate entities.");
   }
 }

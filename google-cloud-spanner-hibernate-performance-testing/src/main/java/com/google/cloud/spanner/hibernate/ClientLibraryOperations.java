@@ -72,22 +72,16 @@ public class ClientLibraryOperations {
   }
 
   /**
-   * Creates a database.
+   * Resets the test Spanner database.
    */
-  public void createTestDatabase() {
+  public void resetTestDatabase() {
+    databaseAdminClient.dropDatabase(INSTANCE_NAME, DATABASE_NAME);
     try {
       databaseAdminClient.createDatabase(
           INSTANCE_NAME, DATABASE_NAME, Collections.EMPTY_LIST).get();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  /**
-   * Deletes a database.
-   */
-  public void deleteTestDatabase() {
-    databaseAdminClient.dropDatabase(INSTANCE_NAME, DATABASE_NAME);
   }
 
   /**
