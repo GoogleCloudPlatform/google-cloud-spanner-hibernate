@@ -44,15 +44,30 @@ public class ClientLibraryDriver {
     setupDatabases(clientLibraryOperations);
 
     benchmark(clientLibraryOperations::createSingleTable, "Create a table.");
+
     benchmark(
-        clientLibraryOperations::singleInsert, "Insert a record into a table.");
+        clientLibraryOperations::singleInsert,
+        "Insert a record into a table with single-use transaction.");
+
+    benchmark(
+        () -> clientLibraryOperations.batchInsert(1),
+        "Insert 1 record into a table with a batch size == 1.");
+
     benchmark(
         () -> clientLibraryOperations.batchInsert(1000),
-        "Insert 1000 records into a table.");
+        "Insert 1000 records into a table in a batch.");
+
     benchmark(
-        clientLibraryOperations::batchUpdate, "Updates 1000 records in a table.");
+        () -> clientLibraryOperations.batchUpdate(1),
+        "Updates 1 record in a table in a batch.");
+
     benchmark(
-        clientLibraryOperations::deleteSingleTable, "Drops a single table");
+        () -> clientLibraryOperations.batchUpdate(1000),
+        "Updates 1000 records in a table in a batch.");
+
+    // benchmark(
+    //     clientLibraryOperations::deleteSingleTable, "Drops a single table");
+
     benchmark(clientLibraryOperations::runDdlLarge, "Running bulk DDL operations.");
   }
 }

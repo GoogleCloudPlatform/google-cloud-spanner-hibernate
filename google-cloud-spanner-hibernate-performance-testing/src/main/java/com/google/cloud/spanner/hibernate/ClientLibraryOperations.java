@@ -160,13 +160,13 @@ public class ClientLibraryOperations {
   /**
    * Updates batch of existing records to different values.
    */
-  public void batchUpdate() {
+  public void batchUpdate(int count) {
     Statement statement = Statement.newBuilder("SELECT * FROM " + AIRPORT_TABLE).build();
     ResultSet resultSet =
         databaseClient.singleUseReadOnlyTransaction().executeQuery(statement);
 
     ArrayList<String> allRowIds = new ArrayList<>();
-    while (resultSet.next()) {
+    while (resultSet.next() && allRowIds.size() < count) {
       allRowIds.add(resultSet.getCurrentRowAsStruct().getString("id"));
     }
 
