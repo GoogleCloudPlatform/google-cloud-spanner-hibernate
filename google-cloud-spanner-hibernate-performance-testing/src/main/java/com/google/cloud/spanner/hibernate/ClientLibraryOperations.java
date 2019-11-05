@@ -170,12 +170,13 @@ public class ClientLibraryOperations {
    * Updates batch of existing records to different values.
    */
   public void batchUpdate(int count) {
-    Statement statement = Statement.newBuilder("SELECT * FROM " + AIRPORT_TABLE).build();
+    String query = "SELECT id FROM " + AIRPORT_TABLE + " LIMIT " + count;
+    Statement statement = Statement.newBuilder(query).build();
     ResultSet resultSet =
         databaseClient.singleUseReadOnlyTransaction().executeQuery(statement);
 
     ArrayList<String> allRowIds = new ArrayList<>();
-    while (resultSet.next() && allRowIds.size() < count) {
+    while (resultSet.next()) {
       allRowIds.add(resultSet.getCurrentRowAsStruct().getString("id"));
     }
 
