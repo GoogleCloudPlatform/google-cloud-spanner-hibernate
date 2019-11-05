@@ -55,6 +55,6 @@ public class HibernateDriver {
 
     BenchmarkUtil.benchmark(
         () -> hibernateOperations.updateRows(1000),
-        "Update 1000 row by saving Hibernate entities.");
+        "Update 1000 rows by saving Hibernate entities.");
   }
 }

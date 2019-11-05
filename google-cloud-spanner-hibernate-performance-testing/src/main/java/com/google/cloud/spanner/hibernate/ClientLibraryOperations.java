@@ -23,9 +23,11 @@ import com.google.cloud.Date;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
@@ -37,11 +39,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.log4j.Logger;
 
 /**
  * Runs common operations (reads, writes) on Spanner using the Spanner Client Libraries.
  */
 public class ClientLibraryOperations {
+
+  private static final Logger LOGGER = Logger.getLogger(ClientLibraryOperations.class);
+
   private static final String DDL_SMALL = "/ddl_strings/airport_ddl.txt";
   private static final String DDL_LARGE = "/ddl_strings/bulk_ddl.txt";
 
@@ -75,7 +81,16 @@ public class ClientLibraryOperations {
    * Resets the test Spanner database.
    */
   public void resetTestDatabase() {
-    databaseAdminClient.dropDatabase(INSTANCE_NAME, DATABASE_NAME);
+    try {
+      databaseAdminClient.dropDatabase(INSTANCE_NAME, DATABASE_NAME);
+    } catch (SpannerException e) {
+      if (e.getErrorCode() != ErrorCode.NOT_FOUND) {
+        throw new RuntimeException(e);
+      } else {
+        LOGGER.info("Skipping dropping the test database because it was not found.");
+      }
+    }
+
     try {
       databaseAdminClient.createDatabase(
           INSTANCE_NAME, DATABASE_NAME, Collections.EMPTY_LIST).get();

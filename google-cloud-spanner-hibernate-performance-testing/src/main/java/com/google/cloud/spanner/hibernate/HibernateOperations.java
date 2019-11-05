@@ -56,7 +56,7 @@ final class HibernateOperations {
     for (int i = 0; i < rowCount; i++) {
       Airport airport = new Airport(
           "The Airport",
-          i + " main street",
+          "100 main street",
           "United States",
           new Date(),
           (long) (1000 * Math.random()));
