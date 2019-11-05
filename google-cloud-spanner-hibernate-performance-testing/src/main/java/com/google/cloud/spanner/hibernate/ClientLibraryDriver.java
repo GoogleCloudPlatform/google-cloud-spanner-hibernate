@@ -60,8 +60,8 @@ public class ClientLibraryDriver {
         () -> clientLibraryOperations.batchUpdate(1000),
         "Updates 1000 records in a table in a batch.");
 
-    // benchmark(
-    //     clientLibraryOperations::deleteSingleTable, "Drops a single table");
+    benchmark(
+        clientLibraryOperations::deleteSingleTable, "Drops a single table");
 
     benchmark(clientLibraryOperations::runDdlLarge, "Running bulk DDL operations.");
   }
