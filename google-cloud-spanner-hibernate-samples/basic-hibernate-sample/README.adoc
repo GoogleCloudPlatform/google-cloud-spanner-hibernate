@@ -12,11 +12,14 @@ Alternatively, have the https://cloud.google.com/sdk/[Google Cloud SDK] installe
 
 3. Enable the https://console.cloud.google.com/apis/api/spanner.googleapis.com/overview[Cloud Spanner API]
 
-4. Create a Cloud Spanner instance and database in your project and insert those details into the connection string in `hibernate.cfg.xml`:
-`jdbc:cloudspanner:/projects/{YOUR_PROJECT_ID}/instances/{YOUR_INSTANCE_ID}/databases/{YOUR_DATABASE_ID}`
+4. Create a Cloud Spanner instance and database in your project and save those details for the next step.
 
 == Run the Example
-Run the example `main` method in `SampleApplication.java`.
+Run the example `main` method in `SampleApplication.java` while providing the connection details.
+
+----
+mvn exec:java -Dexec.mainClass="com.example.SampleApplication" -Dhibernate.connection.url="jdbc:cloudspanner:/projects/{YOUR_PROJECT_ID}/instances/{YOUR_INSTANCE_ID}/databases/{YOUR_DATABASE_ID}"
+----
 
 This example opens a transaction and saves a `Person` entity without specifying its `UUID`.
 It also saves an associated `Payment` record for the person.
