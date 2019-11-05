@@ -55,6 +55,7 @@ public class BulkDdlDriver {
       configuration.addAnnotatedClass(entityClass);
     }
 
+    // Spanner tables are created as a side-effect of configuration.buildSessionFactory().
     BenchmarkUtil.benchmark(
         () -> configuration.buildSessionFactory(),
         "Creating 10 tables using hibernate.");
