@@ -21,8 +21,8 @@ package com.google.cloud.spanner.hibernate;
 import com.google.cloud.spanner.hibernate.entities.Airport;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import javax.persistence.FlushModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -34,60 +34,76 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.query.Query;
 
-final class HibernateOperations {
+/**
+ * Runs common operations (reads, writes) on Spanner using Hibernate.
+ */
+public class HibernateOperations {
 
   private StandardServiceRegistry registry;
   private SessionFactory sessionFactory;
 
-  HibernateOperations() {
+  /**
+   * Constructs {@link HibernateOperations} object.
+   */
+  public HibernateOperations() {
     this.registry = new StandardServiceRegistryBuilder().configure().build();
   }
 
-  void initializeEntityTables() {
+  /**
+   * Creates Spanner tables for Hibernate entities. Tables are created as a side-effect of
+   * building the session factory.
+   */
+  public void initializeEntityTables() {
     this.sessionFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
   }
 
-  void insertRows(int rowCount) {
-    Session session = this.sessionFactory.openSession();
-    session.setFlushMode(FlushModeType.COMMIT);
+  /**
+   * Inserts a number of rows into Spanner using Hibernate.
+   * @param rowCount number of rows to insert.
+   */
+  public void insertRows(int rowCount) {
+    runTransaction(session -> {
+      for (int i = 0; i < rowCount; i++) {
+        Airport airport = new Airport(
+            "The Airport",
+            "100 main street",
+            "United States",
+            new Date(),
+            (long) (1000 * Math.random()));
 
-    Transaction tx = session.beginTransaction();
-
-    for (int i = 0; i < rowCount; i++) {
-      Airport airport = new Airport(
-          "The Airport",
-          "100 main street",
-          "United States",
-          new Date(),
-          (long) (1000 * Math.random()));
-
-      session.save(airport);
-    }
-
-    tx.commit();
-    session.close();
+        session.save(airport);
+      }
+    });
   }
 
-  void updateRows(int rowCount) {
+  /**
+   * Inserts a number of rows into Spanner using Hibernate.
+   * @param rowCount number of rows to update.
+   */
+  public void updateRows(int rowCount) {
+    runTransaction(session -> {
+      CriteriaBuilder builder = session.getCriteriaBuilder();
+
+      CriteriaQuery<Airport> criteria = builder.createQuery(Airport.class);
+      Root<Airport> rootEntry = criteria.from(Airport.class);
+      criteria.select(rootEntry);
+
+      Query<Airport> airportQuery = session.createQuery(criteria);
+      List<Airport> airportList =
+          airportQuery.stream().limit(rowCount).collect(Collectors.toList());
+
+      for (Airport airport : airportList) {
+        airport.setCountry("Canada");
+        airport.setPlaneCapacity((long) (Math.random() * 10000));
+        session.update(airport);
+      }
+    });
+  }
+
+  private void runTransaction(Consumer<Session> hibernateOperations) {
     Session session = this.sessionFactory.openSession();
-    session.setFlushMode(FlushModeType.COMMIT);
     Transaction tx = session.beginTransaction();
-
-    CriteriaBuilder builder = session.getCriteriaBuilder();
-
-    CriteriaQuery<Airport> criteria = builder.createQuery(Airport.class);
-    Root<Airport> rootEntry = criteria.from(Airport.class);
-    criteria.select(rootEntry);
-
-    Query<Airport> airportQuery = session.createQuery(criteria);
-    List<Airport> airportList = airportQuery.stream().limit(rowCount).collect(Collectors.toList());
-
-    for (Airport airport : airportList) {
-      airport.setCountry("Canada");
-      airport.setPlaneCapacity((long) (Math.random() * 10000));
-      session.update(airport);
-    }
-
+    hibernateOperations.accept(session);
     tx.commit();
     session.close();
   }
