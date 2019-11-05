@@ -29,19 +29,14 @@ public class ClientLibraryDriver {
 
   private static final Logger LOGGER = Logger.getLogger(ClientLibraryDriver.class);
 
-  private static void setupDatabases(ClientLibraryOperations clientLibraryOperations) {
-    LOGGER.info("Creating a new Spanner database to run the performance tests.");
-    clientLibraryOperations.deleteTestDatabase();
-    clientLibraryOperations.createTestDatabase();
-  }
-
   /**
    * Runs and benchmarks Spanner Client Library operations.
    */
   public static void main(String[] args) {
     ClientLibraryOperations clientLibraryOperations = new ClientLibraryOperations();
 
-    setupDatabases(clientLibraryOperations);
+    LOGGER.info("Resetting the Spanner database to run the performance tests.");
+    clientLibraryOperations.resetTestDatabase();
 
     benchmark(clientLibraryOperations::createSingleTable, "Create a table.");
     benchmark(
