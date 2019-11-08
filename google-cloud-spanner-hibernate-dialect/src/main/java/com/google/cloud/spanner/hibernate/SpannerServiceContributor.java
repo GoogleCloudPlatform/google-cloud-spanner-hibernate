@@ -18,8 +18,13 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import com.google.cloud.spanner.hibernate.schema.SpannerSchemaManagementTool;
+import java.util.Map;
+import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.service.spi.ServiceContributor;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.hibernate.tool.schema.spi.SchemaManagementTool;
 
 /**
  * An implementation of a Hibernate {@link ServiceContributor} which provides a "userAgent" JDBC
@@ -32,10 +37,26 @@ import org.hibernate.service.spi.ServiceContributor;
  */
 public class SpannerServiceContributor implements ServiceContributor {
 
+  private static final SpannerSchemaManagementTool SCHEMA_MANAGEMENT_TOOL = new SpannerSchemaManagementTool();
+
   static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
 
   public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder) {
     serviceRegistryBuilder
-        .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN);
+        .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN)
+        .addInitiator(
+            new StandardServiceInitiator<SchemaManagementTool>() {
+              @Override
+              public Class<SchemaManagementTool> getServiceInitiated() {
+                return SchemaManagementTool.class;
+              }
+
+              @Override
+              public SpannerSchemaManagementTool initiateService(Map configurationValues,
+                  ServiceRegistryImplementor registry) {
+                return SCHEMA_MANAGEMENT_TOOL;
+              }
+            }
+        );
   }
 }

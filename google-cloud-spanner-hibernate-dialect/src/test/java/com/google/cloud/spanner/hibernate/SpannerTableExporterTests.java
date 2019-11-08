@@ -71,7 +71,11 @@ public class SpannerTableExporterTests {
     scriptFile.deleteOnExit();
     List<String> statements = Files.readAllLines(scriptFile.toPath());
     assertThat(statements)
-        .containsExactly("drop table `TestEntity_stringList`", "drop table `test_table`");
+        .containsExactly(
+            "START BATCH DDL",
+            "drop table `TestEntity_stringList`",
+            "drop table `test_table`",
+            "RUN BATCH");
   }
 
   @Test
@@ -86,8 +90,12 @@ public class SpannerTableExporterTests {
     scriptFile.deleteOnExit();
     List<String> statements = Files.readAllLines(scriptFile.toPath());
 
-    assertThat(statements).containsExactly("drop index name_index", "drop table Employee",
-        "drop table hibernate_sequence");
+    assertThat(statements).containsExactly(
+        "START BATCH DDL",
+        "drop index name_index",
+        "drop table Employee",
+        "drop table hibernate_sequence",
+        "RUN BATCH");
   }
 
   @Test
@@ -109,8 +117,10 @@ public class SpannerTableExporterTests {
         + "(`TestEntity_ID1` INT64 not null,`TestEntity_id2` STRING(255) not null,"
         + "stringList STRING(255)) PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList)";
 
-    assertThat(statements)
+    assertThat(statements.get(0)).isEqualTo("START BATCH DDL");
+    assertThat(statements.subList(1, 3))
         .containsExactlyInAnyOrder(expectedCreateString, expectedCollectionCreateString);
+    assertThat(statements.get(3)).isEqualTo("RUN BATCH");
   }
 
   @Test
