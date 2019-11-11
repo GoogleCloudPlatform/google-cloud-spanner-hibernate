@@ -37,10 +37,12 @@ import org.hibernate.tool.schema.spi.SchemaManagementTool;
  */
 public class SpannerServiceContributor implements ServiceContributor {
 
-  private static final SpannerSchemaManagementTool SCHEMA_MANAGEMENT_TOOL = new SpannerSchemaManagementTool();
+  private static final SpannerSchemaManagementTool SCHEMA_MANAGEMENT_TOOL =
+      new SpannerSchemaManagementTool();
 
   static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
 
+  @Override
   public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder) {
     serviceRegistryBuilder
         .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN)
@@ -52,11 +54,10 @@ public class SpannerServiceContributor implements ServiceContributor {
               }
 
               @Override
-              public SpannerSchemaManagementTool initiateService(Map configurationValues,
-                  ServiceRegistryImplementor registry) {
+              public SpannerSchemaManagementTool initiateService(
+                  Map configurationValues, ServiceRegistryImplementor registry) {
                 return SCHEMA_MANAGEMENT_TOOL;
               }
-            }
-        );
+            });
   }
 }
