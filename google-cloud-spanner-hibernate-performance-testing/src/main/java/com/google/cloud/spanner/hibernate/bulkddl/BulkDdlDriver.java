@@ -23,7 +23,6 @@ import com.google.cloud.spanner.hibernate.ClientLibraryOperations;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.log4j.Logger;
-import org.hibernate.boot.MetadataSources;
 import org.hibernate.cfg.Configuration;
 
 /**
@@ -46,7 +45,7 @@ public class BulkDdlDriver {
   public static void main(String[] args) {
     LOGGER.info("Resetting the Spanner test database.");
     ClientLibraryOperations clientLibraryOperations = new ClientLibraryOperations();
-    // clientLibraryOperations.resetTestDatabase();
+    clientLibraryOperations.resetTestDatabase();
 
     Configuration configuration = new Configuration()
         .configure("hibernate.cfg.xml")
