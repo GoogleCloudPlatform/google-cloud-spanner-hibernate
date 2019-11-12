@@ -102,7 +102,7 @@ This results in sequential IDs that are https://cloud.google.com/spanner/docs/sc
 
 Cloud Spanner implements a mutation limit on each transaction - each Spanner transaction https://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data[may only have up to 20,000 operations which modify rows of a table].
 
-NOTE: Deleting a row counts as one operation and inserting/updating rows count with the multiplicity of the number of columns they affect.
+NOTE: Deleting a row counts as one operation and inserting/updating rows will count with the multiplicity of the number of columns they affect.
 For example if one inserts a row that contains 5 columns, it counts as 5 modify operations for the insert.
 
 Consequently, users must take care to work around the limitations.
@@ -115,7 +115,7 @@ Consequently, users must take care to work around the limitations.
 Batching SQL statements together allows you to optimize the performance of your application by including a group of SQL statements in a network call.
 This allows you to reduce the round-trip time between your application and Spanner.
 
-By default, Hibernate does not batch the statements that it sends to the JDBC driver.
+By default, Hibernate does not batch the statements that it sends to the Spanner JDBC driver.
 
 This can be enabled by configuring `hibernate.jdbc.batch_size` in your Hibernate configuration file:
 
@@ -245,7 +245,7 @@ However, because Cloud Spanner does not support foreign key constraints, foreign
 NOTE: The lack of foreign key constraints also means database-side cascading deletes are not supported via the `@OnDelete(action = OnDeleteAction.CASCADE)` annotation because there is no `ON DELETE CASCADE` constraint in Cloud Spanner DDL.
 However, Hibernate-side cascading operations such as `@ManyToOne(cascade = {CascadeType.ALL})` are supported.
 
-=== Interleaved Tables
+=== Interleaved Tables Schema Generation
 
 Currently there is no support in the Cloud Spanner Hibernate dialect for generating https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables[interleaved tables] in Spanner during schema generation.
 
