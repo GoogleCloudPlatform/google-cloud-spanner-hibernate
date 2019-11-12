@@ -19,10 +19,10 @@
 package com.google.cloud.spanner.hibernate.schema;
 
 import org.hibernate.boot.Metadata;
-import org.hibernate.tool.schema.internal.HibernateSchemaManagementTool;
 import org.hibernate.tool.schema.internal.SchemaDropperImpl;
+import org.hibernate.tool.schema.spi.DelayedDropAction;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
-import org.hibernate.tool.schema.spi.SchemaFilter;
+import org.hibernate.tool.schema.spi.SchemaDropper;
 import org.hibernate.tool.schema.spi.SourceDescriptor;
 import org.hibernate.tool.schema.spi.TargetDescriptor;
 
@@ -30,10 +30,12 @@ import org.hibernate.tool.schema.spi.TargetDescriptor;
  * A modified version of the {@link SchemaDropperImpl} which batches DDL statements
  * to optimize performance.
  */
-public class SpannerSchemaDropper extends SchemaDropperImpl {
+public class SpannerSchemaDropper implements SchemaDropper {
 
-  public SpannerSchemaDropper(HibernateSchemaManagementTool tool, SchemaFilter schemaFilter) {
-    super(tool, schemaFilter);
+  private final SchemaDropper schemaDropper;
+
+  public SpannerSchemaDropper(SchemaDropper schemaDropper) {
+    this.schemaDropper = schemaDropper;
   }
 
   @Override
@@ -42,9 +44,15 @@ public class SpannerSchemaDropper extends SchemaDropperImpl {
       ExecutionOptions options,
       SourceDescriptor sourceDescriptor,
       TargetDescriptor targetDescriptor) {
+
     metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl());
     metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl());
+    schemaDropper.doDrop(metadata, options, sourceDescriptor, targetDescriptor);
+  }
 
-    super.doDrop(metadata, options, sourceDescriptor, targetDescriptor);
+  @Override
+  public DelayedDropAction buildDelayedAction(
+      Metadata metadata, ExecutionOptions options, SourceDescriptor sourceDescriptor) {
+    return schemaDropper.buildDelayedAction(metadata, options, sourceDescriptor);
   }
 }

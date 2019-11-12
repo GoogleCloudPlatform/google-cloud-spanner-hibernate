@@ -19,16 +19,12 @@
 package com.google.cloud.spanner.hibernate;
 
 import com.google.cloud.spanner.hibernate.schema.SpannerSchemaManagementTool;
-import java.util.Map;
-import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.service.spi.ServiceContributor;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.hibernate.tool.schema.spi.SchemaManagementTool;
 
 /**
- * An implementation of a Hibernate {@link ServiceContributor} which provides a "userAgent" JDBC
- * connection property to the Spanner JDBC driver to identify the library.
+ * An implementation of a Hibernate {@link ServiceContributor} which provides custom settings
+ * for the Spanner Hibernate dialect.
  *
  * <p>Note that Hibernate will automatically pass down all "hibernate.connection.*" properties
  * without the prefix to {@code Driver.connect(url, props)}.
@@ -45,19 +41,9 @@ public class SpannerServiceContributor implements ServiceContributor {
   @Override
   public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder) {
     serviceRegistryBuilder
+        // The user agent JDBC connection property to identify the library.
         .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN)
-        .addInitiator(
-            new StandardServiceInitiator<SchemaManagementTool>() {
-              @Override
-              public Class<SchemaManagementTool> getServiceInitiated() {
-                return SchemaManagementTool.class;
-              }
-
-              @Override
-              public SpannerSchemaManagementTool initiateService(
-                  Map configurationValues, ServiceRegistryImplementor registry) {
-                return SCHEMA_MANAGEMENT_TOOL;
-              }
-            });
+        // The custom Hibernate schema management tool for Spanner.
+        .applySetting("hibernate.schema_management_tool", SCHEMA_MANAGEMENT_TOOL);
   }
 }

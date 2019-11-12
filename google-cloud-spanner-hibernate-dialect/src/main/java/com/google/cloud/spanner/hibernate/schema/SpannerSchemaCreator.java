@@ -19,10 +19,9 @@
 package com.google.cloud.spanner.hibernate.schema;
 
 import org.hibernate.boot.Metadata;
-import org.hibernate.tool.schema.internal.HibernateSchemaManagementTool;
 import org.hibernate.tool.schema.internal.SchemaCreatorImpl;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
-import org.hibernate.tool.schema.spi.SchemaFilter;
+import org.hibernate.tool.schema.spi.SchemaCreator;
 import org.hibernate.tool.schema.spi.SourceDescriptor;
 import org.hibernate.tool.schema.spi.TargetDescriptor;
 
@@ -30,11 +29,12 @@ import org.hibernate.tool.schema.spi.TargetDescriptor;
  * A modified version of the {@link SchemaCreatorImpl} which batches DDL statements
  * to optimize performance.
  */
-public class SpannerSchemaCreator extends SchemaCreatorImpl {
+public class SpannerSchemaCreator implements SchemaCreator {
 
-  public SpannerSchemaCreator(
-      HibernateSchemaManagementTool tool, SchemaFilter schemaFilter) {
-    super(tool, schemaFilter);
+  private final SchemaCreator schemaCreator;
+
+  public SpannerSchemaCreator(SchemaCreator schemaCreator) {
+    this.schemaCreator = schemaCreator;
   }
 
   @Override
@@ -43,9 +43,9 @@ public class SpannerSchemaCreator extends SchemaCreatorImpl {
       ExecutionOptions options,
       SourceDescriptor sourceDescriptor,
       TargetDescriptor targetDescriptor) {
+
     metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl());
     metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl());
-
-    super.doCreation(metadata, options, sourceDescriptor, targetDescriptor);
+    schemaCreator.doCreation(metadata, options, sourceDescriptor, targetDescriptor);
   }
 }
