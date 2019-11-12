@@ -74,13 +74,18 @@ public class GeneratedCreateTableStatementsTests {
         .getExecutedStatements();
 
     assertThat(sqlStrings).containsExactly(
+        "START BATCH DDL",
         "drop index name_index",
         "drop table Employee",
         "drop table hibernate_sequence",
+        "RUN BATCH",
+        "START BATCH DDL",
         "create table Employee "
             + "(id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
         "INSERT INTO hibernate_sequence (next_val) VALUES(1)",
-        "create index name_index on Employee (name)");
+        "create index name_index on Employee (name)",
+        "RUN BATCH"
+    );
   }
 }
