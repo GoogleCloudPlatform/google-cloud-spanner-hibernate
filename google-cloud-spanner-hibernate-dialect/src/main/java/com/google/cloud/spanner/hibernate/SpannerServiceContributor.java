@@ -20,6 +20,7 @@ package com.google.cloud.spanner.hibernate;
 
 import com.google.cloud.spanner.hibernate.schema.SpannerSchemaManagementTool;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.hql.spi.id.inline.InlineIdsOrClauseBulkIdStrategy;
 import org.hibernate.service.spi.ServiceContributor;
 
 /**
@@ -44,6 +45,8 @@ public class SpannerServiceContributor implements ServiceContributor {
         // The user agent JDBC connection property to identify the library.
         .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN)
         // The custom Hibernate schema management tool for Spanner.
-        .applySetting("hibernate.schema_management_tool", SCHEMA_MANAGEMENT_TOOL);
+        .applySetting("hibernate.schema_management_tool", SCHEMA_MANAGEMENT_TOOL)
+        // Allows entities to be used with InheritanceType.JOINED in Spanner.
+        .applySetting("hibernate.hql.bulk_id_strategy", InlineIdsOrClauseBulkIdStrategy.INSTANCE);
   }
 }
