@@ -56,7 +56,7 @@ The driver will use default credentials set in the Google Cloud SDK `gcloud` app
 
 The dialect and driver are compatible with all values (`create`, `create-drop`, and `update`) of the `hibernate.hbm2ddl.auto` setting.
 
-You can immediately begin to start using Hibernate after configuring it for your project.
+You can immediately begin using Hibernate after configuring it for your project.
 
 == User Guide
 
