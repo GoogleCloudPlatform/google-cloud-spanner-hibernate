@@ -42,8 +42,7 @@ import org.hibernate.annotations.NamedQuery;
         query = "select p " +
                 "from Phone p " +
                 "where p.number = :number",
-        // timeout = 1, // disabled because driver doesn't correctly handle this setting
-        // https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/85
+        timeout = 1,
         readOnly = true
     )
 })
@@ -57,8 +56,7 @@ import org.hibernate.annotations.NamedQuery;
                 "JOIN Person pr ON pr.id = p.person_id " +
                 "GROUP BY pr.name",
         resultSetMapping = "person_phone_count",
-        // timeout = 1, // disabled because driver doesn't correctly handle this setting
-        // https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/85
+        timeout = 1,
         readOnly = true
     ),
 })
