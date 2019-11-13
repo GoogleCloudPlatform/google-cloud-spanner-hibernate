@@ -147,37 +147,6 @@ List<Object[]> entities = query.list();
 
 Also, you may consult the https://cloud.google.com/spanner/docs/sql-best-practices[Cloud Spanner documentation] on general recommendations for optimizing performance.
 
-=== Configuring Entities with Inheritance
-
-If you are using Hibernate entities that are related by inheritance with the `@Inheritance(strategy = InheritanceType.JOINED)`:
-
-[source, java]
-----
-@Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-public class Payment {
-
-    @Id
-    @GeneratedValue
-    private Long id;
-
-    private Long amount;
-}
-
-@Entity
-public class WireTransferPayment extends Payment {
-}
-
-@Entity
-public class CreditCardPayment extends Payment {
-}
-----
-
-You must set the `hibernate.hql.bulk_id_strategy` setting in `hibernate.properties` to `org.hibernate.hql.spi.id.inline.InlineIdsOrClauseBulkIdStrategy`.
-
-This is because Hibernate's default behavior (`PersistentTableBulkIdStrategy`) attempts to create intermediate tables to handle delete and update operations on the multiple tables that represent a `JOINED` inheritance hierarchy, but these table creations statements do not conform to Cloud Spanner DDL.
-Using one of the `Inline` bulk-ID strategy classes given above resolves this issue.
-
 == Cloud Spanner Hibernate ORM Features
 
 The Cloud Spanner Hibernate Dialect supports most of the standard Hibernate and Java Persistence annotations, but there are important differences in features because of differences in https://cloud.google.com/spanner/docs/schema-and-data-model[Cloud Spanner's data model] from traditional SQL databases.
