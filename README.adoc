@@ -170,7 +170,7 @@ As a result, `SpannerDialect` does not currently support any constraints such as
 
 NOTE: Hibernate doesn't directly rely on the existence of constraints to perform its operations and leaves the enforcement of relationship links to the database.
 
-The lack of the foreign key constraint affects relationships and collection properties annotated with `@ElementCollection`.
+The lack of the foreign key constraint applies to relationships and collection properties annotated with `@ElementCollection`.
 
 === Spanner Table Names
 
