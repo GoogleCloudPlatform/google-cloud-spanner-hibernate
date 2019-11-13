@@ -1,0 +1,5 @@
+= Cloud Spanner Hibernate Codelab
+
+This is the solution for the Cloud Spanner with Hibernate ORM Codelab.
+
+Please refer to the codelab for instruction
