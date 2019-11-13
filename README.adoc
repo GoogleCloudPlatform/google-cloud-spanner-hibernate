@@ -96,7 +96,7 @@ public class Employee {
 }
 ----
 
-This results in sequential IDs that are https://cloud.google.com/spanner/docs/schema-and-data-model#primary_keys[not optimal for Cloud Spanner] and requires locking of the `hibernate_sequence` table for inserts.
+This results in sequential IDs that are https://cloud.google.com/spanner/docs/schema-and-data-model#primary_keys[not optimal for Cloud Spanner] and makes use of the `hibernate_sequence` table for generating IDs.
 
 === Limit Large DML Transactions
 
