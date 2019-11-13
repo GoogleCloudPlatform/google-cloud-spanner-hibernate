@@ -105,17 +105,17 @@ Cloud Spanner has a mutation limit on each transaction - each Spanner transactio
 NOTE: Deleting a row counts as one operation and inserting/updating rows will count with the multiplicity of the number of columns they affect.
 For example if one inserts a row that contains 5 columns, it counts as 5 modify operations for the insert.
 
-Consequently, users must take care to work around the limitations.
+Consequently, users must take care to avoid encountering these constraints.
 
-1. We recommend avoiding the usage of `CASCADE_TYPE.ALL` in Entity annotations because this might trigger a large number of entities to be deleted in a single transaction and bring you over the 20,000 limit.
-2. When updating or persisting entities to a table, we recommend being mindful of this limitation and limit the size of your Hibernate transactions to avoid going above the limit.
+1. We recommend being careful with the use of `CASCADE_TYPE.ALL` in Entity annotations because, depending on the application, it might trigger a large number of entities to be deleted in a single transaction and bring you over the 20,000 limit.
+2. Also, when persisting a collection of entities, be mindful of this 20,000 mutations per transaction constraint.
 
 === Enable Hibernate Batching
 
-Batching SQL statements together allows you to optimize the performance of your application by including a group of SQL statements in a network call.
-This allows you to reduce the round-trip time between your application and Spanner.
+Batching SQL statements together allows you to optimize the performance of your application by including a group of SQL statements in a single remote call.
+This allows you to reduce the number of round-trips between your application and Cloud Spanner.
 
-By default, Hibernate does not batch the statements that it sends to the Spanner JDBC driver.
+By default, Hibernate does not batch the statements that it sends to the Cloud Spanner JDBC driver.
 
 This can be enabled by configuring `hibernate.jdbc.batch_size` in your Hibernate configuration file:
 
