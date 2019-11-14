@@ -26,9 +26,10 @@
 	<modules>
 		<module>basic-hibernate-sample</module>
 		<module>spring-data-jpa-sample</module>
+		<module>microprofile-jpa-sample</module>
+		<module>quarkus-jpa-sample</module>
 		<module>spanner-hibernate-codelab</module>
-    <module>quarkus-jpa-sample</module>
-  </modules>
+	</modules>
 
 	<build>
 		<plugins>
