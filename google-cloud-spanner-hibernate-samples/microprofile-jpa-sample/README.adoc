@@ -1,4 +1,4 @@
-= Cloud Spanner Spring Data JPA with Hibernate Sample
+= Google Cloud Spanner Hibernate Microprofile JPA Sample
 
 This sample application demonstrates using https://microprofile.io/[Microprofile] with https://thorntail.io/[Thorntail] and JPA.
 
