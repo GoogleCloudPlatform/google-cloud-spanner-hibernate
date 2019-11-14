@@ -30,13 +30,13 @@ import org.junit.contrib.java.lang.system.SystemOutRule;
 public class AppTests {
 
   @Rule
-  public final SystemOutRule systemErrRule = new SystemOutRule().enableLog();
+  public final SystemOutRule systemOutRule = new SystemOutRule().enableLog();
 
   @Test
   public void test() {
     App.main(new String[]{});
 
-    assertThat(systemErrRule.getLog()).contains("Singers who were born in 1990 or later:\n"
+    assertThat(systemOutRule.getLog()).contains("Singers who were born in 1990 or later:\n"
         + "Jacqueline Long born on 1990-07-29\n"
         + "Dylan Shaw born on 1998-05-02\n"
         + "Albums: \n"
