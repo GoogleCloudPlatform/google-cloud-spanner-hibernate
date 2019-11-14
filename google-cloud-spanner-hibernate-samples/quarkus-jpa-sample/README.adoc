@@ -5,7 +5,7 @@ This sample application demonstrates using https://quarkus.io/[Quarkus] with htt
 This sample is only tested with Quarkus in JVM mode. Native mode is not tested/supported.
 
 == Setup & Configuration
-1. Create a Google Cloud Platform Project
+1. Create a Google Cloud Platform project.
 2. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account] with Cloud Spanner permission.
 Furnish a new JSON key and then set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
 +
