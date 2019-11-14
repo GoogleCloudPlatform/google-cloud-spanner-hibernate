@@ -27,6 +27,7 @@
 		<module>basic-hibernate-sample</module>
 		<module>spring-data-jpa-sample</module>
 		<module>spanner-hibernate-codelab</module>
+    <module>quarkus-jpa-sample</module>
   </modules>
 
 	<build>
