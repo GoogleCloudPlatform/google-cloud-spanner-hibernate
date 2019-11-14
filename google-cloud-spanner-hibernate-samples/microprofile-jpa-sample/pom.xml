@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>google-cloud-spanner-hibernate-samples</artifactId>
+    <groupId>com.google.cloud</groupId>
+    <version>0.2.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <name>Google Cloud Spanner Hibernate Microprofile JPA Sample</name>
+  <artifactId>microprofile-jpa-sample</artifactId>
+  <packaging>war</packaging>
+
+  <properties>
+    <final.name>microprofile-jpa-sample</final.name>
+    <failOnMissingWebXml>false</failOnMissingWebXml>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <version.thorntail>2.5.0.Final</version.thorntail>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.microprofile</groupId>
+      <artifactId>microprofile</artifactId>
+      <version>3.0</version>
+      <type>pom</type>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-spanner-jdbc</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>${final.name}</finalName>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>thorntail-v2</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.thorntail</groupId>
+            <artifactId>thorntail-maven-plugin</artifactId>
+            <version>${version.thorntail}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>package</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>io.thorntail</groupId>
+            <artifactId>bom-all</artifactId>
+            <version>${version.thorntail}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+      <dependencies>
+        <dependency>
+          <groupId>io.thorntail</groupId>
+          <artifactId>microprofile</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+</project>
