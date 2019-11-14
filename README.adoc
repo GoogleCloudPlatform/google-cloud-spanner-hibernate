@@ -1,11 +1,11 @@
-# Google Cloud Spanner Dialect for Hibernate ORM
+= Google Cloud Spanner Dialect for Hibernate ORM
 
 This is a dialect compatible with https://hibernate.org/orm/releases/5.4/[Hibernate 5.4] for the https://cloud.google.com/spanner/[Google Cloud Spanner] database service.
 The `SpannerDialect` produces SQL, DML, and DDL statements for most common entity types and relationships using standard Hibernate and Java Persistence annotations.
 
 Please see the following sections for important details about dialect differences due to the unique features and limitations of Cloud Spanner.
 
-=== Quick Set-Up
+== Quick Set-Up
 
 Maven coordinates for the dialect:
 
@@ -56,85 +56,19 @@ The driver will use default credentials set in the Google Cloud SDK `gcloud` app
 
 The dialect and driver are compatible with all values (`create`, `create-drop`, and `update`) of the `hibernate.hbm2ddl.auto` setting.
 
+You can immediately begin using Hibernate after configuring it for your project.
 
-=== Spanner Dialect
+== User Guide
 
-The `SpannerDialect` supports most of the standard Hibernate and Java Persistence annotations but there are important differences in features because of differences in https://cloud.google.com/spanner/docs/schema-and-data-model[Cloud Spanner's data model] from traditional SQL databases.
+The following section describes recommendations and best practices for how to best use the Cloud Spanner Hibernate Dialect.
 
-These are unsupported features in the Cloud Spanner Hibernate Dialect.
-Please see the following sections for details:
-[options="header"]
-|===
-| Unsupported Feature | Description
-| Constraints | No support for `FOREIGN KEY`, `UNIQUE`, or `ON DELETE CASCADE`. Cloud Spanner does not enforce relationship links outside of Hibernate.
-| Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
-| Column default values | Cloud Spanner treats `null` like any other value and it gets no special handling.
-| Big-decimal or arbitrary-precision numbers | The dialect does not support `java.math.BigDecimal` because Cloud Spanner doesn't have SQL `NUMERIC` or `DECIMAL` support.
-|===
+=== Use Generated UUIDs for ID Generation
 
-==== Relationships
+In Spanner, the Universally Unique Identifier (UUID) is the preferred ID type in Cloud Spanner because it avoids hotspots as the system divides data among servers by key ranges.
+A monotonically increasing integer key would also work, but can be less performant.
 
-The dialect supports all of the standard entity relationships:
+For this reason, if you are using generated IDs in your code, you should configure UUID generation like this:
 
-- `@OneToOne`
-- `@OneToMany`
-- `@ManyToOne`
-- `@ManyToMany`
-
-These can be used via `@JoinTable` or `@JoinColumn`.
-However, because Cloud Spanner does not support foreign key constraints, foreign-key-columns are just regular columns in Cloud Spanner.
-
-NOTE: The lack of foreign key constraints also means database-side cascading deletes are not supported via the `@OnDelete(action = OnDeleteAction.CASCADE)` annotation because there is no `ON DELETE CASCADE` constraint in Cloud Spanner DDL.
-However, Hibernate-side cascading operations such as `@ManyToOne(cascade = {CascadeType.ALL})` are supported.
-
-==== Optimizing Queries
-
-To take advantage of Cloud Spanner's full performance, consider using its https://cloud.google.com/spanner/docs/sql-best-practices[best practices].
-
-Because Hibernate's built-in HQL does not account for Spanner-specific features, you can construct queries directly from Cloud Spanner SQL instead:
-
-[source,java]
-----
-SQLQuery query = session.createSQLQuery("SELECT * FROM Singers AS s
-                                         JOIN@{FORCE_JOIN_ORDER=TRUE} Albums AS a
-                                         ON s.SingerId = a.Singerid
-                                         WHERE s.LastName LIKE '%x%'
-                                         AND a.AlbumTitle LIKE '%love%';");
-----
-
-==== Interleaved Tables
-
-Currently there is no support for Cloud Spanner's interleaved table feature.
-Hibernate ORM relationships are always constructed using join-tables and foreign keys by the framework.
-If your application would benefit from interleaved tables, we recommend that you manually create them and use types mapped to them in Hibernate. This enables the performance and database-enforced-constraint benefits from interleaved tables in Cloud Spanner, even though the Hibernate framework will not be aware of their relationship or any restrictions on operations between interleaved tables.
-
-==== Constraints
-
-Cloud Spanner does not support database constraints.
-As a result, `SpannerDialect` does not currently support any constraints such as `FOREIGN KEY`, `UNIQUE`, or `ON DELETE CASCADE`.
-
-NOTE: Hibernate doesn't directly rely on the existence of constraints to perform its operations and leaves the enforcement of relationship links to the database.
-
-The lack of the foreign key constraint affects relationships and collection properties annotated with `@ElementCollection`.
-
-
-==== Generated IDs
-
-Hibernate's `@GeneratedValue` annotation for `long` properties is supported but not recommended:
-[source, java]
-----
-@Entity
-public class Employee {
-
-  @Id
-  @GeneratedValue // DON'T DO THIS, IT'S SLOW
-  public Long id;
-}
-----
-
-This results in sequential IDs that are https://cloud.google.com/spanner/docs/schema-and-data-model#primary_keys[not optimal for Cloud Spanner] and requires locking of the `hibernate_sequence` table for inserts.
-
-You should use locally-generated UUID key values instead:
 [source, java]
 ----
 @Entity
@@ -150,80 +84,142 @@ public class Employee {
 The `@Type(type="uuid-char")` annotation specifies that this UUID value will be stored in Cloud Spanner as a `STRING` column.
 Leaving out this annotation causes a `BYTES` column to be used.
 
+Hibernate's `@GeneratedValue` annotation for numeric fields is supported but not recommended:
+[source, java]
+----
+@Entity
+public class Employee {
 
-==== Table Catalogs and Schemas
+  @Id
+  @GeneratedValue   // Not Recommended.
+  public Long id;
+}
+----
 
-Cloud Spanner does not support table names with catalog and schema components:
+This results in sequential IDs that are https://cloud.google.com/spanner/docs/schema-and-data-model#primary_keys[not optimal for Cloud Spanner] and makes use of the `hibernate_sequence` table for generating IDs.
+
+=== Limit Large DML Transactions
+
+Cloud Spanner has a mutation limit on each transaction - each Spanner transaction https://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data[may only have up to 20,000 operations which modify rows of a table].
+
+NOTE: Deleting a row counts as one operation and inserting/updating rows will count as a number of operations equal to the number of affected columns.
+For example if one inserts a row that contains 5 columns, it counts as 5 modify operations for the insert.
+
+Consequently, users must take care to avoid encountering these constraints.
+
+1. We recommend being careful with the use of `CASCADE_TYPE.ALL` in Entity annotations because, depending on the application, it might trigger a large number of entities to be deleted in a single transaction and bring you over the 20,000 limit.
+2. Also, when persisting a collection of entities, be mindful of the 20,000 mutations per transaction constraint.
+
+=== Enable Hibernate Batching
+
+Batching SQL statements together allows you to optimize the performance of your application by including a group of SQL statements in a single remote call.
+This allows you to reduce the number of round-trips between your application and Cloud Spanner.
+
+By default, Hibernate does not batch the statements that it sends to the Cloud Spanner JDBC driver.
+
+Batching can be enabled by configuring `hibernate.jdbc.batch_size` in your Hibernate configuration file:
+
+[source, xml]
+----
+<property name="hibernate.jdbc.batch_size">100</property>
+----
+
+The property is set to `100` as an example; you may experiment with the batch size to see what works best for your application.
+
+=== Query Optimization
+
+The https://cloud.google.com/spanner/docs/query-syntax[Cloud Spanner SQL syntax] offers a variety of query hints to tune and optimize the performance of queries.
+If you find that you need to take advantage of this feature, you can achieve this in Hibernate using native SQL queries.
+
+This is an example of using the `@{FORCE_JOIN_ORDER=TRUE}` hint in a native Spanner SQL query.
+
+[source,java]
+----
+SQLQuery query = session.createSQLQuery("SELECT * FROM Singers AS s
+                                         JOIN@{FORCE_JOIN_ORDER=TRUE} Albums AS a
+                                         ON s.SingerId = a.Singerid
+                                         WHERE s.LastName LIKE '%x%'
+                                         AND a.AlbumTitle LIKE '%love%';");
+
+// Executes the query.
+List<Object[]> entities = query.list();
+----
+
+Also, you may consult the https://cloud.google.com/spanner/docs/sql-best-practices[Cloud Spanner documentation] on general recommendations for optimizing performance.
+
+== Cloud Spanner Hibernate ORM Features
+
+The Cloud Spanner Hibernate Dialect supports most of the standard Hibernate and Java Persistence annotations, but there are important differences in features because of differences in https://cloud.google.com/spanner/docs/schema-and-data-model[Cloud Spanner's data model] from traditional SQL databases.
+
+The following sections below describe the feature set of the Cloud Spanner Hibernate Dialect as well as its limitations.
+
+[options="header"]
+|===
+| Unsupported Feature | Description
+| Constraints | No support for `FOREIGN KEY`, `UNIQUE`, or `ON DELETE CASCADE`. Cloud Spanner does not enforce relationship links outside of Hibernate.
+| Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
+| Column default values | Cloud Spanner treats `null` like any other value and it gets no special handling.
+| Big-decimal or arbitrary-precision numbers | The dialect does not support `java.math.BigDecimal` because Cloud Spanner doesn't have SQL `NUMERIC` or `DECIMAL` support.
+| Schema Generation for Interleaved Tables | The dialect currently does not support creating interleaved tables during schema generation.
+|===
+
+=== Constraints
+
+Cloud Spanner does not support database constraints.
+As a result, `SpannerDialect` does not currently support any constraints such as `FOREIGN KEY`, `UNIQUE`, or `ON DELETE CASCADE`.
+
+NOTE: Hibernate doesn't directly rely on the existence of constraints to perform its operations and leaves the enforcement of relationship links to the database.
+
+The lack of the foreign key constraint applies to relationships and collection properties annotated with `@ElementCollection`.
+
+=== Spanner Table Names
+
+The Cloud Spanner Dialect only supports `@Table` with the `name` attribute.
+It does not support table names with catalog and schema components:
 
 [source, java]
 ----
+// Supported.
+@Table(
+  name = "book"
+)
+
 // Not supported: `public.store.book` is not a valid Cloud Spanner table name reference.
 @Table(
   catalog = "public",
   schema = "store",
   name = "book"
 )
-
-// Supported.
-@Table(
-  name = "book"
-)
 ----
 
-Hibernate's `hibernate.hbm2ddl.auto` setting controls the framework's schema modification behavior that occurs during start-up.
-The following settings are available:
-
-- none: do nothing.
-- validate: validate the schema, makes no changes to the database.
-- update: update the schema.
-- create: creates the schema, destroying previous data.
-- create-drop: drop the schema when the `SessionFactory` is closed explicitly, typically when the application is stopped.
-
-Hibernate performs schema updates on each table and entity type on startup, which can take more than several minutes if there are many tables.
-To avoid schema updates keeping Hibernate from starting for several minutes, you can update schemas separately and use the `none` or `validate` settings.
-
-
-==== Column Default Values
+=== Column Default Values
 
 The dialect does not currently set default values based on the https://docs.jboss.org/hibernate/orm/5.4/javadocs/org/hibernate/annotations/ColumnDefault.html[`@ColumnDefault`] annotation,
 because `NULL` values aren't specially handled and are stored just like other values by Cloud Spanner and its driver.
 
-
-==== Decimal and Numeric Types
+=== Decimal and Numeric Types
 
 Cloud Spanner does not provide native support for https://cloud.google.com/spanner/docs/storing-numeric-data[arbitrary-precision decimal numbers], such as `NUMERIC` and `DECIMAL`.
-As a result, the driver and dialect do not support decimal and arbitrary-precision Java types such as `java.math.BigInteger` and `java.math.BigDecimal`.
+As a result, the dialect does not support decimal and arbitrary-precision Java types such as `java.math.BigInteger` and `java.math.BigDecimal`.
 
+=== Entity Relationships
 
-==== Subclasses using `InheritanceType.JOINED`
+The dialect supports all of the standard entity relationships:
 
-If you are using entities that are related by inheritance with the `@Inheritance(strategy = InheritanceType.JOINED)`:
+- `@OneToOne`
+- `@OneToMany`
+- `@ManyToOne`
+- `@ManyToMany`
 
-[source, java]
-----
-@Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-public class Payment {
+These can be used via `@JoinTable` or `@JoinColumn`.
+However, because Cloud Spanner does not support foreign key constraints, foreign-key-columns are just regular columns in Cloud Spanner.
 
-    @Id
-    @GeneratedValue
-    private Long id;
+NOTE: The lack of foreign key constraints also means database-side cascading deletes are not supported via the `@OnDelete(action = OnDeleteAction.CASCADE)` annotation because there is no `ON DELETE CASCADE` constraint in Cloud Spanner DDL.
+However, Hibernate-side cascading operations such as `@ManyToOne(cascade = {CascadeType.ALL})` are supported.
 
-    private Long amount;
-}
+=== Interleaved Tables Schema Generation
 
-@Entity
-public class WireTransferPayment extends Payment {
-}
+Currently there is no support in the Cloud Spanner Hibernate dialect for generating https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables[interleaved tables] in Spanner during schema generation.
 
-@Entity
-public class CreditCardPayment extends Payment {
-}
-----
-
-You must set the `hibernate.hql.bulk_id_strategy` setting in `hibernate.properties` to `org.hibernate.hql.spi.id.inline.InlineIdsOrClauseBulkIdStrategy`.
-
-This is because Hibernate's default behavior (`PersistentTableBulkIdStrategy`) attempts to create intermediate tables to handle delete and update operations on the multiple tables that represent a `JOINED` inheritance hierarchy, but these table creations statements do not conform to Cloud Spanner DDL.
-Using one of the `Inline` bulk-ID strategy classes given above resolves this issue.
-
-
+If your application would benefit from interleaved tables, we recommend that you manually create them and use types mapped to them in Hibernate.
+This enables the performance and database-enforced-constraint benefits from interleaved tables in Cloud Spanner, even though the Hibernate framework will not be aware of their relationship or any restrictions on operations between interleaved tables.
