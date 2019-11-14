@@ -26,6 +26,7 @@
 	<modules>
 		<module>basic-hibernate-sample</module>
 		<module>spring-data-jpa-sample</module>
+        <module>quarkus-jpa-sample</module>
 	</modules>
 
 	<build>
