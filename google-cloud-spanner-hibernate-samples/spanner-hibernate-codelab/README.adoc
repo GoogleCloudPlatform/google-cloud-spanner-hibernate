@@ -1,5 +1,56 @@
-= Cloud Spanner Hibernate Codelab
+= Cloud Spanner Hibernate Codelab Solution
 
 This is the solution for the Cloud Spanner with Hibernate ORM Codelab.
 
-Please refer to the codelab for instruction
+== Setup & Configuration
+1. Create a Google Cloud Platform project.
+2. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account] with Cloud Spanner permission.
+Furnish a new JSON key and then set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
++
+Alternatively, have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized and logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials].
++
+----
+gcloud auth application-default login
+----
+3. Enable the https://console.cloud.google.com/apis/api/spanner.googleapis.com/overview[Cloud Spanner API]
++
+----
+gcloud services enable spanner.googleapis.com
+----
+4. Create a Cloud Spanner instance and database in your project and save those details for the next step.
++
+----
+gcloud spanner instances create codelab-instance \
+ --config=regional-us-central1 \
+ --description="Codelab Instance" --nodes=1
+----
++
+----
+gcloud spanner databases create codelab-db --instance=codelab-instance
+----
+5. Update `src/main/resources/hibernate.properties` so that the connection refers to your project ID and database coordinates.
+----
+hibernate.connection.url=jdbc:cloudspanner:/projects/PROJECT_ID/instances/codelab-instance/databases/codelab-db
+----
+
+== Run the Example
+Run the example `main` method in `App.java`.
+
+----
+mvn compile exec:java -Dexec.mainClass=codelab.App -Dexec.cleanupDaemonThreads=false
+----
+
+You should see something like this in the console output:
+----
+Singers who were born in 1990 or later:
+Jacqueline Long born on 1990-07-29
+Dylan Shaw born on 1998-05-02
+Albums:
+"Go, Go, Go" by Melissa Garcia
+----
+
+=== Delete the Cloud Spanner instance
+WARNING: Only do this if you created the instance specifically for running this sample and nothing else.
+----
+gcloud spanner instances delete codelab-instance
+----
