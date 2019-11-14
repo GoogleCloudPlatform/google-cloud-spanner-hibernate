@@ -22,6 +22,7 @@
   </properties>
 
   <dependencies>
+    <!-- Microprofile (provided) -->
     <dependency>
       <groupId>org.eclipse.microprofile</groupId>
       <artifactId>microprofile</artifactId>
@@ -29,15 +30,20 @@
       <type>pom</type>
       <scope>provided</scope>
     </dependency>
+
+    <!-- Spanner Dialect -->
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <!-- JDBC Driver -->
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner-jdbc</artifactId>
     </dependency>
+
   </dependencies>
 
   <build>
