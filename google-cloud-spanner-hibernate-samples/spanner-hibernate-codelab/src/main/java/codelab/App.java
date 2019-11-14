@@ -30,7 +30,8 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 /**
- * The Hibernate codelab solution which demonstrates basic operations in Hibernate such as reading, writing, and deleting data.
+ * The Hibernate codelab solution which demonstrates basic operations in Hibernate such as reading, writing, and
+ * deleting data.
  */
 public class App {
 
