@@ -18,21 +18,19 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
-      <version>0.1.0</version>
+      <version>${project.version}</version>
     </dependency>
 
     <!-- JDBC Driver -->
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner-jdbc</artifactId>
-      <version>1.7.0</version>
     </dependency>
 
     <!-- Hibernate -->
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
-      <version>5.4.6.Final</version>
     </dependency>
 
     <!-- test dependencies -->
