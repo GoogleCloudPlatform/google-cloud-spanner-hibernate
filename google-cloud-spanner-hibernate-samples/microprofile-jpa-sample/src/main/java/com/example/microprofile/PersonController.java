@@ -19,6 +19,7 @@
 package com.example.microprofile;
 
 import java.util.UUID;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
@@ -38,12 +39,14 @@ import javax.ws.rs.core.MediaType;
 @Path("/person")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RequestScoped
 public class PersonController {
 
   /**
    * Inject the JPA {@link EntityManager} for direct JPA access.
    */
-  @Inject EntityManager entityManager;
+  @Inject
+  EntityManager entityManager;
 
   /**
    * Create a new {@link Person} entity with auto-generated ID.
