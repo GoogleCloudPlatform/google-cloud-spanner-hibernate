@@ -25,7 +25,7 @@ This setting configures the connection URL which specifies the database that you
 quarkus.datasource.url=jdbc:cloudspanner:/projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DATABASE_NAME}
 ----
 
-5. Open a terminal instance inside this directory and run `mvn quarkus:dev` to start the app.
+5. Open a terminal instance inside this directory and run `mvn compile quarkus:dev` to start the app.
 +
 In the `application.properties` file, you'll see that the application is running with `quarkus.hibernate-orm.database.generation=update` which allows Hibernate to create tables for you if they do not exist.
 On the very first time you run the app, Hibernate will automatically create the schema and missing tables based on the `@Entity` definitions.
