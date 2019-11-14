@@ -1,0 +1,7 @@
+<hibernate-configuration>
+  <session-factory>
+    <!-- Annotated entity classes -->
+    <mapping class="codelab.Album"/>
+    <mapping class="codelab.Singer"/>
+  </session-factory>
+</hibernate-configuration>
