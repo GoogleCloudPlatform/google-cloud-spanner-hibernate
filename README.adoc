@@ -108,7 +108,7 @@ For example if one inserts a row that contains 5 columns, it counts as 5 modify 
 Consequently, users must take care to avoid encountering these constraints.
 
 1. We recommend being careful with the use of `CASCADE_TYPE.ALL` in Entity annotations because, depending on the application, it might trigger a large number of entities to be deleted in a single transaction and bring you over the 20,000 limit.
-2. Also, when persisting a collection of entities, be mindful of this 20,000 mutations per transaction constraint.
+2. Also, when persisting a collection of entities, be mindful of the 20,000 mutations per transaction constraint.
 
 === Enable Hibernate Batching
 
