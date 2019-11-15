@@ -1,6 +1,6 @@
 = Cloud Spanner Hibernate Codelab Solution
 
-This is the solution for the Cloud Spanner with Hibernate ORM Codelab.
+This is the solution for the https://codelabs.developers.google.com/codelabs/cloud-spanner-hibernate[Cloud Spanner with Hibernate ORM Codelab].
 
 == Setup & Configuration
 1. Create a Google Cloud Platform project.
