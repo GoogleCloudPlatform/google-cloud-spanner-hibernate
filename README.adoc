@@ -178,7 +178,7 @@ Hibernate doesn't directly rely on the existence of constraints to perform its o
 The lack of foreign key constraints also means that database-side cascading deletes are not supported via the `@OnDelete(action = OnDeleteAction.CASCADE)`.
 However, Hibernate-side cascading operations such as `@ManyToOne(cascade = {CascadeType.ALL})` are supported.
 
-At the present time, the dialect does not support declaring unique columns by using the `@Column(unique = true)` annotation, but this feature will be added in the future.
+At this time, the dialect does not support declaring unique columns by using the `@Column(unique = true)` annotation.
 
 === Spanner Table Names
 
