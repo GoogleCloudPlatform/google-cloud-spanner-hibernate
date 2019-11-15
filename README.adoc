@@ -145,6 +145,19 @@ List<Object[]> entities = query.list();
 
 Also, you may consult the https://cloud.google.com/spanner/docs/sql-best-practices[Cloud Spanner documentation] on general recommendations for optimizing performance.
 
+=== Schema Generation
+
+It is often useful to generate the schema for your database, such as during the early stages of development.
+The Spanner dialect supports Hibernate's `hibernate.hbm2ddl.auto` setting which controls the framework's schema generation behavior on start-up.
+
+The following settings are available:
+
+- none: Do nothing.
+- validate: Validate the schema, makes no changes to the database.
+- update: Update the schema.
+- create: Create the schema, destroying previous data.
+- create-drop: Drop the schema when the SessionFactory is closed explicitly, typically when the application is stopped.
+
 == Cloud Spanner Hibernate ORM Limitations
 
 The Cloud Spanner Hibernate Dialect supports most of the standard Hibernate and Java Persistence annotations, but there are important differences in features because of differences in https://cloud.google.com/spanner/docs/schema-and-data-model[Cloud Spanner's data model] from traditional SQL databases.
@@ -154,11 +167,12 @@ The following sections below describe the feature set of the Cloud Spanner Hiber
 [options="header"]
 |===
 | Unsupported Feature | Description
-| Constraint-based Annotations | The dialect does not support the database constraint-based annotations `@Column(unique = true)` and `@OnDelete(action = OnDeleteAction.CASCADE)`.
+| Schema Constraints  | Dialect schema generation does not generate foreign key and column uniqueness constraints for entity relationships and columns. Server-side cascading deletes are also not supported.
 | Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
 | Column default values | The dialect does not currently set default values based on the `@ColumnDefault` annotation, because Cloud Spanner does not support column defaults in the DDL.
 | Big-decimal or arbitrary-precision numbers | The dialect does not support `java.math.BigDecimal` because Cloud Spanner doesn't have SQL `NUMERIC` or `DECIMAL` support.
 | Schema Generation for Interleaved Tables | The dialect currently does not support creating interleaved tables during schema generation.
+| Simba JDBC Driver | Hibernate ORM with Cloud Spanner is officially supported only with the open-source https://cloud.google.com/spanner/docs/use-oss-jdbc[Cloud Spanner JDBC Driver]. It does not support the https://cloud.google.com/spanner/docs/partners/drivers[Simba JDBC driver] at this time.
 |===
 
 === Constraints and Entity Relationships
