@@ -21,9 +21,11 @@ The ID in this case is `comgooglecloud-1345`.
 
 . If you want to release the staged artifacts, run the `prod:cloud-java-frameworks/google-cloud-spanner-hibernate/promote` Kokoro job, while providing the staging repository ID as an environment variable like `STAGING_REPOSITORY_ID=comgooglecloud-1345`.
 
-. Verify that the new version has been published to Maven Central by checking https://repo.maven.apache.org/maven2/com/google/cloud/google-cloud-spanner-hibernate-dialect/[here].
+. Verify that the new version has been published to Maven Central by checking https://repo.maven.apache.org/maven2/com/google/cloud/google-cloud-spanner-hibernate-dialect/[here]. This might take a while.
 
 . Open a PR to update the release version in the https://github.com/GoogleCloudPlatform/java-docs-samples/blob/master/spanner/hibernate/pom.xml[sample app]. Here's a https://github.com/GoogleCloudPlatform/java-docs-samples/pull/1617[sample PR].
+
+. Update the version in the https://codelabs.developers.google.com/codelabs/cloud-spanner-hibernate/[codelab].
 
 . https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/releases[Create] a new release on GitHub.
 
