@@ -62,7 +62,7 @@ The following section describes recommendations and best practices for how to be
 
 === Use Generated UUIDs for ID Generation
 
-In Spanner, the Universally Unique Identifier (UUID) is the preferred ID type in Cloud Spanner because it avoids hotspots as the system divides data among servers by key ranges.
+The Universally Unique Identifier (UUID) is the preferred ID type in Cloud Spanner because it avoids hotspots as the system divides data among servers by key ranges.
 A monotonically increasing integer key would also work, but can be less performant.
 
 For this reason, if you are using generated IDs in your code, you should configure UUID generation like this:
@@ -152,11 +152,13 @@ The Spanner dialect supports Hibernate's `hibernate.hbm2ddl.auto` setting which 
 
 The following settings are available:
 
-- none: Do nothing.
-- validate: Validate the schema, makes no changes to the database.
-- update: Update the schema.
-- create: Create the schema, destroying previous data.
-- create-drop: Drop the schema when the SessionFactory is closed explicitly, typically when the application is stopped.
+- `none`: Do nothing.
+- `validate`: Validate the schema, makes no changes to the database.
+- `update`: Create or update the schema.
+- `create`: Create the schema, destroying previous data.
+- `create-drop`: Drop the schema when the SessionFactory is closed explicitly, typically when the application is stopped.
+
+Hibernate performs schema updates on each table and entity type on startup, which can take more than several minutes if there are many tables. To avoid schema updates keeping Hibernate from starting for several minutes, you can update schemas separately and use the `none` or `validate` settings.
 
 == Cloud Spanner Hibernate ORM Limitations
 
@@ -170,7 +172,7 @@ The following sections below describe the feature set of the Cloud Spanner Hiber
 | Schema Constraints  | Dialect schema generation does not generate foreign key and column uniqueness constraints for entity relationships and columns. Server-side cascading deletes are also not supported.
 | Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
 | Column default values | The dialect does not currently set default values based on the `@ColumnDefault` annotation, because Cloud Spanner does not support column defaults in the DDL.
-| Big-decimal or arbitrary-precision numbers | The dialect does not support `java.math.BigDecimal` because Cloud Spanner doesn't have SQL `NUMERIC` or `DECIMAL` support.
+| Big-decimal or arbitrary-precision numbers | The dialect does not support `java.math.BigDecimal` and `java.math.BigInteger` because Cloud Spanner does not provide native support for https://cloud.google.com/spanner/docs/storing-numeric-data[arbitrary-precision decimal numbers], such as `NUMERIC` or `DECIMAL`.
 | Schema Generation for Interleaved Tables | The dialect currently does not support creating interleaved tables during schema generation.
 | Simba JDBC Driver | Hibernate ORM with Cloud Spanner is officially supported only with the open-source https://cloud.google.com/spanner/docs/use-oss-jdbc[Cloud Spanner JDBC Driver]. It does not support the https://cloud.google.com/spanner/docs/partners/drivers[Simba JDBC driver] at this time.
 |===
