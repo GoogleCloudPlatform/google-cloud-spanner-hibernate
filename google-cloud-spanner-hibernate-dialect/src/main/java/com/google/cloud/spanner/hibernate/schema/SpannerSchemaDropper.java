@@ -32,9 +32,11 @@ import org.hibernate.tool.schema.spi.TargetDescriptor;
  */
 public class SpannerSchemaDropper implements SchemaDropper {
 
+  private final SpannerSchemaManagementTool tool;
   private final SchemaDropper schemaDropper;
 
-  public SpannerSchemaDropper(SchemaDropper schemaDropper) {
+  public SpannerSchemaDropper(SpannerSchemaManagementTool tool, SchemaDropper schemaDropper) {
+    this.tool = tool;
     this.schemaDropper = schemaDropper;
   }
 
@@ -45,8 +47,13 @@ public class SpannerSchemaDropper implements SchemaDropper {
       SourceDescriptor sourceDescriptor,
       TargetDescriptor targetDescriptor) {
 
+    // Initialize auxiliary database objects to enable DDL statement batching.
     metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl());
     metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl());
+
+    // Initialize exporters with drop table dependencies so tables are dropped in the right order.
+    tool.dropTablesInit(options, metadata);
+
     schemaDropper.doDrop(metadata, options, sourceDescriptor, targetDescriptor);
   }
 

@@ -19,40 +19,26 @@
 package com.google.cloud.spanner.hibernate.schema;
 
 import org.hibernate.boot.Metadata;
-import org.hibernate.tool.schema.internal.SchemaCreatorImpl;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
-import org.hibernate.tool.schema.spi.SchemaCreator;
-import org.hibernate.tool.schema.spi.SourceDescriptor;
+import org.hibernate.tool.schema.spi.SchemaMigrator;
 import org.hibernate.tool.schema.spi.TargetDescriptor;
 
-/**
- * A modified version of the {@link SchemaCreatorImpl} which batches DDL statements
- * to optimize performance.
- */
-public class SpannerSchemaCreator implements SchemaCreator {
+public class SpannerSchemaMigrator implements SchemaMigrator {
 
   private final SpannerSchemaManagementTool tool;
-  private final SchemaCreator schemaCreator;
+  private final SchemaMigrator schemaMigrator;
 
-  public SpannerSchemaCreator(SpannerSchemaManagementTool tool, SchemaCreator schemaCreator) {
+  public SpannerSchemaMigrator(SpannerSchemaManagementTool tool, SchemaMigrator schemaMigrator) {
     this.tool = tool;
-    this.schemaCreator = schemaCreator;
+    this.schemaMigrator = schemaMigrator;
   }
 
   @Override
-  public void doCreation(
-      Metadata metadata,
-      ExecutionOptions options,
-      SourceDescriptor sourceDescriptor,
-      TargetDescriptor targetDescriptor) {
+  public void doMigration(
+      Metadata metadata, ExecutionOptions options, TargetDescriptor targetDescriptor) {
 
-    // Add auxiliary database objects to batch DDL statements
-    metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl());
-    metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl());
-
-    // Initialize exporters with interleave dependencies so tables are created in the right order.
     tool.createTablesInit(options, metadata);
 
-    schemaCreator.doCreation(metadata, options, sourceDescriptor, targetDescriptor);
+    schemaMigrator.doMigration(metadata, options, targetDescriptor);
   }
 }
