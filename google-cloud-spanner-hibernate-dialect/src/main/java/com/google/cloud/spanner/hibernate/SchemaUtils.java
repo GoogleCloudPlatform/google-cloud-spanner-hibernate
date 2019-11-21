@@ -35,7 +35,7 @@ public class SchemaUtils {
    */
   public static Interleaved getInterleaveAnnotation(Table table, Metadata metadata) {
     for (PersistentClass pc : metadata.getEntityBindings()) {
-      if (pc.getTable().equals(table)) {
+      if (pc.getTable().equals(table) && pc.getMappedClass() != null) {
         Class<?> entityClass = pc.getMappedClass();
         return entityClass.getAnnotation(Interleaved.class);
       }
