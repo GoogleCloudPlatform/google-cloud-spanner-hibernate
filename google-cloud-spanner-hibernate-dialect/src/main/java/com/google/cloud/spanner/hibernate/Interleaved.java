@@ -82,7 +82,7 @@ public @interface Interleaved {
    *
    * @return the entity class of the parent table
    */
-  Class<?> parent() default void.class;
+  Class<?> parentEntity() default void.class;
 
   /**
    * Indicates whether when a row from the parent table is deleted that the child rows in this table

@@ -54,10 +54,10 @@ public class TableDependencyTracker {
       if (interleaved != null) {
         if (isCreateTable) {
           // If creating tables, the parent blocks the child.
-          dependencies.put(childTable, SchemaUtils.getTable(interleaved.parent(), metadata));
+          dependencies.put(childTable, SchemaUtils.getTable(interleaved.parentEntity(), metadata));
         } else {
           // If dropping tables, the child blocks the parent.
-          dependencies.put(SchemaUtils.getTable(interleaved.parent(), metadata), childTable);
+          dependencies.put(SchemaUtils.getTable(interleaved.parentEntity(), metadata), childTable);
         }
       }
     }

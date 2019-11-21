@@ -137,7 +137,7 @@ public class SpannerTableStatements {
   private static String getInterleavedClause(Table table, Metadata metadata) {
     Interleaved interleaved = SchemaUtils.getInterleaveAnnotation(table, metadata);
     if (interleaved != null) {
-      Table parentTable = SchemaUtils.getTable(interleaved.parent(), metadata);
+      Table parentTable = SchemaUtils.getTable(interleaved.parentEntity(), metadata);
       String interleaveClause = ", INTERLEAVE IN PARENT " + parentTable.getQuotedName();
       if (interleaved.cascadeDelete()) {
         interleaveClause += " ON DELETE CASCADE";
@@ -154,7 +154,7 @@ public class SpannerTableStatements {
       return table.getPrimaryKey().getColumns();
     }
 
-    Table parentTable = SchemaUtils.getTable(interleaved.parent(), metadata);
+    Table parentTable = SchemaUtils.getTable(interleaved.parentEntity(), metadata);
 
     List<Column> sortedParentPkColumns = getSortedPkColumns(parentTable, metadata);
     List<Column> sortedCurrentPkColumns = table.getPrimaryKey().getColumns().stream()
