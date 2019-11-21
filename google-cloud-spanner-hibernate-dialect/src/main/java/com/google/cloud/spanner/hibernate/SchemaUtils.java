@@ -48,10 +48,9 @@ public class SchemaUtils {
    * Gets the Spanner {@link Table} by name.
    */
   public static Table getTable(Class<?> entityClass, Metadata metadata) {
-    for (PersistentClass pc : metadata.getEntityBindings()) {
-      if (pc.getMappedClass().equals(entityClass)) {
-        return pc.getTable();
-      }
+    PersistentClass pc = metadata.getEntityBinding(entityClass.getCanonicalName());
+    if (pc != null) {
+      return pc.getTable();
     }
 
     throw new IllegalArgumentException(
