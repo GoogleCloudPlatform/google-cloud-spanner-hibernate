@@ -25,7 +25,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 
 @Entity
-@Interleaved(parent = "GrandParent")
+@Interleaved(parent = GrandParent.class)
 public class Parent {
 
   @EmbeddedId

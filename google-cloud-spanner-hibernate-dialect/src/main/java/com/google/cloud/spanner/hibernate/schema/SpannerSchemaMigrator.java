@@ -37,7 +37,7 @@ public class SpannerSchemaMigrator implements SchemaMigrator {
   public void doMigration(
       Metadata metadata, ExecutionOptions options, TargetDescriptor targetDescriptor) {
 
-    tool.createTablesInit(options, metadata);
+    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, true);
 
     schemaMigrator.doMigration(metadata, options, targetDescriptor);
   }

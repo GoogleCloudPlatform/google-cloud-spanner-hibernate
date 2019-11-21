@@ -19,10 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.Table;
@@ -37,9 +34,7 @@ public class SpannerTableExporter implements Exporter<Table> {
 
   private final SpannerTableStatements spannerTableStatements;
 
-  private Map<Table, Table> tableDependencies;
-
-  private HashSet<Table> processedTables;
+  private final TableDependencyTracker tableDependencyTracker;
 
   /**
    * Constructor.
@@ -48,51 +43,40 @@ public class SpannerTableExporter implements Exporter<Table> {
    */
   public SpannerTableExporter(SpannerDialect spannerDialect) {
     this.spannerTableStatements = new SpannerTableStatements(spannerDialect);
-    this.tableDependencies = new HashMap<>();
-    this.processedTables = new HashSet<>();
+    this.tableDependencyTracker = new TableDependencyTracker();
   }
 
   @Override
   public String[] getSqlCreateStrings(Table currentTable, Metadata metadata) {
-    ArrayDeque<Table> tablesToProcess = getDependentTables(currentTable);
-    for (Table table : tablesToProcess) {
-      processedTables.add(table);
-    }
-
-    List<String> createTableStatements = tablesToProcess.stream()
-        .flatMap(table -> spannerTableStatements.createTable(table, metadata).stream())
-        .collect(Collectors.toList());
-    return createTableStatements.toArray(new String[createTableStatements.size()]);
+    return buildSqlStrings(currentTable, metadata, true);
   }
 
   @Override
   public String[] getSqlDropStrings(Table currentTable, Metadata metadata) {
-    ArrayDeque<Table> tablesToProcess = getDependentTables(currentTable);
-    for (Table table : tablesToProcess) {
-      processedTables.add(table);
-    }
-
-    List<String> dropTableStatements = tablesToProcess.stream()
-        .flatMap(table -> spannerTableStatements.dropTable(table, metadata).stream())
-        .collect(Collectors.toList());
-    return dropTableStatements.toArray(new String[dropTableStatements.size()]);
+    return buildSqlStrings(currentTable, metadata, false);
   }
 
   /**
-   * Initializes the table exporter's dependent tables.
+   * Initializes the table exporter for if a new create-table or drop-table sequence is starting.
    */
-  public void initializeDependencies(Map<Table, Table> tableDependencies) {
-    this.tableDependencies = tableDependencies;
-    this.processedTables = new HashSet<>();
+  public void initializeTableExporter(Metadata metadata, boolean isCreateTables) {
+    tableDependencyTracker.initializeDependencies(metadata, isCreateTables);
   }
 
-  private ArrayDeque<Table> getDependentTables(Table table) {
-    ArrayDeque<Table> tableStack = new ArrayDeque<>();
-    while (table != null && !processedTables.contains(table)) {
-      tableStack.push(table);
-      table = tableDependencies.get(table);
-    }
+  private String[] buildSqlStrings(Table currentTable, Metadata metadata, boolean isCreateTables) {
+    ArrayDeque<Table> tablesToProcess = tableDependencyTracker.getDependentTables(currentTable);
 
-    return tableStack;
+    List<String> createTableStatements = tablesToProcess.stream()
+        .flatMap(table -> {
+          if (isCreateTables) {
+            return spannerTableStatements.createTable(table, metadata).stream();
+          } else {
+            return spannerTableStatements.dropTable(table, metadata).stream();
+          }
+        })
+        .collect(Collectors.toList());
+
+    return createTableStatements.toArray(new String[createTableStatements.size()]);
   }
+
 }

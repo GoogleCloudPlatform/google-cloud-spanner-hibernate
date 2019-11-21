@@ -26,9 +26,9 @@ import java.lang.annotation.Target;
 import javax.persistence.Entity;
 
 /**
- * This annotation annotates an {@link Entity} class that should be interleaved in a parent table.
- * This annotation is Cloud Spanner specific and is only used when automatic schema generation is
- * used. If you create your schema manually, you may leave this annotation out.
+ * This annotation can be used to annotate an {@link Entity} class that should be interleaved in
+ * a parent table. This annotation is Cloud Spanner specific and is only used when automatic schema
+ * generation is used. If you create your schema manually, you may leave this annotation out.
  *
  * <p>To generate the following schema:
  *
@@ -41,21 +41,21 @@ import javax.persistence.Entity;
  *
  * <p>The following Java definition should be used:
  *
- * <pre>
- * &#64;Entity
- * &#64;Table(name = "ParentTable")
+ * <pre>{@code
+ * @Entity
+ * @Table(name = "ParentTable")
  * public class Parent {
- *   &#64;Id
+ *   @Id
  *   private Long parentId;
  *
- *   &#64;Column
+ *   @Column
  *   private String name;
  *   ...
  * }
  *
- * &#64;Entity
- * &#64;Table(name = "ChildTable")
- * &#64;Interleaved(parent = "ParentTable")
+ * @Entity
+ * @Table(name = "ChildTable")
+ * @Interleaved(parent = "ParentTable")
  * public class Child {
  *   public static class ChildId implements Serializable {
  *     private Long parentId;
@@ -63,14 +63,14 @@ import javax.persistence.Entity;
  *     ...
  *   }
  *
- *   &#64;EmbeddedId
+ *   @EmbeddedId
  *   private ChildId id;
  *
- *   &#64;Column
+ *   @Column
  *   private String ChildName
  *   ...
  * }
- * </pre>
+ * }</pre>
  */
 @Documented
 @Target(ElementType.TYPE)
@@ -80,9 +80,9 @@ public @interface Interleaved {
   /**
    * The parent table that this table will be interleaved in.
    *
-   * @return the name of the parent table
+   * @return the entity class of the parent table
    */
-  String parent() default "";
+  Class<?> parent() default void.class;
 
   /**
    * Indicates whether when a row from the parent table is deleted that the child rows in this table

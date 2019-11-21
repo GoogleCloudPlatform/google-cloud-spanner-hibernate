@@ -18,18 +18,14 @@
 
 package com.google.cloud.spanner.hibernate.schema;
 
-import com.google.cloud.spanner.hibernate.Interleaved;
-import com.google.cloud.spanner.hibernate.SchemaUtils;
 import com.google.cloud.spanner.hibernate.SpannerTableExporter;
-import java.util.HashMap;
 import java.util.Map;
-import org.hibernate.boot.Metadata;
-import org.hibernate.mapping.Table;
 import org.hibernate.tool.schema.internal.HibernateSchemaManagementTool;
 import org.hibernate.tool.schema.internal.exec.JdbcContext;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
 import org.hibernate.tool.schema.spi.SchemaCreator;
 import org.hibernate.tool.schema.spi.SchemaDropper;
+import org.hibernate.tool.schema.spi.SchemaMigrator;
 
 /**
  * The custom implementation of {@link HibernateSchemaManagementTool} for Spanner to support batched
@@ -47,48 +43,13 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
     return new SpannerSchemaDropper(this, super.getSchemaDropper(options));
   }
 
-  public void createTablesInit(ExecutionOptions options, Metadata metadata) {
-    getSpannerTableExporter(options).initializeDependencies(buildCreateTableDependencies(metadata));
+  @Override
+  public SchemaMigrator getSchemaMigrator(Map options) {
+    return new SpannerSchemaMigrator(this, super.getSchemaMigrator(options));
   }
 
-  public void dropTablesInit(ExecutionOptions options, Metadata metadata) {
-    getSpannerTableExporter(options).initializeDependencies(buildDropTableDependencies(metadata));
-  }
-
-  private SpannerTableExporter getSpannerTableExporter(ExecutionOptions options) {
+  SpannerTableExporter getSpannerTableExporter(ExecutionOptions options) {
     JdbcContext jdbcContext = this.resolveJdbcContext(options.getConfigurationValues());
     return (SpannerTableExporter) jdbcContext.getDialect().getTableExporter();
-  }
-
-  /**
-   * Returns a {@link Map} which maps a table to the table it is interleaved with.
-   */
-  private Map<Table, Table> buildCreateTableDependencies(Metadata metadata) {
-    HashMap<Table, Table> interleaveDependencies = new HashMap<>();
-
-    for (Table table : metadata.collectTableMappings()) {
-      Interleaved interleaved = SchemaUtils.getInterleaveAnnotation(table, metadata);
-      if (interleaved != null) {
-        interleaveDependencies.put(table, SchemaUtils.getTable(interleaved.parent(), metadata));
-      }
-    }
-
-    return interleaveDependencies;
-  }
-
-  /**
-   * Returns a {@link Map} which maps a table to the table that must be dropped before it.
-   */
-  private static Map<Table, Table> buildDropTableDependencies(Metadata metadata) {
-    HashMap<Table, Table> dropTableDependencies = new HashMap<>();
-
-    for (Table table : metadata.collectTableMappings()) {
-      Interleaved interleaved = SchemaUtils.getInterleaveAnnotation(table, metadata);
-      if (interleaved != null) {
-        dropTableDependencies.put(SchemaUtils.getTable(interleaved.parent(), metadata), table);
-      }
-    }
-
-    return dropTableDependencies;
   }
 }

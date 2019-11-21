@@ -51,7 +51,7 @@ public class SpannerSchemaCreator implements SchemaCreator {
     metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl());
 
     // Initialize exporters with interleave dependencies so tables are created in the right order.
-    tool.createTablesInit(options, metadata);
+    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, true);
 
     schemaCreator.doCreation(metadata, options, sourceDescriptor, targetDescriptor);
   }

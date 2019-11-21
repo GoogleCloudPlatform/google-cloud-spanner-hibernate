@@ -47,14 +47,14 @@ public class SchemaUtils {
   /**
    * Gets the Spanner {@link Table} by name.
    */
-  public static Table getTable(String name, Metadata metadata) {
-    for (Table t : metadata.collectTableMappings()) {
-      if (t.getName().equalsIgnoreCase(name)) {
-        return t;
+  public static Table getTable(Class<?> entityClass, Metadata metadata) {
+    for (PersistentClass pc : metadata.getEntityBindings()) {
+      if (pc.getMappedClass().equals(entityClass)) {
+        return pc.getTable();
       }
     }
 
     throw new IllegalArgumentException(
-        String.format("Could not find annotated entity for table %s.", name));
+        String.format("Could not find table for entity class %s.", entityClass.getName()));
   }
 }
