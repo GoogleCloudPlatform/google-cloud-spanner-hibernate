@@ -23,7 +23,7 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
 
 /**
- * Schema utilities for creating and dropping tables in Hibernate.
+ * Schema utilities for reading table {@link Metadata} in Hibernate.
  */
 public class SchemaUtils {
 
