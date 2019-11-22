@@ -66,7 +66,7 @@ public class SpannerTableExporter implements Exporter<Table> {
   private String[] buildSqlStrings(Table currentTable, Metadata metadata, boolean isCreateTables) {
     ArrayDeque<Table> tablesToProcess = tableDependencyTracker.getDependentTables(currentTable);
 
-    List<String> createTableStatements = tablesToProcess.stream()
+    List<String> ddlStatements = tablesToProcess.stream()
         .flatMap(table -> {
           if (isCreateTables) {
             return spannerTableStatements.createTable(table, metadata).stream();
@@ -76,7 +76,7 @@ public class SpannerTableExporter implements Exporter<Table> {
         })
         .collect(Collectors.toList());
 
-    return createTableStatements.toArray(new String[createTableStatements.size()]);
+    return ddlStatements.toArray(new String[ddlStatements.size()]);
   }
 
 }

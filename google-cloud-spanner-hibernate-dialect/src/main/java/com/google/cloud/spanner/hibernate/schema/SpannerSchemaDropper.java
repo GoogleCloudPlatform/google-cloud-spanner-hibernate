@@ -60,6 +60,10 @@ public class SpannerSchemaDropper implements SchemaDropper {
   @Override
   public DelayedDropAction buildDelayedAction(
       Metadata metadata, ExecutionOptions options, SourceDescriptor sourceDescriptor) {
+
+    // Initialize exporters with drop table dependencies so tables are dropped in the right order.
+    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, false);
+
     return schemaDropper.buildDelayedAction(metadata, options, sourceDescriptor);
   }
 }
