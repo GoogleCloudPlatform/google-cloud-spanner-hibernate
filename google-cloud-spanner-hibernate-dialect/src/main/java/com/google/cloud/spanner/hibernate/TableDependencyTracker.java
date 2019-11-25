@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,7 +33,7 @@ import org.hibernate.mapping.Table;
  * one must create a parent table before its interleaved table. And one must drop the interleaved
  * table first before its parent table.
  */
-public class TableDependencyTracker {
+class TableDependencyTracker {
 
   // For each map entry (key, value), the key is a table which is being blocked by the
   // table stored as the value.
@@ -72,7 +73,7 @@ public class TableDependencyTracker {
    * @param table The table that you wish to process
    * @return the ordered {@link ArrayDeque} of tables to process before processing {@code table}
    */
-  public ArrayDeque<Table> getDependentTables(Table table) {
+  public Collection<Table> getDependentTables(Table table) {
     ArrayDeque<Table> tableStack = new ArrayDeque<>();
     while (table != null && !processedTables.contains(table)) {
       tableStack.push(table);

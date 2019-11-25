@@ -18,7 +18,7 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.hibernate.boot.Metadata;
@@ -64,7 +64,7 @@ public class SpannerTableExporter implements Exporter<Table> {
   }
 
   private String[] buildSqlStrings(Table currentTable, Metadata metadata, boolean isCreateTables) {
-    ArrayDeque<Table> tablesToProcess = tableDependencyTracker.getDependentTables(currentTable);
+    Collection<Table> tablesToProcess = tableDependencyTracker.getDependentTables(currentTable);
 
     List<String> ddlStatements = tablesToProcess.stream()
         .flatMap(table -> {
