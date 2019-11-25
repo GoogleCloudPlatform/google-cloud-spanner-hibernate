@@ -55,7 +55,7 @@ import javax.persistence.Entity;
  *
  * @Entity
  * @Table(name = "ChildTable")
- * @Interleaved(parent = Parent.class)
+ * @Interleaved(parentEntity = Parent.class)
  * public class Child {
  *   public static class ChildId implements Serializable {
  *     private Long parentId;
