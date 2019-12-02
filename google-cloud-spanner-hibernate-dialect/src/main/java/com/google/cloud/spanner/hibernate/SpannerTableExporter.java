@@ -21,15 +21,15 @@ package com.google.cloud.spanner.hibernate;
 import com.google.cloud.spanner.hibernate.schema.SpannerTableStatements;
 import com.google.cloud.spanner.hibernate.schema.TableDependencyTracker;
 import java.util.Collection;
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Constraint;
 import org.hibernate.mapping.Table;
-import org.hibernate.tool.schema.Action;
 import org.hibernate.mapping.UniqueKey;
+import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.spi.Exporter;
 
 /**
@@ -103,5 +103,4 @@ public class SpannerTableExporter implements Exporter<Table> {
       }
     }
   }
-
 }
