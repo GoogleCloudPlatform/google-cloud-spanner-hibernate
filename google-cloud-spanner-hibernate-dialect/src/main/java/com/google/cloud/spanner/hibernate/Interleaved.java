@@ -89,10 +89,9 @@ public @interface Interleaved {
 
   /**
    * Indicates whether when a row from the parent table is deleted that the child rows in this table
-   * will automatically be deleted as well.
+   * will automatically be deleted as well. (default = false)
    *
-   * @return <code>true</code> if ON DELETE CASCADE should be added to the CREATE TABLE string
-   * (default = false).
+   * @return <code>true</code> if ON DELETE CASCADE should be added to the CREATE TABLE string.
    */
   boolean cascadeDelete() default false;
 }
