@@ -32,6 +32,7 @@ import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
+import org.hibernate.mapping.UniqueKey;
 
 public class SpannerTableStatements {
 
@@ -54,6 +55,11 @@ public class SpannerTableStatements {
     while (iteratorIdx.hasNext()) {
       Index curr = iteratorIdx.next();
       dropStrings.add("drop index " + curr.getName());
+    }
+
+    Iterator<UniqueKey> uniqueKeyIdx = table.getUniqueKeyIterator();
+    while (uniqueKeyIdx.hasNext()) {
+      dropStrings.add("drop index " + uniqueKeyIdx.next().getName());
     }
 
     dropStrings.add(this.spannerDialect.getDropTableString(table.getQuotedName()));

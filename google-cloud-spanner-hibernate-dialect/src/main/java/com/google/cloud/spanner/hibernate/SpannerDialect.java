@@ -65,7 +65,7 @@ public class SpannerDialect extends Dialect {
 
   private static final Exporter NOOP_EXPORTER = new EmptyExporter();
 
-  private static final UniqueDelegate NOOP_UNIQUE_DELEGATE = new DoNothingUniqueDelegate();
+  private final UniqueDelegate uniqueDelegate;
 
   /**
    * Default constructor for SpannerDialect.
@@ -255,6 +255,8 @@ public class SpannerDialect extends Dialect {
     registerFunction("ATAN", new StandardSQLFunction("ATAN", StandardBasicTypes.DOUBLE));
     registerFunction("ATANH", new StandardSQLFunction("ATANH", StandardBasicTypes.DOUBLE));
     registerFunction("ATAN2", new StandardSQLFunction("ATAN2", StandardBasicTypes.DOUBLE));
+
+    this.uniqueDelegate = new SpannerUniqueDelegate(this);
   }
 
   @Override
@@ -470,11 +472,6 @@ public class SpannerDialect extends Dialect {
   }
 
   @Override
-  public Exporter<Constraint> getUniqueKeyExporter() {
-    return NOOP_EXPORTER;
-  }
-
-  @Override
   public String applyLocksToSql(String sql, LockOptions aliasedLockOptions,
       Map<String, String[]> keyColumnNames) {
     return sql;
@@ -482,7 +479,7 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public UniqueDelegate getUniqueDelegate() {
-    return NOOP_UNIQUE_DELEGATE;
+    return uniqueDelegate;
   }
 
   /**
