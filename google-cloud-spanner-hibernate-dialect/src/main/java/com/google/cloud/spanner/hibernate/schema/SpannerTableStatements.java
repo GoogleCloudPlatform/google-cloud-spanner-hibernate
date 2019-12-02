@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.hibernate.boot.Metadata;
-import org.hibernate.boot.model.relational.InitCommand;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
@@ -121,10 +120,8 @@ public class SpannerTableStatements {
 
     // Hibernate requires the special hibernate_sequence table to be populated with an initial val.
     if (table.getName().equals(SequenceStyleGenerator.DEF_SEQUENCE_NAME)) {
-      metadata.getDatabase().addInitCommand(
-          new InitCommand(
-              "INSERT INTO " + SequenceStyleGenerator.DEF_SEQUENCE_NAME
-                  + " (" + SequenceStyleGenerator.DEF_VALUE_COLUMN + ") VALUES(1)"));
+      statements.add("INSERT INTO " + SequenceStyleGenerator.DEF_SEQUENCE_NAME + " ("
+          + SequenceStyleGenerator.DEF_VALUE_COLUMN + ") VALUES(1)");
     }
 
     return statements;

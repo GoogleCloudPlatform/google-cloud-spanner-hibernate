@@ -96,8 +96,8 @@ public class GeneratedCreateTableStatementsTests {
             + "PRIMARY KEY (grandParentId,parentId,childId), "
             + "INTERLEAVE IN PARENT Parent",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
-        "RUN BATCH",
-        "INSERT INTO hibernate_sequence (next_val) VALUES(1)");
+        "INSERT INTO hibernate_sequence (next_val) VALUES(1)",
+        "RUN BATCH");
   }
 
   @Test
@@ -125,9 +125,9 @@ public class GeneratedCreateTableStatementsTests {
         "create table Employee "
             + "(id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+        "INSERT INTO hibernate_sequence (next_val) VALUES(1)",
         "create index name_index on Employee (name)",
-        "RUN BATCH",
-        "INSERT INTO hibernate_sequence (next_val) VALUES(1)"
+        "RUN BATCH"
     );
   }
 }
