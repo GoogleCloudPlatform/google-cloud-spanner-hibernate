@@ -38,7 +38,13 @@ class SchemaUtils {
     for (PersistentClass pc : metadata.getEntityBindings()) {
       if (pc.getTable().equals(table) && pc.getMappedClass() != null) {
         Class<?> entityClass = pc.getMappedClass();
-        return entityClass.getAnnotation(Interleaved.class);
+
+        Interleaved result = entityClass.getAnnotation(Interleaved.class);
+        if (result != null && result.parentEntity().equals(void.class)) {
+          throw new IllegalArgumentException(
+              "Please specify a interleaved parentEntity for entity " + entityClass.getName());
+        }
+        return result;
       }
     }
 
@@ -46,7 +52,7 @@ class SchemaUtils {
   }
 
   /**
-   * Gets the Spanner {@link Table} by name.
+   * Gets the Spanner {@link Table} by entity class.
    */
   public static Table getTable(Class<?> entityClass, Metadata metadata) {
     PersistentClass pc = metadata.getEntityBinding(entityClass.getCanonicalName());

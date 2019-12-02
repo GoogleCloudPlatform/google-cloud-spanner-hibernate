@@ -39,7 +39,8 @@ import org.hibernate.mapping.Table;
  */
 public class SpannerTableStatements {
 
-  private static final String CREATE_TABLE_TEMPLATE = "create table {0} ({1}) PRIMARY KEY ({2})";
+  private static final String CREATE_TABLE_TEMPLATE =
+      "create table {0} ({1}) PRIMARY KEY ({2}){3}";
 
   private final SpannerDialect spannerDialect;
 
@@ -114,8 +115,12 @@ public class SpannerTableStatements {
 
     // Build the Create Table string.
     String createTableString = MessageFormat.format(
-        CREATE_TABLE_TEMPLATE, table.getQuotedName(), allColumnNames, primaryKeyColNames)
-        + getInterleavedClause(table, metadata);
+        CREATE_TABLE_TEMPLATE,
+        table.getQuotedName(),
+        allColumnNames,
+        primaryKeyColNames,
+        getInterleavedClause(table, metadata));
+
     statements.add(createTableString);
 
     // Hibernate requires the special hibernate_sequence table to be populated with an initial val.

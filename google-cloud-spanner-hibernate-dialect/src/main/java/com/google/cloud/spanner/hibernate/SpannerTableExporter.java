@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.Table;
+import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.spi.Exporter;
 
 /**
@@ -50,27 +51,27 @@ public class SpannerTableExporter implements Exporter<Table> {
 
   @Override
   public String[] getSqlCreateStrings(Table currentTable, Metadata metadata) {
-    return buildSqlStrings(currentTable, metadata, true);
+    return buildSqlStrings(currentTable, metadata, Action.CREATE);
   }
 
   @Override
   public String[] getSqlDropStrings(Table currentTable, Metadata metadata) {
-    return buildSqlStrings(currentTable, metadata, false);
+    return buildSqlStrings(currentTable, metadata, Action.DROP);
   }
 
   /**
    * Initializes the table exporter for if a new create-table or drop-table sequence is starting.
    */
-  public void initializeTableExporter(Metadata metadata, boolean isCreateTables) {
-    tableDependencyTracker.initializeDependencies(metadata, isCreateTables);
+  public void initializeTableExporter(Metadata metadata, Action schemaAction) {
+    tableDependencyTracker.initializeDependencies(metadata, schemaAction);
   }
 
-  private String[] buildSqlStrings(Table currentTable, Metadata metadata, boolean isCreateTables) {
+  private String[] buildSqlStrings(Table currentTable, Metadata metadata, Action schemaAction) {
     Collection<Table> tablesToProcess = tableDependencyTracker.getDependentTables(currentTable);
 
     List<String> ddlStatements = tablesToProcess.stream()
         .flatMap(table -> {
-          if (isCreateTables) {
+          if (schemaAction == Action.CREATE) {
             return spannerTableStatements.createTable(table, metadata).stream();
           } else {
             return spannerTableStatements.dropTable(table, metadata).stream();

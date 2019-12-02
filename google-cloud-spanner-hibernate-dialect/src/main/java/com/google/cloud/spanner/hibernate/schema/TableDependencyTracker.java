@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Map;
 import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.Table;
+import org.hibernate.tool.schema.Action;
 
 /**
  * Tracks the order in which tables should be processed (created/dropped) by Hibernate.
@@ -47,15 +48,15 @@ public class TableDependencyTracker {
    * Initializes the table dependency tracker.
    *
    * @param metadata the Hibernate metadata
-   * @param isCreateTable whether the initialization is occurring for creating tables
+   * @param schemaAction the kind of schema operation being done: {CREATE or DROP}.
    */
-  public void initializeDependencies(Metadata metadata, boolean isCreateTable) {
+  public void initializeDependencies(Metadata metadata, Action schemaAction) {
     HashMap<Table, Table> dependencies = new HashMap<>();
 
     for (Table childTable : metadata.collectTableMappings()) {
       Interleaved interleaved = SchemaUtils.getInterleaveAnnotation(childTable, metadata);
       if (interleaved != null) {
-        if (isCreateTable) {
+        if (schemaAction == Action.CREATE) {
           // If creating tables, the parent blocks the child.
           dependencies.put(childTable, SchemaUtils.getTable(interleaved.parentEntity(), metadata));
         } else {

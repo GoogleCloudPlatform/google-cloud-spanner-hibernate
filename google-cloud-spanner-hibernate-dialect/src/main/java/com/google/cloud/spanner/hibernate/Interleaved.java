@@ -80,7 +80,8 @@ import javax.persistence.Entity;
 public @interface Interleaved {
 
   /**
-   * The parent table that this table will be interleaved in.
+   * The parent table that this table will be interleaved in. This must be specified
+   * for this annotation.
    *
    * @return the entity class of the parent table
    */
@@ -91,6 +92,7 @@ public @interface Interleaved {
    * will automatically be deleted as well.
    *
    * @return <code>true</code> if ON DELETE CASCADE should be added to the CREATE TABLE string
+   * (default = false).
    */
   boolean cascadeDelete() default false;
 }
