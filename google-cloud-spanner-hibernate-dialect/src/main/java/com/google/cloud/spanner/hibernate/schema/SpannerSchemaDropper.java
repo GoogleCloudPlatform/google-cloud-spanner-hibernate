@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate.schema;
 
 import org.hibernate.boot.Metadata;
+import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.internal.SchemaDropperImpl;
 import org.hibernate.tool.schema.spi.DelayedDropAction;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
@@ -52,7 +53,7 @@ public class SpannerSchemaDropper implements SchemaDropper {
     metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl());
 
     // Initialize exporters with drop table dependencies so tables are dropped in the right order.
-    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, false);
+    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, Action.DROP);
 
     schemaDropper.doDrop(metadata, options, sourceDescriptor, targetDescriptor);
   }
@@ -62,7 +63,7 @@ public class SpannerSchemaDropper implements SchemaDropper {
       Metadata metadata, ExecutionOptions options, SourceDescriptor sourceDescriptor) {
 
     // Initialize exporters with drop table dependencies so tables are dropped in the right order.
-    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, false);
+    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, Action.DROP);
 
     return schemaDropper.buildDelayedAction(metadata, options, sourceDescriptor);
   }

@@ -19,10 +19,17 @@
 package com.google.cloud.spanner.hibernate.schema;
 
 import org.hibernate.boot.Metadata;
+import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
 import org.hibernate.tool.schema.spi.SchemaMigrator;
 import org.hibernate.tool.schema.spi.TargetDescriptor;
 
+/**
+ * A wrapper around the {@link SchemaMigrator} which initializes the Spanner table exporter
+ * before performing the schema migration.
+ *
+ * @since 1.1
+ */
 public class SpannerSchemaMigrator implements SchemaMigrator {
 
   private final SpannerSchemaManagementTool tool;
@@ -37,7 +44,7 @@ public class SpannerSchemaMigrator implements SchemaMigrator {
   public void doMigration(
       Metadata metadata, ExecutionOptions options, TargetDescriptor targetDescriptor) {
 
-    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, true);
+    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, Action.CREATE);
 
     schemaMigrator.doMigration(metadata, options, targetDescriptor);
   }

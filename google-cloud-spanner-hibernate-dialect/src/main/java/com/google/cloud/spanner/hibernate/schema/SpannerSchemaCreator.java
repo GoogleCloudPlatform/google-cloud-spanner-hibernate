@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate.schema;
 
 import org.hibernate.boot.Metadata;
+import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.internal.SchemaCreatorImpl;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
 import org.hibernate.tool.schema.spi.SchemaCreator;
@@ -51,7 +52,7 @@ public class SpannerSchemaCreator implements SchemaCreator {
     metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl());
 
     // Initialize exporters with interleave dependencies so tables are created in the right order.
-    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, true);
+    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, Action.CREATE);
 
     schemaCreator.doCreation(metadata, options, sourceDescriptor, targetDescriptor);
   }
