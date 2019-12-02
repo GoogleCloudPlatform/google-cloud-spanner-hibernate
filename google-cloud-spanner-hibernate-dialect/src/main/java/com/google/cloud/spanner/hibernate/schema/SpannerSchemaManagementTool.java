@@ -18,10 +18,14 @@
 
 package com.google.cloud.spanner.hibernate.schema;
 
+import com.google.cloud.spanner.hibernate.SpannerTableExporter;
 import java.util.Map;
 import org.hibernate.tool.schema.internal.HibernateSchemaManagementTool;
+import org.hibernate.tool.schema.internal.exec.JdbcContext;
+import org.hibernate.tool.schema.spi.ExecutionOptions;
 import org.hibernate.tool.schema.spi.SchemaCreator;
 import org.hibernate.tool.schema.spi.SchemaDropper;
+import org.hibernate.tool.schema.spi.SchemaMigrator;
 
 /**
  * The custom implementation of {@link HibernateSchemaManagementTool} for Spanner to support batched
@@ -31,11 +35,21 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
 
   @Override
   public SchemaCreator getSchemaCreator(Map options) {
-    return new SpannerSchemaCreator(super.getSchemaCreator(options));
+    return new SpannerSchemaCreator(this, super.getSchemaCreator(options));
   }
 
   @Override
   public SchemaDropper getSchemaDropper(Map options) {
-    return new SpannerSchemaDropper(super.getSchemaDropper(options));
+    return new SpannerSchemaDropper(this, super.getSchemaDropper(options));
+  }
+
+  @Override
+  public SchemaMigrator getSchemaMigrator(Map options) {
+    return new SpannerSchemaMigrator(this, super.getSchemaMigrator(options));
+  }
+
+  SpannerTableExporter getSpannerTableExporter(ExecutionOptions options) {
+    JdbcContext jdbcContext = this.resolveJdbcContext(options.getConfigurationValues());
+    return (SpannerTableExporter) jdbcContext.getDialect().getTableExporter();
   }
 }
