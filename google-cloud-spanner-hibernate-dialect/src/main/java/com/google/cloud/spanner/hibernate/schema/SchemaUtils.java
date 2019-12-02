@@ -38,13 +38,7 @@ class SchemaUtils {
     for (PersistentClass pc : metadata.getEntityBindings()) {
       if (pc.getTable().equals(table) && pc.getMappedClass() != null) {
         Class<?> entityClass = pc.getMappedClass();
-
-        Interleaved result = entityClass.getAnnotation(Interleaved.class);
-        if (result != null && result.parentEntity().equals(void.class)) {
-          throw new IllegalArgumentException(
-              "Please specify a interleaved parentEntity for entity " + entityClass.getName());
-        }
-        return result;
+        return entityClass.getAnnotation(Interleaved.class);
       }
     }
 
