@@ -71,6 +71,8 @@ import javax.persistence.Entity;
  *   ...
  * }
  * }</pre>
+ *
+ * @since 1.1
  */
 @Documented
 @Target(ElementType.TYPE)

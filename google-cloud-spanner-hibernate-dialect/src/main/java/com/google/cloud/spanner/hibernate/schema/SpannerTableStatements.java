@@ -16,8 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package com.google.cloud.spanner.hibernate;
+package com.google.cloud.spanner.hibernate.schema;
 
+import com.google.cloud.spanner.hibernate.Interleaved;
+import com.google.cloud.spanner.hibernate.SpannerDialect;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,8 +35,10 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 
+/**
+ * Generates the SQL statements for creating and dropping tables in Spanner.
+ */
 public class SpannerTableStatements {
-
 
   private static final String CREATE_TABLE_TEMPLATE = "create table {0} ({1}) PRIMARY KEY ({2})";
 

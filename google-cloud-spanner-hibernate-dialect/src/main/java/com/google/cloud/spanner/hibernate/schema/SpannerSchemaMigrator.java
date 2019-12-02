@@ -23,6 +23,12 @@ import org.hibernate.tool.schema.spi.ExecutionOptions;
 import org.hibernate.tool.schema.spi.SchemaMigrator;
 import org.hibernate.tool.schema.spi.TargetDescriptor;
 
+/**
+ * A wrapper around the {@link SchemaMigrator} which initializes the Spanner table exporter
+ * before performing the schema migration.
+ *
+ * @since 1.1
+ */
 public class SpannerSchemaMigrator implements SchemaMigrator {
 
   private final SpannerSchemaManagementTool tool;

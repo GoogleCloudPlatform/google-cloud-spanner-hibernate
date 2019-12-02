@@ -16,8 +16,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package com.google.cloud.spanner.hibernate;
+package com.google.cloud.spanner.hibernate.schema;
 
+import com.google.cloud.spanner.hibernate.Interleaved;
 import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
@@ -25,7 +26,7 @@ import org.hibernate.mapping.Table;
 /**
  * Schema utilities for reading table {@link Metadata} in Hibernate.
  */
-public class SchemaUtils {
+class SchemaUtils {
 
   private SchemaUtils() {
   }

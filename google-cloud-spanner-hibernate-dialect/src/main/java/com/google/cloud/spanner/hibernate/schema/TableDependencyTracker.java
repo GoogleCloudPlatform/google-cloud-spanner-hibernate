@@ -16,8 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package com.google.cloud.spanner.hibernate;
+package com.google.cloud.spanner.hibernate.schema;
 
+import com.google.cloud.spanner.hibernate.Interleaved;
+import com.google.cloud.spanner.hibernate.schema.SchemaUtils;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,7 +35,7 @@ import org.hibernate.mapping.Table;
  * one must create a parent table before its interleaved table. And one must drop the interleaved
  * table first before its parent table.
  */
-class TableDependencyTracker {
+public class TableDependencyTracker {
 
   // For each map entry (key, value), the key is a table which is being blocked by the
   // table stored as the value.

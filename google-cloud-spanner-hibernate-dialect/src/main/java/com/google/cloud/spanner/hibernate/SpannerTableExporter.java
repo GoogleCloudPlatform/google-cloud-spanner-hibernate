@@ -18,6 +18,8 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import com.google.cloud.spanner.hibernate.schema.SpannerTableStatements;
+import com.google.cloud.spanner.hibernate.schema.TableDependencyTracker;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
