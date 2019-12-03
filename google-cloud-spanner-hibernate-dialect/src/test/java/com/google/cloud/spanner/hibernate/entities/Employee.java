@@ -46,6 +46,5 @@ public class Employee {
   @ManyToOne(cascade = {CascadeType.ALL})
   public Employee manager;
 
-  @Column(unique = true)
   public String name;
 }
