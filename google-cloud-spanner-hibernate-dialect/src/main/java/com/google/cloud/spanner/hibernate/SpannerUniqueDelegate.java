@@ -9,7 +9,8 @@ import org.hibernate.mapping.UniqueKey;
 public class SpannerUniqueDelegate extends DefaultUniqueDelegate {
 
   /**
-   * Constructs DefaultUniqueDelegate
+   * Constructs the Spanner unique delegate responsible for generating statements for building
+   * Unique indices.
    *
    * @param dialect The dialect for which we are handling unique constraints
    */
