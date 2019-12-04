@@ -169,7 +169,7 @@ The following sections below describe the feature set of the Cloud Spanner Hiber
 [options="header"]
 |===
 | Unsupported Feature | Description
-| Schema Constraints  | Dialect schema generation does not generate foreign key and column uniqueness constraints for entity relationships and columns. Server-side cascading deletes are also not supported.
+| Foreign Key Constraints  | Hibernate will respect database constraints but cannot enforce the foreign key constraint because this feature does not exist in Spanner.
 | Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
 | Column default values | The dialect does not currently set default values based on the `@ColumnDefault` annotation, because Cloud Spanner does not support column defaults in the DDL.
 | Big-decimal or arbitrary-precision numbers | The dialect does not support `java.math.BigDecimal` and `java.math.BigInteger` because Cloud Spanner does not provide native support for https://cloud.google.com/spanner/docs/storing-numeric-data[arbitrary-precision decimal numbers], such as `NUMERIC` or `DECIMAL`.
@@ -188,13 +188,13 @@ The dialect supports all of the standard entity relationships:
 
 These can be used via `@JoinTable` or `@JoinColumn`.
 
-NOTE: Cloud Spanner does not support foreign key constraints, so foreign-key-columns are just regular columns in Cloud Spanner.
-Hibernate doesn't directly rely on the existence of constraints to perform its operations and leaves the enforcement of relationship links to the database.
+The dialect also supports unique column constraints applied through `@Column(unique = true)` or `@UniqueConstraint`.
+In these cases, the dialect will create a unique index to enforce uniqueness on the specified columns.
 
+NOTE: Cloud Spanner does not support foreign key constraints, so the dialect will not generate foreign key constraints during schema generation.
+Note that this does not affect how Hibernate works because Hibernate does not rely on the existence of constraints to perform its operations.
 The lack of foreign key constraints also means that database-side cascading deletes are not supported via the `@OnDelete(action = OnDeleteAction.CASCADE)`.
 However, Hibernate-side cascading operations such as `@ManyToOne(cascade = {CascadeType.ALL})` are supported.
-
-At this time, the dialect does not support declaring unique columns by using the `@Column(unique = true)` annotation.
 
 === Spanner Table Names
 
