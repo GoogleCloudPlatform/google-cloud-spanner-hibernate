@@ -33,7 +33,6 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
-import org.hibernate.mapping.Constraint;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
@@ -76,14 +75,6 @@ public class SpannerTableStatements {
     Iterator<UniqueKey> keyIterator = table.getUniqueKeyIterator();
     while (keyIterator.hasNext()) {
       tableIndices.add(keyIterator.next().getName());
-    }
-
-    Iterator<Column> colIterator = table.getColumnIterator();
-    while (colIterator.hasNext()) {
-      Column col = colIterator.next();
-      if (col.isUnique()) {
-        tableIndices.add(Constraint.generateName("UK_", table, col));
-      }
     }
 
     return tableIndices;
