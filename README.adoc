@@ -191,8 +191,9 @@ These can be used via `@JoinTable` or `@JoinColumn`.
 The dialect also supports unique column constraints applied through `@Column(unique = true)` or `@UniqueConstraint`.
 In these cases, the dialect will create a unique index to enforce uniqueness on the specified columns.
 
-NOTE: Cloud Spanner does not support foreign key constraints, so the dialect will not generate foreign key constraints during schema generation.
+However, Cloud Spanner does not support foreign key constraints, so the dialect will not generate foreign keys during schema generation.
 Note that this does not affect how Hibernate works because Hibernate does not rely on the existence of constraints to perform its operations.
+
 The lack of foreign key constraints also means that database-side cascading deletes are not supported via the `@OnDelete(action = OnDeleteAction.CASCADE)`.
 However, Hibernate-side cascading operations such as `@ManyToOne(cascade = {CascadeType.ALL})` are supported.
 
