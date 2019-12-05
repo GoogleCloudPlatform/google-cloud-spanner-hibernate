@@ -21,10 +21,14 @@ package com.google.cloud.spanner.hibernate;
 import com.google.cloud.spanner.hibernate.schema.SpannerTableStatements;
 import com.google.cloud.spanner.hibernate.schema.TableDependencyTracker;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.hibernate.boot.Metadata;
+import org.hibernate.mapping.Column;
+import org.hibernate.mapping.Constraint;
 import org.hibernate.mapping.Table;
+import org.hibernate.mapping.UniqueKey;
 import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.spi.Exporter;
 
@@ -51,11 +55,13 @@ public class SpannerTableExporter implements Exporter<Table> {
 
   @Override
   public String[] getSqlCreateStrings(Table currentTable, Metadata metadata) {
+    initializeUniqueConstraints(currentTable);
     return buildSqlStrings(currentTable, metadata, Action.CREATE);
   }
 
   @Override
   public String[] getSqlDropStrings(Table currentTable, Metadata metadata) {
+    initializeUniqueConstraints(currentTable);
     return buildSqlStrings(currentTable, metadata, Action.DROP);
   }
 
@@ -82,4 +88,19 @@ public class SpannerTableExporter implements Exporter<Table> {
     return ddlStatements.toArray(new String[ddlStatements.size()]);
   }
 
+  /**
+   * Processes the columns of the table and creates Unique Constraints for columns
+   * annotated with @Column(unique = true).
+   */
+  private static void initializeUniqueConstraints(Table table) {
+    Iterator<Column> colIterator = table.getColumnIterator();
+    while (colIterator.hasNext()) {
+      Column col = colIterator.next();
+      if (col.isUnique()) {
+        String name = Constraint.generateName("UK_", table, col);
+        UniqueKey uk = table.getOrCreateUniqueKey(name);
+        uk.addColumn(col);
+      }
+    }
+  }
 }

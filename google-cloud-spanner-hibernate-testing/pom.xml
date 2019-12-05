@@ -45,6 +45,19 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-testing</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>3.14.0</version>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- used in CacheableNaturalIdTest -->
 		<dependency>
 			<groupId>org.ehcache</groupId>

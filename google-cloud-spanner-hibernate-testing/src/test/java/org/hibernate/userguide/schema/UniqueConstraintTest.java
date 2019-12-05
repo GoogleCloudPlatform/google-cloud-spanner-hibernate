@@ -6,6 +6,7 @@
  */
 package org.hibernate.userguide.schema;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
 import static org.junit.Assert.assertNotNull;
 
@@ -55,17 +56,14 @@ public class UniqueConstraintTest extends BaseEntityManagerFunctionalTestCase {
             return author;
         } );
 
-        try {
+        // This should trigger a unique constraint violation.
+        assertThatThrownBy(() ->
             doInJPA( this::entityManagerFactory, entityManager -> {
-				Book book = new Book();
-				book.setTitle( "High-Performance Java Persistence" );
-				book.setAuthor( _author );
-				entityManager.persist( book );
-			} );
-        }
-        catch (Exception expected) {
-            assertNotNull( ExceptionUtil.findCause( expected, ConstraintViolationException.class ) );
-        }
+                Book book = new Book();
+                book.setTitle( "High-Performance Java Persistence" );
+                book.setAuthor( _author );
+                entityManager.persist( book );
+            }));
         //end::schema-generation-columns-unique-constraint-persist-example[]
     }
 

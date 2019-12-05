@@ -21,7 +21,6 @@ package com.google.cloud.spanner.hibernate;
 import java.io.Serializable;
 import java.sql.Types;
 import java.util.Map;
-
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.StaleObjectStateException;
@@ -36,11 +35,8 @@ import org.hibernate.dialect.lock.LockingStrategyException;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.env.spi.SchemaNameResolver;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.mapping.Column;
-import org.hibernate.mapping.Constraint;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
-import org.hibernate.mapping.UniqueKey;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.tool.schema.spi.Exporter;
 import org.hibernate.type.StandardBasicTypes;
@@ -65,7 +61,7 @@ public class SpannerDialect extends Dialect {
 
   private static final Exporter NOOP_EXPORTER = new EmptyExporter();
 
-  private static final UniqueDelegate NOOP_UNIQUE_DELEGATE = new DoNothingUniqueDelegate();
+  private final UniqueDelegate uniqueDelegate;
 
   /**
    * Default constructor for SpannerDialect.
@@ -255,6 +251,8 @@ public class SpannerDialect extends Dialect {
     registerFunction("ATAN", new StandardSQLFunction("ATAN", StandardBasicTypes.DOUBLE));
     registerFunction("ATANH", new StandardSQLFunction("ATANH", StandardBasicTypes.DOUBLE));
     registerFunction("ATAN2", new StandardSQLFunction("ATAN2", StandardBasicTypes.DOUBLE));
+
+    this.uniqueDelegate = new SpannerUniqueDelegate(this);
   }
 
   @Override
@@ -470,11 +468,6 @@ public class SpannerDialect extends Dialect {
   }
 
   @Override
-  public Exporter<Constraint> getUniqueKeyExporter() {
-    return NOOP_EXPORTER;
-  }
-
-  @Override
   public String applyLocksToSql(String sql, LockOptions aliasedLockOptions,
       Map<String, String[]> keyColumnNames) {
     return sql;
@@ -482,42 +475,7 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public UniqueDelegate getUniqueDelegate() {
-    return NOOP_UNIQUE_DELEGATE;
-  }
-
-  /**
-   * The Cloud Spanner Hibernate Dialect does not currently support UNIQUE restrictions.
-   *
-   * @return {@code false}.
-   */
-  @Override
-  public boolean supportsUnique() {
-    return false;
-  }
-
-  /**
-   * The Cloud Spanner Hibernate Dialect does not currently support UNIQUE restrictions.
-   *
-   * @return {@code false}.
-   */
-  @Override
-  public boolean supportsNotNullUnique() {
-    return false;
-  }
-
-  /**
-   * The Cloud Spanner Hibernate Dialect does not currently support UNIQUE restrictions.
-   *
-   * @return {@code false}.
-   */
-  @Override
-  public boolean supportsUniqueConstraintInCreateAlterTable() {
-    return false;
-  }
-
-  @Override
-  public String getAddUniqueConstraintString(String constraintName) {
-    return "";
+    return uniqueDelegate;
   }
 
   @Override
@@ -605,35 +563,6 @@ public class SpannerDialect extends Dialect {
     @Override
     public String[] getSqlDropStrings(T exportable, Metadata metadata) {
       return new String[0];
-    }
-  }
-
-  /**
-   * A no-op delegate for generating Unique-Constraints. Cloud Spanner offers unique-restrictions
-   * via interleaved indexes with the "UNIQUE" option. This is not currently supported.
-   *
-   * @author Chengyuan Zhao
-   */
-  static class DoNothingUniqueDelegate implements UniqueDelegate {
-
-    @Override
-    public String getColumnDefinitionUniquenessFragment(Column column) {
-      return "";
-    }
-
-    @Override
-    public String getTableCreationUniqueConstraintsFragment(Table table) {
-      return "";
-    }
-
-    @Override
-    public String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
-      return "";
-    }
-
-    @Override
-    public String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
-      return "";
     }
   }
 }

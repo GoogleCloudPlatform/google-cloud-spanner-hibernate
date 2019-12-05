@@ -18,32 +18,25 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
-import javax.persistence.CascadeType;
+import java.util.UUID;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import org.hibernate.annotations.Type;
 
 /**
- * A test entity that uses features in Hibernate that are unsupported in Spanner.
- *
- * @author Daniel Zou
- * @author Chengyuan Zhao
+ * A sample Hibernate entity which helps verify usage of the unique constraint in Hibernate.
  */
 @Entity
-@Table(indexes = {
-    @Index(columnList = "name", name = "name_index")
-})
-public class Employee {
+public class Airplane {
 
   @Id
-  @GeneratedValue
-  public Long id;
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  @Type(type = "uuid-char")
+  private UUID id;
 
-  @ManyToOne(cascade = {CascadeType.ALL})
-  public Employee manager;
-
-  public String name;
+  @Column(unique = true)
+  private String modelName;
 }

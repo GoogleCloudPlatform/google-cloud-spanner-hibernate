@@ -18,32 +18,27 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
-import javax.persistence.CascadeType;
+import java.util.List;
+import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.OneToMany;
+import org.hibernate.annotations.Type;
 
 /**
- * A test entity that uses features in Hibernate that are unsupported in Spanner.
- *
- * @author Daniel Zou
- * @author Chengyuan Zhao
+ * An entity which uses a {@link OneToMany}, which triggers usage of the Hibernate
+ * unique constraint.
  */
 @Entity
-@Table(indexes = {
-    @Index(columnList = "name", name = "name_index")
-})
-public class Employee {
+public class Airport {
 
   @Id
-  @GeneratedValue
-  public Long id;
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  @Type(type = "uuid-char")
+  private UUID id;
 
-  @ManyToOne(cascade = {CascadeType.ALL})
-  public Employee manager;
-
-  public String name;
+  @OneToMany
+  private List<Airplane> airplanes;
 }

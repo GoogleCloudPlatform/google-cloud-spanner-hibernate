@@ -23,8 +23,10 @@ import com.google.cloud.spanner.hibernate.SpannerDialect;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.hibernate.boot.Metadata;
@@ -33,6 +35,7 @@ import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
+import org.hibernate.mapping.UniqueKey;
 
 /**
  * Generates the SQL statements for creating and dropping tables in Spanner.
@@ -53,15 +56,28 @@ public class SpannerTableStatements {
    */
   public List<String> dropTable(Table table, Metadata metadata) {
     ArrayList<String> dropStrings = new ArrayList<>();
-
-    Iterator<Index> iteratorIdx = table.getIndexIterator();
-    while (iteratorIdx.hasNext()) {
-      Index curr = iteratorIdx.next();
-      dropStrings.add("drop index " + curr.getName());
+    for (String indexName : getTableIndices(table)) {
+      dropStrings.add("drop index " + indexName);
     }
 
     dropStrings.add(this.spannerDialect.getDropTableString(table.getQuotedName()));
     return dropStrings;
+  }
+
+  private Set<String> getTableIndices(Table table) {
+    Set<String> tableIndices = new HashSet<>();
+
+    Iterator<Index> indexIterator = table.getIndexIterator();
+    while (indexIterator.hasNext()) {
+      tableIndices.add(indexIterator.next().getName());
+    }
+
+    Iterator<UniqueKey> keyIterator = table.getUniqueKeyIterator();
+    while (keyIterator.hasNext()) {
+      tableIndices.add(keyIterator.next().getName());
+    }
+
+    return tableIndices;
   }
 
   /**
