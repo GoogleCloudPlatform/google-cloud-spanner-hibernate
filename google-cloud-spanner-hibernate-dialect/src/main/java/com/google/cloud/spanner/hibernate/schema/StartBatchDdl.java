@@ -21,12 +21,19 @@ package com.google.cloud.spanner.hibernate.schema;
 import com.google.cloud.spanner.hibernate.SpannerDialect;
 import org.hibernate.boot.model.relational.AuxiliaryDatabaseObject;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.tool.schema.Action;
 
 /**
  * Custom {@link AuxiliaryDatabaseObject} which generates the START BATCH DDL statement.
  */
 public class StartBatchDdl implements AuxiliaryDatabaseObject {
   private static final long serialVersionUID = 1L;
+
+  private final Action schemaAction;
+
+  public StartBatchDdl(Action schemaAction) {
+    this.schemaAction = schemaAction;
+  }
 
   @Override
   public String getExportIdentifier() {
@@ -40,7 +47,11 @@ public class StartBatchDdl implements AuxiliaryDatabaseObject {
 
   @Override
   public boolean beforeTablesOnCreation() {
-    return true;
+    if (schemaAction == Action.UPDATE) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   @Override
@@ -50,6 +61,10 @@ public class StartBatchDdl implements AuxiliaryDatabaseObject {
 
   @Override
   public String[] sqlDropStrings(Dialect dialect) {
-    return new String[] {"START BATCH DDL"};
+    if (schemaAction == Action.UPDATE) {
+      return new String[]{};
+    } else {
+      return new String[]{"START BATCH DDL"};
+    }
   }
 }

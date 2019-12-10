@@ -21,12 +21,19 @@ package com.google.cloud.spanner.hibernate.schema;
 import com.google.cloud.spanner.hibernate.SpannerDialect;
 import org.hibernate.boot.model.relational.AuxiliaryDatabaseObject;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.tool.schema.Action;
 
 /**
  * Custom {@link AuxiliaryDatabaseObject} which generates the RUN BATCH statement.
  */
 public class RunBatchDdl implements AuxiliaryDatabaseObject {
   private static final long serialVersionUID = 1L;
+
+  private final Action schemaAction;
+
+  public RunBatchDdl(Action schemaAction) {
+    this.schemaAction = schemaAction;
+  }
 
   @Override
   public String getExportIdentifier() {
@@ -40,7 +47,11 @@ public class RunBatchDdl implements AuxiliaryDatabaseObject {
 
   @Override
   public boolean beforeTablesOnCreation() {
-    return false;
+    if (schemaAction == Action.UPDATE) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   @Override
@@ -50,6 +61,10 @@ public class RunBatchDdl implements AuxiliaryDatabaseObject {
 
   @Override
   public String[] sqlDropStrings(Dialect dialect) {
-    return new String[] {"RUN BATCH"};
+    if (schemaAction == Action.UPDATE) {
+      return new String[]{};
+    } else {
+      return new String[]{"RUN BATCH"};
+    }
   }
 }

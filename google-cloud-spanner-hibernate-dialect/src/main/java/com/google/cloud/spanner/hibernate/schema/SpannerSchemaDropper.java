@@ -49,8 +49,8 @@ public class SpannerSchemaDropper implements SchemaDropper {
       TargetDescriptor targetDescriptor) {
 
     // Initialize auxiliary database objects to enable DDL statement batching.
-    metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl());
-    metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl());
+    metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl(Action.DROP));
+    metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl(Action.DROP));
 
     // Initialize exporters with drop table dependencies so tables are dropped in the right order.
     tool.getSpannerTableExporter(options).initializeTableExporter(metadata, Action.DROP);
