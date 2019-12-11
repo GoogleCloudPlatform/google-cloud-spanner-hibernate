@@ -68,20 +68,9 @@ public class GeneratedUpdateTableStatementsTests {
 
   @Test
   public void testUpdateStatements_createTables() throws SQLException {
-    // This sets up which pre-existing tables that Hibernate sees.
-    mockConnection.setMetaData(MockJdbcUtils.createMockDatabaseMetaData("Hello"));
-
-    Metadata metadata =
-        new MetadataSources(this.registry)
-            .addAnnotatedClass(Employee.class)
-            .buildMetadata();
-
-    Session session = metadata.buildSessionFactory().openSession();
-    session.beginTransaction();
-    session.close();
+    setupTestTables("Hello");
 
     List<String> sqlStrings = mockConnection.getStatementResultSetHandler().getExecutedStatements();
-
     assertThat(sqlStrings).containsExactly(
         "START BATCH DDL",
         "create table Employee (id INT64 not null,name STRING(255),manager_id INT64) "
@@ -95,20 +84,9 @@ public class GeneratedUpdateTableStatementsTests {
 
   @Test
   public void testUpdateStatements_alterTables() throws SQLException {
-    // This sets up which pre-existing tables that Hibernate sees.
-    mockConnection.setMetaData(MockJdbcUtils.createMockDatabaseMetaData("Employee"));
-
-    Metadata metadata =
-        new MetadataSources(this.registry)
-            .addAnnotatedClass(Employee.class)
-            .buildMetadata();
-
-    Session session = metadata.buildSessionFactory().openSession();
-    session.beginTransaction();
-    session.close();
+    setupTestTables("Employee");
 
     List<String> sqlStrings = mockConnection.getStatementResultSetHandler().getExecutedStatements();
-
     assertThat(sqlStrings).containsExactly(
         "START BATCH DDL",
         "alter table Employee ADD COLUMN id INT64 not null",
@@ -119,5 +97,21 @@ public class GeneratedUpdateTableStatementsTests {
         "create index name_index on Employee (name)",
         "RUN BATCH"
     );
+  }
+
+  /**
+   * Sets up which pre-existing tables that Hibernate sees.
+   */
+  private void setupTestTables(String... tables) throws SQLException {
+    mockConnection.setMetaData(MockJdbcUtils.createMockDatabaseMetaData(tables));
+
+    Metadata metadata =
+        new MetadataSources(this.registry)
+            .addAnnotatedClass(Employee.class)
+            .buildMetadata();
+
+    Session session = metadata.buildSessionFactory().openSession();
+    session.beginTransaction();
+    session.close();
   }
 }

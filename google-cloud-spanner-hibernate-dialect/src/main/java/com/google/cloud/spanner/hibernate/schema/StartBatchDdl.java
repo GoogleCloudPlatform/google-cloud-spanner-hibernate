@@ -47,11 +47,7 @@ public class StartBatchDdl implements AuxiliaryDatabaseObject {
 
   @Override
   public boolean beforeTablesOnCreation() {
-    if (schemaAction == Action.UPDATE) {
-      return false;
-    } else {
-      return true;
-    }
+    return schemaAction != Action.UPDATE;
   }
 
   @Override
