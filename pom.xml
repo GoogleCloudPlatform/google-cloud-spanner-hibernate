@@ -13,7 +13,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <hibernate.version>5.4.9.Final</hibernate.version>
-    <spanner-jdbc-driver.version>1.11.0</spanner-jdbc-driver.version>
+    <spanner-jdbc-driver.version>1.12.0</spanner-jdbc-driver.version>
     <log4j.version>1.2.17</log4j.version>
     <google-cloud-spanner.version>1.43.0</google-cloud-spanner.version>
   </properties>

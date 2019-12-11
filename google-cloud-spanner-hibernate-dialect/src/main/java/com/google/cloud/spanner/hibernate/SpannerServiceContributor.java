@@ -22,6 +22,7 @@ import com.google.cloud.spanner.hibernate.schema.SpannerSchemaManagementTool;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.hql.spi.id.inline.InlineIdsOrClauseBulkIdStrategy;
 import org.hibernate.service.spi.ServiceContributor;
+import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
 
 /**
  * An implementation of a Hibernate {@link ServiceContributor} which provides custom settings
@@ -46,6 +47,10 @@ public class SpannerServiceContributor implements ServiceContributor {
         .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN)
         // The custom Hibernate schema management tool for Spanner.
         .applySetting("hibernate.schema_management_tool", SCHEMA_MANAGEMENT_TOOL)
+        // Create a unique index for a table if it does not already exist when in UPDATE mode.
+        .applySetting(
+            "hibernate.schema_update.unique_constraint_strategy",
+            UniqueConstraintSchemaUpdateStrategy.RECREATE_QUIETLY)
         // Allows entities to be used with InheritanceType.JOINED in Spanner.
         .applySetting("hibernate.hql.bulk_id_strategy", InlineIdsOrClauseBulkIdStrategy.INSTANCE);
   }

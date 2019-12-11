@@ -48,8 +48,8 @@ public class SpannerSchemaCreator implements SchemaCreator {
       TargetDescriptor targetDescriptor) {
 
     // Add auxiliary database objects to batch DDL statements
-    metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl());
-    metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl());
+    metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl(Action.CREATE));
+    metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl(Action.CREATE));
 
     // Initialize exporters with interleave dependencies so tables are created in the right order.
     tool.getSpannerTableExporter(options).initializeTableExporter(metadata, Action.CREATE);

@@ -56,7 +56,7 @@ public class TableDependencyTracker {
     for (Table childTable : metadata.collectTableMappings()) {
       Interleaved interleaved = SchemaUtils.getInterleaveAnnotation(childTable, metadata);
       if (interleaved != null) {
-        if (schemaAction == Action.CREATE) {
+        if (schemaAction == Action.CREATE || schemaAction == Action.UPDATE) {
           // If creating tables, the parent blocks the child.
           dependencies.put(childTable, SchemaUtils.getTable(interleaved.parentEntity(), metadata));
         } else {
