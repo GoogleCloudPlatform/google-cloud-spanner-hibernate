@@ -15,7 +15,6 @@
     <hibernate.version>5.4.9.Final</hibernate.version>
     <spanner-jdbc-driver.version>1.12.0</spanner-jdbc-driver.version>
     <log4j.version>1.2.17</log4j.version>
-    <google-cloud-spanner.version>1.43.0</google-cloud-spanner.version>
   </properties>
 
   <name>Google Cloud Spanner Dialect for Hibernate ORM Parent</name>
@@ -110,11 +109,6 @@
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-spanner-jdbc</artifactId>
         <version>${spanner-jdbc-driver.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.cloud</groupId>
-        <artifactId>google-cloud-spanner</artifactId>
-        <version>${google-cloud-spanner.version}</version>
       </dependency>
       <dependency>
         <groupId>log4j</groupId>
