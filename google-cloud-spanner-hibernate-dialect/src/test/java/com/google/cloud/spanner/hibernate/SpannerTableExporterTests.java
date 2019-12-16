@@ -138,6 +138,7 @@ public class SpannerTableExporterTests {
     List<String> statements = Files.readAllLines(scriptFile.toPath());
 
     assertThat(statements).containsExactly(
+        // This omits creating the Employee table since it is declared to exist in metadata.
         "START BATCH DDL",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
         "INSERT INTO hibernate_sequence (next_val) VALUES(1)",
