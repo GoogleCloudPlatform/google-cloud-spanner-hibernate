@@ -23,9 +23,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.cloud.spanner.hibernate.entities.Employee;
 import com.google.cloud.spanner.hibernate.entities.TestEntity;
+import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
+import com.mockrunner.mock.jdbc.MockConnection;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.sql.SQLException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -51,19 +54,36 @@ public class SpannerTableExporterTests {
 
   private StandardServiceRegistry registry;
 
+  private MockConnection connection;
+
   /**
    * Set up the metadata for Hibernate to generate schema statements.
    */
   @Before
-  public void setup() {
+  public void setup() throws SQLException {
+    JDBCMockObjectFactory jdbcMockObjectFactory = new JDBCMockObjectFactory();
+    jdbcMockObjectFactory.registerMockDriver();
+
+    this.connection = jdbcMockObjectFactory.getMockConnection();
+    this.connection.setMetaData(MockJdbcUtils.metaDataBuilder().build());
+    jdbcMockObjectFactory.getMockDriver().setupConnection(this.connection);
+
     this.registry = new StandardServiceRegistryBuilder()
-        .applySetting("hibernate.dialect", SpannerDialect.class.getName()).build();
+        .applySetting("hibernate.dialect", SpannerDialect.class.getName())
+        .applySetting("hibernate.connection.url", "unused")
+        .build();
+
     this.metadata =
         new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class).buildMetadata();
   }
 
   @Test
-  public void generateDropStringsTest() throws IOException {
+  public void generateDropStringsTest() throws IOException, SQLException {
+
+    this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
+        .setTables("test_table", "TestEntity_stringList")
+        .build());
+
     String testFileName = UUID.randomUUID().toString();
     new SchemaExport().setOutputFile(testFileName)
         .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
@@ -79,10 +99,14 @@ public class SpannerTableExporterTests {
   }
 
   @Test
-  public void generateDeleteStringsWithIndices() throws IOException {
+  public void generateDeleteStringsWithIndices() throws IOException, SQLException {
+    this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
+        .setTables("Employee", "hibernate_sequence")
+        .setIndices("name_index")
+        .build());
+
     Metadata employeeMetadata =
         new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
-
     String testFileName = UUID.randomUUID().toString();
     new SchemaExport().setOutputFile(testFileName)
         .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), employeeMetadata);
@@ -97,6 +121,30 @@ public class SpannerTableExporterTests {
         "drop table hibernate_sequence",
         "RUN BATCH");
   }
+
+  @Test
+  public void omitCreatingPreexistingTables() throws IOException, SQLException {
+    this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
+        .setTables("Employee")
+        .build());
+
+    Metadata employeeMetadata =
+        new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
+    String testFileName = UUID.randomUUID().toString();
+    new SchemaExport().setOutputFile(testFileName)
+        .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), employeeMetadata);
+    File scriptFile = new File(testFileName);
+    scriptFile.deleteOnExit();
+    List<String> statements = Files.readAllLines(scriptFile.toPath());
+
+    assertThat(statements).containsExactly(
+        "START BATCH DDL",
+        "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+        "INSERT INTO hibernate_sequence (next_val) VALUES(1)",
+        "create index name_index on Employee (name)",
+        "RUN BATCH");
+  }
+
 
   @Test
   public void generateCreateStringsTest() throws IOException {

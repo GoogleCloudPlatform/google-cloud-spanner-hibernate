@@ -103,7 +103,7 @@ public class GeneratedUpdateTableStatementsTests {
    * Sets up which pre-existing tables that Hibernate sees.
    */
   private void setupTestTables(String... tables) throws SQLException {
-    mockConnection.setMetaData(MockJdbcUtils.createMockDatabaseMetaData(tables));
+    mockConnection.setMetaData(MockJdbcUtils.metaDataBuilder().setTables(tables).build());
 
     Metadata metadata =
         new MetadataSources(this.registry)
