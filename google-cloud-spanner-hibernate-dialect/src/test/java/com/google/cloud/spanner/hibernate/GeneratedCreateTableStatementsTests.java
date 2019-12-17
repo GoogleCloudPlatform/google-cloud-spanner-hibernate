@@ -68,7 +68,7 @@ public class GeneratedCreateTableStatementsTests {
   }
 
   @Test
-  public void testCreateInterleavedTables() throws SQLException {
+  public void testCreateInterleavedTables() {
     Metadata metadata =
         new MetadataSources(this.registry)
             .addAnnotatedClass(Child.class)
@@ -97,12 +97,13 @@ public class GeneratedCreateTableStatementsTests {
             + "PRIMARY KEY (grandParentId,parentId,childId), "
             + "INTERLEAVE IN PARENT Parent",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
-        "INSERT INTO hibernate_sequence (next_val) VALUES(1)",
-        "RUN BATCH");
+        "RUN BATCH",
+        "INSERT INTO hibernate_sequence (next_val) VALUES(1)"
+    );
   }
 
   @Test
-  public void testCreateTables() throws SQLException {
+  public void testCreateTables() {
     Metadata metadata =
         new MetadataSources(this.registry)
             .addAnnotatedClass(Employee.class)
@@ -122,9 +123,9 @@ public class GeneratedCreateTableStatementsTests {
         "create table Employee "
             + "(id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
-        "INSERT INTO hibernate_sequence (next_val) VALUES(1)",
         "create index name_index on Employee (name)",
-        "RUN BATCH"
+        "RUN BATCH",
+        "INSERT INTO hibernate_sequence (next_val) VALUES(1)"
     );
   }
 
