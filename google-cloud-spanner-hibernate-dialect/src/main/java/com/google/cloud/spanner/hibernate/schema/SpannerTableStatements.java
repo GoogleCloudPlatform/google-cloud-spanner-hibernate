@@ -163,24 +163,33 @@ public class SpannerTableStatements {
     statements.add(createTableString);
 
     if (table.getName().equals(SequenceStyleGenerator.DEF_SEQUENCE_NAME)) {
-      // Caches the INSERT statement in the RunBatchDdl auxiliary object.
-      Optional<RunBatchDdl> runBatchDdl =
-          metadata.getDatabase().getAuxiliaryDatabaseObjects().stream()
-              .filter(obj -> obj instanceof RunBatchDdl)
-              .map(obj -> (RunBatchDdl) obj)
-              .findFirst();
-
-      if (runBatchDdl.isPresent()) {
-        RunBatchDdl runBatchObj = runBatchDdl.get();
-        runBatchObj.addAfterDdlStatement(
-            "INSERT INTO " + SequenceStyleGenerator.DEF_SEQUENCE_NAME + " ("
-                + SequenceStyleGenerator.DEF_VALUE_COLUMN + ") VALUES(1)");
-      } else {
-        LOGGER.warn("Failed to insert the first row into the Hibernate sequence table.");
-      }
+      // Caches the INSERT statement for after the DDL batch.
+      addStatementAfterDdlBatch(
+          metadata,
+          "INSERT INTO " + SequenceStyleGenerator.DEF_SEQUENCE_NAME + " ("
+              + SequenceStyleGenerator.DEF_VALUE_COLUMN + ") VALUES(1)");
     }
 
     return statements;
+  }
+
+  private void addStatementAfterDdlBatch(Metadata metadata, String statement) {
+    // Find the RunBatchDdl auxiliary object which can run statements after the DDL batch.
+    Optional<RunBatchDdl> runBatchDdl =
+        metadata.getDatabase().getAuxiliaryDatabaseObjects().stream()
+            .filter(obj -> obj instanceof RunBatchDdl)
+            .map(obj -> (RunBatchDdl) obj)
+            .findFirst();
+
+    if (runBatchDdl.isPresent()) {
+      runBatchDdl.get().addAfterDdlStatement(statement);
+    } else {
+      throw new IllegalStateException(
+          "Failed to generate INSERT statement for the hibernate_sequence table. "
+              + "The Spanner dialect did not create auxiliary database objects correctly. "
+              + "Please post a question to "
+              + "https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues");
+    }
   }
 
   /**
