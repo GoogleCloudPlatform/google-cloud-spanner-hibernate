@@ -63,10 +63,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
-      <version>0.1.0</version>
-<!--
       <version>${project.version}</version>
--->
     </dependency>
 
     <!-- JDBC Driver -->
