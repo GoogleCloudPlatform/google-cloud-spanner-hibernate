@@ -24,7 +24,9 @@ import com.google.cloud.spanner.hibernate.entities.SubTestEntity;
 import com.google.cloud.spanner.hibernate.entities.TestEntity;
 import com.google.cloud.spanner.hibernate.entities.TestEntity.IdClass;
 import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
+import com.mockrunner.mock.jdbc.MockConnection;
 import com.mockrunner.mock.jdbc.MockPreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -57,11 +59,14 @@ public class GeneratedSelectStatementsTests {
    * Set up the metadata for Hibernate to generate schema statements.
    */
   @Before
-  public void setup() {
+  public void setup() throws SQLException {
     this.jdbcMockObjectFactory = new JDBCMockObjectFactory();
     this.jdbcMockObjectFactory.registerMockDriver();
+
+    MockConnection connection = this.jdbcMockObjectFactory.getMockConnection();
+    connection.setMetaData(MockJdbcUtils.metaDataBuilder().build());
     this.jdbcMockObjectFactory.getMockDriver()
-        .setupConnection(this.jdbcMockObjectFactory.getMockConnection());
+        .setupConnection(connection);
 
     this.registry = new StandardServiceRegistryBuilder()
         .applySetting("hibernate.dialect", SpannerDialect.class.getName())
@@ -72,6 +77,7 @@ public class GeneratedSelectStatementsTests {
         .applySetting("hibernate.connection.password", "unused")
         .applySetting("hibernate.hbm2ddl.auto", "create")
         .build();
+
     this.metadata =
         new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class)
             .addAnnotatedClass(SubTestEntity.class).buildMetadata();

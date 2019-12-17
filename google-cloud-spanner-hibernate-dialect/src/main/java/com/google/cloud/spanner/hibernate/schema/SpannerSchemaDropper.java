@@ -53,7 +53,10 @@ public class SpannerSchemaDropper implements SchemaDropper {
     metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl(Action.DROP));
 
     // Initialize exporters with drop table dependencies so tables are dropped in the right order.
-    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, Action.DROP);
+    tool.getSpannerTableExporter(options).init(
+        metadata,
+        tool.getDatabaseMetaData(options),
+        Action.DROP);
 
     schemaDropper.doDrop(metadata, options, sourceDescriptor, targetDescriptor);
   }
@@ -63,7 +66,8 @@ public class SpannerSchemaDropper implements SchemaDropper {
       Metadata metadata, ExecutionOptions options, SourceDescriptor sourceDescriptor) {
 
     // Initialize exporters with drop table dependencies so tables are dropped in the right order.
-    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, Action.DROP);
+    tool.getSpannerTableExporter(options).init(
+        metadata, tool.getDatabaseMetaData(options), Action.DROP);
 
     return schemaDropper.buildDelayedAction(metadata, options, sourceDescriptor);
   }

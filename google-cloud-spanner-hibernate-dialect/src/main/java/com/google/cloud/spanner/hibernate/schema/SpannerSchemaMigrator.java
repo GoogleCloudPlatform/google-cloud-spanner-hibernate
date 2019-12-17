@@ -48,7 +48,10 @@ public class SpannerSchemaMigrator implements SchemaMigrator {
     metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl(Action.UPDATE));
     metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl(Action.UPDATE));
 
-    tool.getSpannerTableExporter(options).initializeTableExporter(metadata, Action.UPDATE);
+    tool.getSpannerTableExporter(options).init(
+        metadata,
+        tool.getDatabaseMetaData(options),
+        Action.UPDATE);
 
     schemaMigrator.doMigration(metadata, options, targetDescriptor);
   }

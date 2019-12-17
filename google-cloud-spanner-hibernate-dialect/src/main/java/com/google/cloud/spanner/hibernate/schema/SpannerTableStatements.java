@@ -47,8 +47,20 @@ public class SpannerTableStatements {
 
   private final SpannerDialect spannerDialect;
 
+  private SpannerDatabaseInfo spannerDatabaseInfo;
+
   public SpannerTableStatements(SpannerDialect spannerDialect) {
     this.spannerDialect = spannerDialect;
+  }
+
+  /**
+   * Initializes the {@link SpannerDatabaseInfo} which contains information about what tables and
+   * indices exist in the Spanner database.
+   *
+   * @param spannerDatabaseInfo the {@link SpannerDatabaseInfo} to load.
+   */
+  public void initializeSpannerDatabaseInfo(SpannerDatabaseInfo spannerDatabaseInfo) {
+    this.spannerDatabaseInfo = spannerDatabaseInfo;
   }
 
   /**
@@ -57,10 +69,14 @@ public class SpannerTableStatements {
   public List<String> dropTable(Table table, Metadata metadata) {
     ArrayList<String> dropStrings = new ArrayList<>();
     for (String indexName : getTableIndices(table)) {
-      dropStrings.add("drop index " + indexName);
+      if (spannerDatabaseInfo.getAllIndices().contains(indexName)) {
+        dropStrings.add("drop index " + indexName);
+      }
     }
 
-    dropStrings.add(this.spannerDialect.getDropTableString(table.getQuotedName()));
+    if (spannerDatabaseInfo.getAllTables().contains(table.getName())) {
+      dropStrings.add(this.spannerDialect.getDropTableString(table.getQuotedName()));
+    }
     return dropStrings;
   }
 
@@ -84,6 +100,9 @@ public class SpannerTableStatements {
    * Generates the statements needed to create a table.
    */
   public List<String> createTable(Table table, Metadata metadata) {
+    if (spannerDatabaseInfo.getAllTables().contains(table.getName())) {
+      return Collections.EMPTY_LIST;
+    }
 
     Iterable<Column> keyColumns;
 

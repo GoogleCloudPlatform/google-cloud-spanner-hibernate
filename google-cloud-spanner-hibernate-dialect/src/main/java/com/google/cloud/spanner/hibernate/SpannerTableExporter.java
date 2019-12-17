@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import com.google.cloud.spanner.hibernate.schema.SpannerDatabaseInfo;
 import com.google.cloud.spanner.hibernate.schema.SpannerTableStatements;
 import com.google.cloud.spanner.hibernate.schema.TableDependencyTracker;
 import java.util.Collection;
@@ -68,8 +69,12 @@ public class SpannerTableExporter implements Exporter<Table> {
   /**
    * Initializes the table exporter for if a new create-table or drop-table sequence is starting.
    */
-  public void initializeTableExporter(Metadata metadata, Action schemaAction) {
+  public void init(
+      Metadata metadata,
+      SpannerDatabaseInfo spannerDatabaseInfo,
+      Action schemaAction) {
     tableDependencyTracker.initializeDependencies(metadata, schemaAction);
+    spannerTableStatements.initializeSpannerDatabaseInfo(spannerDatabaseInfo);
   }
 
   private String[] buildSqlStrings(Table currentTable, Metadata metadata, Action schemaAction) {

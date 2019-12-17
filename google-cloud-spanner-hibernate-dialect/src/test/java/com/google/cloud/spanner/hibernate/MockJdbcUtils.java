@@ -21,6 +21,7 @@ package com.google.cloud.spanner.hibernate;
 import com.mockrunner.mock.jdbc.MockDatabaseMetaData;
 import com.mockrunner.mock.jdbc.MockResultSet;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.UUID;
@@ -43,13 +44,8 @@ public class MockJdbcUtils {
   /**
    * Creates the metadata object read by Hibernate to determine which tables already exist.
    */
-  public static MockDatabaseMetaData createMockDatabaseMetaData(String... tables) {
-    MockDatabaseMetaData mockDatabaseMetaData = new MockDatabaseMetaData();
-    mockDatabaseMetaData.setColumns(createColumnMetadataResultSet(tables));
-    mockDatabaseMetaData.setTables(createTableMetadataResultSet(tables));
-    mockDatabaseMetaData.setIndexInfo(new MockResultSet(UUID.randomUUID().toString()));
-    mockDatabaseMetaData.setImportedKeys(new MockResultSet(UUID.randomUUID().toString()));
-    return mockDatabaseMetaData;
+  public static MockDatabaseMetaDataBuilder metaDataBuilder() {
+    return new MockDatabaseMetaDataBuilder();
   }
 
   /**
@@ -92,12 +88,88 @@ public class MockJdbcUtils {
     return mockResultSet;
   }
 
-  private static MockResultSet initResultSet(String[] columnLabels) {
-    MockResultSet mockResultSet = new MockResultSet(UUID.randomUUID().toString());
+  /**
+   * Constructs a {@link MockResultSet} containing database metadata about indices for testing.
+   */
+  private static ResultSet createIndexMetadataResultSet(String... indexNames) {
+    MockResultSet mockResultSet = initResultSet("INDEX_NAME");
+
+    for (int i = 0; i < indexNames.length; i++) {
+      String[] row = new String[]{indexNames[i]};
+      mockResultSet.addRow(row);
+    }
+
+    return mockResultSet;
+
+  }
+
+  private static ResettingMockResultSet initResultSet(String... columnLabels) {
+    ResettingMockResultSet mockResultSet =
+        new ResettingMockResultSet(UUID.randomUUID().toString());
     for (int i = 0; i < columnLabels.length; i++) {
       mockResultSet.addColumn(columnLabels[i]);
     }
 
     return mockResultSet;
+  }
+
+  /**
+   * A builder to help build the mock JDBC metadata objects.
+   */
+  public static class MockDatabaseMetaDataBuilder {
+
+    private ResultSet columns = new MockResultSet(UUID.randomUUID().toString());
+    private ResultSet tables = new MockResultSet(UUID.randomUUID().toString());
+    private ResultSet indexInfo = new MockResultSet(UUID.randomUUID().toString());
+    private ResultSet importedKeys = new MockResultSet(UUID.randomUUID().toString());
+
+    /**
+     * Sets which tables are present in the Spanner database.
+     */
+    public MockDatabaseMetaDataBuilder setTables(String... tables) {
+      this.tables = createTableMetadataResultSet(tables);
+      this.columns = createColumnMetadataResultSet(tables);
+      return this;
+    }
+
+    /**
+     * Sets which indices are present in the Spanner database.
+     */
+    public MockDatabaseMetaDataBuilder setIndices(String... indices) {
+      this.indexInfo = createIndexMetadataResultSet(indices);
+      return this;
+    }
+
+    /**
+     * Builds the {@link MockDatabaseMetaData} object which is used by Hibernate to get information
+     * about the Spanner Database.
+     */
+    public MockDatabaseMetaData build() {
+      MockDatabaseMetaData mockDatabaseMetaData = new MockDatabaseMetaData();
+      mockDatabaseMetaData.setColumns(columns);
+      mockDatabaseMetaData.setTables(tables);
+      mockDatabaseMetaData.setIndexInfo(indexInfo);
+      mockDatabaseMetaData.setImportedKeys(importedKeys);
+      return mockDatabaseMetaData;
+    }
+  }
+
+
+  /**
+   * An extension of {@link MockResultSet} which resets the cursor when it is closed. It is useful
+   * for testing purposes and emulating the creating of a new {@link ResultSet} when new metadata
+   * queries are made.
+   */
+  private static class ResettingMockResultSet extends MockResultSet {
+
+    public ResettingMockResultSet(String id) {
+      super(id);
+    }
+
+    @Override
+    public void close() throws SQLException {
+      super.close();
+      beforeFirst();
+    }
   }
 }
