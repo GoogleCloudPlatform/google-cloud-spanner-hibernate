@@ -163,11 +163,13 @@ public class SpannerTableStatements {
     statements.add(createTableString);
 
     if (table.getName().equals(SequenceStyleGenerator.DEF_SEQUENCE_NAME)) {
-      // Caches the INSERT statement for after the DDL batch.
+      // Caches the INSERT statement since DML statements must be run after a DDL batch.
       addStatementAfterDdlBatch(
           metadata,
-          "INSERT INTO " + SequenceStyleGenerator.DEF_SEQUENCE_NAME + " ("
-              + SequenceStyleGenerator.DEF_VALUE_COLUMN + ") VALUES(1)");
+          String.format(
+              "INSERT INTO %s (%s) VALUES(1)",
+              SequenceStyleGenerator.DEF_SEQUENCE_NAME,
+              SequenceStyleGenerator.DEF_VALUE_COLUMN));
     }
 
     return statements;

@@ -46,7 +46,8 @@ public class RunBatchDdl implements AuxiliaryDatabaseObject {
   }
 
   /**
-   * Add a statement to run after the DDL batch is completed.
+   * Add a statement to run after the DDL batch is completed. This is useful for executing
+   * additional DML statements since these cannot be run in a DDL batch.
    */
   public void addAfterDdlStatement(String statement) {
     statements.add(statement);
