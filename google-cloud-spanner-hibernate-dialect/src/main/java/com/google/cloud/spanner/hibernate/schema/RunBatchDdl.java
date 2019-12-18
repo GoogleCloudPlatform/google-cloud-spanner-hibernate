@@ -19,6 +19,8 @@
 package com.google.cloud.spanner.hibernate.schema;
 
 import com.google.cloud.spanner.hibernate.SpannerDialect;
+import java.util.ArrayList;
+import java.util.List;
 import org.hibernate.boot.model.relational.AuxiliaryDatabaseObject;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.tool.schema.Action;
@@ -31,8 +33,24 @@ public class RunBatchDdl implements AuxiliaryDatabaseObject {
 
   private final Action schemaAction;
 
+  private final List<String> statements;
+
+  /**
+   * Constructs the {@link RunBatchDdl} auxiliary database object.
+   * @param schemaAction the DDL mode being used for schema generation.
+   */
   public RunBatchDdl(Action schemaAction) {
     this.schemaAction = schemaAction;
+    this.statements = new ArrayList<>();
+    this.statements.add("RUN BATCH");
+  }
+
+  /**
+   * Add a statement to run after the DDL batch is completed. This is useful for executing
+   * additional DML statements since these cannot be run in a DDL batch.
+   */
+  public void addAfterDdlStatement(String statement) {
+    statements.add(statement);
   }
 
   @Override
@@ -52,7 +70,7 @@ public class RunBatchDdl implements AuxiliaryDatabaseObject {
 
   @Override
   public String[] sqlCreateStrings(Dialect dialect) {
-    return new String[] {"RUN BATCH"};
+    return statements.toArray(new String[statements.size()]);
   }
 
   @Override
@@ -60,7 +78,7 @@ public class RunBatchDdl implements AuxiliaryDatabaseObject {
     if (schemaAction == Action.UPDATE) {
       return new String[]{};
     } else {
-      return new String[]{"RUN BATCH"};
+      return statements.toArray(new String[statements.size()]);
     }
   }
 }

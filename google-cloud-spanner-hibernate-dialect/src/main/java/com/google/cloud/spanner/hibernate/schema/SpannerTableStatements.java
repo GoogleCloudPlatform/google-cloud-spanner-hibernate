@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -36,11 +37,14 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
+import org.jboss.logging.Logger;
 
 /**
  * Generates the SQL statements for creating and dropping tables in Spanner.
  */
 public class SpannerTableStatements {
+
+  private static final Logger LOGGER = Logger.getLogger(SpannerTableStatements.class);
 
   private static final String CREATE_TABLE_TEMPLATE =
       "create table {0} ({1}) PRIMARY KEY ({2}){3}";
@@ -158,13 +162,34 @@ public class SpannerTableStatements {
 
     statements.add(createTableString);
 
-    // Hibernate requires the special hibernate_sequence table to be populated with an initial val.
     if (table.getName().equals(SequenceStyleGenerator.DEF_SEQUENCE_NAME)) {
-      statements.add("INSERT INTO " + SequenceStyleGenerator.DEF_SEQUENCE_NAME + " ("
-          + SequenceStyleGenerator.DEF_VALUE_COLUMN + ") VALUES(1)");
+      // Caches the INSERT statement since DML statements must be run after a DDL batch.
+      addStatementAfterDdlBatch(
+          metadata,
+          "INSERT INTO " + SequenceStyleGenerator.DEF_SEQUENCE_NAME + " ("
+              + SequenceStyleGenerator.DEF_VALUE_COLUMN + ") VALUES(1)");
     }
 
     return statements;
+  }
+
+  private void addStatementAfterDdlBatch(Metadata metadata, String statement) {
+    // Find the RunBatchDdl auxiliary object which can run statements after the DDL batch.
+    Optional<RunBatchDdl> runBatchDdl =
+        metadata.getDatabase().getAuxiliaryDatabaseObjects().stream()
+            .filter(obj -> obj instanceof RunBatchDdl)
+            .map(obj -> (RunBatchDdl) obj)
+            .findFirst();
+
+    if (runBatchDdl.isPresent()) {
+      runBatchDdl.get().addAfterDdlStatement(statement);
+    } else {
+      throw new IllegalStateException(
+          "Failed to generate INSERT statement for the hibernate_sequence table. "
+              + "The Spanner dialect did not create auxiliary database objects correctly. "
+              + "Please post a question to "
+              + "https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues");
+    }
   }
 
   /**
