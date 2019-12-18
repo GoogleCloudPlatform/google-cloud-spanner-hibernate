@@ -166,10 +166,8 @@ public class SpannerTableStatements {
       // Caches the INSERT statement since DML statements must be run after a DDL batch.
       addStatementAfterDdlBatch(
           metadata,
-          String.format(
-              "INSERT INTO %s (%s) VALUES(1)",
-              SequenceStyleGenerator.DEF_SEQUENCE_NAME,
-              SequenceStyleGenerator.DEF_VALUE_COLUMN));
+          "INSERT INTO " + SequenceStyleGenerator.DEF_SEQUENCE_NAME + " ("
+              + SequenceStyleGenerator.DEF_VALUE_COLUMN + ") VALUES(1)");
     }
 
     return statements;
