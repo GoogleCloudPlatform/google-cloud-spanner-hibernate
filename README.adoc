@@ -166,11 +166,12 @@ Cloud Spanner offers the concept of https://cloud.google.com/spanner/docs/schema
 This feature enforces the one-to-many relationship and provide efficient queries and operations on entities of a single domain parent entity.
 
 If you would like to generate interleaved tables in Spanner, you must annotate your entity with the `@Interleaved` annotation.
-The primary key of the interleaved table must also include at least all of the primary key attributes of the parent and be named the same.
+The primary key of the interleaved table must also include at least all of the primary key attributes of the parent.
 This is typically done using the `@EmbeddedId` annotation.
 
 In the example below, the `Child` entity is an interleaved table of the `Parent` entity.
-Note that the child's primary key is an `EmbeddedId` and also includes the primary key of the parent; this must be done for interleaved child entities.
+Note that the child's primary key is an `EmbeddedId` and also includes the fields of the primary key of the parent using the same name.
+This must be done for interleaved child entities.
 
 [source,java]
 ----
