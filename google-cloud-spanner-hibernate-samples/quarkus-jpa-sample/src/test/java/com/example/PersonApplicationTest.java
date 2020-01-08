@@ -18,37 +18,30 @@
 
 package com.example;
 
-import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import org.hibernate.annotations.Type;
+import static org.hamcrest.CoreMatchers.containsString;
 
-@Entity
-public class Person {
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  @Type(type = "uuid-char")
-  @Id
-  private UUID id;
+import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.RestAssured;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
 
-  @Column(unique = true)
-  private String name;
+@QuarkusTest
+public class PersonApplicationTest {
 
-  public UUID getId() {
-    return id;
-  }
+  @Test
+  public void testPersonEndpoint() {
 
-  public void setId(UUID id) {
-    this.id = id;
-  }
+    Map<String, String> jsonPayload = new HashMap<>();
+    jsonPayload.put("name", "Ray");
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
+    RestAssured.given()
+        .when()
+        .contentType("application/json")
+        .body(jsonPayload)
+        .post("/person")
+        .then()
+        .statusCode(200)
+        .body(containsString("\"name\":\"Ray\""));
   }
 }
