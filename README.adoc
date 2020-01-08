@@ -165,7 +165,7 @@ Hibernate performs schema updates on each table and entity type on startup, whic
 Cloud Spanner offers the concept of https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables[Interleaved Tables] which allows you to co-locate the rows of an interleaved table with rows of a parent table for efficient retrieval.
 This feature enforces the one-to-many relationship and provides efficient queries and operations on entities of a single domain parent entity.
 
-If you would like to generate interleaved tables in Spanner, you must annotate your entity with the `@Interleaved` annotation.
+If you would like to generate interleaved tables in Cloud Spanner, you must annotate your entity with the `@Interleaved` annotation.
 The primary key of the interleaved table must also include at least all of the primary key attributes of the parent.
 This is typically done using the `@EmbeddedId` annotation.
 
