@@ -160,6 +160,49 @@ The following settings are available:
 
 Hibernate performs schema updates on each table and entity type on startup, which can take more than several minutes if there are many tables. To avoid schema updates keeping Hibernate from starting for several minutes, you can update schemas separately and use the `none` or `validate` settings.
 
+==== Interleaved Tables
+
+Cloud Spanner offers the concept of https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables[Interleaved Tables] which allows you to co-locate the rows of an interleaved table with rows of a parent table for efficient retrieval.
+This feature enforces the one-to-many relationship and provides efficient queries and operations on entities of a single domain parent entity.
+
+If you would like to generate interleaved tables in Cloud Spanner, you must annotate your entity with the `@Interleaved` annotation.
+The primary key of the interleaved table must also include at least all of the primary key attributes of the parent.
+This is typically done using the `@EmbeddedId` annotation.
+
+In the example below, the `Child` entity is an interleaved table of the `Parent` entity.
+Note that the child's primary key is an `EmbeddedId` and also includes the fields of the primary key of the parent using the same name.
+This must be done for interleaved child entities.
+
+[source,java]
+----
+@Entity
+@Interleaved(parentEntity = Parent.class)
+public class Child {
+
+  @EmbeddedId
+  public ChildId childId;
+
+  public String name;
+
+  @Embeddable
+  public static class ChildId implements Serializable {
+
+    public UUID parentId;
+
+    public UUID childId;
+  }
+}
+
+@Entity
+public class Parent {
+
+  @Id
+  public UUID parentId;
+
+  public String name;
+}
+----
+
 == Cloud Spanner Hibernate ORM Limitations
 
 The Cloud Spanner Hibernate Dialect supports most of the standard Hibernate and Java Persistence annotations, but there are important differences in features because of differences in https://cloud.google.com/spanner/docs/schema-and-data-model[Cloud Spanner's data model] from traditional SQL databases.
@@ -173,7 +216,6 @@ The following sections below describe the feature set of the Cloud Spanner Hiber
 | Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
 | Column default values | The dialect does not currently set default values based on the `@ColumnDefault` annotation, because Cloud Spanner does not support column defaults in the DDL.
 | Big-decimal or arbitrary-precision numbers | The dialect does not support `java.math.BigDecimal` and `java.math.BigInteger` because Cloud Spanner does not provide native support for https://cloud.google.com/spanner/docs/storing-numeric-data[arbitrary-precision decimal numbers], such as `NUMERIC` or `DECIMAL`.
-| Schema Generation for Interleaved Tables | The dialect currently does not support creating interleaved tables during schema generation.
 | Simba JDBC Driver | Hibernate ORM with Cloud Spanner is officially supported only with the open-source https://cloud.google.com/spanner/docs/use-oss-jdbc[Cloud Spanner JDBC Driver]. It does not support the https://cloud.google.com/spanner/docs/partners/drivers[Simba JDBC driver] at this time.
 |===
 
@@ -226,10 +268,3 @@ because Cloud Spanner does not offer a way of setting a default value for a colu
 
 Cloud Spanner does not provide native support for https://cloud.google.com/spanner/docs/storing-numeric-data[arbitrary-precision decimal numbers], such as `NUMERIC` and `DECIMAL`.
 As a result, the dialect does not support decimal and arbitrary-precision Java types such as `java.math.BigInteger` and `java.math.BigDecimal`.
-
-=== Interleaved Tables Schema Generation
-
-Currently there is no support in the Cloud Spanner Hibernate dialect for generating https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables[interleaved tables] in Spanner during schema generation.
-
-If your application would benefit from interleaved tables, we recommend that you manually create them and use types mapped to them in Hibernate.
-This enables the performance and database-enforced-constraint benefits from interleaved tables in Cloud Spanner, even though the Hibernate framework will not be aware of their relationship or any restrictions on operations between interleaved tables.
