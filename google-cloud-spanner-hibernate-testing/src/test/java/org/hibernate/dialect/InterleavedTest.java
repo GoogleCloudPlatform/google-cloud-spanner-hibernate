@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
 
 import java.util.List;
+import java.util.Map;
 import javax.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.dialect.entities.Child;
@@ -23,6 +24,18 @@ public class InterleavedTest extends BaseEntityManagerFunctionalTestCase {
         GrandParent.class,
         Child.class
     };
+  }
+
+  /**
+   * We override the default with the 'create-drop' mode because we would like to verify that the
+   * interleaved tables are created and dropped in the correct order:
+   * parents created before children; children dropped before parents.
+   */
+  @Override
+  protected Map buildSettings() {
+    Map settings = super.buildSettings();
+    settings.put(org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO, "create-drop");
+    return settings;
   }
 
   @Test
