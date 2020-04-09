@@ -35,7 +35,6 @@ import org.hibernate.dialect.lock.LockingStrategyException;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.env.spi.SchemaNameResolver;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.tool.schema.spi.Exporter;
@@ -339,27 +338,13 @@ public class SpannerDialect extends Dialect {
   }
 
   @Override
-  public String getDropForeignKeyString() {
-    throw new UnsupportedOperationException("Cannot drop foreign-key constraint because "
-        + "Cloud Spanner does not support foreign keys.");
-  }
-
-  @Override
   public String getAddForeignKeyConstraintString(String constraintName,
       String[] foreignKey,
       String referencedTable,
       String[] primaryKey,
       boolean referencesPrimaryKey) {
-    throw new UnsupportedOperationException("Cannot add foreign-key constraint because "
-        + "Cloud Spanner does not support foreign keys.");
-  }
-
-  @Override
-  public String getAddForeignKeyConstraintString(
-      String constraintName,
-      String foreignKeyDefinition) {
-    throw new UnsupportedOperationException("Cannot add foreign-key constraint because "
-        + "Cloud Spanner does not support foreign keys.");
+    return super.getAddForeignKeyConstraintString(
+        constraintName, foreignKey, referencedTable, primaryKey, false);
   }
 
   @Override
@@ -459,11 +444,6 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public Exporter<Sequence> getSequenceExporter() {
-    return NOOP_EXPORTER;
-  }
-
-  @Override
-  public Exporter<ForeignKey> getForeignKeyExporter() {
     return NOOP_EXPORTER;
   }
 

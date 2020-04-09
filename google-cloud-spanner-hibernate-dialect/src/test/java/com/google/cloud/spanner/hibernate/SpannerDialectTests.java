@@ -126,27 +126,8 @@ public class SpannerDialectTests {
   }
 
   @Test
-  public void getDropKeyConstraintTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getDropForeignKeyString())
-        .isInstanceOf(UnsupportedOperationException.class);
-  }
-
-  @Test
   public void getTableTypeString() {
     assertThat(this.spannerDialect.getTableTypeString()).isEqualTo("");
-  }
-
-  @Test
-  public void getAddForeignKeyConstraintStringTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getAddForeignKeyConstraintString(
-        null, null, null, null, false))
-        .isInstanceOf(UnsupportedOperationException.class);
-  }
-
-  @Test
-  public void getAddForeignKeyConstraintStringSimpifiedTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getAddForeignKeyConstraintString(null, null))
-        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test

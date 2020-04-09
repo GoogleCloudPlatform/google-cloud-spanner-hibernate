@@ -122,6 +122,7 @@ public class MockJdbcUtils {
     private ResultSet tables = new MockResultSet(UUID.randomUUID().toString());
     private ResultSet indexInfo = new MockResultSet(UUID.randomUUID().toString());
     private ResultSet importedKeys = new MockResultSet(UUID.randomUUID().toString());
+    private ResultSet exportedKeys = new MockResultSet(UUID.randomUUID().toString());
 
     /**
      * Sets which tables are present in the Spanner database.
@@ -150,6 +151,7 @@ public class MockJdbcUtils {
       mockDatabaseMetaData.setTables(tables);
       mockDatabaseMetaData.setIndexInfo(indexInfo);
       mockDatabaseMetaData.setImportedKeys(importedKeys);
+      mockDatabaseMetaData.setExportedKeys(exportedKeys);
       return mockDatabaseMetaData;
     }
   }

@@ -77,6 +77,8 @@ public class GeneratedUpdateTableStatementsTests {
             + "PRIMARY KEY (id)",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
         "create index name_index on Employee (name)",
+        "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
+            + "foreign key (manager_id) references Employee (id)",
         "RUN BATCH",
         "INSERT INTO hibernate_sequence (next_val) VALUES(1)"
     );
@@ -94,6 +96,8 @@ public class GeneratedUpdateTableStatementsTests {
         "alter table Employee ADD COLUMN manager_id INT64",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
         "create index name_index on Employee (name)",
+        "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
+            + "foreign key (manager_id) references Employee (id)",
         "RUN BATCH",
         "INSERT INTO hibernate_sequence (next_val) VALUES(1)"
     );
