@@ -20,8 +20,6 @@ package com.google.cloud.spanner.hibernate.schema;
 
 import com.google.cloud.spanner.hibernate.SpannerTableExporter;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import java.util.Map;
 import org.hibernate.resource.transaction.spi.DdlTransactionIsolator;
 import org.hibernate.tool.schema.internal.HibernateSchemaManagementTool;
@@ -57,15 +55,9 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
     return (SpannerTableExporter) jdbcContext.getDialect().getTableExporter();
   }
 
-  SpannerDatabaseInfo getDatabaseMetaData(ExecutionOptions options) {
+  Connection getDatabaseMetadataConnection(ExecutionOptions options) {
     JdbcContext jdbcContext = this.resolveJdbcContext(options.getConfigurationValues());
     DdlTransactionIsolator ddlTransactionIsolator = this.getDdlTransactionIsolator(jdbcContext);
-
-    try (Connection metadataConnection = ddlTransactionIsolator.getIsolatedConnection()) {
-      DatabaseMetaData metaData = metadataConnection.getMetaData();
-      return new SpannerDatabaseInfo(metaData);
-    } catch (SQLException e) {
-      throw new RuntimeException("Failed to get the Database metadata.", e);
-    }
+    return ddlTransactionIsolator.getIsolatedConnection();
   }
 }

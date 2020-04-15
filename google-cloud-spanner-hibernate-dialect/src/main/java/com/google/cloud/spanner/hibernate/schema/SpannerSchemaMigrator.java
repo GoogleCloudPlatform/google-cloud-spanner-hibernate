@@ -18,6 +18,8 @@
 
 package com.google.cloud.spanner.hibernate.schema;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import org.hibernate.boot.Metadata;
 import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
@@ -48,11 +50,12 @@ public class SpannerSchemaMigrator implements SchemaMigrator {
     metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl(Action.UPDATE));
     metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl(Action.UPDATE));
 
-    tool.getSpannerTableExporter(options).init(
-        metadata,
-        tool.getDatabaseMetaData(options),
-        Action.UPDATE);
-
-    schemaMigrator.doMigration(metadata, options, targetDescriptor);
+    try (Connection connection = tool.getDatabaseMetadataConnection(options)) {
+      SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
+      tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.UPDATE);
+      schemaMigrator.doMigration(metadata, options, targetDescriptor);
+    } catch (SQLException e) {
+      throw new RuntimeException("Failed to update Spanner table schema.", e);
+    }
   }
 }

@@ -38,14 +38,11 @@ import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
-import org.jboss.logging.Logger;
 
 /**
  * Generates the SQL statements for creating and dropping tables in Spanner.
  */
 public class SpannerTableStatements {
-
-  private static final Logger LOGGER = Logger.getLogger(SpannerTableStatements.class);
 
   private static final String CREATE_TABLE_TEMPLATE =
       "create table {0} ({1}) PRIMARY KEY ({2}){3}";

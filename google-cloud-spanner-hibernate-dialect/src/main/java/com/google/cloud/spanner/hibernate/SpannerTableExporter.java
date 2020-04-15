@@ -21,6 +21,7 @@ package com.google.cloud.spanner.hibernate;
 import com.google.cloud.spanner.hibernate.schema.SpannerDatabaseInfo;
 import com.google.cloud.spanner.hibernate.schema.SpannerTableStatements;
 import com.google.cloud.spanner.hibernate.schema.TableDependencyTracker;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -76,7 +77,7 @@ public class SpannerTableExporter implements Exporter<Table> {
   public void init(
       Metadata metadata,
       SpannerDatabaseInfo spannerDatabaseInfo,
-      Action schemaAction) {
+      Action schemaAction) throws SQLException {
     tableDependencyTracker.initializeDependencies(metadata, schemaAction);
     spannerTableStatements.initializeSpannerDatabaseInfo(spannerDatabaseInfo);
     droppedTableNames.clear();

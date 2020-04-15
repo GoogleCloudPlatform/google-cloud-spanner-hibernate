@@ -21,10 +21,7 @@ package com.google.cloud.spanner.hibernate.schema;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
@@ -39,7 +36,7 @@ public class SpannerDatabaseInfo {
 
   private final Set<String> indexNames;
 
-  private final Map<String, Set<ForeignKey>> foreignKeys;
+  private final DatabaseMetaData databaseMetaData;
 
   /**
    * Constructs the {@link SpannerDatabaseInfo} by querying the Spanner database metadata.
@@ -47,7 +44,7 @@ public class SpannerDatabaseInfo {
   public SpannerDatabaseInfo(DatabaseMetaData databaseMetaData) throws SQLException {
     this.tableNames = extractDatabaseTables(databaseMetaData);
     this.indexNames = extractDatabaseIndices(databaseMetaData);
-    this.foreignKeys = extractForeignKeys(databaseMetaData, this.tableNames);
+    this.databaseMetaData = databaseMetaData;
   }
 
   /**
@@ -68,10 +65,25 @@ public class SpannerDatabaseInfo {
    * Returns the names of all the exported foreign keys for a specified {@code tableName}.
    */
   public Set<ForeignKey> getExportedForeignKeys(String tableName) {
-    if (!foreignKeys.containsKey(tableName)) {
-      return Collections.EMPTY_SET;
-    } else {
-      return foreignKeys.get(tableName);
+    try {
+      HashSet<ForeignKey> foreignKeys = new HashSet<>();
+
+      ResultSet rs = databaseMetaData.getExportedKeys(null, null, tableName);
+      while (rs.next()) {
+        ForeignKey foreignKey = new ForeignKey();
+        foreignKey.setName(rs.getString("FK_NAME"));
+
+        Table foreignKeyTable = new Table();
+        foreignKeyTable.setName(rs.getString("FKTABLE_NAME"));
+        foreignKey.setTable(foreignKeyTable);
+
+        foreignKeys.add(foreignKey);
+      }
+      rs.close();
+      return foreignKeys;
+    } catch (SQLException e) {
+      throw new RuntimeException(
+          "Failed to lookup Spanner Database foreign keys for table: " + tableName, e);
     }
   }
 
@@ -104,36 +116,6 @@ public class SpannerDatabaseInfo {
       result.add(name);
     }
     indexResultSet.close();
-
-    return result;
-  }
-
-  /**
-   * Returns a map of all the tables mapped to a set of exported foreign
-   * keys that references the table.
-   */
-  private static Map<String, Set<ForeignKey>> extractForeignKeys(
-      DatabaseMetaData databaseMetaData, Set<String> tableNames) throws SQLException {
-
-    HashMap<String, Set<ForeignKey>> result = new HashMap<>();
-
-    for (String tableName : tableNames) {
-      HashSet<ForeignKey> foreignKeys = new HashSet<>();
-      ResultSet rs = databaseMetaData.getExportedKeys(null, null, tableName);
-      while (rs.next()) {
-        ForeignKey foreignKey = new ForeignKey();
-        foreignKey.setName(rs.getString("FK_NAME"));
-
-        Table foreignKeyTable = new Table();
-        foreignKeyTable.setName(rs.getString("FKTABLE_NAME"));
-        foreignKey.setTable(foreignKeyTable);
-
-        foreignKeys.add(foreignKey);
-      }
-      result.put(tableName, foreignKeys);
-      rs.close();
-    }
-
 
     return result;
   }

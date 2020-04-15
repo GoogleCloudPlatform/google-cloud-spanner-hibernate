@@ -18,6 +18,8 @@
 
 package com.google.cloud.spanner.hibernate.schema;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import org.hibernate.boot.Metadata;
 import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.internal.SchemaDropperImpl;
@@ -52,22 +54,28 @@ public class SpannerSchemaDropper implements SchemaDropper {
     metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl(Action.DROP));
     metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl(Action.DROP));
 
-    // Initialize exporters with drop table dependencies so tables are dropped in the right order.
-    tool.getSpannerTableExporter(options).init(
-        metadata,
-        tool.getDatabaseMetaData(options),
-        Action.DROP);
-
-    schemaDropper.doDrop(metadata, options, sourceDescriptor, targetDescriptor);
+    try (Connection connection = tool.getDatabaseMetadataConnection(options)) {
+      // Initialize exporters with drop table dependencies so tables are dropped in the right order.
+      SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
+      tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.DROP);
+      schemaDropper.doDrop(metadata, options, sourceDescriptor, targetDescriptor);
+    } catch (SQLException e) {
+      throw new RuntimeException("Failed to update Spanner table schema.", e);
+    }
   }
 
   @Override
   public DelayedDropAction buildDelayedAction(
       Metadata metadata, ExecutionOptions options, SourceDescriptor sourceDescriptor) {
 
-    // Initialize exporters with drop table dependencies so tables are dropped in the right order.
-    tool.getSpannerTableExporter(options).init(
-        metadata, tool.getDatabaseMetaData(options), Action.DROP);
+    try (Connection connection = tool.getDatabaseMetadataConnection(options)) {
+      // Initialize exporters with drop table dependencies so tables are dropped in the right order.
+      SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
+      tool.getSpannerTableExporter(options).init(
+          metadata, spannerDatabaseInfo, Action.DROP);
+    } catch (SQLException e) {
+      throw new RuntimeException("Failed to update Spanner table schema.", e);
+    }
 
     return schemaDropper.buildDelayedAction(metadata, options, sourceDescriptor);
   }
