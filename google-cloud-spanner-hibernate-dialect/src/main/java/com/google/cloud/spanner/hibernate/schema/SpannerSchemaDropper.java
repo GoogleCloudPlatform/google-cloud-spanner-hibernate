@@ -73,10 +73,9 @@ public class SpannerSchemaDropper implements SchemaDropper {
       SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
       tool.getSpannerTableExporter(options).init(
           metadata, spannerDatabaseInfo, Action.DROP);
+      return schemaDropper.buildDelayedAction(metadata, options, sourceDescriptor);
     } catch (SQLException e) {
       throw new RuntimeException("Failed to update Spanner table schema.", e);
     }
-
-    return schemaDropper.buildDelayedAction(metadata, options, sourceDescriptor);
   }
 }
