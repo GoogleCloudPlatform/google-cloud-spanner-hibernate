@@ -55,6 +55,11 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
     return (SpannerTableExporter) jdbcContext.getDialect().getTableExporter();
   }
 
+  SpannerForeignKeyExporter getForeignKeyExporter(ExecutionOptions options) {
+    JdbcContext jdbcContext = this.resolveJdbcContext(options.getConfigurationValues());
+    return (SpannerForeignKeyExporter) jdbcContext.getDialect().getForeignKeyExporter();
+  }
+
   Connection getDatabaseMetadataConnection(ExecutionOptions options) {
     JdbcContext jdbcContext = this.resolveJdbcContext(options.getConfigurationValues());
     DdlTransactionIsolator ddlTransactionIsolator = this.getDdlTransactionIsolator(jdbcContext);

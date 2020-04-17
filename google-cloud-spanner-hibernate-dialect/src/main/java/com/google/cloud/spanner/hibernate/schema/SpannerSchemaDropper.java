@@ -58,6 +58,7 @@ public class SpannerSchemaDropper implements SchemaDropper {
       // Initialize exporters with drop table dependencies so tables are dropped in the right order.
       SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.DROP);
+      tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
       schemaDropper.doDrop(metadata, options, sourceDescriptor, targetDescriptor);
     } catch (SQLException e) {
       throw new RuntimeException("Failed to update Spanner table schema.", e);
@@ -73,6 +74,7 @@ public class SpannerSchemaDropper implements SchemaDropper {
       SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
       tool.getSpannerTableExporter(options).init(
           metadata, spannerDatabaseInfo, Action.DROP);
+      tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
       return schemaDropper.buildDelayedAction(metadata, options, sourceDescriptor);
     } catch (SQLException e) {
       throw new RuntimeException("Failed to update Spanner table schema.", e);

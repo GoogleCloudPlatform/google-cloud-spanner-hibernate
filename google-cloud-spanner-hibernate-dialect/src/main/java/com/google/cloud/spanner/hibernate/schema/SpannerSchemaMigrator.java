@@ -53,6 +53,7 @@ public class SpannerSchemaMigrator implements SchemaMigrator {
     try (Connection connection = tool.getDatabaseMetadataConnection(options)) {
       SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.UPDATE);
+      tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
       schemaMigrator.doMigration(metadata, options, targetDescriptor);
     } catch (SQLException e) {
       throw new RuntimeException("Failed to update Spanner table schema.", e);

@@ -24,12 +24,10 @@ import static org.mockito.Mockito.when;
 import com.google.cloud.spanner.hibernate.schema.SpannerDatabaseInfo;
 import com.google.cloud.spanner.hibernate.schema.SpannerTableStatements;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.Column;
-import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.PrimaryKey;
 import org.hibernate.mapping.Table;
@@ -61,18 +59,6 @@ public class SpannerTableStatementsTests {
     when(spannerDatabaseInfo.getAllIndices()).thenReturn(
         new HashSet<>(Arrays.asList("address")));
 
-    ForeignKey foreignKey = new ForeignKey();
-    foreignKey.setName("fk_example");
-
-    Table table = new Table();
-    table.setName("Student");
-    foreignKey.setTable(table);
-
-    when(spannerDatabaseInfo.getExportedForeignKeys("Student"))
-        .thenReturn(Collections.EMPTY_SET);
-    when(spannerDatabaseInfo.getExportedForeignKeys("Teacher"))
-        .thenReturn(Collections.singleton(foreignKey));
-
     // Initialize SpannerStatements
     spannerTableStatements = new SpannerTableStatements(new SpannerDialect());
     spannerTableStatements.initializeSpannerDatabaseInfo(spannerDatabaseInfo);
@@ -83,7 +69,7 @@ public class SpannerTableStatementsTests {
     Table table = new Table();
     table.setName("House");
 
-    List<String> statements = spannerTableStatements.dropTable(table, Collections.EMPTY_SET);
+    List<String> statements = spannerTableStatements.dropTable(table);
     assertThat(statements).containsExactly("drop table House");
   }
 
@@ -92,7 +78,7 @@ public class SpannerTableStatementsTests {
     Table table = new Table();
     table.setName("Missing_Table");
 
-    List<String> statements = spannerTableStatements.dropTable(table, Collections.EMPTY_SET);
+    List<String> statements = spannerTableStatements.dropTable(table);
     assertThat(statements).isEmpty();
   }
 
@@ -105,28 +91,8 @@ public class SpannerTableStatementsTests {
     index.setName("address");
     table.addIndex(index);
 
-    List<String> statements = spannerTableStatements.dropTable(table, Collections.EMPTY_SET);
+    List<String> statements = spannerTableStatements.dropTable(table);
     assertThat(statements).containsExactly("drop index address", "drop table House");
-  }
-
-  @Test
-  public void testDropTableStatement_withFk() {
-    Table table = new Table();
-    table.setName("Teacher");
-
-    List<String> statements = spannerTableStatements.dropTable(table, Collections.EMPTY_SET);
-    assertThat(statements).containsExactly(
-        "alter table Student drop constraint fk_example", "drop table Teacher");
-  }
-
-  @Test
-  public void testDropTableStatement_withFkAlreadyDropped() {
-    Table table = new Table();
-    table.setName("Teacher");
-
-    List<String> statements =
-        spannerTableStatements.dropTable(table, Collections.singleton("Student"));
-    assertThat(statements).containsExactly("drop table Teacher");
   }
 
   @Test

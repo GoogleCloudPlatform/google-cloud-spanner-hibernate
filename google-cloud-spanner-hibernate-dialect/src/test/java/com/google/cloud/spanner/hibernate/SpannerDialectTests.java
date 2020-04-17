@@ -106,11 +106,6 @@ public class SpannerDialectTests {
   }
 
   @Test
-  public void dropConstraintsTest() {
-    assertThat(this.spannerDialect.dropConstraints()).isFalse();
-  }
-
-  @Test
   public void qualifyIndexNameTest() {
     assertThat(this.spannerDialect.qualifyIndexName()).isFalse();
   }

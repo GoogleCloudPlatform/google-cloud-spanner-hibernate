@@ -34,7 +34,6 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
-import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
@@ -68,15 +67,8 @@ public class SpannerTableStatements {
   /**
    * Generates the statements needed to drop a table.
    */
-  public List<String> dropTable(Table table, Set<String> alreadyDroppedTables) {
+  public List<String> dropTable(Table table) {
     ArrayList<String> dropStrings = new ArrayList<>();
-
-    for (ForeignKey foreignKey : spannerDatabaseInfo.getExportedForeignKeys(table.getName())) {
-      if (!alreadyDroppedTables.contains(foreignKey.getTable().getName())) {
-        dropStrings.add("alter table " + foreignKey.getTable().getName()
-            + " drop constraint " + foreignKey.getName());
-      }
-    }
 
     for (String indexName : getTableIndices(table)) {
       if (spannerDatabaseInfo.getAllIndices().contains(indexName)) {

@@ -21,9 +21,7 @@ package com.google.cloud.spanner.hibernate;
 import com.google.cloud.spanner.hibernate.schema.SpannerDatabaseInfo;
 import com.google.cloud.spanner.hibernate.schema.SpannerTableStatements;
 import com.google.cloud.spanner.hibernate.schema.TableDependencyTracker;
-import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,8 +44,6 @@ public class SpannerTableExporter implements Exporter<Table> {
 
   private final TableDependencyTracker tableDependencyTracker;
 
-  private final HashSet<String> droppedTableNames;
-
   /**
    * Constructor.
    *
@@ -56,7 +52,6 @@ public class SpannerTableExporter implements Exporter<Table> {
   public SpannerTableExporter(SpannerDialect spannerDialect) {
     this.spannerTableStatements = new SpannerTableStatements(spannerDialect);
     this.tableDependencyTracker = new TableDependencyTracker();
-    this.droppedTableNames = new HashSet<>();
   }
 
   @Override
@@ -77,10 +72,9 @@ public class SpannerTableExporter implements Exporter<Table> {
   public void init(
       Metadata metadata,
       SpannerDatabaseInfo spannerDatabaseInfo,
-      Action schemaAction) throws SQLException {
+      Action schemaAction) {
     tableDependencyTracker.initializeDependencies(metadata, schemaAction);
     spannerTableStatements.initializeSpannerDatabaseInfo(spannerDatabaseInfo);
-    droppedTableNames.clear();
   }
 
   private String[] buildSqlStrings(Table currentTable, Metadata metadata, Action schemaAction) {
@@ -91,10 +85,7 @@ public class SpannerTableExporter implements Exporter<Table> {
           if (schemaAction == Action.CREATE) {
             return spannerTableStatements.createTable(table, metadata).stream();
           } else {
-            List<String> dropTableStatements =
-                spannerTableStatements.dropTable(table, droppedTableNames);
-            droppedTableNames.add(table.getName());
-            return dropTableStatements.stream();
+            return spannerTableStatements.dropTable(table).stream();
           }
         })
         .collect(Collectors.toList());

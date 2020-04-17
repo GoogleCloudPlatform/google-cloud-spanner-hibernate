@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
 import java.io.Serializable;
 import java.sql.Types;
 import java.util.Map;
@@ -35,6 +36,7 @@ import org.hibernate.dialect.lock.LockingStrategyException;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.env.spi.SchemaNameResolver;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.tool.schema.spi.Exporter;
@@ -54,7 +56,11 @@ public class SpannerDialect extends Dialect {
 
   private static final int BYTES_MAX_LENGTH = 10485760;
 
-  private final SpannerTableExporter spannerTableExporter = new SpannerTableExporter(this);
+  private final SpannerTableExporter spannerTableExporter =
+      new SpannerTableExporter(this);
+
+  private final SpannerForeignKeyExporter spannerForeignKeyExporter =
+      new SpannerForeignKeyExporter(this);
 
   private static final LockingStrategy LOCKING_STRATEGY = new DoNothingLockingStrategy();
 
@@ -259,6 +265,11 @@ public class SpannerDialect extends Dialect {
     return this.spannerTableExporter;
   }
 
+  @Override
+  public Exporter<ForeignKey> getForeignKeyExporter() {
+    return this.spannerForeignKeyExporter;
+  }
+
   /* SELECT-related functions */
 
   @Override
@@ -320,11 +331,6 @@ public class SpannerDialect extends Dialect {
   public SchemaNameResolver getSchemaNameResolver() {
     throw new UnsupportedOperationException(
         "No schema name resolver supported by " + getClass().getName());
-  }
-
-  @Override
-  public boolean dropConstraints() {
-    return false;
   }
 
   @Override

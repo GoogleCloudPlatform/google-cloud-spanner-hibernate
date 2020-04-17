@@ -23,8 +23,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
-import org.hibernate.mapping.ForeignKey;
-import org.hibernate.mapping.Table;
 
 /**
  * Helper class for extracting information from the {@link DatabaseMetaData} which contains
@@ -64,20 +62,13 @@ public class SpannerDatabaseInfo {
   /**
    * Returns the names of all the exported foreign keys for a specified {@code tableName}.
    */
-  public Set<ForeignKey> getExportedForeignKeys(String tableName) {
+  public Set<String> getImportedForeignKeys(String tableName) {
     try {
-      HashSet<ForeignKey> foreignKeys = new HashSet<>();
+      HashSet<String> foreignKeys = new HashSet<>();
 
-      ResultSet rs = databaseMetaData.getExportedKeys(null, null, tableName);
+      ResultSet rs = databaseMetaData.getImportedKeys(null, null, tableName);
       while (rs.next()) {
-        ForeignKey foreignKey = new ForeignKey();
-        foreignKey.setName(rs.getString("FK_NAME"));
-
-        Table foreignKeyTable = new Table();
-        foreignKeyTable.setName(rs.getString("FKTABLE_NAME"));
-        foreignKey.setTable(foreignKeyTable);
-
-        foreignKeys.add(foreignKey);
+        foreignKeys.add(rs.getString("FK_NAME"));
       }
       rs.close();
       return foreignKeys;

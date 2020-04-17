@@ -56,6 +56,7 @@ public class SpannerSchemaCreator implements SchemaCreator {
     try (Connection connection = tool.getDatabaseMetadataConnection(options)) {
       SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.CREATE);
+      tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
       schemaCreator.doCreation(metadata, options, sourceDescriptor, targetDescriptor);
     } catch (SQLException e) {
       throw new RuntimeException("Failed to update Spanner table schema.", e);
