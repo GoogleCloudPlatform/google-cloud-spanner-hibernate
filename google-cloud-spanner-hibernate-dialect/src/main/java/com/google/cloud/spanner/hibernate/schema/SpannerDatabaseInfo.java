@@ -60,7 +60,7 @@ public class SpannerDatabaseInfo {
   }
 
   /**
-   * Returns the names of all the exported foreign keys for a specified {@code tableName}.
+   * Returns the names of all the imported foreign keys for a specified {@code tableName}.
    */
   public Set<String> getImportedForeignKeys(String tableName) {
     try {

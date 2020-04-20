@@ -37,7 +37,12 @@ public class SpannerForeignKeyExporter extends StandardForeignKeyExporter {
 
   @Override
   public String[] getSqlDropStrings(ForeignKey foreignKey, Metadata metadata) {
-    if (spannerDatabaseInfo == null || foreignKeyExists(foreignKey)) {
+    if (spannerDatabaseInfo == null) {
+      throw new IllegalStateException(
+          "Cannot determine which foreign keys to drop because spannerDatabaseInfo was null.");
+    }
+
+    if (foreignKeyExists(foreignKey)) {
       return super.getSqlDropStrings(foreignKey, metadata);
     } else {
       return new String[0];
