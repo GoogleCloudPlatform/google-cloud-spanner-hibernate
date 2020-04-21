@@ -85,7 +85,7 @@ public class SpannerTableExporter implements Exporter<Table> {
           if (schemaAction == Action.CREATE) {
             return spannerTableStatements.createTable(table, metadata).stream();
           } else {
-            return spannerTableStatements.dropTable(table, metadata).stream();
+            return spannerTableStatements.dropTable(table).stream();
           }
         })
         .collect(Collectors.toList());

@@ -8,22 +8,30 @@ package org.hibernate.jpa.test;
 
 import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
-import javax.persistence.metamodel.EntityType;
 import javax.persistence.spi.PersistenceUnitTransactionType;
-
 import org.hibernate.annotations.Subselect;
 import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
 import org.hibernate.bytecode.enhance.spi.EnhancementContext;
@@ -35,10 +43,11 @@ import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.spi.Bootstrap;
 import org.hibernate.jpa.boot.spi.PersistenceUnitDescriptor;
 import org.hibernate.metamodel.internal.MetamodelImpl;
-import org.hibernate.metamodel.model.domain.internal.EntityTypeImpl;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
+import org.hibernate.persister.collection.BasicCollectionPersister;
+import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.testing.junit4.BaseUnitTestCase;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 
@@ -143,39 +152,134 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   }
 
   public void cleanTables() {
-    doInJPA(this::entityManagerFactory, entityManager -> {
+    EntityDependencyTracker dependencyTracker = new EntityDependencyTracker();
 
-      ((MetamodelImpl) entityManager.getMetamodel()).collectionPersisters()
-          .values()
-          .forEach(x -> {
-            String deleteQuery = getDeleteQuery(((AbstractCollectionPersister) x).getTableName());
-            entityManager.createNativeQuery(deleteQuery).executeUpdate();
-          });
+    doInJPA(this::entityManagerFactory, entityManager -> {
+      Collection<CollectionPersister> persisters =
+          ((MetamodelImpl) entityManager.getMetamodel()).collectionPersisters().values();
+
+      for (CollectionPersister persister : persisters) {
+        String myName = ((AbstractCollectionPersister) persister).getTableName();
+        String parent;
+        if (persister.getOwnerEntityPersister() instanceof AbstractEntityPersister) {
+          parent = ((AbstractEntityPersister) persister.getOwnerEntityPersister()).getTableName();
+        } else {
+          parent = ((AbstractCollectionPersister) persister.getOwnerEntityPersister()).getTableName();
+        }
+
+        dependencyTracker.addDependency(parent, myName);
+
+        Class<?> collectionClass = persister.getElementType().getReturnedClass();
+        if (persister instanceof BasicCollectionPersister
+            && collectionClass.getAnnotation(Entity.class) != null) {
+          dependencyTracker.addDependency(getEntityName(collectionClass), myName);
+        }
+      }
     });
+
     Arrays.stream(getAnnotatedClasses())
         .filter(entity -> entity.getAnnotation(Subselect.class) == null)
-        .forEach(x -> {
-          String name = x.getAnnotation(Entity.class).name();
-          if (name == null || name.isEmpty()) {
-            name = x.getSimpleName();
+        .filter(entity -> !isSingleTable(entity))
+        .forEach(entity -> {
+          String entityName = getEntityName(entity);
+
+          dependencyTracker.addDependency(entityName, null);
+
+          List<Field> entityFields = getEntityFields(entity);
+          for (Field field : entityFields) {
+            Class<?> dependencyAnnotation = findDependencyAnnotation(field);
+            if (dependencyAnnotation != null) {
+              String otherClass = getEntityName(getDependencyClass(field));
+              if (dependencyAnnotation == ManyToOne.class) {
+                dependencyTracker.addDependency(otherClass, entityName);
+              } else {
+                dependencyTracker.addDependency(entityName, otherClass);
+              }
+            }
           }
-          try {
-              String finalName = name;
-              doInJPA(this::entityManagerFactory, entityManager -> {
-                entityManager.createNativeQuery(getDeleteQuery(finalName)).executeUpdate();
-              });
-          }
-          catch (Exception e){
-            System.out.println("Could not clean table:" + e);
+
+          Class<?> parent = entity.getSuperclass();
+          if (parent.getAnnotation(Entity.class) != null) {
+            dependencyTracker.addDependency(getEntityName(parent), entityName);
           }
         });
-    doInJPA(this::entityManagerFactory, entityManager -> {
 
+    doInJPA(this::entityManagerFactory, entityManager -> {
       for (String extraTable : getExtraTablesToClear()) {
         entityManager.createNativeQuery(getDeleteQuery(extraTable)).executeUpdate();
       }
 
+      List<String> deleteOrderList = dependencyTracker.getEntityOrder();
+      for (String entity : deleteOrderList) {
+        entityManager.createNativeQuery(getDeleteQuery(entity)).executeUpdate();
+      }
     });
+  }
+
+  private static boolean isSingleTable(Class<?> entity) {
+    Inheritance inheritance = entity.getSuperclass().getAnnotation(Inheritance.class);
+    return inheritance != null && inheritance.strategy() == InheritanceType.SINGLE_TABLE;
+  }
+
+  /**
+   * Gets all the fields of an entity, including all parent classes.
+   */
+  private static List<Field> getEntityFields(Class<?> entity) {
+    List<Field> fields = new ArrayList<>();
+
+    for (Field field : entity.getDeclaredFields()) {
+      Class<?> fieldType = field.getType();
+      if (fieldType.getAnnotation(Embeddable.class) != null) {
+        fields.addAll(Arrays.asList(fieldType.getDeclaredFields()));
+      }
+    }
+
+    while (entity != Object.class) {
+      fields.addAll(Arrays.asList(entity.getDeclaredFields()));
+      entity = entity.getSuperclass();
+    }
+
+    return fields;
+  }
+
+  /**
+   * Returns the class associated with the type annotation.
+   */
+  private static Class<?> getDependencyClass(Field field) {
+    Type type = field.getGenericType();
+    if (type instanceof ParameterizedType) {
+      Type[] parameterizedTypes =
+          ((ParameterizedType) field.getGenericType()).getActualTypeArguments();
+      Class<?> genericType = (Class) parameterizedTypes[parameterizedTypes.length - 1];
+      return genericType;
+    } else {
+      return field.getType();
+    }
+  }
+
+  /**
+   * Returns the Hibernate annotation on a field (OneToMany, ManyToOne, OneToOne) if present.
+   * Returns null if none are present.
+   */
+  private static Class<?> findDependencyAnnotation(Field field) {
+    for (Annotation annotation : field.getDeclaredAnnotations()) {
+      Class<?> annotationType = annotation.annotationType();
+      if (annotationType == OneToMany.class
+          || annotationType == ManyToOne.class
+          || annotationType == OneToOne.class) {
+        return annotationType;
+      }
+    }
+
+    return null;
+  }
+
+  private static String getEntityName(Class<?> entityClass) {
+    String name = entityClass.getAnnotation(Entity.class).name();
+    if (name == null || name.isEmpty()) {
+      name = entityClass.getSimpleName();
+    }
+    return name;
   }
 
   /** Returns a list of extra tables that need to be cleared before each test is run. */
