@@ -58,6 +58,34 @@ The driver will use default credentials set in the Google Cloud SDK `gcloud` app
 
 You are now ready to begin using Hibernate with Cloud Spanner.
 
+=== Multi-Database Support
+
+In some cases, you will want to connect to multiple databases in the same project (for example connecting to Cloud Spanner for production and H2 for testing).
+
+At the present moment, it is not possible to connect to another non-Spanner database through Hibernate if the Spanner dialect (`google-cloud-spanner-hibernate-dialect`) is on the project classpath.
+
+In these cases, it is recommended to add the dialect dependency in a separate build profile to accommodate connecting to other databases. For example, in Maven, you might add a separate maven profile like this:
+
+[source, xml]
+----
+
+<profiles>
+  <profile>
+    <id>spanner</id>
+    <dependencies>
+      <dependency>
+        <groupId>com.google.cloud</groupId>
+        <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
+        <version>1.2.0</version>
+      </dependency>
+    </dependencies>
+  </profile>
+    ...
+</profiles>
+----
+
+You can then activate the profile using `-Pspanner` such as `mvn compile -Pspanner`.
+
 == User Guide
 
 The following section describes recommendations and best practices for how to best use the Cloud Spanner Hibernate Dialect.
