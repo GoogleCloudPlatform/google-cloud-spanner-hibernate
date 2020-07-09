@@ -61,32 +61,6 @@ public class SampleApplication {
   }
 
   /**
-   * Saves a {@link Singer} entity into a Spanner table.
-   *
-   * <p>Demonstrates saving entities using {@link com.google.cloud.spanner.hibernate.Interleaved}.
-   */
-  public static void saveSingerAlbum(Session session) {
-    session.beginTransaction();
-
-    Singer singer = new Singer("Singer1", new ArrayList<>());
-    Album album = new Album(singer, "Album name");
-    singer.addAlbum(album);
-
-    session.save(singer);
-    session.save(album);
-    session.getTransaction().commit();
-
-    List<Singer> singers =
-        session.createQuery("from Singer", Singer.class).list();
-    System.out.println(
-        String.format("There are %d singer saved in the table:", singers.size()));
-
-    for (Singer singerInTable : singers) {
-      System.out.println(singerInTable);
-    }
-  }
-
-  /**
    * Saves a {@link Person} entity into a Spanner table.
    */
   public static void savePerson(Session session) {
@@ -119,6 +93,32 @@ public class SampleApplication {
 
     for (Person personInTable : personsInTable) {
       System.out.println(personInTable);
+    }
+  }
+
+  /**
+   * Saves a {@link Singer} entity into a Spanner table.
+   *
+   * <p>Demonstrates saving entities using {@link com.google.cloud.spanner.hibernate.Interleaved}.
+   */
+  public static void saveSingerAlbum(Session session) {
+    session.beginTransaction();
+
+    Singer singer = new Singer("Singer1", new ArrayList<>());
+    Album album = new Album(singer, "Album name");
+    singer.addAlbum(album);
+
+    session.save(singer);
+    session.save(album);
+    session.getTransaction().commit();
+
+    List<Singer> singers =
+        session.createQuery("from Singer", Singer.class).list();
+    System.out.println(
+        String.format("There are %d singer saved in the table:", singers.size()));
+
+    for (Singer singerInTable : singers) {
+      System.out.println(singerInTable);
     }
   }
 }

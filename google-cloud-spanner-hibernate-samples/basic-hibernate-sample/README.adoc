@@ -46,3 +46,83 @@ Person{
 ----
 
 You will also be able to view the tables and data that Hibernate created in Spanner through the https://console.cloud.google.com/spanner[Google Cloud Platform Console].
+
+== Interleaved Tables Example
+
+This application also demonstrates an `Interleaved` table relationship in Spanner through the `Singer` and `Album` entities.
+
+Cloud Spanner offers the concept of https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables[Interleaved Tables] which allows you to co-locate the rows of an interleaved table with rows of a parent table for efficient retrieval.
+
+Using the `@Interleaved` annotation, the sample declares `Album` to be an interleaved table within `Singer`.
+We also must use a composite primary key `AlbumId` to express that the Album inherits all of the primary key fields of the parent:
+
+[source, java]
+----
+@Entity
+@Interleaved(parentEntity = Singer.class, cascadeDelete = true)
+@IdClass(AlbumId.class)
+public class Album {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  @Type(type = "uuid-char")
+  private UUID albumId;
+
+  @Id
+  @ManyToOne
+  @JoinColumn(name = "singerId")
+  @Type(type = "uuid-char")
+  private Singer singer;
+
+  public static class AlbumId implements Serializable {
+
+    // The primary key columns of the parent entity
+    // must be declared first.
+    Singer singer;
+
+    @Type(type = "uuid-char")
+    UUID albumId;
+
+    // Getters and setters
+  }
+}
+----
+
+If you need to create a link from `Album` to `Singer`, we can declare it as a `@ManyToOne` relationship and we must specify the primary key fields to inherit from `Singer` through the `@JoinColumn` annotation.
+In this case `singerId` is the column to inherit.
+
+[source, java]
+----
+@Id
+@ManyToOne
+@JoinColumn(name = "singerId")
+@Type(type = "uuid-char")
+private Singer singer;
+----
+
+In addition, we may specify a `@OneToMany` link from `Singer` to `Album` in the entity by using the `mappedBy` setting in the `@OneToMany` annotation.
+
+[source, java]
+----
+@Entity
+public class Singer {
+
+  @OneToMany(mappedBy = "singer")
+  List<Album> albums;
+
+  // continued...
+}
+----
+
+After running the sample, you will also see some sample `Singer` and `Album` records be created.
+
+----
+Hibernate: insert into Singer (name, singerId) values (?, ?)
+Hibernate: insert into Album (title, albumId, singerId) values (?, ?, ?)
+Hibernate: select singer0_.singerId as singerId1_5_, singer0_.name as name2_5_ from Singer singer0_
+There are 1 singer saved in the table:
+Singer{singerId=b8766052-ed24-4f18-9853-ed48ecc19c14
+, albums=[Album{albumId=22badab3-9ac0-4b70-a159-213e5342d9b0, singer=Singer1, title='Album name'}]
+, name='Singer1'
+}
+----
