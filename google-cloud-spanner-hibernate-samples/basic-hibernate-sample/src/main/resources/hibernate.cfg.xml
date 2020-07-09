@@ -25,10 +25,12 @@
     <property name="hibernate.hbm2ddl.auto">create</property>
 
     <!-- Annotated entity classes -->
-    <mapping class="com.example.Person"/>
-    <mapping class="com.example.Payment"/>
-    <mapping class="com.example.WireTransferPayment"/>
-    <mapping class="com.example.CreditCardPayment"/>
+    <mapping class="com.example.entities.Person"/>
+    <mapping class="com.example.entities.Payment"/>
+    <mapping class="com.example.entities.WireTransferPayment"/>
+    <mapping class="com.example.entities.CreditCardPayment"/>
+    <mapping class="com.example.entities.Singer"/>
+    <mapping class="com.example.entities.Album"/>
 
   </session-factory>
 </hibernate-configuration>

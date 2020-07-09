@@ -214,39 +214,42 @@ This feature enforces the one-to-many relationship and provides efficient querie
 
 If you would like to generate interleaved tables in Cloud Spanner, you must annotate your entity with the `@Interleaved` annotation.
 The primary key of the interleaved table must also include at least all of the primary key attributes of the parent.
-This is typically done using the `@EmbeddedId` annotation.
+This is typically done using the `@IdClass` or `@EmbeddedId` annotation.
 
-In the example below, the `Child` entity is an interleaved table of the `Parent` entity.
-Note that the child's primary key is an `EmbeddedId` and also includes the fields of the primary key of the parent using the same name.
-This must be done for interleaved child entities.
+The https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample[Hibernate Basic Sample] contains an example of using `@Interleaved` for the https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample/src/main/java/com/example/Singer.java[Singer] and https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample/src/main/java/com/example/Album.java[Album] entities.
+The code excerpt of the `Album` entity below demonstrates how to declare an interleaved entity in the `Singer` table.
 
-[source,java]
+[source, java]
 ----
 @Entity
-@Interleaved(parentEntity = Parent.class)
-public class Child {
-
-  @EmbeddedId
-  public ChildId childId;
-
-  public String name;
-
-  @Embeddable
-  public static class ChildId implements Serializable {
-
-    public UUID parentId;
-
-    public UUID childId;
-  }
-}
-
-@Entity
-public class Parent {
+@Interleaved(parentEntity = Singer.class, cascadeDelete = true)
+@IdClass(AlbumId.class)
+public class Album {
 
   @Id
-  public UUID parentId;
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  @Type(type = "uuid-char")
+  private UUID albumId;
 
-  public String name;
+  @Id
+  @ManyToOne
+  @JoinColumn(name = "singerId")
+  @Type(type = "uuid-char")
+  private Singer singer;
+
+  // Constructors, getters/setters
+
+  public static class AlbumId implements Serializable {
+
+    // The primary key columns of the parent entity
+    // must be declared first.
+    Singer singer;
+
+    @Type(type = "uuid-char")
+    UUID albumId;
+
+    // Getters and setters
+  }
 }
 ----
 

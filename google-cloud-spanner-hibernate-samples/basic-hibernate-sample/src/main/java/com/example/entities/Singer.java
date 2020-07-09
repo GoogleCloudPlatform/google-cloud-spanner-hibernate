@@ -16,46 +16,72 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package com.example;
+package com.example.entities;
 
+import java.util.List;
 import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
+import javax.persistence.OneToMany;
 import org.hibernate.annotations.Type;
 
-// [START spanner_hibernate_inheritance]
-/**
- * An example {@link Entity} which demonstrates usage of {@link Inheritance}.
- */
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-public abstract class Payment {
+public class Singer {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   @Type(type = "uuid-char")
-  private UUID id;
+  private UUID singerId;
 
-  private Long amount;
+  @OneToMany(mappedBy = "singer")
+  List<Album> albums;
 
-  public UUID getId() {
-    return id;
+  private String name;
+
+  public Singer(String name, List<Album> albums) {
+    this.name = name;
+    this.albums = albums;
   }
 
-  public void setId(UUID id) {
-    this.id = id;
+  // Default constructor used by JPA
+  public Singer() {}
+
+  public UUID getSingerId() {
+    return singerId;
   }
 
-  public Long getAmount() {
-    return amount;
+  public void setSingerId(UUID singerId) {
+    this.singerId = singerId;
   }
 
-  public void setAmount(Long amount) {
-    this.amount = amount;
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void addAlbum(Album album) {
+    this.albums.add(album);
+  }
+
+  public List<Album> getAlbums() {
+    return albums;
+  }
+
+  public void setAlbums(List<Album> albums) {
+    this.albums = albums;
+  }
+
+  @Override
+  public String toString() {
+    return "Singer{"
+        + "singerId=" + singerId
+        + "\n, albums=" + albums
+        + "\n, name='" + name + '\''
+        + "\n}";
   }
 }
-// [END spanner_hibernate_inheritance]
