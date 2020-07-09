@@ -120,7 +120,7 @@ After running the sample, you will also see some sample `Singer` and `Album` rec
 Hibernate: insert into Singer (name, singerId) values (?, ?)
 Hibernate: insert into Album (title, albumId, singerId) values (?, ?, ?)
 Hibernate: select singer0_.singerId as singerId1_5_, singer0_.name as name2_5_ from Singer singer0_
-There are 1 singer saved in the table:
+There are 1 singers saved in the table:
 Singer{singerId=b8766052-ed24-4f18-9853-ed48ecc19c14
 , albums=[Album{albumId=22badab3-9ac0-4b70-a159-213e5342d9b0, singer=Singer1, title='Album name'}]
 , name='Singer1'

@@ -53,7 +53,7 @@ public class SampleApplication {
         .buildSessionFactory();
     Session session = sessionFactory.openSession();
 
-    // Save an entity into Spanner Table.
+    // Save a Person entity into Spanner Table.
     savePerson(session);
 
     // Save a singer entity into the Spanner Table.
@@ -115,7 +115,7 @@ public class SampleApplication {
     List<Singer> singers =
         session.createQuery("from Singer", Singer.class).list();
     System.out.println(
-        String.format("There are %d singer saved in the table:", singers.size()));
+        String.format("There are %d singers saved in the table:", singers.size()));
 
     for (Singer singerInTable : singers) {
       System.out.println(singerInTable);

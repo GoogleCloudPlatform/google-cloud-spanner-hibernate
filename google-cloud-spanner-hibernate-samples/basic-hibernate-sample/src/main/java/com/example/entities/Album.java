@@ -48,14 +48,14 @@ public class Album {
   @Type(type = "uuid-char")
   private Singer singer;
 
-  String title;
+  private String title;
 
   public Album(Singer singer, String title) {
     this.singer = singer;
     this.title = title;
   }
 
-  Album() {
+  public Album() {
   }
 
   public String getTitle() {
