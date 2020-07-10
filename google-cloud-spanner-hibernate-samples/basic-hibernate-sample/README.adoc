@@ -110,7 +110,7 @@ public class Singer {
   @OneToMany(mappedBy = "singer")
   List<Album> albums;
 
-  // continued...
+  // Continued...
 }
 ----
 
