@@ -20,6 +20,10 @@ package com.example;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.example.entities.Album;
+import com.example.entities.Payment;
+import com.example.entities.Person;
+import com.example.entities.Singer;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.hibernate.Session;
@@ -27,6 +31,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -47,9 +53,20 @@ public class SampleApplicationTests {
           .buildMetadata()
           .buildSessionFactory();
 
+  private Session session;
+
+  @Before
+  public void setupTest() {
+    session = sessionFactory.openSession();
+  }
+
+  @After
+  public void cleanup() {
+    session.close();
+  }
+
   @Test
-  public void testSample() {
-    Session session = sessionFactory.openSession();
+  public void testSavePerson() {
     SampleApplication.savePerson(session);
 
     List<Person> savedPersons = session.createQuery("from Person", Person.class).list();
@@ -69,5 +86,22 @@ public class SampleApplicationTests {
             .map(Payment::getAmount)
             .collect(Collectors.toList());
     assertThat(paymentAmounts).containsExactlyInAnyOrder(200L, 600L);
+  }
+
+  @Test
+  public void testSaveSingers() {
+    SampleApplication.saveSingerAlbum(session);
+
+    List<Singer> savedSingers = session.createQuery("from Singer", Singer.class).list();
+
+    assertThat(savedSingers).hasSize(1);
+
+    Singer singer = savedSingers.get(0);
+    assertThat(singer.getName()).isEqualTo("Singer1");
+    assertThat(singer.getAlbums()).hasSize(1);
+
+    Album album = singer.getAlbums().get(0);
+    assertThat(album.getTitle()).isEqualTo("Album name");
+    assertThat(album.getSinger()).isEqualTo(singer);
   }
 }
