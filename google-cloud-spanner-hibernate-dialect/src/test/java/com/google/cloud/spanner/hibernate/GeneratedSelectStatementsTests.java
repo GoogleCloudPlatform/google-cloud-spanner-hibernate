@@ -79,8 +79,10 @@ public class GeneratedSelectStatementsTests {
         .build();
 
     this.metadata =
-        new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class)
-            .addAnnotatedClass(SubTestEntity.class).buildMetadata();
+        new MetadataSources(this.registry)
+            .addAnnotatedClass(TestEntity.class)
+            .addAnnotatedClass(SubTestEntity.class)
+            .buildMetadata();
   }
 
   @Test

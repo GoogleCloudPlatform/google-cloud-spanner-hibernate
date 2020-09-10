@@ -107,7 +107,7 @@ public class Person {
         + "\n name='" + name + '\''
         + "\n nickname='" + nickname + '\''
         + "\n address='" + address + '\''
-        + "\n total_payments=" + payments.stream().mapToLong(Payment::getAmount).sum()
+        + "\n total_payments=" + payments.stream().mapToLong(p -> p.getAmount().longValue()).sum()
         + "\n}";
   }
 }

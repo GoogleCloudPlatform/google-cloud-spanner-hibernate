@@ -18,6 +18,7 @@
 
 package com.example;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -40,7 +41,7 @@ public abstract class Payment {
   @Type(type = "uuid-char")
   private UUID id;
 
-  private Long amount;
+  private BigDecimal amount;
 
   public UUID getId() {
     return id;
@@ -50,11 +51,11 @@ public abstract class Payment {
     this.id = id;
   }
 
-  public Long getAmount() {
+  public BigDecimal getAmount() {
     return amount;
   }
 
-  public void setAmount(Long amount) {
+  public void setAmount(BigDecimal amount) {
     this.amount = amount;
   }
 }
