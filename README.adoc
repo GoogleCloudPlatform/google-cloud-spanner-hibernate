@@ -261,7 +261,6 @@ The following sections below describe the feature set of the Cloud Spanner Hiber
 | Unsupported Feature | Description
 | Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
 | Column default values | The dialect does not currently set default values based on the `@ColumnDefault` annotation, because Cloud Spanner does not support column defaults in the DDL.
-| Big-decimal or arbitrary-precision numbers | The dialect does not support `java.math.BigDecimal` and `java.math.BigInteger` because Cloud Spanner does not provide native support for https://cloud.google.com/spanner/docs/storing-numeric-data[arbitrary-precision decimal numbers], such as `NUMERIC` or `DECIMAL`.
 |===
 
 === Catalog/Schema Table Names
@@ -288,8 +287,3 @@ It does not support table names with catalog and schema components:
 
 The dialect does not support the https://docs.jboss.org/hibernate/orm/5.4/javadocs/org/hibernate/annotations/ColumnDefault.html[`@ColumnDefault`] annotation
 because Cloud Spanner does not offer a way of setting a default value for a column during table creation through DDL statements.
-
-=== Decimal and Numeric Types
-
-Cloud Spanner does not provide native support for https://cloud.google.com/spanner/docs/storing-numeric-data[arbitrary-precision decimal numbers], such as `NUMERIC` and `DECIMAL`.
-As a result, the dialect does not support decimal and arbitrary-precision Java types such as `java.math.BigInteger` and `java.math.BigDecimal`.
