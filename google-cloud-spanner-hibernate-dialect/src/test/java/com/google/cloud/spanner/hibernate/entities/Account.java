@@ -36,7 +36,9 @@ public class Account {
   private BigDecimal amount;
 
   // Default constructor for Hibernate
-  Account() {}
+  Account() {
+
+  }
 
   /**
    * Constructs the Account entity.

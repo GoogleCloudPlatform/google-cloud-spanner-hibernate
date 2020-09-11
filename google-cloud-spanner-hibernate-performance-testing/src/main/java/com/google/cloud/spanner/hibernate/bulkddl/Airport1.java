@@ -61,7 +61,9 @@ public class Airport1 {
   /**
    * Default entity constructor for Hibernate.
    */
-  public Airport1() {}
+  public Airport1() {
+
+  }
 
   public UUID getId() {
     return id;
