@@ -16,39 +16,51 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package com.example.entities;
+package com.google.cloud.spanner.hibernate.entities;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import org.hibernate.annotations.Type;
 
-// [START spanner_hibernate_inheritance]
 /**
- * An example {@link Entity} which demonstrates usage of {@link Inheritance}.
+ * Sample entity with a {@link BigDecimal} column to demonstrate NUMERIC support.
  */
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-public abstract class Payment {
+public class Account {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  @Type(type = "uuid-char")
-  private UUID id;
+  private long id;
+
+  private String name;
 
   private BigDecimal amount;
 
-  public UUID getId() {
+  // Default constructor for Hibernate
+  Account() {}
+
+  /**
+   * Constructs the Account entity.
+   */
+  public Account(long id, String name, BigDecimal amount) {
+    this.id = id;
+    this.name = name;
+    this.amount = amount;
+  }
+
+  public long getId() {
     return id;
   }
 
-  public void setId(UUID id) {
+  public void setId(long id) {
     this.id = id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   public BigDecimal getAmount() {
@@ -59,4 +71,3 @@ public abstract class Payment {
     this.amount = amount;
   }
 }
-// [END spanner_hibernate_inheritance]

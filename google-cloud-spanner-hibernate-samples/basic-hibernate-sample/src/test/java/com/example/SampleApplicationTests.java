@@ -83,7 +83,7 @@ public class SampleApplicationTests {
 
     List<Long> paymentAmounts =
         payments.stream()
-            .map(Payment::getAmount)
+            .map(payment -> payment.getAmount().longValue())
             .collect(Collectors.toList());
     assertThat(paymentAmounts).containsExactlyInAnyOrder(200L, 600L);
   }
