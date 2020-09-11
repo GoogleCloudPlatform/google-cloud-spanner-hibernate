@@ -20,6 +20,7 @@ package com.google.cloud.spanner.hibernate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.cloud.spanner.hibernate.entities.Account;
 import com.google.cloud.spanner.hibernate.entities.Airplane;
 import com.google.cloud.spanner.hibernate.entities.Airport;
 import com.google.cloud.spanner.hibernate.entities.Child;
@@ -128,6 +129,29 @@ public class GeneratedCreateTableStatementsTests {
             + "foreign key (manager_id) references Employee (id)",
         "RUN BATCH",
         "INSERT INTO hibernate_sequence (next_val) VALUES(1)"
+    );
+  }
+
+  @Test
+  public void testCreateNumericColumn() {
+    Metadata metadata =
+        new MetadataSources(this.registry)
+            .addAnnotatedClass(Account.class)
+            .buildMetadata();
+
+    Session session = metadata.buildSessionFactory().openSession();
+    session.beginTransaction();
+    session.close();
+
+    List<String> sqlStrings =
+        this.connection.getStatementResultSetHandler().getExecutedStatements();
+
+    assertThat(sqlStrings).containsExactly(
+        "START BATCH DDL",
+        "RUN BATCH",
+        "START BATCH DDL",
+        "create table Account (id INT64 not null,amount NUMERIC,name STRING(255)) PRIMARY KEY (id)",
+        "RUN BATCH"
     );
   }
 

@@ -23,6 +23,7 @@ import com.example.entities.CreditCardPayment;
 import com.example.entities.Person;
 import com.example.entities.Singer;
 import com.example.entities.WireTransferPayment;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.Session;
@@ -68,11 +69,11 @@ public class SampleApplication {
 
     WireTransferPayment payment1 = new WireTransferPayment();
     payment1.setWireId("1234ab");
-    payment1.setAmount(200L);
+    payment1.setAmount(new BigDecimal("200.00"));
 
     CreditCardPayment payment2 = new CreditCardPayment();
     payment2.setCreditCardId("creditcardId");
-    payment2.setAmount(600L);
+    payment2.setAmount(new BigDecimal("600.00"));
 
     Person person = new Person();
     person.setName("person");
