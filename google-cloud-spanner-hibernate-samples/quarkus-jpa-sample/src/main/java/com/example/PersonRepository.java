@@ -26,4 +26,6 @@ import javax.enterprise.context.ApplicationScoped;
  * A Panache CRUD repository for the {@link Person} entity.
  */
 @ApplicationScoped
-public class PersonRepository implements PanacheRepositoryBase<Person, UUID> {}
+public class PersonRepository implements PanacheRepositoryBase<Person, UUID> {
+
+}

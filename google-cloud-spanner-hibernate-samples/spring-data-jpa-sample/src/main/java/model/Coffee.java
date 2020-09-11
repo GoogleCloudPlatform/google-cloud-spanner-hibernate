@@ -40,7 +40,9 @@ public class Coffee {
   private Customer customer;
 
   // Empty default constructor for Spring Data JPA.
-  public Coffee() {}
+  public Coffee() {
+
+  }
 
   public Coffee(Customer customer, String size) {
     this.customer = customer;

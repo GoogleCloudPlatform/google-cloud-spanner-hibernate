@@ -46,7 +46,9 @@ public class Singer {
   }
 
   // Default constructor used by JPA
-  public Singer() {}
+  public Singer() {
+
+  }
 
   public UUID getSingerId() {
     return singerId;
