@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
 import java.io.Serializable;
 import java.sql.Types;
 import java.util.Map;
@@ -55,7 +56,11 @@ public class SpannerDialect extends Dialect {
 
   private static final int BYTES_MAX_LENGTH = 10485760;
 
-  private final SpannerTableExporter spannerTableExporter = new SpannerTableExporter(this);
+  private final SpannerTableExporter spannerTableExporter =
+      new SpannerTableExporter(this);
+
+  private final SpannerForeignKeyExporter spannerForeignKeyExporter =
+      new SpannerForeignKeyExporter(this);
 
   private static final LockingStrategy LOCKING_STRATEGY = new DoNothingLockingStrategy();
 
@@ -260,6 +265,11 @@ public class SpannerDialect extends Dialect {
     return this.spannerTableExporter;
   }
 
+  @Override
+  public Exporter<ForeignKey> getForeignKeyExporter() {
+    return this.spannerForeignKeyExporter;
+  }
+
   /* SELECT-related functions */
 
   @Override
@@ -324,11 +334,6 @@ public class SpannerDialect extends Dialect {
   }
 
   @Override
-  public boolean dropConstraints() {
-    return false;
-  }
-
-  @Override
   public boolean qualifyIndexName() {
     return false;
   }
@@ -339,27 +344,13 @@ public class SpannerDialect extends Dialect {
   }
 
   @Override
-  public String getDropForeignKeyString() {
-    throw new UnsupportedOperationException("Cannot drop foreign-key constraint because "
-        + "Cloud Spanner does not support foreign keys.");
-  }
-
-  @Override
   public String getAddForeignKeyConstraintString(String constraintName,
       String[] foreignKey,
       String referencedTable,
       String[] primaryKey,
       boolean referencesPrimaryKey) {
-    throw new UnsupportedOperationException("Cannot add foreign-key constraint because "
-        + "Cloud Spanner does not support foreign keys.");
-  }
-
-  @Override
-  public String getAddForeignKeyConstraintString(
-      String constraintName,
-      String foreignKeyDefinition) {
-    throw new UnsupportedOperationException("Cannot add foreign-key constraint because "
-        + "Cloud Spanner does not support foreign keys.");
+    return super.getAddForeignKeyConstraintString(
+        constraintName, foreignKey, referencedTable, primaryKey, false);
   }
 
   @Override
@@ -459,11 +450,6 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public Exporter<Sequence> getSequenceExporter() {
-    return NOOP_EXPORTER;
-  }
-
-  @Override
-  public Exporter<ForeignKey> getForeignKeyExporter() {
     return NOOP_EXPORTER;
   }
 

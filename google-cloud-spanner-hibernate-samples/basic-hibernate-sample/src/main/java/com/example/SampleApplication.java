@@ -18,6 +18,12 @@
 
 package com.example;
 
+import com.example.entities.Album;
+import com.example.entities.CreditCardPayment;
+import com.example.entities.Person;
+import com.example.entities.Singer;
+import com.example.entities.WireTransferPayment;
+import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -47,8 +53,11 @@ public class SampleApplication {
         .buildSessionFactory();
     Session session = sessionFactory.openSession();
 
-    // Save an entity into Spanner Table.
+    // Save a Person entity into Spanner Table.
     savePerson(session);
+
+    // Save a singer entity into the Spanner Table.
+    saveSingerAlbum(session);
   }
 
   /**
@@ -84,6 +93,32 @@ public class SampleApplication {
 
     for (Person personInTable : personsInTable) {
       System.out.println(personInTable);
+    }
+  }
+
+  /**
+   * Saves a {@link Singer} entity into a Spanner table.
+   *
+   * <p>Demonstrates saving entities using {@link com.google.cloud.spanner.hibernate.Interleaved}.
+   */
+  public static void saveSingerAlbum(Session session) {
+    session.beginTransaction();
+
+    Singer singer = new Singer("Singer1", new ArrayList<>());
+    Album album = new Album(singer, "Album name");
+    singer.addAlbum(album);
+
+    session.save(singer);
+    session.save(album);
+    session.getTransaction().commit();
+
+    List<Singer> singers =
+        session.createQuery("from Singer", Singer.class).list();
+    System.out.println(
+        String.format("There are %d singers saved in the table:", singers.size()));
+
+    for (Singer singerInTable : singers) {
+      System.out.println(singerInTable);
     }
   }
 }

@@ -16,13 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package com.example;
+package com.example.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
 @Entity
-class WireTransferPayment extends Payment {
+public class WireTransferPayment extends Payment {
 
   @Column(name = "wire_id")
   private String wireId;

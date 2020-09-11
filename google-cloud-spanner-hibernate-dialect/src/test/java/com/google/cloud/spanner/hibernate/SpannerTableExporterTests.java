@@ -142,6 +142,8 @@ public class SpannerTableExporterTests {
         "START BATCH DDL",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
         "create index name_index on Employee (name)",
+        "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
+            + "foreign key (manager_id) references Employee (id)",
         "RUN BATCH",
         "INSERT INTO hibernate_sequence (next_val) VALUES(1)"
     );
@@ -167,10 +169,16 @@ public class SpannerTableExporterTests {
         + "(`TestEntity_ID1` INT64 not null,`TestEntity_id2` STRING(255) not null,"
         + "stringList STRING(255)) PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList)";
 
+    String foreignKeyString =
+        "alter table `TestEntity_stringList` add constraint FK2is6fwy3079dmfhjot09x5och "
+            + "foreign key (`TestEntity_ID1`, `TestEntity_id2`) "
+            + "references `test_table` (`ID1`, id2)";
+
     assertThat(statements.get(0)).isEqualTo("START BATCH DDL");
-    assertThat(statements.subList(1, 3))
-        .containsExactlyInAnyOrder(expectedCreateString, expectedCollectionCreateString);
-    assertThat(statements.get(3)).isEqualTo("RUN BATCH");
+    assertThat(statements.subList(1, 4))
+        .containsExactlyInAnyOrder(
+            expectedCreateString, expectedCollectionCreateString, foreignKeyString);
+    assertThat(statements.get(4)).isEqualTo("RUN BATCH");
   }
 
   @Test

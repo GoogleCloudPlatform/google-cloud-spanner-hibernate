@@ -34,17 +34,48 @@ public class SpannerDatabaseInfo {
 
   private final Set<String> indexNames;
 
+  private final DatabaseMetaData databaseMetaData;
+
+  /**
+   * Constructs the {@link SpannerDatabaseInfo} by querying the Spanner database metadata.
+   */
   public SpannerDatabaseInfo(DatabaseMetaData databaseMetaData) throws SQLException {
     this.tableNames = extractDatabaseTables(databaseMetaData);
     this.indexNames = extractDatabaseIndices(databaseMetaData);
+    this.databaseMetaData = databaseMetaData;
   }
 
+  /**
+   * Returns the table names in the Spanner database.
+   */
   public Set<String> getAllTables() {
     return tableNames;
   }
 
+  /**
+   * Returns the names of all the indices in the Spanner database.
+   */
   public Set<String> getAllIndices() {
     return indexNames;
+  }
+
+  /**
+   * Returns the names of all the imported foreign keys for a specified {@code tableName}.
+   */
+  public Set<String> getImportedForeignKeys(String tableName) {
+    try {
+      HashSet<String> foreignKeys = new HashSet<>();
+
+      ResultSet rs = databaseMetaData.getImportedKeys(null, null, tableName);
+      while (rs.next()) {
+        foreignKeys.add(rs.getString("FK_NAME"));
+      }
+      rs.close();
+      return foreignKeys;
+    } catch (SQLException e) {
+      throw new RuntimeException(
+          "Failed to lookup Spanner Database foreign keys for table: " + tableName, e);
+    }
   }
 
   private static Set<String> extractDatabaseTables(DatabaseMetaData databaseMetaData)

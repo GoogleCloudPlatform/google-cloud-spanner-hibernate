@@ -124,6 +124,8 @@ public class GeneratedCreateTableStatementsTests {
             + "(id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
         "create index name_index on Employee (name)",
+        "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
+            + "foreign key (manager_id) references Employee (id)",
         "RUN BATCH",
         "INSERT INTO hibernate_sequence (next_val) VALUES(1)"
     );
@@ -209,6 +211,10 @@ public class GeneratedCreateTableStatementsTests {
             + "airplanes_id STRING(255) not null) PRIMARY KEY (Airport_id,airplanes_id)",
         "create unique index UK_gc568wb30sampsuirwne5jqgh on Airplane (modelName)",
         "create unique index UK_em0lqvwoqdwt29x0b0r010be on Airport_Airplane (airplanes_id)",
+        "alter table Airport_Airplane add constraint FKkn0enwaxbwk7csf52x0eps73d "
+            + "foreign key (airplanes_id) references Airplane (id)",
+        "alter table Airport_Airplane add constraint FKh186t28ublke8o13fo4ppogs7 "
+            + "foreign key (Airport_id) references Airport (id)",
         "RUN BATCH"
     );
   }

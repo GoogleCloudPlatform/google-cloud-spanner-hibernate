@@ -37,14 +37,11 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
-import org.jboss.logging.Logger;
 
 /**
  * Generates the SQL statements for creating and dropping tables in Spanner.
  */
 public class SpannerTableStatements {
-
-  private static final Logger LOGGER = Logger.getLogger(SpannerTableStatements.class);
 
   private static final String CREATE_TABLE_TEMPLATE =
       "create table {0} ({1}) PRIMARY KEY ({2}){3}";
@@ -70,8 +67,9 @@ public class SpannerTableStatements {
   /**
    * Generates the statements needed to drop a table.
    */
-  public List<String> dropTable(Table table, Metadata metadata) {
+  public List<String> dropTable(Table table) {
     ArrayList<String> dropStrings = new ArrayList<>();
+
     for (String indexName : getTableIndices(table)) {
       if (spannerDatabaseInfo.getAllIndices().contains(indexName)) {
         dropStrings.add("drop index " + indexName);
