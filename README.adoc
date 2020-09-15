@@ -1,3 +1,6 @@
+:toc:
+:toclevels: 4
+
 = Google Cloud Spanner Dialect for Hibernate ORM
 
 This is a dialect compatible with https://hibernate.org/orm/releases/5.4/[Hibernate 5.4] for the https://cloud.google.com/spanner/[Google Cloud Spanner] database service.
@@ -88,9 +91,186 @@ You can then activate the profile using `-Pspanner` such as `mvn compile -Pspann
 
 == User Guide
 
-A user guide for the Cloud Spanner Hibernate Dialect is provided in the https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/wiki[repository wiki page].
+This guide contains a variety of best practices for using Hibernate with Spanner which can significantly improve the performance of your application.
 
-This guide contains best practices for using the Hibernate dialect with Spanner which can improve the performance of your application.
+=== Schema Creation and Entity Design
+
+Hibernate generates statements based on your Hibernate entity's design. Following these practices can result in better DDL and DML statement generation which can improve performance.
+
+==== Use Generated UUIDs for ID Generation
+
+The Universally Unique Identifier (UUID) is the preferred ID type in Cloud Spanner because it avoids hotspots as the system divides data among servers by key ranges.
+A monotonically increasing integer key would also work, but can be less performant.
+
+For this reason, if you are using generated IDs in your code, you should configure UUID generation like this:
+
+[source, java]
+----
+@Entity
+public class Employee {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  @Type(type="uuid-char")
+  public UUID id;
+}
+----
+
+The `@Type(type="uuid-char")` annotation specifies that this UUID value will be stored in Cloud Spanner as a `STRING` column.
+Leaving out this annotation causes a `BYTES` column to be used.
+
+Hibernate's `@GeneratedValue` annotation for numeric fields is supported but not recommended:
+[source, java]
+----
+@Entity
+public class Employee {
+
+  @Id
+  @GeneratedValue   // Not Recommended.
+  public Long id;
+}
+----
+
+This results in sequential IDs that are https://cloud.google.com/spanner/docs/schema-and-data-model#primary_keys[not optimal for Cloud Spanner] and makes use of the `hibernate_sequence` table for generating IDs.
+
+==== Generate Schema for faster development
+
+It is often useful to generate the schema for your database, such as during the early stages of development.
+The Spanner dialect supports Hibernate's `hibernate.hbm2ddl.auto` setting which controls the framework's schema generation behavior on start-up.
+
+The following settings are available:
+
+- `none`: Do nothing.
+- `validate`: Validate the schema, makes no changes to the database.
+- `update`: Create or update the schema.
+- `create`: Create the schema, destroying previous data.
+- `create-drop`: Drop the schema when the SessionFactory is closed explicitly, typically when the application is stopped.
+
+Hibernate performs schema updates on each table and entity type on startup, which can take more than several minutes if there are many tables. To avoid schema updates keeping Hibernate from starting for several minutes, you can update schemas separately and use the `none` or `validate` settings.
+
+==== Use Constraints Generation to leverage Spanner foreign keys
+
+The dialect supports all of the standard entity relationships:
+
+- `@OneToOne`
+- `@OneToMany`
+- `@ManyToOne`
+- `@ManyToMany`
+
+These can be used via `@JoinTable` or `@JoinColumn`.
+
+The Cloud Spanner Hibernate dialect will generate the correct foreign key DDL statements during schema generation for entities using these annotations.
+However, Cloud Spanner currently does not support cascading deletes on foreign keys, therefore database-side cascading deletes are not supported via the `@OnDelete(action = OnDeleteAction.CASCADE)`.
+
+The dialect also supports unique column constraints applied through `@Column(unique = true)` or `@UniqueConstraint`.
+In these cases, the dialect will create a unique index to enforce uniqueness on the specified columns.
+
+==== Use Interleaved Tables for Parent-Child entities for better performance
+
+Cloud Spanner offers the concept of https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables[Interleaved Tables] which allows you to co-locate the rows of an interleaved table with rows of a parent table for efficient retrieval.
+This feature enforces the one-to-many relationship and provides efficient queries and operations on entities of a single domain parent entity.
+
+If you would like to generate interleaved tables in Cloud Spanner, you must annotate your entity with the `@Interleaved` annotation.
+The primary key of the interleaved table must also include at least all of the primary key attributes of the parent.
+This is typically done using the `@IdClass` or `@EmbeddedId` annotation.
+
+The https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample[Hibernate Basic Sample] contains an example of using `@Interleaved` for the https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample/src/main/java/com/example/Singer.java[Singer] and https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample/src/main/java/com/example/Album.java[Album] entities.
+The code excerpt of the `Album` entity below demonstrates how to declare an interleaved entity in the `Singer` table.
+
+[source, java]
+----
+@Entity
+@Interleaved(parentEntity = Singer.class, cascadeDelete = true)
+@IdClass(AlbumId.class)
+public class Album {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  @Type(type = "uuid-char")
+  private UUID albumId;
+
+  @Id
+  @ManyToOne
+  @JoinColumn(name = "singerId")
+  @Type(type = "uuid-char")
+  private Singer singer;
+
+  // Constructors, getters/setters
+
+  public static class AlbumId implements Serializable {
+
+    // The primary key columns of the parent entity
+    // must be declared first.
+    Singer singer;
+
+    @Type(type = "uuid-char")
+    UUID albumId;
+
+    // Getters and setters
+  }
+}
+----
+
+
+=== Performance Optimizations
+
+There are some practices which can improve the execution time of your statements as well.
+
+==== Be Clear about Inserts or Updates
+
+Sometimes you may generate IDs for their entities in your code instead of relying on the `@GeneratedValue` annotation.
+
+```
+DbEntity entity = new DbEntity();
+entity.id = UUID.randomUUID();
+session.saveOrUpdate(entity);
+```
+
+This practice may result in Hibernate executing additional `SELECT` statements that you may not have expected because it will perform a `SELECT` on the table to determine if a record in the table already has the entity's ID. If so, it will perform an update, otherwise it will save a new entity.
+
+These extra `SELECT` statements could yield large performance issues because they may lock an entire table depending on how they are generated.
+
+In these cases, we recommend to either:
+
+* Let Hibernate generate the ID by leaving the entity's `id` null and annotate the field with `@GeneratedValue`. Hibernate will know that the record did not exist prior if it generates a new ID.
+* Or use `session.persist()` which explicitly will simply attempt the insert without generating an `ID`.
+
+==== Enable Hibernate Batching
+
+Batching SQL statements together allows you to optimize the performance of your application by including a group of SQL statements in a single remote call.
+This allows you to reduce the number of round-trips between your application and Cloud Spanner.
+
+By default, Hibernate does not batch the statements that it sends to the Cloud Spanner JDBC driver.
+
+Batching can be enabled by configuring `hibernate.jdbc.batch_size` in your Hibernate configuration file:
+
+[source, xml]
+----
+<property name="hibernate.jdbc.batch_size">100</property>
+----
+
+The property is set to `100` as an example; you may experiment with the batch size to see what works best for your application.
+
+==== Query Optimization
+
+The https://cloud.google.com/spanner/docs/query-syntax[Cloud Spanner SQL syntax] offers a variety of query hints to tune and optimize the performance of queries.
+If you find that you need to take advantage of this feature, you can achieve this in Hibernate using native SQL queries.
+
+This is an example of using the `@{FORCE_JOIN_ORDER=TRUE}` hint in a native Spanner SQL query.
+
+[source,java]
+----
+SQLQuery query = session.createSQLQuery("SELECT * FROM Singers AS s
+                                         JOIN@{FORCE_JOIN_ORDER=TRUE} Albums AS a
+                                         ON s.SingerId = a.Singerid
+                                         WHERE s.LastName LIKE '%x%'
+                                         AND a.AlbumTitle LIKE '%love%';");
+
+// Executes the query.
+List<Object[]> entities = query.list();
+----
+
+Also, you may consult the https://cloud.google.com/spanner/docs/sql-best-practices[Cloud Spanner documentation] on general recommendations for optimizing performance.
 
 == Cloud Spanner Hibernate ORM Limitations
 
