@@ -100,9 +100,11 @@ Hibernate generates statements based on your Hibernate entity design. Following 
 ==== Use Generated UUIDs for ID Generation
 
 The Universally Unique Identifier (UUID) is the preferred ID type in Cloud Spanner because it avoids hotspots as the system divides data among servers by key ranges.
-A monotonically increasing integer key would also work, but can be less performant.
+UUIDs are strongly preferred over sequentially increasing IDs for this reason.
 
-For this reason, if you are using generated IDs in your code, you should configure UUID generation like this:
+It is also recommended to use Hibernate's `@GeneratedValue` annotation to generate this UUID automatically; this can reduce the number of statements that Hibernate generates to perform an insert because it does not need to run extra `SELECT` statements to see if the record already exists in the table.
+
+You can configure UUID generation like below:
 
 [source, java]
 ----
@@ -174,7 +176,7 @@ If you would like to generate interleaved tables in Cloud Spanner, you must anno
 The primary key of the interleaved table must also include at least all of the primary key attributes of the parent.
 This is typically done using the `@IdClass` or `@EmbeddedId` annotation.
 
-The https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample[Hibernate Basic Sample] contains an example of using `@Interleaved` for the https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample/src/main/java/com/example/Singer.java[Singer] and https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample/src/main/java/com/example/Album.java[Album] entities.
+The https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample[Hibernate Basic Sample] contains an example of using `@Interleaved` for the https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample/src/main/java/com/example/entities/Singer.java[Singer] and https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample/src/main/java/com/example/entities/Album.java[Album] entities.
 The code excerpt of the `Album` entity below demonstrates how to declare an interleaved entity in the `Singer` table.
 
 [source, java]
@@ -211,29 +213,17 @@ public class Album {
 }
 ----
 
-
 === Performance Optimizations
 
-There are some practices which can improve the execution time of your statements as well.
+There are some practices which can improve the execution time of Hibernate operations.
 
 ==== Be Clear about Inserts or Updates
 
-Sometimes you may generate IDs for their entities in your code instead of relying on the `@GeneratedValue` annotation.
+Hibernate may generate additional `SELECT` statements if it is unclear whether you are attempting to insert a new record or update an existing record. The following practices can help with this:
 
-```
-DbEntity entity = new DbEntity();
-entity.id = UUID.randomUUID();
-session.saveOrUpdate(entity);
-```
+* Let Hibernate generate the ID by leaving the entity's `id` null and annotate the field with `@GeneratedValue`. Hibernate will know that the record did not exist prior if it generates a new ID. See the <<Use Generated UUIDs for ID Generation, above section>> for more details.
 
-This practice may result in Hibernate executing additional `SELECT` statements that you may not have expected because it will perform a `SELECT` on the table to determine if a record in the table already has the entity's ID. If so, it will perform an update, otherwise it will save a new entity.
-
-These extra `SELECT` statements could yield large performance issues because they may lock an entire table depending on how they are generated.
-
-In these cases, we recommend to either:
-
-* Let Hibernate generate the ID by leaving the entity's `id` null and annotate the field with `@GeneratedValue`. Hibernate will know that the record did not exist prior if it generates a new ID.
-* Or use `session.persist()` which explicitly will simply attempt the insert without generating an `ID`.
+* Or use `session.persist()` which will simply attempt the insert without generating an `ID`.
 
 ==== Enable Hibernate Batching
 
@@ -250,6 +240,17 @@ Batching can be enabled by configuring `hibernate.jdbc.batch_size` in your Hiber
 ----
 
 The property is set to `100` as an example; you may experiment with the batch size to see what works best for your application.
+
+==== JDBC Parameter Tuning
+
+The Spanner JDBC driver allows you to set the number of GRPC channels initialized through the JDBC connection URL.
+Each channel can support up to 100 concurrent requests; for application that require a high amount of concurrency this value can be increased (from the default of 4).
+
+----
+jdbc:cloudspanner:/projects/PROJECT_ID/instances/INSTANCE_ID/databases/DATABASE_ID;numChannels=8
+----
+
+The full list of configurable properties can be found in the https://github.com/googleapis/java-spanner-jdbc/blob/master/src/main/java/com/google/cloud/spanner/jdbc/JdbcDriver.java[Spanner JDBC Driver Java docs].
 
 ==== Query Optimization
 
@@ -279,16 +280,16 @@ The Cloud Spanner Hibernate Dialect supports most of the standard Hibernate and 
 [options="header"]
 |===
 | Unsupported Feature | Description
-| Large DML Transactions | Each Spanner transaction may only have up to 20,000 operations which modify rows of a table.
+| Large DML Transaction Limits | Each Spanner transaction may only have up to 20,000 operations which modify rows of a table.
 | Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
 | Column default values | The dialect does not set default values based on the `@ColumnDefault` annotation, because Cloud Spanner does not support column defaults in the DDL.
 |===
 
-=== Limit Large DML Transactions
+=== Large DML Transactions Limits
 
 Cloud Spanner has a mutation limit on each transaction - each Spanner transaction https://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data[may only have up to 20,000 operations which modify rows of a table].
 
-NOTE: Deleting a row counts as one operation and inserting/updating rows will count as a number of operations equal to the number of affected columns.
+NOTE: Deleting a row counts as one operation and inserting/updating a single row will count as a number of operations equal to the number of affected columns.
 For example if one inserts a row that contains 5 columns, it counts as 5 modify operations for the insert.
 
 Consequently, users must take care to avoid encountering these constraints.
