@@ -95,7 +95,7 @@ This guide contains a variety of best practices for using Hibernate with Spanner
 
 === Schema Creation and Entity Design
 
-Hibernate generates statements based on your Hibernate entity's design. Following these practices can result in better DDL and DML statement generation which can improve performance.
+Hibernate generates statements based on your Hibernate entity design. Following these practices can result in better DDL and DML statement generation which can improve performance.
 
 ==== Use Generated UUIDs for ID Generation
 
@@ -320,4 +320,3 @@ It does not support table names with catalog and schema components because Spann
 
 The dialect does not support the https://docs.jboss.org/hibernate/orm/5.4/javadocs/org/hibernate/annotations/ColumnDefault.html[`@ColumnDefault`] annotation
 because Cloud Spanner does not offer a way of setting a default value for a column during table creation through DDL statements.
-
