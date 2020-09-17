@@ -135,7 +135,7 @@ public class Employee {
 
 This results in sequential IDs that are https://cloud.google.com/spanner/docs/schema-and-data-model#primary_keys[not optimal for Cloud Spanner] and makes use of the `hibernate_sequence` table for generating IDs.
 
-==== Generate Schema for faster development
+==== Auto-generate Schema for Faster Development
 
 It is often useful to generate the schema for your database, such as during the early stages of development.
 The Spanner dialect supports Hibernate's `hibernate.hbm2ddl.auto` setting which controls the framework's schema generation behavior on start-up.
@@ -150,7 +150,7 @@ The following settings are available:
 
 Hibernate performs schema updates on each table and entity type on startup, which can take more than several minutes if there are many tables. To avoid schema updates keeping Hibernate from starting for several minutes, you can update schemas separately and use the `none` or `validate` settings.
 
-==== Use Constraints Generation to leverage Spanner foreign keys
+==== Leverage Cloud Spanner Foreign Key Constraints
 
 The dialect supports all of the standard entity relationships:
 
@@ -167,7 +167,35 @@ However, Cloud Spanner currently does not support cascading deletes on foreign k
 The dialect also supports unique column constraints applied through `@Column(unique = true)` or `@UniqueConstraint`.
 In these cases, the dialect will create a unique index to enforce uniqueness on the specified columns.
 
-==== Use Interleaved Tables for Parent-Child entities for better performance
+=== Performance Optimizations
+
+There are some practices which can improve the execution time of Hibernate operations.
+
+==== Be Clear About Inserts or Updates
+
+Hibernate may generate additional `SELECT` statements if it is unclear whether you are attempting to insert a new record or update an existing record. The following practices can help with this:
+
+* Let Hibernate generate the ID by leaving the entity's `id` null and annotate the field with `@GeneratedValue`. Hibernate will know that the record did not exist prior if it generates a new ID. See the <<Use Generated UUIDs for ID Generation, above section>> for more details.
+
+* Or use `session.persist()` which will explicitly attempt the insert.
+
+==== Enable Hibernate Batching
+
+Batching SQL statements together allows you to optimize the performance of your application by including a group of SQL statements in a single remote call.
+This allows you to reduce the number of round-trips between your application and Cloud Spanner.
+
+By default, Hibernate does not batch the statements that it sends to the Cloud Spanner JDBC driver.
+
+Batching can be enabled by configuring `hibernate.jdbc.batch_size` in your Hibernate configuration file:
+
+[source, xml]
+----
+<property name="hibernate.jdbc.batch_size">100</property>
+----
+
+The property is set to `100` as an example; you may experiment with the batch size to see what works best for your application.
+
+==== Use Interleaved Tables for Parent-Child Entities
 
 Cloud Spanner offers the concept of https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables[Interleaved Tables] which allows you to co-locate the rows of an interleaved table with rows of a parent table for efficient retrieval.
 This feature enforces the one-to-many relationship and provides efficient queries and operations on entities of a single domain parent entity.
@@ -213,38 +241,25 @@ public class Album {
 }
 ----
 
-=== Performance Optimizations
+The parent entity should define a `@OneToMany` relationship with the child entity as well.
+Use the `mappedBy` setting to specify which field in the child maps back to the parent.
 
-There are some practices which can improve the execution time of Hibernate operations.
-
-==== Be Clear about Inserts or Updates
-
-Hibernate may generate additional `SELECT` statements if it is unclear whether you are attempting to insert a new record or update an existing record. The following practices can help with this:
-
-* Let Hibernate generate the ID by leaving the entity's `id` null and annotate the field with `@GeneratedValue`. Hibernate will know that the record did not exist prior if it generates a new ID. See the <<Use Generated UUIDs for ID Generation, above section>> for more details.
-
-* Or use `session.persist()` which will simply attempt the insert without generating an `ID`.
-
-==== Enable Hibernate Batching
-
-Batching SQL statements together allows you to optimize the performance of your application by including a group of SQL statements in a single remote call.
-This allows you to reduce the number of round-trips between your application and Cloud Spanner.
-
-By default, Hibernate does not batch the statements that it sends to the Cloud Spanner JDBC driver.
-
-Batching can be enabled by configuring `hibernate.jdbc.batch_size` in your Hibernate configuration file:
-
-[source, xml]
+[source, java]
 ----
-<property name="hibernate.jdbc.batch_size">100</property>
+@Entity
+public class Singer {
+
+  @OneToMany(mappedBy = "singer")
+  List<Album> albums;
+
+  // continued...
+}
 ----
 
-The property is set to `100` as an example; you may experiment with the batch size to see what works best for your application.
-
-==== JDBC Parameter Tuning
+==== Tune JDBC Driver Parameters
 
 The Spanner JDBC driver allows you to set the number of GRPC channels initialized through the JDBC connection URL.
-Each channel can support up to 100 concurrent requests; for application that require a high amount of concurrency this value can be increased (from the default of 4).
+Each channel can support up to 100 concurrent requests; for applications that require a high amount of concurrency this value can be increased (from the default of 4).
 
 ----
 jdbc:cloudspanner:/projects/PROJECT_ID/instances/INSTANCE_ID/databases/DATABASE_ID;numChannels=8
@@ -252,7 +267,7 @@ jdbc:cloudspanner:/projects/PROJECT_ID/instances/INSTANCE_ID/databases/DATABASE_
 
 The full list of configurable properties can be found in the https://github.com/googleapis/java-spanner-jdbc/blob/master/src/main/java/com/google/cloud/spanner/jdbc/JdbcDriver.java[Spanner JDBC Driver Java docs].
 
-==== Query Optimization
+==== Use Spanner Query Optimization
 
 The https://cloud.google.com/spanner/docs/query-syntax[Cloud Spanner SQL syntax] offers a variety of query hints to tune and optimize the performance of queries.
 If you find that you need to take advantage of this feature, you can achieve this in Hibernate using native SQL queries.
@@ -280,7 +295,7 @@ The Cloud Spanner Hibernate Dialect supports most of the standard Hibernate and 
 [options="header"]
 |===
 | Unsupported Feature | Description
-| Large DML Transaction Limits | Each Spanner transaction may only have up to 20,000 operations which modify rows of a table.
+| Large DML Transactions | Each Spanner transaction may only have up to 20,000 operations which modify rows of a table.
 | Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
 | Column default values | The dialect does not set default values based on the `@ColumnDefault` annotation, because Cloud Spanner does not support column defaults in the DDL.
 |===
