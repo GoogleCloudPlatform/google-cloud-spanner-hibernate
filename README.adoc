@@ -61,6 +61,11 @@ The driver will use default credentials set in the Google Cloud SDK `gcloud` app
 
 You are now ready to begin using Hibernate with Cloud Spanner.
 
+== Examples
+
+To see some examples of using the dialect, please consult our https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples[sample applications] or try the https://codelabs.developers.google.com/codelabs/cloud-spanner-hibernate/[Cloud Spanner Hibernate codelab].
+
+
 == User Guide
 
 This guide contains a variety of best practices for using Hibernate with Spanner which can significantly improve the performance of your application.
