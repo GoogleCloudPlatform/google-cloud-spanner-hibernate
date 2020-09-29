@@ -124,6 +124,26 @@ public class GeneratedSelectStatementsTests {
   }
 
   @Test
+  public void limitOffsetClauseTest() {
+    openSessionAndDo(session -> {
+      Query q = session.createQuery("select s from SubTestEntity s")
+          .setFirstResult(8).setMaxResults(15);
+      q.list();
+    });
+
+    MockPreparedStatement statement = this.jdbcMockObjectFactory.getMockConnection()
+        .getPreparedStatementResultSetHandler()
+        .getPreparedStatements()
+        .get(0);
+
+    assertThat(statement.getSQL()).isEqualTo(
+        "select subtestent0_.id as id1_1_, subtestent0_.id1 as id2_1_, subtestent0_.id2 "
+            + "as id3_1_ from SubTestEntity subtestent0_ limit ? offset ?");
+    assertThat(statement.getParameter(1)).isEqualTo(15);
+    assertThat(statement.getParameter(2)).isEqualTo(8);
+  }
+
+  @Test
   public void deleteDmlTest() {
     testUpdateStatementTranslation(
         "delete TestEntity where boolVal = true",
