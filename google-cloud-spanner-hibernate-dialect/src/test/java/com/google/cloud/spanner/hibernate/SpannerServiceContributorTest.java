@@ -20,25 +20,22 @@
 package com.google.cloud.spanner.hibernate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.mockrunner.base.NestedApplicationException;
+import com.mockrunner.mock.jdbc.MockDriver;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 /**
  * Tests the {@link SpannerServiceContributor}.
@@ -50,8 +47,18 @@ public class SpannerServiceContributorTest {
   @Test
   public void testUserAgentContribution() throws SQLException {
     // create mock Driver so we can intercept the call to Driver.connect(url, props)
-    Driver mockDriver = mock(Driver.class);
-    when(mockDriver.connect(any(), any())).thenReturn(mock(Connection.class));
+    AtomicBoolean obtainedConnection = new AtomicBoolean();
+    MockDriver mockDriver = new MockDriver() {
+      public Connection connect(String url, Properties info) throws SQLException {
+        if (info.get("userAgent").equals("sp-hib")) {
+          obtainedConnection.set(true);
+          return super.connect(url, info);
+        }
+        throw new SQLException(
+            String.format("Missing or unexpected user agent string: %s", info.get("userAgent")));
+      }
+    };
+    mockDriver.setupConnection(mock(Connection.class));
 
     // make sure our mock driver is discovered by Hibernate
     deregisterDrivers();
@@ -69,13 +76,8 @@ public class SpannerServiceContributorTest {
     // trigger creation of connections for the connection pool
     Metadata metadata = new MetadataSources(registry).buildMetadata();
 
-    // verify that our mock Driver.connect(url, props) was called and capture the properties
-    ArgumentCaptor<Properties> propertiesArgumentCaptor = ArgumentCaptor.forClass(Properties.class);
-    verify(mockDriver, atLeastOnce())
-        .connect(any(String.class), propertiesArgumentCaptor.capture());
-
-    // verify the the userAgent was passed in with properties
-    assertThat(propertiesArgumentCaptor.getValue().getProperty("userAgent")).isEqualTo("sp-hib");
+    // verify that our mock Driver.connect(url, props) was called and returned a connection.
+    assertThat(obtainedConnection.get()).isTrue();
   }
 
   private void deregisterDrivers() {

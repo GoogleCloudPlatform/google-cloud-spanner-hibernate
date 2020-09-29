@@ -5,6 +5,11 @@ target
 *.iml
 .idea
 
+# eclipse
+.project
+.settings
+.classpath
+
 # Ignores generated files through testing
 **/transaction.log
 
