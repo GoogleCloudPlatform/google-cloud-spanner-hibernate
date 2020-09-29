@@ -506,6 +506,13 @@ public class SpannerDialect extends Dialect {
     return sql + (hasOffset ? " limit ? offset ?" : " limit ?");
   }
 
+  @Override
+  // Returns true because the correct order is [limit, offset]
+  // https://cloud.google.com/spanner/docs/query-syntax#limit_and_offset_clause
+  public boolean bindLimitParametersInReverseOrder() {
+    return true;
+  }
+
   /* Type conversion and casting */
 
   @Override
