@@ -20,6 +20,7 @@ package com.google.cloud.spanner.hibernate;
 
 import com.google.cloud.spanner.hibernate.schema.SpannerSchemaManagementTool;
 import java.util.Map;
+import java.util.Objects;
 import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.hql.spi.id.inline.InlineIdsOrClauseBulkIdStrategy;
@@ -47,27 +48,31 @@ public class SpannerServiceContributor implements ServiceContributor {
 
   @Override
   public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder) {
-    serviceRegistryBuilder
-        // The custom Hibernate schema management tool for Spanner.
-        .addInitiator(new StandardServiceInitiator() {
-          @Override
-          public Service initiateService(Map configurationValues,
-              ServiceRegistryImplementor registry) {
-            return SCHEMA_MANAGEMENT_TOOL;
-          }
-
-          @Override
-          public Class getServiceInitiated() {
-            return SchemaManagementTool.class;
-          }
-        })
-        // The user agent JDBC connection property to identify the library.
-        .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN)
-        // Create a unique index for a table if it does not already exist when in UPDATE mode.
-        .applySetting(
-            "hibernate.schema_update.unique_constraint_strategy",
-            UniqueConstraintSchemaUpdateStrategy.RECREATE_QUIETLY)
-        // Allows entities to be used with InheritanceType.JOINED in Spanner.
-        .applySetting("hibernate.hql.bulk_id_strategy", InlineIdsOrClauseBulkIdStrategy.INSTANCE);
+    if (Objects.equals(
+        serviceRegistryBuilder.getSettings().get("hibernate.dialect"),
+        SpannerDialect.class.getName())) {
+      serviceRegistryBuilder
+          // The custom Hibernate schema management tool for Spanner.
+          .addInitiator(new StandardServiceInitiator() {
+            @Override
+            public Service initiateService(Map configurationValues,
+                ServiceRegistryImplementor registry) {
+              return SCHEMA_MANAGEMENT_TOOL;
+            }
+  
+            @Override
+            public Class getServiceInitiated() {
+              return SchemaManagementTool.class;
+            }
+          })
+          // The user agent JDBC connection property to identify the library.
+          .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN)
+          // Create a unique index for a table if it does not already exist when in UPDATE mode.
+          .applySetting(
+              "hibernate.schema_update.unique_constraint_strategy",
+              UniqueConstraintSchemaUpdateStrategy.RECREATE_QUIETLY)
+          // Allows entities to be used with InheritanceType.JOINED in Spanner.
+          .applySetting("hibernate.hql.bulk_id_strategy", InlineIdsOrClauseBulkIdStrategy.INSTANCE);
+    }
   }
 }
