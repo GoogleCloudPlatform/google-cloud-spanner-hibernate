@@ -238,7 +238,7 @@ The Spanner JDBC driver allows you to set the number of GRPC channels initialize
 Each channel can support up to 100 concurrent requests; for applications that require a high amount of concurrency this value can be increased (from the default of 4).
 
 ----
-jdbc:cloudspanner:/projects/PROJECT_ID/instances/INSTANCE_ID/databases/DATABASE_ID;numChannels=8
+jdbc:cloudspanner:/projects/PROJECT_ID/instances/INSTANCE_ID/databases/DATABASE_ID?numChannels=8
 ----
 
 The full list of configurable properties can be found in the https://github.com/googleapis/java-spanner-jdbc/blob/master/src/main/java/com/google/cloud/spanner/jdbc/JdbcDriver.java[Spanner JDBC Driver Java docs].
