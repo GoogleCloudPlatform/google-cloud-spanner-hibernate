@@ -175,6 +175,7 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>3.0.0</version>
           <configuration>
+            <!-- Turns off the cleanup of daemon threads to avoid spurious error messages. #218 -->
             <cleanupDaemonThreads>false</cleanupDaemonThreads>
           </configuration>
         </plugin>
