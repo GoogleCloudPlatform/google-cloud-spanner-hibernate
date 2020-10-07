@@ -10,3 +10,8 @@ target
 
 # local libs
 /libs
+
+# eclipse
+.project
+.settings
+.classpath

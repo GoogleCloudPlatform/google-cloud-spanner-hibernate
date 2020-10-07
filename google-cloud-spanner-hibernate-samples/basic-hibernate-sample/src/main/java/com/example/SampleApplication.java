@@ -53,12 +53,18 @@ public class SampleApplication {
     SessionFactory sessionFactory = new MetadataSources(registry).buildMetadata()
         .buildSessionFactory();
     Session session = sessionFactory.openSession();
-
-    // Save a Person entity into Spanner Table.
-    savePerson(session);
-
-    // Save a singer entity into the Spanner Table.
-    saveSingerAlbum(session);
+  
+    try {
+      // Save a Person entity into Spanner Table.
+      savePerson(session);
+  
+      // Save a singer entity into the Spanner Table.
+      saveSingerAlbum(session);
+      
+    } finally {
+      session.close();
+      sessionFactory.close();
+    }
   }
 
   /**
