@@ -19,15 +19,16 @@
 package com.google.cloud.spanner.hibernate.schema;
 
 import com.google.cloud.spanner.hibernate.Interleaved;
-import com.google.cloud.spanner.hibernate.schema.SchemaUtils;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import org.hibernate.boot.Metadata;
+import org.hibernate.internal.HEMLogging;
 import org.hibernate.mapping.Table;
 import org.hibernate.tool.schema.Action;
+import org.jboss.logging.Logger;
 
 /**
  * Tracks the order in which tables should be processed (created/dropped) by Hibernate.
@@ -37,6 +38,8 @@ import org.hibernate.tool.schema.Action;
  * table first before its parent table.
  */
 public class TableDependencyTracker {
+
+  private static final Logger log = HEMLogging.logger(TableDependencyTracker.class);
 
   // For each map entry (key, value), the key is a table which is being blocked by the
   // table stored as the value.
@@ -54,8 +57,17 @@ public class TableDependencyTracker {
     HashMap<Table, Table> dependencies = new HashMap<>();
 
     for (Table childTable : metadata.collectTableMappings()) {
-      Interleaved interleaved = SchemaUtils.getInterleaveAnnotation(childTable, metadata);
-      if (interleaved != null) {
+      Interleaved interleaved;
+      Class<?> entity = SchemaUtils.getEntityClass(childTable, metadata);
+
+      if (entity != null && (interleaved = entity.getAnnotation(Interleaved.class)) != null) {
+        if (!SchemaUtils.validateInterleaved(entity)) {
+          log.warnf(
+              "Composite key for Interleaved table '%s' should be a superset of the parent's key.",
+              entity.getName());
+        }
+
+        // Add table dependency
         if (schemaAction == Action.CREATE || schemaAction == Action.UPDATE) {
           // If creating tables, the parent blocks the child.
           dependencies.put(childTable, SchemaUtils.getTable(interleaved.parentEntity(), metadata));
