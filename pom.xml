@@ -14,7 +14,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <hibernate.version>5.4.9.Final</hibernate.version>
     <spanner-jdbc-driver.version>1.17.0</spanner-jdbc-driver.version>
-    <log4j.version>1.2.17</log4j.version>
+    <log4j.version>2.13.3</log4j.version>
   </properties>
 
   <name>Google Cloud Spanner Dialect for Hibernate ORM Parent</name>
@@ -111,8 +111,13 @@
         <version>${spanner-jdbc-driver.version}</version>
       </dependency>
       <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-1.2-api</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
         <version>${log4j.version}</version>
       </dependency>
     </dependencies>
@@ -139,9 +144,15 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-1.2-api</artifactId>
+      <version>${log4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
