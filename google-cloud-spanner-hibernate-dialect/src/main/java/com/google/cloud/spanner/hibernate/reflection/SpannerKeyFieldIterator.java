@@ -24,7 +24,11 @@ import java.util.Iterator;
 /**
  * Used for iterating over the declared fields on a given class definition. This includes
  * private/protected fields and fields in any superclasses. However, this relies on
- * {@link java.lang.Class#getDeclaredFields()} and as such, iteration order is not guaranteed
+ * {@link java.lang.Class#getDeclaredFields()} and as such, iteration order is not guaranteed.
+ * Iteration will not include synthetic fields and can throw SecurityExceptions based on configured
+ * SecurityManager
+ *
+ * @see java.lang.SecurityManager
  */
 public class SpannerKeyFieldIterator implements Iterator<Field> {
   private int index;
@@ -35,13 +39,27 @@ public class SpannerKeyFieldIterator implements Iterator<Field> {
    * Constructor.
    */
   public SpannerKeyFieldIterator(Class<?> clazz) {
-    this.index = 0;
     this.clazz = clazz;
-    this.fields = clazz.getDeclaredFields();
   }
 
   @Override
-  public boolean hasNext() {
+  public boolean hasNext() throws SecurityException {
+    while (hasNextPvt()) {
+      if (!fields[index].isSynthetic()) {
+        return true;
+      }
+      ++index;
+    }
+
+    return false;
+  }
+
+  private boolean hasNextPvt() {
+    if (fields == null) {
+      fields = clazz.getDeclaredFields();
+      index = 0;
+    }
+
     if (index >= fields.length) {
       clazz = clazz.getSuperclass();
       if (null != clazz) {

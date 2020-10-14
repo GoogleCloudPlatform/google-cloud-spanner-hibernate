@@ -42,7 +42,6 @@ public class SpannerKeyFieldIteratorTests {
 
     Set<SpannerEntityFieldKey> expected = new HashSet<>();
 
-    expected.add(new SpannerEntityFieldKey(Parent.class, getClass(), "this$0"));
     expected.add(new SpannerEntityFieldKey(Parent.class, String.class, "publicId"));
     expected.add(new SpannerEntityFieldKey(Parent.class, String.class, "protectedId"));
     expected.add(new SpannerEntityFieldKey(Parent.class, String.class, "privateId"));
@@ -65,8 +64,6 @@ public class SpannerKeyFieldIteratorTests {
     expected.add(new SpannerEntityFieldKey(Parent.class, String.class, "protectedId"));
     expected.add(new SpannerEntityFieldKey(Parent.class, String.class, "privateId"));
     expected.add(new SpannerEntityFieldKey(Parent.class, int.class, "privatePrimitive"));
-    expected.add(new SpannerEntityFieldKey(Parent.class, getClass(), "this$0"));
-    expected.add(new SpannerEntityFieldKey(ParentSubClass.class, getClass(), "this$0"));
     expected.add(new SpannerEntityFieldKey(ParentSubClass.class, String.class, "someOtherField"));
     expected.add(new SpannerEntityFieldKey(ParentSubClass.class, int.class, "privatePrimitive"));
 
@@ -85,8 +82,6 @@ public class SpannerKeyFieldIteratorTests {
     // Due to type erasure the generic field will still be of type 'Object'
     Set<SpannerEntityFieldKey> expected = new HashSet<>();
     expected.add(new SpannerEntityFieldKey(GenericParent.class, Object.class, "genericField"));
-    expected.add(new SpannerEntityFieldKey(GenericParent.class, getClass(), "this$0"));
-    expected.add(new SpannerEntityFieldKey(GenericParentImpl.class, getClass(), "this$0"));
     expected.add(
         new SpannerEntityFieldKey(GenericParentImpl.class, String.class, "someOtherField"));
 

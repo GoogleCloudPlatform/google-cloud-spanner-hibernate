@@ -60,19 +60,6 @@ class SchemaUtils {
   }
 
   /**
-   * Returns the field marked with the {@link EmbeddedId} annotation on a class if it exists.
-   */
-  public static Field getEmbeddedId(Class<?> entity) {
-    for (Field field : SpannerKeyFieldIterator.iterable(entity)) {
-      if (null != field.getAnnotation(EmbeddedId.class)) {
-        return field;
-      }
-    }
-
-    return null;
-  }
-
-  /**
    * Gets the Spanner {@link Table} by entity class.
    */
   public static Table getTable(Class<?> entityClass, Metadata metadata) {
@@ -98,18 +85,24 @@ class SchemaUtils {
       return true;
     }
 
-    // TODO - when retrieving parent ids, stop after finding all the child ids
-    Set<SpannerEntityFieldKey> childIds = resolveIdFields(potentialChild);
-    Set<SpannerEntityFieldKey> parentIds = resolveIdFields(interleaved.parentEntity());
+    try {
+      Set<SpannerEntityFieldKey> childIds = resolveIdFields(potentialChild);
+      Set<SpannerEntityFieldKey> parentIds = resolveIdFields(interleaved.parentEntity());
 
-    // Child ids should be super set of parent ids
-    return childIds.size() > parentIds.size() && childIds.containsAll(parentIds);
+      // Child ids should be super set of parent ids
+      return childIds.size() > parentIds.size() && childIds.containsAll(parentIds);
+
+    } catch (SecurityException se) {
+      // Could not prove the interleaved table to be invalid, so assume valid
+      return true;
+    }
   }
 
   /**
    * Resolve the fields that make up the composite key.
    */
-  static Set<SpannerEntityFieldKey> resolveIdFields(Class<?> entity) {
+  public static Set<SpannerEntityFieldKey> resolveIdFields(Class<?> entity)
+      throws SecurityException {
     Field embeddedId = getEmbeddedId(entity);
 
     Class<?> compositeKeyClazz = embeddedId != null ? embeddedId.getType() : entity;
@@ -123,5 +116,18 @@ class SchemaUtils {
     }
 
     return ids;
+  }
+
+  /**
+   * Returns the field marked with the {@link EmbeddedId} annotation on a class if it exists.
+   */
+  public static Field getEmbeddedId(Class<?> entity) throws SecurityException {
+    for (Field field : SpannerKeyFieldIterator.iterable(entity)) {
+      if (null != field.getAnnotation(EmbeddedId.class)) {
+        return field;
+      }
+    }
+
+    return null;
   }
 }
