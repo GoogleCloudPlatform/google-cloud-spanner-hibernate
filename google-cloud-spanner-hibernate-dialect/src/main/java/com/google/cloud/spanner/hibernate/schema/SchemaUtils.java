@@ -107,7 +107,7 @@ class SchemaUtils {
   }
 
   /**
-   * Resolve the fields that make up the composite key
+   * Resolve the fields that make up the composite key.
    */
   static Set<SpannerEntityFieldKey> resolveIdFields(Class<?> entity) {
     Field embeddedId = getEmbeddedId(entity);

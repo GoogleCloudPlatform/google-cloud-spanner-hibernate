@@ -57,7 +57,7 @@ public class SpannerKeyFieldIterator implements Iterator<Field> {
   }
 
   /**
-   * Build an iterable wrapping this key field iterator
+   * Build an iterable wrapping this key field iterator.
    */
   public static Iterable<Field> iterable(Class<?> clazz) {
     return () -> new SpannerKeyFieldIterator(clazz);
