@@ -19,8 +19,8 @@
 package com.google.cloud.spanner.hibernate.schema;
 
 import com.google.cloud.spanner.hibernate.Interleaved;
-import com.google.cloud.spanner.hibernate.reflection.FieldIterable;
-import com.google.cloud.spanner.hibernate.reflection.FieldKey;
+import com.google.cloud.spanner.hibernate.reflection.SpannerEntityFieldKey;
+import com.google.cloud.spanner.hibernate.reflection.SpannerKeyFieldIterator;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
@@ -63,7 +63,7 @@ class SchemaUtils {
    * Returns the field marked with the {@link EmbeddedId} annotation on a class if it exists.
    */
   public static Field getEmbeddedId(Class<?> entity) {
-    for (Field field : new FieldIterable(entity)) {
+    for (Field field : SpannerKeyFieldIterator.iterable(entity)) {
       if (null != field.getAnnotation(EmbeddedId.class)) {
         return field;
       }
@@ -99,8 +99,8 @@ class SchemaUtils {
     }
 
     // TODO - when retrieving parent ids, stop after finding all the child ids
-    Set<FieldKey> childIds = resolveIdFields(potentialChild);
-    Set<FieldKey> parentIds = resolveIdFields(interleaved.parentEntity());
+    Set<SpannerEntityFieldKey> childIds = resolveIdFields(potentialChild);
+    Set<SpannerEntityFieldKey> parentIds = resolveIdFields(interleaved.parentEntity());
 
     // Child ids should be super set of parent ids
     return childIds.size() > parentIds.size() && childIds.containsAll(parentIds);
@@ -109,16 +109,16 @@ class SchemaUtils {
   /**
    * Resolve the fields that make up the composite key
    */
-  static Set<FieldKey> resolveIdFields(Class<?> entity) {
+  static Set<SpannerEntityFieldKey> resolveIdFields(Class<?> entity) {
     Field embeddedId = getEmbeddedId(entity);
 
-    Class<?> compositeKeyClazz = null != embeddedId ? embeddedId.getType() : entity;
-    boolean keepAllFields = null != embeddedId;
+    Class<?> compositeKeyClazz = embeddedId != null ? embeddedId.getType() : entity;
+    boolean keepAllFields = embeddedId != null;
 
-    Set<FieldKey> ids = new HashSet<>();
-    for (Field field: new FieldIterable(compositeKeyClazz)) {
+    Set<SpannerEntityFieldKey> ids = new HashSet<>();
+    for (Field field: SpannerKeyFieldIterator.iterable(compositeKeyClazz)) {
       if (keepAllFields || null != field.getAnnotation(Id.class)) {
-        ids.add(new FieldKey(field.getType(), field.getName()));
+        ids.add(new SpannerEntityFieldKey(field.getType(), field.getName()));
       }
     }
 

@@ -20,16 +20,20 @@ package com.google.cloud.spanner.hibernate.reflection;
 
 import java.util.Objects;
 
-public class FieldKey {
+/**
+ * Holds the metadata for a table key field. This allows us to check for key equality without
+ * including the declaring class as a part of the check, if required
+ */
+public class SpannerEntityFieldKey {
   private final Class<?> declaringClass;
   private final Class<?> type;
   private final String name;
 
-  public FieldKey(Class<?> type, String name) {
+  public SpannerEntityFieldKey(Class<?> type, String name) {
     this(null, type, name);
   }
 
-  public FieldKey(Class<?> declaringClass, Class<?> type, String name) {
+  public SpannerEntityFieldKey(Class<?> declaringClass, Class<?> type, String name) {
     this.declaringClass = declaringClass;
     this.type = type;
     this.name = name;
@@ -43,7 +47,7 @@ public class FieldKey {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    FieldKey other = (FieldKey) o;
+    SpannerEntityFieldKey other = (SpannerEntityFieldKey) o;
     return Objects.equals(declaringClass, other.declaringClass)
         && Objects.equals(type, other.type)
         && Objects.equals(name, other.name);
@@ -56,7 +60,7 @@ public class FieldKey {
 
   @Override
   public String toString() {
-    return "FieldKey{"
+    return "SpannerEntityFieldKey{"
         + "declaringClass=" + declaringClass.toString()
         + "\n, type=" + type.toString()
         + "\n, name='" + name + '\''

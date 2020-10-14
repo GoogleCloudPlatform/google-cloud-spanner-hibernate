@@ -22,7 +22,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.hibernate.Interleaved;
-import java.sql.SQLException;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -43,17 +42,17 @@ public class SchemaUtilsTests {
   }
 
   @Test
-  public void validInterleavedTableStandardParent() throws SQLException {
+  public void validInterleavedTableStandardParent() {
     assertTrue(SchemaUtils.validateInterleaved(ValidChild.class));
   }
 
   @Test
-  public void validInterleavedTableParentHeirarchy() throws SQLException {
+  public void validInterleavedTableParentHeirarchy() {
     assertTrue(SchemaUtils.validateInterleaved(ValidChildParentHeirarchy.class));
   }
 
   @Test
-  public void validChildUsingIdClass() throws SQLException {
+  public void validChildUsingIdClass() {
     assertTrue(SchemaUtils.validateInterleaved(ValidChildWithIdClass.class));
   }
 

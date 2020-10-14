@@ -21,12 +21,17 @@ package com.google.cloud.spanner.hibernate.reflection;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 
-public class FieldIterator implements Iterator<Field> {
+/**
+ * Used for iterating over the declared fields on a given class definition. This includes
+ * private/protected fields and fields in any superclasses. However, this relies on
+ * {@link java.lang.Class#getDeclaredFields()} and as such, iteration order is not guaranteed
+ */
+public class SpannerKeyFieldIterator implements Iterator<Field> {
   private int index;
   private Class<?> clazz;
   private Field[] fields;
 
-  public FieldIterator(Class<?> clazz) {
+  public SpannerKeyFieldIterator(Class<?> clazz) {
     this.index = 0;
     this.clazz = clazz;
     this.fields = clazz.getDeclaredFields();
@@ -46,6 +51,15 @@ public class FieldIterator implements Iterator<Field> {
 
   @Override
   public Field next() {
-    return fields[index++];
+    Field field = fields[index];
+    ++index;
+    return field;
+  }
+
+  /**
+   * Build an iterable wrapping this key field iterator
+   */
+  public static Iterable<Field> iterable(Class<?> clazz) {
+    return () -> new SpannerKeyFieldIterator(clazz);
   }
 }

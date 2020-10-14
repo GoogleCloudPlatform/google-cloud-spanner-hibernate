@@ -57,10 +57,10 @@ public class TableDependencyTracker {
     HashMap<Table, Table> dependencies = new HashMap<>();
 
     for (Table childTable : metadata.collectTableMappings()) {
-      Interleaved interleaved;
       Class<?> entity = SchemaUtils.getEntityClass(childTable, metadata);
+      Interleaved interleaved = entity != null ? entity.getAnnotation(Interleaved.class) : null;
 
-      if (entity != null && (interleaved = entity.getAnnotation(Interleaved.class)) != null) {
+      if (interleaved != null) {
         if (!SchemaUtils.validateInterleaved(entity)) {
           log.warnf(
               "Composite key for Interleaved table '%s' should be a superset of the parent's key.",
