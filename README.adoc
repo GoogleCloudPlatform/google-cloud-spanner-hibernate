@@ -155,18 +155,20 @@ Hibernate may generate additional `SELECT` statements if it is unclear whether y
 
 * Or use `session.persist()` which will explicitly attempt the insert.
 
-==== Enable Hibernate Batching
+==== Batching
 
 Batching SQL statements together allows you to optimize the performance of your application by including a group of SQL statements in a single remote call.
 This allows you to reduce the number of round-trips between your application and Cloud Spanner.
 
-By default, Hibernate does not batch the statements that it sends to the Cloud Spanner JDBC driver.
+By default, this Spanner hibernate dialect batch the statements that it sends to the Cloud Spanner JDBC driver, with a batch size of 15. Additionally, inserts and updates will be ordered before execution
 
-Batching can be enabled by configuring `hibernate.jdbc.batch_size` in your Hibernate configuration file:
+To disable batching or change these defaults, set `hibernate.jdbc.batch_size`, `hibernate.order_inserts`, and `hibernate.order_updates` in your Hibernate configuration file:
 
 [source, xml]
 ----
-<property name="hibernate.jdbc.batch_size">100</property>
+<property name="hibernate.jdbc.batch_size">0</property>
+<property name="hibernate.order_inserts">false</property>
+<property name="hibernate.order_updates">false</property>
 ----
 
 The property is set to `100` as an example; you may experiment with the batch size to see what works best for your application.

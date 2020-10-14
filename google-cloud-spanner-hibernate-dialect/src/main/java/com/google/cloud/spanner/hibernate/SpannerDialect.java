@@ -28,6 +28,7 @@ import org.hibernate.StaleObjectStateException;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.relational.Exportable;
 import org.hibernate.boot.model.relational.Sequence;
+import org.hibernate.cfg.Environment;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.function.SQLFunctionTemplate;
 import org.hibernate.dialect.function.StandardSQLFunction;
@@ -256,6 +257,12 @@ public class SpannerDialect extends Dialect {
     registerFunction("ATAN", new StandardSQLFunction("ATAN", StandardBasicTypes.DOUBLE));
     registerFunction("ATANH", new StandardSQLFunction("ATANH", StandardBasicTypes.DOUBLE));
     registerFunction("ATAN2", new StandardSQLFunction("ATAN2", StandardBasicTypes.DOUBLE));
+
+    // Batch dml statements by default. Also, ordering inserts + updates will allow the orm to more
+    // efficiently batch dml. This is because dml statements will only be batched per table.
+    getDefaultProperties().setProperty(Environment.STATEMENT_BATCH_SIZE, DEFAULT_BATCH_SIZE );
+    getDefaultProperties().setProperty(Environment.ORDER_INSERTS, "true");
+    getDefaultProperties().setProperty(Environment.ORDER_UPDATES, "true");
 
     this.uniqueDelegate = new SpannerUniqueDelegate(this);
   }

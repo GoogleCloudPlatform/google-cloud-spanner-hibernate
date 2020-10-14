@@ -23,6 +23,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.cloud.spanner.hibernate.SpannerDialect.DoNothingLockingStrategy;
 import org.hibernate.LockOptions;
+import org.hibernate.cfg.Environment;
+import org.hibernate.dialect.Dialect;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -310,5 +312,15 @@ public class SpannerDialectTests {
   @Test
   public void supportsCircularCascadeDeleteConstraintsTest() {
     assertThat(this.spannerDialect.supportsCircularCascadeDeleteConstraints()).isFalse();
+  }
+
+  @Test
+  public void batchingDefaultsTest() {
+    assertThat(this.spannerDialect.getDefaultProperties().get(Environment.STATEMENT_BATCH_SIZE))
+        .isEqualTo(Dialect.DEFAULT_BATCH_SIZE);
+    assertThat(this.spannerDialect.getDefaultProperties().get(Environment.ORDER_INSERTS))
+        .isEqualTo("true");
+    assertThat(this.spannerDialect.getDefaultProperties().get(Environment.ORDER_UPDATES))
+        .isEqualTo("true");
   }
 }
