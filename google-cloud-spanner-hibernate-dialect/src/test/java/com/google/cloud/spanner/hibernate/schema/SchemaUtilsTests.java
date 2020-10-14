@@ -22,6 +22,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.hibernate.Interleaved;
+import java.io.Serializable;
+import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -54,6 +56,16 @@ public class SchemaUtilsTests {
   @Test
   public void validChildUsingIdClass() {
     assertTrue(SchemaUtils.validateInterleaved(ValidChildWithIdClass.class));
+  }
+
+  @Test
+  public void validNestedEmbeddableChild() {
+    assertTrue(SchemaUtils.validateInterleaved(NestedChild.class));
+  }
+
+  @Test
+  public void invalidCyclicalEmbeddableIds() {
+    assertFalse(SchemaUtils.validateInterleaved(CyclicalNestedChild.class));
   }
 
   @Entity
@@ -133,6 +145,78 @@ public class SchemaUtilsTests {
     class CompositeId {
       String parentId;
       String childId;
+    }
+  }
+
+  // for testing nested embeddable ids
+  class GrandParent {
+    @Id
+    @GeneratedValue
+    public long grandParentId;
+  }
+
+  @Interleaved(parentEntity = GrandParent.class)
+  class NestedParent {
+
+    @EmbeddedId
+    public ParentId parentId;
+
+    @Embeddable
+    class ParentId implements Serializable {
+      long grandParentId;
+      long parentId;
+    }
+  }
+
+  @Interleaved(parentEntity = NestedParent.class)
+  class NestedChild {
+
+    @EmbeddedId
+    public ChildId childId;
+
+    @Embeddable
+    class ChildId implements Serializable {
+      NestedParent.ParentId parentId;
+      long childId;
+    }
+  }
+
+  // For testing cyclical embeddable ids
+  @Interleaved(parentEntity = CyclicalNestedChild.class)
+  class CyclicalGrandParent {
+    @EmbeddedId
+    public GrandParentId grandParentId;
+
+    @Embeddable
+    class GrandParentId implements Serializable {
+      CyclicalNestedChild.ChildId childId;
+      long grandParentId;
+    }
+  }
+
+  @Interleaved(parentEntity = CyclicalGrandParent.class)
+  class CyclicalNestedParent {
+
+    @EmbeddedId
+    public ParentId parentId;
+
+    @Embeddable
+    class ParentId implements Serializable {
+      CyclicalGrandParent.GrandParentId grandParentId;
+      long parentId;
+    }
+  }
+
+  @Interleaved(parentEntity = CyclicalNestedParent.class)
+  class CyclicalNestedChild {
+
+    @EmbeddedId
+    public ChildId childId;
+
+    @Embeddable
+    class ChildId implements Serializable {
+      CyclicalNestedParent.ParentId parentId;
+      long childId;
     }
   }
 }
