@@ -260,7 +260,7 @@ public class SpannerDialect extends Dialect {
 
     // Batch dml statements by default. Also, ordering inserts + updates will allow the orm to more
     // efficiently batch dml. This is because dml statements will only be batched per table.
-    getDefaultProperties().setProperty(Environment.STATEMENT_BATCH_SIZE, DEFAULT_BATCH_SIZE );
+    getDefaultProperties().setProperty(Environment.STATEMENT_BATCH_SIZE, DEFAULT_BATCH_SIZE);
     getDefaultProperties().setProperty(Environment.ORDER_INSERTS, "true");
     getDefaultProperties().setProperty(Environment.ORDER_UPDATES, "true");
 
