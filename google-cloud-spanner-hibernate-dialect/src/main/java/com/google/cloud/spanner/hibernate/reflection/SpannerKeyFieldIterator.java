@@ -47,8 +47,10 @@ public class SpannerKeyFieldIterator implements Iterator<Field> {
     while (hasNextPvt()) {
       if (!fields[index].isSynthetic()) {
         return true;
+      } else {
+        // skip synthetic fields
+        ++index;
       }
-      ++index;
     }
 
     return false;

@@ -117,7 +117,7 @@ class SchemaUtils {
 
     Set<SpannerEntityFieldKey> ids = new HashSet<>();
     for (Field field: SpannerKeyFieldIterator.iterable(compositeKeyClazz)) {
-      if (keepAllFields || null != field.getAnnotation(Id.class)) {
+      if (keepAllFields || field.getAnnotation(Id.class) != null) {
         Class<?> fieldType = field.getType();
 
         if (fieldType.getAnnotation(Embeddable.class) != null && !resolved.contains(fieldType)) {
@@ -137,7 +137,7 @@ class SchemaUtils {
    */
   public static Field getEmbeddedId(Class<?> entity) throws SecurityException {
     for (Field field : SpannerKeyFieldIterator.iterable(entity)) {
-      if (null != field.getAnnotation(EmbeddedId.class)) {
+      if (field.getAnnotation(EmbeddedId.class) != null) {
         return field;
       }
     }
