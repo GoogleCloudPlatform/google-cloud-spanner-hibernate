@@ -29,10 +29,19 @@ public class SpannerEntityFieldKey {
   private final Class<?> type;
   private final String name;
 
+  /**
+   * Constructor.
+   */
   public SpannerEntityFieldKey(Class<?> type, String name) {
     this(null, type, name);
   }
 
+  /**
+   * Constructor.
+   * @param declaringClass - declaring class
+   * @param type           - field type
+   * @param name           - field name
+   */
   public SpannerEntityFieldKey(Class<?> declaringClass, Class<?> type, String name) {
     this.declaringClass = declaringClass;
     this.type = type;

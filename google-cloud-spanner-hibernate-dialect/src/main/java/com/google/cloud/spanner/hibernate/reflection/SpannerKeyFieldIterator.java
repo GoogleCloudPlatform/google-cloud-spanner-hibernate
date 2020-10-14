@@ -31,6 +31,9 @@ public class SpannerKeyFieldIterator implements Iterator<Field> {
   private Class<?> clazz;
   private Field[] fields;
 
+  /**
+   * Constructor.
+   */
   public SpannerKeyFieldIterator(Class<?> clazz) {
     this.index = 0;
     this.clazz = clazz;
