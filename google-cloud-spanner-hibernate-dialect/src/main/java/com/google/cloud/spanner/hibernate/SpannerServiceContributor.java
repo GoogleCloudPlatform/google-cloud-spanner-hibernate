@@ -72,7 +72,8 @@ public class SpannerServiceContributor implements ServiceContributor {
               "hibernate.schema_update.unique_constraint_strategy",
               UniqueConstraintSchemaUpdateStrategy.RECREATE_QUIETLY)
           // Allows entities to be used with InheritanceType.JOINED in Spanner.
-          .applySetting("hibernate.hql.bulk_id_strategy", InlineIdsOrClauseBulkIdStrategy.INSTANCE);
+          .applySetting("hibernate.hql.bulk_id_strategy", InlineIdsOrClauseBulkIdStrategy.INSTANCE)
+          .applySetting("hibernate.jdbc.batch_size", "10");
     }
   }
 }
