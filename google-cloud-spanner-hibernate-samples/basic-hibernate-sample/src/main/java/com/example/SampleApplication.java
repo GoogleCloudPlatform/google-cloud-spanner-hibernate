@@ -59,7 +59,7 @@ public class SampleApplication {
       savePerson(session);
   
       // Save a singer entity into the Spanner Table.
-      saveSingerAlbum(session);
+      saveSingerAlbums(session, 1);
       
     } finally {
       session.close();
@@ -108,15 +108,16 @@ public class SampleApplication {
    *
    * <p>Demonstrates saving entities using {@link com.google.cloud.spanner.hibernate.Interleaved}.
    */
-  public static void saveSingerAlbum(Session session) {
+  public static void saveSingerAlbums(Session session, int count) {
     session.beginTransaction();
 
-    Singer singer = new Singer("Singer1", new ArrayList<>());
-    Album album = new Album(singer, "Album name");
-    singer.addAlbum(album);
-
-    session.save(singer);
-    session.save(album);
+    for (int i = 1; i <= count; ++i) {
+      Singer singer = new Singer("Singer" + i, new ArrayList<>());
+      Album album = new Album(singer, "Album name");
+      singer.addAlbum(album);
+      session.persist(singer);
+      session.persist(album);
+    }
     session.getTransaction().commit();
 
     List<Singer> singers =

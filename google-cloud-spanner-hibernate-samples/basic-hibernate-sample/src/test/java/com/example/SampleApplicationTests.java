@@ -90,7 +90,7 @@ public class SampleApplicationTests {
 
   @Test
   public void testSaveSingers() {
-    SampleApplication.saveSingerAlbum(session);
+    SampleApplication.saveSingerAlbums(session, 20);
 
     List<Singer> savedSingers = session.createQuery("from Singer", Singer.class).list();
 
