@@ -12,6 +12,7 @@
     <!-- Uncomment this property and set the URL for the database,
     unless you're setting it via a system property or hibernate.properties file. -->
     <!--
+    <property name="hibernate.connection.url">jdbc:cloudspanner:/projects/{YOUR_PROJECT_ID}/instances/{YOUR_INSTANCE_ID}/databases/{YOUR_DATABASE_ID}</property>
     -->
 
     <!-- SQL dialect -->
