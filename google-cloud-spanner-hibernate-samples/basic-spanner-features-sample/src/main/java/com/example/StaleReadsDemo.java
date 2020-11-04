@@ -19,7 +19,6 @@
 package com.example;
 
 import com.example.entities.Book;
-import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -54,13 +53,15 @@ public class StaleReadsDemo {
     }
 
     try (Session session = sessionFactory.openSession()) {
+      session.beginTransaction();
+
       // Configure the connection to do a stale read.
       session.doWork(conn -> {
-        CloudSpannerJdbcConnection jdbcConnection = (CloudSpannerJdbcConnection) conn;
         // Must set to read-only connection to use stale reads.
-        jdbcConnection.setReadOnly(true);
+        conn.createStatement().execute("SET TRANSACTION READ ONLY");
+
         // Set the stale read settings through the JDBC connection.
-        jdbcConnection.createStatement().execute(
+        conn.createStatement().execute(
             "SET READ_ONLY_STALENESS = 'EXACT_STALENESS 600s'");
       });
 
@@ -71,14 +72,6 @@ public class StaleReadsDemo {
       System.out.println(
           "Executing a exact stale read 10 minutes in the past (no books should be found): "
               + booksInTable);
-
-      // Reset the connection.
-      session.doWork(conn -> {
-        CloudSpannerJdbcConnection jdbcConnection = (CloudSpannerJdbcConnection) conn;
-        jdbcConnection.setReadOnly(false);
-        jdbcConnection.createStatement().execute(
-            "SET READ_ONLY_STALENESS = 'STRONG'");
-      });
     }
 
     System.out.println("==========================");

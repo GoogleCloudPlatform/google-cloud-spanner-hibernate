@@ -28,13 +28,20 @@ import org.hibernate.SessionFactory;
  */
 public class TransactionTypeDemo {
 
+  /**
+   * This code sample demonstrates an error when trying to perform an update in a read-only
+   * transaction.
+   */
   static void runReadOnlyTransaction(SessionFactory sessionFactory) {
     System.out.println("======== Read-only Transaction Demo ========");
 
     try (Session session = sessionFactory.openSession()) {
       session.beginTransaction();
 
-      session.doWork(connection -> connection.setReadOnly(true));
+      // Set transaction to read-only.
+      session.doWork(conn -> {
+        conn.createStatement().execute("SET TRANSACTION READ ONLY");
+      });
 
       Book book = new Book("Programming Guide", "Author");
       session.save(book);
