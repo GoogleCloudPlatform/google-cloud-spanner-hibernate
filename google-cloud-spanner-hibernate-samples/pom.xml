@@ -29,6 +29,7 @@
 		<module>microprofile-jpa-sample</module>
 		<module>quarkus-jpa-sample</module>
 		<module>spanner-hibernate-codelab</module>
+		<module>basic-spanner-features-sample</module>
 	</modules>
 
 	<build>

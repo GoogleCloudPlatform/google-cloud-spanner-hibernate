@@ -1,0 +1,32 @@
+= Cloud Spanner Hibernate Example
+
+This sample application demonstrates using https://hibernate.org/orm/releases/5.4/[Hibernate 5.4] with https://cloud.google.com/spanner/[Google Cloud Spanner].
+
+It provides examples of how to access the Spanner JDBC Driver to perform stale reads, read-only transactions, and other Spanner-specific operations from Hibernate.
+
+== Setup & Configuration
+1. Create a Google Cloud Platform Project
+2. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account] with Cloud Spanner permission.
+Furnish a new JSON key and then set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
++
+Alternatively, have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized and logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials].
+
+3. Enable the https://console.cloud.google.com/apis/api/spanner.googleapis.com/overview[Cloud Spanner API].
+
+4. Create a Cloud Spanner instance and database in your project and save those details for the next step.
+
+== Run the Example
+
+Run the example `main` method in `SpannerFeatureSampleApplication.java`.
+Replace the `PROJECT_ID`, `INSTANCE_ID`, and `DATABASE_ID` parameters in the command to specify the Spanner database you will use for the sample.
+
+----
+mvn exec:java -Dexec.mainClass="com.example.SpannerFeatureSampleApplication" -Dhibernate.connection.url="jdbc:cloudspanner:/projects/{YOUR_PROJECT_ID}/instances/{YOUR_INSTANCE_ID}/databases/{YOUR_DATABASE_ID}"
+----
+
+== Features
+
+This sample application demonstrates several advanced features of Spanner that can be accessed through the Spanner JDBC driver.
+
+* `StaleReadsDemo.java` demonstrates how to perform Stale reads in Hibernate.
+* `TransactionTypeDemo.java` demonstrates how to use alternate transaction types, such as read-only transactions.
