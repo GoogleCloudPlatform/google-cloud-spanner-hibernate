@@ -2,6 +2,7 @@
 
 This sample application demonstrates using https://hibernate.org/orm/releases/5.4/[Hibernate 5.4] with https://cloud.google.com/spanner/[Google Cloud Spanner].
 
+It provides examples of how to access the Spanner JDBC Driver to perform stale reads, read-only transactions, and other Spanner-specific operations from Hibernate.
 
 == Setup & Configuration
 1. Create a Google Cloud Platform Project
@@ -23,3 +24,9 @@ Replace the `PROJECT_ID`, `INSTANCE_ID`, and `DATABASE_ID` parameters in the com
 mvn exec:java -Dexec.mainClass="com.example.SpannerFeatureSampleApplication" -Dhibernate.connection.url="jdbc:cloudspanner:/projects/{YOUR_PROJECT_ID}/instances/{YOUR_INSTANCE_ID}/databases/{YOUR_DATABASE_ID}"
 ----
 
+== Features
+
+This sample application demonstrates several advanced features of Spanner that can be accessed through the Spanner JDBC driver.
+
+* `StaleReadsDemo.java` demonstrates how to perform Stale reads in Hibernate.
+* `TransactionTypeDemo.java` demonstrates how to use alternate transaction types, such as read-only transactions.
