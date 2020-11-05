@@ -143,6 +143,20 @@ However, Cloud Spanner currently does not support cascading deletes on foreign k
 The dialect also supports unique column constraints applied through `@Column(unique = true)` or `@UniqueConstraint`.
 In these cases, the dialect will create a unique index to enforce uniqueness on the specified columns.
 
+=== Advanced Cloud Spanner Features (via. JDBC)
+
+Cloud Spanner offers several features that traditional databases typically do not offer.
+These include:
+
+* Stale Reads
+* Read-only transactions
+* Partitioned DML
+* Mutations API (faster insert/update/delete operations)
+
+We provide a link:google-cloud-spanner-hibernate-samples/basic-spanner-features-sample[Cloud Spanner Features Sample Application] which demonstrates best practices for accessing these features through the Cloud Spanner JDBC driver.
+
+Please consult the https://cloud.google.com/spanner/docs/use-oss-jdbc[Cloud Spanner JDBC driver documentation] for more information.
+
 === Performance Optimizations
 
 There are some practices which can improve the execution time of Hibernate operations.

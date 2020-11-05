@@ -22,6 +22,9 @@ import com.example.entities.Book;
 import javax.persistence.PersistenceException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 /**
  * Code samples specifying a different Cloud Spanner Transaction Type.
@@ -32,20 +35,24 @@ public class TransactionTypeDemo {
    * This code sample demonstrates an error when trying to perform an update in a read-only
    * transaction.
    */
-  static void runReadOnlyTransaction(SessionFactory sessionFactory) {
+  public static void main(String[] args) {
+    StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+        .configure()
+        .build();
+    SessionFactory sessionFactory = new MetadataSources(registry).buildMetadata()
+        .buildSessionFactory();
+    SessionHelper sessionHelper = new SessionHelper(sessionFactory);
+
+    runReadOnlyTransaction(sessionHelper);
+  }
+
+  static void runReadOnlyTransaction(SessionHelper sessionHelper) {
     System.out.println("======== Read-only Transaction Demo ========");
 
-    try (Session session = sessionFactory.openSession()) {
+    try (Session session = sessionHelper.createReadOnlySession()) {
       session.beginTransaction();
-
-      // Set transaction to read-only.
-      session.doWork(conn -> {
-        conn.createStatement().execute("SET TRANSACTION READ ONLY");
-      });
-
       Book book = new Book("Programming Guide", "Author");
       session.save(book);
-
       session.getTransaction().commit();
     } catch (PersistenceException ex) {
       System.out.println("You will get the following error if you try to modify the tables in "
