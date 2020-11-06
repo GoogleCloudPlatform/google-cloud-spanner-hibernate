@@ -22,6 +22,9 @@ import com.example.entities.Book;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 /**
  * Code samples for using Stale Reads in Hibernate.
@@ -31,12 +34,26 @@ import org.hibernate.SessionFactory;
  */
 public class StaleReadsDemo {
 
-  static void runStaleReads(SessionFactory sessionFactory) {
+  /**
+   * Runs the Stale Read demo.
+   */
+  public static void main(String[] args) {
+    StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+        .configure()
+        .build();
+    SessionFactory sessionFactory = new MetadataSources(registry).buildMetadata()
+        .buildSessionFactory();
+    SessionHelper sessionHelper = new SessionHelper(sessionFactory);
+
+    runStaleReads(sessionHelper);
+  }
+
+  static void runStaleReads(SessionHelper sessionHelper) {
     System.out.println("======== Stale Reads Demo ========");
 
     Book book;
 
-    try (Session session = sessionFactory.openSession()) {
+    try (Session session = sessionHelper.createReadWriteSession()) {
       // First save a book record in the database.
       session.beginTransaction();
       book = new Book("Super Book", "Bob Blob");
@@ -52,19 +69,7 @@ public class StaleReadsDemo {
       System.out.println("Executing a strong read: " + booksInTable);
     }
 
-    try (Session session = sessionFactory.openSession()) {
-      session.beginTransaction();
-
-      // Configure the connection to do a stale read.
-      session.doWork(conn -> {
-        // Must set to read-only connection to use stale reads.
-        conn.createStatement().execute("SET TRANSACTION READ ONLY");
-
-        // Set the stale read settings through the JDBC connection.
-        conn.createStatement().execute(
-            "SET READ_ONLY_STALENESS = 'EXACT_STALENESS 600s'");
-      });
-
+    try (Session session = sessionHelper.createExactStaleReadSession(600)) {
       List<Book> booksInTable =
           session.createQuery("from Book b where b.id = :id", Book.class)
               .setParameter("id", book.getId())

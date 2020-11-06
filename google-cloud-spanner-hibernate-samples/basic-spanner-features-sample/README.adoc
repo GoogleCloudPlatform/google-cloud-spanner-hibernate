@@ -1,4 +1,4 @@
-= Cloud Spanner Hibernate Example
+= Cloud Spanner Features Example
 
 This sample application demonstrates using https://hibernate.org/orm/releases/5.4/[Hibernate 5.4] with https://cloud.google.com/spanner/[Google Cloud Spanner].
 
@@ -15,18 +15,53 @@ Alternatively, have the https://cloud.google.com/sdk/[Google Cloud SDK] installe
 
 4. Create a Cloud Spanner instance and database in your project and save those details for the next step.
 
-== Run the Example
+== Run the Examples
 
-Run the example `main` method in `SpannerFeatureSampleApplication.java`.
-Replace the `PROJECT_ID`, `INSTANCE_ID`, and `DATABASE_ID` parameters in the command to specify the Spanner database you will use for the sample.
+First construct the JDBC URL string based on the Spanner instance and database you created.
+
+Replace the `PROJECT_ID`, `INSTANCE_ID`, and `DATABASE_ID` parameters in the command to specify the Spanner database you will use for the samples.
+```
+jdbc:cloudspanner:/projects/{YOUR_PROJECT_ID}/instances/{YOUR_INSTANCE_ID}/databases/{YOUR_DATABASE_ID}
+```
+
+=== Stale Read Sample
+
+Stale reads are a feature in Cloud Spanner which allows you to read records from the database https://cloud.google.com/spanner/docs/reads#read_types[at a previous point in time].
+
+The `StaleReadsDemo.java` provides a demonstration of how to perform a Stale read in Hibernate.
+The sample creates a new row in the database which is successfully read by a strong-read, but is not present in the stale read.
+
+To run the sample on command line:
 
 ----
-mvn exec:java -Dexec.mainClass="com.example.SpannerFeatureSampleApplication" -Dhibernate.connection.url="jdbc:cloudspanner:/projects/{YOUR_PROJECT_ID}/instances/{YOUR_INSTANCE_ID}/databases/{YOUR_DATABASE_ID}"
+mvn exec:java -Dexec.mainClass="com.example.StaleReadsDemo" -Dhibernate.connection.url="jdbc:cloudspanner:/projects/{YOUR_PROJECT_ID}/instances/{YOUR_INSTANCE_ID}/databases/{YOUR_DATABASE_ID}"
 ----
 
-== Features
+=== Read-Only Transactions
 
-This sample application demonstrates several advanced features of Spanner that can be accessed through the Spanner JDBC driver.
+Spanner offers https://cloud.google.com/spanner/docs/transactions#read-only_transactions[read-only transactions] which can offer performance benefits for read-only queries.
 
-* `StaleReadsDemo.java` demonstrates how to perform Stale reads in Hibernate.
-* `TransactionTypeDemo.java` demonstrates how to use alternate transaction types, such as read-only transactions.
+The `TransactionTypeDemo.java` offers an example of how to perform a read-only transaction.
+
+To run the sample on command line:
+
+----
+mvn exec:java -Dexec.mainClass="com.example.TransactionTypeDemo" -Dhibernate.connection.url="jdbc:cloudspanner:/projects/{YOUR_PROJECT_ID}/instances/{YOUR_INSTANCE_ID}/databases/{YOUR_DATABASE_ID}"
+----
+
+== Best Practices
+
+Many advanced features of Cloud Spanner can be accessed through the JDBC Driver by unwrapping the underlying JDBC connection from the session:
+
+```
+session.doWork(conn -> {
+  conn.setReadOnly(false);
+  conn.createStatement().execute("SET READ_ONLY_STALENESS = 'STRONG'");
+});
+```
+
+NOTE: It is important to remember that JDBC Connections are pooled and **shared** among Hibernate sessions. If you modify a JDBC connection in one session (such as setting it to read-only), that change will affect the next session using the connection. Therefore, it is recommended to wrap session creation in a helper class (such as link:src/main/java/com/example/SessionHelper.java[`SessionHelper.java`] in this sample) to help manage JDBC driver settings.
+
+=== More information
+
+To see the full list of JDBC features you can access, please consult the https://cloud.google.com/spanner/docs/use-oss-jdbc#session_management_statements[Cloud Spanner JDBC documentation].
