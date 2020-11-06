@@ -60,7 +60,7 @@ session.doWork(conn -> {
 });
 ```
 
-NOTE: It is important to remember that JDBC Connections are pooled and **shared** among Hibernate sessions. If you modify a JDBC connection in one session (such as setting it to read-only), that change will affect the next session using the connection. Therefore, it is recommended to wrap session creation in a helper class (such as link:src/main/java/com/example/SessionHelper.java[`SessionHelper.java`] in this sample) to help manage accessing JDBC driver settings.
+NOTE: It is important to remember that JDBC Connections are pooled and **shared** among Hibernate sessions. If you modify a JDBC connection in one session (such as setting it to read-only), that change will affect the next session using the connection. Therefore, it is recommended to wrap session creation in a helper class (such as link:src/main/java/com/example/SessionHelper.java[`SessionHelper.java`] in this sample) to help manage JDBC driver settings.
 
 === More information
 

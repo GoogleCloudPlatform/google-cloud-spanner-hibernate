@@ -44,8 +44,8 @@ public class SessionHelper {
   public Session createReadWriteSession() {
     Session session = sessionFactory.openSession();
     session.doWork(conn -> {
+      // read-write transactions always use strong reads.
       conn.setReadOnly(false);
-      conn.createStatement().execute("SET READ_ONLY_STALENESS = 'STRONG'");
     });
     return session;
   }
