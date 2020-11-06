@@ -29,7 +29,7 @@ jdbc:cloudspanner:/projects/{YOUR_PROJECT_ID}/instances/{YOUR_INSTANCE_ID}/datab
 Stale reads are a feature in Cloud Spanner which allows you to read records from the database https://cloud.google.com/spanner/docs/reads#read_types[at a previous point in time].
 
 The `StaleReadsDemo.java` provides a demonstration of how to perform a Stale read in Hibernate.
-The sample creates a new row in the database which is successfully read by a strong-read, but it is not present in the stale read.
+The sample creates a new row in the database which is successfully read by a strong-read, but is not present in the stale read.
 
 To run the sample on command line:
 
