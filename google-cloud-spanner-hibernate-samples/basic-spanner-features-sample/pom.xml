@@ -9,6 +9,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
+  <name>Google Cloud Spanner Hibernate Basic Features Sample</name>
   <artifactId>basic-spanner-features-sample</artifactId>
 
   <dependencies>

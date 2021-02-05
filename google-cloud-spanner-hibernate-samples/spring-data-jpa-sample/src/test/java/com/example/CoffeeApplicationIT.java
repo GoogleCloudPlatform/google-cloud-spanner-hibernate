@@ -44,7 +44,7 @@ import org.springframework.util.LinkedMultiValueMap;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = CoffeeApplication.class)
 @TestPropertySource("classpath:application-test.properties")
-public class CoffeeApplicationTests {
+public class CoffeeApplicationIT {
 
   @Autowired
   CustomerRepository customerRepository;

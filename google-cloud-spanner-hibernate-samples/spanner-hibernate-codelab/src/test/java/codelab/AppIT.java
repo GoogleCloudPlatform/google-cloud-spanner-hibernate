@@ -27,7 +27,7 @@ import org.junit.contrib.java.lang.system.SystemOutRule;
 /**
  * This verifies the sample application.
  */
-public class AppTests {
+public class AppIT {
 
   @Rule
   public final SystemOutRule systemOutRule = new SystemOutRule().enableLog();

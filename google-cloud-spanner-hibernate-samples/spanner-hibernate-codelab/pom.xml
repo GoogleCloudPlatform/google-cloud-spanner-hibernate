@@ -9,6 +9,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
+  <name>Google Cloud Spanner Hibernate Codelab</name>
   <artifactId>spanner-hibernate-codelab</artifactId>
   <description>Source code for the Cloud Spanner with Hibernate ORM Codelab</description>
 

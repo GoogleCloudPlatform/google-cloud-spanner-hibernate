@@ -41,7 +41,7 @@ import org.junit.Test;
  * @author Chengyuan Zhao
  * @author Daniel Zou
  */
-public class SampleApplicationTests {
+public class SampleApplicationIT {
 
   private final StandardServiceRegistry registry =
       new StandardServiceRegistryBuilder()
