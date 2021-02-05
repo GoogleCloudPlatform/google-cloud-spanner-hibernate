@@ -27,7 +27,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-public class PersonApplicationTest {
+public class PersonApplicationIT {
 
   @Test
   public void testPersonEndpoint() {
