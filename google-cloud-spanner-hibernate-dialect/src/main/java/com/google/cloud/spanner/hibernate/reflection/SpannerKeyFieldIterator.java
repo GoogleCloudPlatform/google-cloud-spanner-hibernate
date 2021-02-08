@@ -20,6 +20,7 @@ package com.google.cloud.spanner.hibernate.reflection;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Used for iterating over the declared fields on a given class definition. This includes
@@ -74,6 +75,10 @@ public class SpannerKeyFieldIterator implements Iterator<Field> {
 
   @Override
   public Field next() {
+    if (!hasNext()) {
+      throw new NoSuchElementException();
+    }
+
     Field field = fields[index];
     ++index;
     return field;
