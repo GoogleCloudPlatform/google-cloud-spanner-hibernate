@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
+import com.google.cloud.spanner.hibernate.types.SpannerArrayListType;
 import java.io.Serializable;
 import java.sql.Types;
 import java.util.Map;
@@ -268,6 +269,12 @@ public class SpannerDialect extends Dialect {
   @Override
   public Exporter<ForeignKey> getForeignKeyExporter() {
     return this.spannerForeignKeyExporter;
+  }
+
+  @Override
+  public void contributeTypes(TypeContributions typeContributions, ServiceRegistry serviceRegistry) {
+    super.contributeTypes(typeContributions, serviceRegistry);
+    typeContributions.contributeType(new SpannerArrayListType());
   }
 
   /* SELECT-related functions */
