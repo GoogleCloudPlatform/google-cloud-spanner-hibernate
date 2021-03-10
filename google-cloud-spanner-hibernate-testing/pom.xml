@@ -58,17 +58,7 @@
 			<artifactId>ehcache</artifactId>
 			<version>3.7.0</version>
 		</dependency>
-
 	</dependencies>
-
-	<profiles>
-		<profile>
-			<id>disable-integration-tests</id>
-			<properties>
-				<maven.test.skip>true</maven.test.skip>
-			</properties>
-		</profile>
-	</profiles>
 
 	<build>
 		<plugins>

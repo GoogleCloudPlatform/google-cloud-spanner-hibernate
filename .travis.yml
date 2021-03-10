@@ -21,7 +21,7 @@ addons:
       secure: "bJbPI9/edK+++PK1PsJNF6xApzhQbkeIB0587P6IVTjmIS/+yh/RcBHAkRN4q2TGKKeItyjyps/N1pz3jDidmvxDYlJhoPJDpcbYA50Gicw1xsjyf172bJ7BNl09wYNYUpHFVk5mTJtVKtkePwICMXkiftLMrJhuTbunNnXovrQuA6mb1gI3lNm2NC9bQEsm1arUAmYFVCLdeeAU7JD039e0qTMMtdREBd0idzWoQHd5b0Te2HJ6jE4AvuiGnygdPUiCceS5s6Ytfi0K/KCIUTlujW3Cmcn1Of4GkSpKx31ScMwRZCOHgZo5dKEIgsPiVOF8XiNgTugBjf+k+f/qxmFa/koe1Yb2p7whzCkykBt6jcEnm/lZ2m3eysO6gvDlRRFNHj7epYwCt298x4GUNZ9dNYXGhRgqdmJCp0G/MpovnZwpayfJmXd9QgE7pGm/Xf8IGLxQwWKSEtqLdfAq6hyDmENLHxBfCzA3EYXpfSNcszfk1zhky1nexnV0hsmAqUHQHIdRNkCOvl2T6rmYj8xCGcYa09ROG/bEnfqJt2nEEIPSBhWyGgisAkG0BqLX/aufb4Uzpge34Lg65477c1d8jgz/hw/xV2b/OV4Exn6C34MHeRBhPr0Q4xHd1sw3w8mOJvdkSKrXvdz9F0U2qb3jDennKrI6J38RgUs0D/8="
 
 install:
-  - ./mvnw clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -P disable-integration-tests;
+  - ./mvnw clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
 before_install:
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
@@ -35,6 +35,6 @@ script:
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
       ./mvnw org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -B -V -Dsonar.projectKey=google-cloud-spanner-hibernate -Dhibernate.show_sql=false;
     else
-      ./mvnw verify -B -V -P disable-integration-tests;
+      ./mvnw test -B -V
     fi;
 
