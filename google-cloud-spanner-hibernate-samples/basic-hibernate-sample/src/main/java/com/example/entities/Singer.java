@@ -18,6 +18,7 @@
 
 package com.example.entities;
 
+import com.google.cloud.spanner.hibernate.types.SpannerArrayListType;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.Entity;
@@ -26,7 +27,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
+@TypeDefs({
+  @TypeDef(
+    name = "spanner-array",
+    typeClass = SpannerArrayListType.class
+  )
+})
 @Entity
 public class Singer {
 
@@ -35,14 +44,18 @@ public class Singer {
   @Type(type = "uuid-char")
   private UUID singerId;
 
+  private String name;
+
   @OneToMany(mappedBy = "singer")
   List<Album> albums;
 
-  private String name;
+  @Type(type = "spanner-array")
+  private List<String> nickNames;
 
-  public Singer(String name, List<Album> albums) {
+  public Singer(String name, List<Album> albums, List<String> nickNames) {
     this.name = name;
     this.albums = albums;
+    this.nickNames = nickNames;
   }
 
   // Default constructor used by JPA
@@ -78,12 +91,21 @@ public class Singer {
     this.albums = albums;
   }
 
+  public List<String> getNickNames() {
+    return nickNames;
+  }
+
+  public void setNickNames(List<String> nickNames) {
+    this.nickNames = nickNames;
+  }
+
   @Override
   public String toString() {
-    return "Singer{"
-        + "singerId=" + singerId
-        + "\n, albums=" + albums
-        + "\n, name='" + name + '\''
-        + "\n}";
+    return "Singer{" +
+        "singerId=" + singerId
+        + ", name='" + name + '\''
+        + ", albums=" + albums
+        + ", nickNames=" + nickNames
+        + '}';
   }
 }

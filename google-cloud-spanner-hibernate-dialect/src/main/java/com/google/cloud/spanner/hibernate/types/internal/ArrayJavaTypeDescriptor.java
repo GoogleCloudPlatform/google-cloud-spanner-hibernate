@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.hibernate.types.internal;
 
+import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.hibernate.reflection.ReflectionUtils;
 import java.math.BigDecimal;
 import java.sql.Array;
@@ -40,20 +41,20 @@ public class ArrayJavaTypeDescriptor
 
   // The List type of the field set via reflection.
   private Class<?> spannerType = Object.class;
-  private String spannerTypeName = "";
+  private Code spannerTypeCode = Code.STRUCT;
 
   public ArrayJavaTypeDescriptor() {
     // This cast is needed to pass Object.class to the parent class
     super((Class<List<?>>)(Class<?>) List.class);
   }
 
-  public String getSpannerTypeName() {
-    return spannerTypeName;
+  public Code getSpannerTypeCode() {
+    return spannerTypeCode;
   }
 
   @Override
   public List<?> fromString(String string) {
-    return null;
+    throw new UnsupportedOperationException("Creating a Java list from String is not supported.");
   }
 
   @Override
@@ -112,34 +113,34 @@ public class ArrayJavaTypeDescriptor
 
     // Get the Spanner type string for the Java list type.
     spannerType = listType;
-    spannerTypeName = getSpannerTypeCode(listType);
+    spannerTypeCode = getSpannerTypeCode(listType);
   }
 
   /**
-   * Maps a Java Class type to a Spanner Column type.
+   * Maps a Java Class type to a Spanner Column type {@link Code}.
    *
    * <p>The type codes can be found in Spanner documentation:
    * https://cloud.google.com/spanner/docs/data-types#allowable_types
    */
-  private static String getSpannerTypeCode(Class<?> javaType) {
+  private static Code getSpannerTypeCode(Class<?> javaType) {
     if (Integer.class.isAssignableFrom(javaType)) {
-      return "INT64";
+      return Code.INT64;
     } else if (Long.class.isAssignableFrom(javaType)) {
-      return "INT64";
+      return Code.INT64;
     } else if (Double.class.isAssignableFrom(javaType)) {
-      return "FLOAT64";
+      return Code.FLOAT64;
     } else if (String.class.isAssignableFrom(javaType)) {
-      return "STRING";
+      return Code.STRING;
     } else if (UUID.class.isAssignableFrom(javaType)) {
-      return "STRING";
+      return Code.STRING;
     } else if (Date.class.isAssignableFrom(javaType)) {
-      return "TIMESTAMP";
+      return Code.TIMESTAMP;
     } else if (Boolean.class.isAssignableFrom(javaType)) {
-      return "BOOL";
+      return Code.BOOL;
     } else if (BigDecimal.class.isAssignableFrom(javaType)) {
-      return "NUMERIC";
+      return Code.NUMERIC;
     } else if (byte[].class.isAssignableFrom(javaType)) {
-      return "BYTES";
+      return Code.BYTES;
     } else {
       throw new UnsupportedOperationException(
           "The " + javaType + " is not supported as a Spanner array type.");

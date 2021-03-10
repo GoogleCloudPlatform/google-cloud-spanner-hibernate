@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.hibernate.types;
 
+import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.hibernate.types.internal.ArrayJavaTypeDescriptor;
 import com.google.cloud.spanner.hibernate.types.internal.ArraySqlTypeDescriptor;
 import java.util.List;
@@ -35,6 +36,10 @@ public class SpannerArrayListType
 
   public SpannerArrayListType() {
     super(new ArraySqlTypeDescriptor(), new ArrayJavaTypeDescriptor());
+  }
+
+  public Code getSpannerSqlType() {
+    return ((ArrayJavaTypeDescriptor) getJavaTypeDescriptor()).getSpannerTypeCode();
   }
 
   @Override

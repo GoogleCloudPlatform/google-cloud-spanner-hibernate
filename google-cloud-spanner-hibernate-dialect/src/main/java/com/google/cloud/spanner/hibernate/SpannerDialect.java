@@ -72,6 +72,7 @@ public class SpannerDialect extends Dialect {
    * Default constructor for SpannerDialect.
    */
   public SpannerDialect() {
+    registerColumnType(Types.ARRAY, "ARRAY");
     registerColumnType(Types.BOOLEAN, "BOOL");
     registerColumnType(Types.BIT, "BOOL");
     registerColumnType(Types.BIGINT, "INT64");

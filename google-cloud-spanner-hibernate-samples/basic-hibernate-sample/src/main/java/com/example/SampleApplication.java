@@ -25,6 +25,7 @@ import com.example.entities.Singer;
 import com.example.entities.WireTransferPayment;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -111,7 +112,8 @@ public class SampleApplication {
   public static void saveSingerAlbum(Session session) {
     session.beginTransaction();
 
-    Singer singer = new Singer("Singer1", new ArrayList<>());
+    Singer singer = new Singer(
+        "Singer1", new ArrayList<>(), Arrays.asList("nick_name1", "nickname_2"));
     Album album = new Album(singer, "Album name");
     singer.addAlbum(album);
 

@@ -55,7 +55,7 @@ public class ArraySqlTypeDescriptor implements SqlTypeDescriptor {
         ArrayJavaTypeDescriptor arrayJavaTypeDescriptor =
             (ArrayJavaTypeDescriptor) javaTypeDescriptor;
         st.setArray(index, st.getConnection().createArrayOf(
-            arrayJavaTypeDescriptor.getSpannerTypeName(),
+            arrayJavaTypeDescriptor.getSpannerTypeCode().toString(),
             arrayJavaTypeDescriptor.unwrap((List<?>) value, Object[].class, options)
         ));
       }
