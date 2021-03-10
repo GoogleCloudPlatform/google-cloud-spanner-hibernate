@@ -213,6 +213,13 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${maven-failsafe-plugin.version}</version>
 
+        <configuration>
+          <useModulePath>false</useModulePath>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${basedir}/target/classes</additionalClasspathElement>
+          </additionalClasspathElements>
+        </configuration>
+
         <executions>
           <execution>
             <goals>
