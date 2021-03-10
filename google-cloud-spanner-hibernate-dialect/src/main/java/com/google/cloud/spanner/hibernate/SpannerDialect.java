@@ -271,12 +271,6 @@ public class SpannerDialect extends Dialect {
     return this.spannerForeignKeyExporter;
   }
 
-  @Override
-  public void contributeTypes(TypeContributions typeContributions, ServiceRegistry serviceRegistry) {
-    super.contributeTypes(typeContributions, serviceRegistry);
-    typeContributions.contributeType(new SpannerArrayListType());
-  }
-
   /* SELECT-related functions */
 
   @Override

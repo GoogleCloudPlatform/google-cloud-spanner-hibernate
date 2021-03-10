@@ -58,6 +58,10 @@ public class SandboxApplication {
 
     session.getTransaction().commit();
 
+    List<Singer> singersInTable =
+        session.createQuery("from Singer", Singer.class).list();
+    System.out.println(singersInTable);
+
     session.close();
     sessionFactory.close();
   }

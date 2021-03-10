@@ -7,6 +7,9 @@ import java.util.Properties;
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.usertype.DynamicParameterizedType;
 
+/**
+ * A cus
+ */
 public class SpannerArrayListType
     extends AbstractSingleColumnStandardBasicType<List<?>>
     implements DynamicParameterizedType {

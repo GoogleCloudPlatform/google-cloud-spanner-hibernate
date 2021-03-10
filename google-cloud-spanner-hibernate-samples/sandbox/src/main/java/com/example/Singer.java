@@ -40,4 +40,12 @@ public class Singer {
   public void setNumbers(List<Integer> numbers) {
     this.numbers = numbers;
   }
+
+  @Override
+  public String toString() {
+    return "Singer{" +
+        "id=" + id +
+        ", numbers=" + numbers +
+        '}';
+  }
 }

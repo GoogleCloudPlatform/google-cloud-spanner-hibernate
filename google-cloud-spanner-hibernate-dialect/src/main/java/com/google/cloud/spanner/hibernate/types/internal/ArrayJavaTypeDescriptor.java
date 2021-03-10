@@ -2,10 +2,15 @@ package com.google.cloud.spanner.hibernate.types.internal;
 
 import com.google.cloud.spanner.hibernate.reflection.ReflectionUtils;
 import java.math.BigDecimal;
+import java.sql.Array;
+import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.hibernate.HibernateException;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.AbstractTypeDescriptor;
 import org.hibernate.usertype.DynamicParameterizedType;
@@ -16,16 +21,19 @@ public class ArrayJavaTypeDescriptor
 
   public static final ArrayJavaTypeDescriptor INSTANCE = new ArrayJavaTypeDescriptor();
 
-  // The object type of the Spanner Array column.
-  private String arrayType = "";
+  // The type of the Spanner Array column.
+  private String spannerTypeName = "";
+
+  private Class<?> spannerType = Object.class;
+
 
   public ArrayJavaTypeDescriptor() {
     // This cast is needed to pass Object.class to the parent class
-    super((Class<List<?>>)(Class<?>)List.class);
+    super((Class<List<?>>)(Class<?>) List.class);
   }
 
-  public String getArrayType() {
-    return arrayType;
+  public String getSpannerTypeName() {
+    return spannerTypeName;
   }
 
   @Override
@@ -35,12 +43,31 @@ public class ArrayJavaTypeDescriptor
 
   @Override
   public <X> X unwrap(List<?> value, Class<X> type, WrapperOptions options) {
+    // The generic type of value is provided by the spannerType.
+    if (spannerType == Integer.class) {
+      // If the value is a List<Integer>, convert it to List<Long> since Spanner only support INT64.
+      value = ((List<Integer>) value).stream()
+          .map(Integer::longValue)
+          .collect(Collectors.toList());
+    }
+
     return (X) value.toArray();
   }
 
   @Override
   public List<?> wrap(Object value, WrapperOptions options) {
-    return null;
+    try {
+      if (value instanceof Array) {
+        Array sqlArray = (Array) value;
+        return Arrays.asList(((Object[]) sqlArray.getArray()));
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException("Failed to convert SQL array type to a Java list: ", e);
+    }
+
+    throw new UnsupportedOperationException(
+        "Unsupported type to convert: " + value.getClass()
+            + " Java type descriptor only supports converting SQL array types.");
   }
 
   @Override
@@ -70,7 +97,8 @@ public class ArrayJavaTypeDescriptor
     Class<?> listType = parameterizedTypes.get(0);
 
     // Get the Spanner type string for the Java list type.
-    arrayType = getSpannerTypeCode(listType);
+    spannerType = listType;
+    spannerTypeName = getSpannerTypeCode(listType);
   }
 
   /**
