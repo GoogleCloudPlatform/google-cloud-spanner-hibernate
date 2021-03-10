@@ -1,3 +1,21 @@
+/*
+ * Copyright 2019-2020 Google LLC
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
 package com.google.cloud.spanner.hibernate.types.internal;
 
 import com.google.cloud.spanner.hibernate.reflection.ReflectionUtils;
@@ -10,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.hibernate.HibernateException;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.AbstractTypeDescriptor;
 import org.hibernate.usertype.DynamicParameterizedType;
@@ -21,11 +38,9 @@ public class ArrayJavaTypeDescriptor
 
   public static final ArrayJavaTypeDescriptor INSTANCE = new ArrayJavaTypeDescriptor();
 
-  // The type of the Spanner Array column.
-  private String spannerTypeName = "";
-
+  // The List type of the field set via reflection.
   private Class<?> spannerType = Object.class;
-
+  private String spannerTypeName = "";
 
   public ArrayJavaTypeDescriptor() {
     // This cast is needed to pass Object.class to the parent class
@@ -43,7 +58,6 @@ public class ArrayJavaTypeDescriptor
 
   @Override
   public <X> X unwrap(List<?> value, Class<X> type, WrapperOptions options) {
-    // The generic type of value is provided by the spannerType.
     if (spannerType == Integer.class) {
       // If the value is a List<Integer>, convert it to List<Long> since Spanner only support INT64.
       value = ((List<Integer>) value).stream()
@@ -104,7 +118,7 @@ public class ArrayJavaTypeDescriptor
   /**
    * Maps a Java Class type to a Spanner Column type.
    *
-   * The type codes can be found in Spanner documentation:
+   * <p>The type codes can be found in Spanner documentation:
    * https://cloud.google.com/spanner/docs/data-types#allowable_types
    */
   private static String getSpannerTypeCode(Class<?> javaType) {

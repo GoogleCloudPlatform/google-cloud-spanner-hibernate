@@ -19,7 +19,6 @@
 package com.google.cloud.spanner.hibernate;
 
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
-import com.google.cloud.spanner.hibernate.types.SpannerArrayListType;
 import java.io.Serializable;
 import java.sql.Types;
 import java.util.Map;
