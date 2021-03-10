@@ -111,6 +111,34 @@ public class Employee {
 
 This results in sequential IDs that are https://cloud.google.com/spanner/docs/schema-and-data-model#primary_keys[not optimal for Cloud Spanner] and makes use of the `hibernate_sequence` table for generating IDs.
 
+==== Array Column Types
+
+Spanner allows you to use https://cloud.google.com/spanner/docs/data-types#array_type[arrays as a data type] for your table columns.
+It is possible to map Hibernate entity fields to array columns by using the `com.google.cloud.spanner.hibernate.types.SpannerArrayListType`.
+
+[source, java]
+----
+// Use the @TypeDefs annotation to declare custom types you would like to use.
+@TypeDefs({
+  @TypeDef(
+    name = "spanner-array",
+    typeClass = SpannerArrayListType.class
+  )
+})
+@Entity
+public class Singer {
+
+  // Specify the custom type with the @Type annotation.
+  @Type(type = "spanner-array")
+  private List<String> nickNames;
+
+  ...
+}
+----
+
+A working example of this feature can be found in the The https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample[Hibernate Basic Sample].
+
+
 ==== Auto-generate Schema for Faster Development
 
 It is often useful to generate the schema for your database, such as during the early stages of development.
