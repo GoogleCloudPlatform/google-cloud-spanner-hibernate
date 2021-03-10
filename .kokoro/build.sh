@@ -20,7 +20,7 @@ set -eo pipefail
 dir=$(dirname "$0")
 
 pushd $dir/../
-./mvnw install -B -V -DskipTests
+./mvnw install -B -V -DskipITs
 popd
 
 source $dir/release_snapshot.sh
