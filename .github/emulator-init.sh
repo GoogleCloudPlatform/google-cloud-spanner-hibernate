@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # This runs the commands needed to initialize the Spanner emulator on a new container instance.
 # Follows these steps: https://medium.com/google-cloud/cloud-spanner-emulator-bf12d141c12
@@ -6,7 +6,7 @@
 gcloud config configurations create spanner-hibernate-emulator
 gcloud config set auth/disable_credentials true
 gcloud config set project cloud-spanner-hibernate-ci
-gcloud config set api_endpoint_overrides/spanner
+gcloud config set api_endpoint_overrides/spanner http://localhost:9020/
 
 gcloud spanner instances create test-instance --config=spanner-hibernate-emulator --description="Test Instance" --nodes=1
 gcloud spanner databases create test-database --instance test-instance
