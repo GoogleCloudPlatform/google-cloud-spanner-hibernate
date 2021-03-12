@@ -329,8 +329,7 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public SchemaNameResolver getSchemaNameResolver() {
-    throw new UnsupportedOperationException(
-        "No schema name resolver supported by " + getClass().getName());
+    return (connection, dialect) -> "";
   }
 
   @Override
