@@ -329,6 +329,7 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public SchemaNameResolver getSchemaNameResolver() {
+    // Spanner does not have a notion of database name schemas, so return "".
     return (connection, dialect) -> "";
   }
 

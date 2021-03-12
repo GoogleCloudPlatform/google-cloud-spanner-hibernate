@@ -50,4 +50,4 @@ jobs:
           mvn verify -f google-cloud-spanner-hibernate-samples/pom.xml \
               -Dhibernate.connection.url=$JDBC_URL \
               -Dspring.datasource.url=$JDBC_URL \
-              -Dquarkus.datasource.url=$JDBC_URL
+              -Dquarkus.datasource.jdbc.url=$JDBC_URL
