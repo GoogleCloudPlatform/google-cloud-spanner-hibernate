@@ -1400,7 +1400,8 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 	@Test
 	public void test_hql_collection_expressions_example_1() {
 		doInJPA( this::entityManagerFactory, entityManager -> {
-			Call call = entityManager.createQuery( "select c from Call c", Call.class).getResultList().get( 1 );
+			Call call = entityManager.createQuery( "select c from Call c", Call.class)
+					.getResultList().get( 0 );
 			//tag::hql-collection-expressions-example[]
 			List<Phone> phones = entityManager.createQuery(
 				"select p " +
@@ -1416,7 +1417,8 @@ public class HQLTest extends BaseEntityManagerFunctionalTestCase {
 	@Test
 	public void test_hql_collection_expressions_example_2() {
 		doInJPA( this::entityManagerFactory, entityManager -> {
-			Call call = entityManager.createQuery( "select c from Call c", Call.class).getResultList().get( 0 );
+			Call call = entityManager.createQuery( "select c from Call c", Call.class)
+					.getResultList().get( 1 );
 			//tag::hql-collection-expressions-example[]
 
 			List<Phone> phones = entityManager.createQuery(

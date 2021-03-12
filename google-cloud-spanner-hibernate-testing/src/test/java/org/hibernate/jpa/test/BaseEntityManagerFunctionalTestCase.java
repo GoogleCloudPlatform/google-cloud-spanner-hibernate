@@ -1,3 +1,4 @@
+
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
@@ -6,50 +7,34 @@
  */
 package org.hibernate.jpa.test;
 
-import static org.hibernate.testing.transaction.TransactionUtil.doInJPA;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceUnitTransactionType;
-import org.hibernate.annotations.Subselect;
+
 import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
 import org.hibernate.bytecode.enhance.spi.EnhancementContext;
-import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Environment;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.spi.Bootstrap;
 import org.hibernate.jpa.boot.spi.PersistenceUnitDescriptor;
-import org.hibernate.metamodel.internal.MetamodelImpl;
-import org.hibernate.persister.collection.AbstractCollectionPersister;
-import org.hibernate.persister.collection.BasicCollectionPersister;
-import org.hibernate.persister.collection.CollectionPersister;
-import org.hibernate.persister.entity.AbstractEntityPersister;
+
 import org.hibernate.testing.junit4.BaseUnitTestCase;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
+
+import org.jboss.logging.Logger;
 
 /**
  * A base class for all ejb tests.
@@ -62,82 +47,13 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   // IMPL NOTE : Here we use @Before and @After (instead of @BeforeClassOnce and @AfterClassOnce like we do in
   // BaseCoreFunctionalTestCase) because the old HEM test methodology was to create an EMF for each test method.
 
-  protected static final String[] NO_MAPPINGS = new String[0];
-  protected static final Class<?>[] NO_CLASSES = new Class[0];
   private static final Dialect dialect = Dialect.getDialect();
-  private static SessionFactoryImplementor entityManagerFactory;
-  private static EntityManager em;
-  private static ArrayList<EntityManager> isolatedEms = new ArrayList<EntityManager>();
+
   private StandardServiceRegistryImpl serviceRegistry;
+  private SessionFactoryImplementor entityManagerFactory;
 
-  /**
-   * The entityManagerFactory in this method has been changed from original. It is now STATIC
-   * because the teardown method annotated @AfterClass is now run just once and AfterClass methods
-   * must be static. The entityManagerFactory is the only dependency of that method and it needed to
-   * become a static single reference as a result.
-   */
-  @Before
-  @SuppressWarnings({"UnusedDeclaration"})
-  public void buildEntityManagerFactory() {
-    if (entityManagerFactory == null) {
-      log.trace("Building EntityManagerFactory");
-
-      entityManagerFactory = Bootstrap.getEntityManagerFactoryBuilder(
-          buildPersistenceUnitDescriptor(),
-          buildSettings()
-      ).build().unwrap(SessionFactoryImplementor.class);
-
-      serviceRegistry = (StandardServiceRegistryImpl) entityManagerFactory.getServiceRegistry()
-          .getParentServiceRegistry();
-
-      afterEntityManagerFactoryBuilt();
-    }
-    cleanTables();
-  }
-
-  @AfterClass
-  @SuppressWarnings({"UnusedDeclaration"})
-  public static void releaseResources() {
-    try {
-      releaseUnclosedEntityManagers();
-    } finally {
-      if (entityManagerFactory != null && entityManagerFactory.isOpen()) {
-        entityManagerFactory.close();
-      }
-
-      entityManagerFactory = null;
-    }
-    // Note we don't destroy the service registry as we are not the ones creating it
-  }
-
-  private static void releaseUnclosedEntityManagers() {
-    releaseUnclosedEntityManager(em);
-
-    for (EntityManager isolatedEm : isolatedEms) {
-      releaseUnclosedEntityManager(isolatedEm);
-    }
-  }
-
-  private static void releaseUnclosedEntityManager(EntityManager em) {
-    if (em == null) {
-      return;
-    }
-    if (!em.isOpen()) {
-      return;
-    }
-
-    if (em.getTransaction().isActive()) {
-      em.getTransaction().rollback();
-      System.out.println(
-          "You left an open transaction! Fix your test case. For now, we are closing it for you.");
-    }
-    if (em.isOpen()) {
-      // as we open an EM before the test runs, it will still be open if the test uses a custom EM.
-      // or, the person may have forgotten to close. So, do not raise a "fail", but log the fact.
-      em.close();
-      System.out.println("The EntityManager is not closed. Closing it.");
-    }
-  }
+  private EntityManager em;
+  private ArrayList<EntityManager> isolatedEms = new ArrayList<EntityManager>();
 
   protected Dialect getDialect() {
     return dialect;
@@ -151,261 +67,27 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
     return serviceRegistry;
   }
 
-  public void cleanTables() {
-    EntityDependencyTracker dependencyTracker = new EntityDependencyTracker();
+  @Before
+  @SuppressWarnings( {"UnusedDeclaration"})
+  public void buildEntityManagerFactory() {
+    log.trace( "Building EntityManagerFactory" );
 
-    doInJPA(this::entityManagerFactory, entityManager -> {
-      Collection<CollectionPersister> persisters =
-          ((MetamodelImpl) entityManager.getMetamodel()).collectionPersisters().values();
+    entityManagerFactory =  Bootstrap.getEntityManagerFactoryBuilder(
+        buildPersistenceUnitDescriptor(),
+        buildSettings()
+    ).build().unwrap( SessionFactoryImplementor.class );
 
-      for (CollectionPersister persister : persisters) {
-        String myName = ((AbstractCollectionPersister) persister).getTableName();
-        String parent;
-        if (persister.getOwnerEntityPersister() instanceof AbstractEntityPersister) {
-          parent = ((AbstractEntityPersister) persister.getOwnerEntityPersister()).getTableName();
-        } else {
-          parent = ((AbstractCollectionPersister) persister.getOwnerEntityPersister()).getTableName();
-        }
+    serviceRegistry = (StandardServiceRegistryImpl) entityManagerFactory.getServiceRegistry()
+        .getParentServiceRegistry();
 
-        dependencyTracker.addDependency(parent, myName);
-
-        Class<?> collectionClass = persister.getElementType().getReturnedClass();
-        if (persister instanceof BasicCollectionPersister
-            && collectionClass.getAnnotation(Entity.class) != null) {
-          dependencyTracker.addDependency(getEntityName(collectionClass), myName);
-        }
-      }
-    });
-
-    Arrays.stream(getAnnotatedClasses())
-        .filter(entity -> entity.getAnnotation(Subselect.class) == null)
-        .filter(entity -> !isSingleTable(entity))
-        .forEach(entity -> {
-          String entityName = getEntityName(entity);
-
-          dependencyTracker.addDependency(entityName, null);
-
-          List<Field> entityFields = getEntityFields(entity);
-          for (Field field : entityFields) {
-            Class<?> dependencyAnnotation = findDependencyAnnotation(field);
-            if (dependencyAnnotation != null) {
-              String otherClass = getEntityName(getDependencyClass(field));
-              if (dependencyAnnotation == ManyToOne.class) {
-                dependencyTracker.addDependency(otherClass, entityName);
-              } else {
-                dependencyTracker.addDependency(entityName, otherClass);
-              }
-            }
-          }
-
-          Class<?> parent = entity.getSuperclass();
-          if (parent.getAnnotation(Entity.class) != null) {
-            dependencyTracker.addDependency(getEntityName(parent), entityName);
-          }
-        });
-
-    doInJPA(this::entityManagerFactory, entityManager -> {
-      for (String extraTable : getExtraTablesToClear()) {
-        entityManager.createNativeQuery(getDeleteQuery(extraTable)).executeUpdate();
-      }
-
-      List<String> deleteOrderList = dependencyTracker.getEntityOrder();
-      for (String entity : deleteOrderList) {
-        entityManager.createNativeQuery(getDeleteQuery(entity)).executeUpdate();
-      }
-    });
-  }
-
-  private static boolean isSingleTable(Class<?> entity) {
-    Inheritance inheritance = entity.getSuperclass().getAnnotation(Inheritance.class);
-    return inheritance != null && inheritance.strategy() == InheritanceType.SINGLE_TABLE;
-  }
-
-  /**
-   * Gets all the fields of an entity, including all parent classes.
-   */
-  private static List<Field> getEntityFields(Class<?> entity) {
-    List<Field> fields = new ArrayList<>();
-
-    for (Field field : entity.getDeclaredFields()) {
-      Class<?> fieldType = field.getType();
-      if (fieldType.getAnnotation(Embeddable.class) != null) {
-        fields.addAll(Arrays.asList(fieldType.getDeclaredFields()));
-      }
-    }
-
-    while (entity != Object.class) {
-      fields.addAll(Arrays.asList(entity.getDeclaredFields()));
-      entity = entity.getSuperclass();
-    }
-
-    return fields;
-  }
-
-  /**
-   * Returns the class associated with the type annotation.
-   */
-  private static Class<?> getDependencyClass(Field field) {
-    Type type = field.getGenericType();
-    if (type instanceof ParameterizedType) {
-      Type[] parameterizedTypes =
-          ((ParameterizedType) field.getGenericType()).getActualTypeArguments();
-      Class<?> genericType = (Class) parameterizedTypes[parameterizedTypes.length - 1];
-      return genericType;
-    } else {
-      return field.getType();
-    }
-  }
-
-  /**
-   * Returns the Hibernate annotation on a field (OneToMany, ManyToOne, OneToOne) if present.
-   * Returns null if none are present.
-   */
-  private static Class<?> findDependencyAnnotation(Field field) {
-    for (Annotation annotation : field.getDeclaredAnnotations()) {
-      Class<?> annotationType = annotation.annotationType();
-      if (annotationType == OneToMany.class
-          || annotationType == ManyToOne.class
-          || annotationType == OneToOne.class) {
-        return annotationType;
-      }
-    }
-
-    return null;
-  }
-
-  private static String getEntityName(Class<?> entityClass) {
-    String name = entityClass.getAnnotation(Entity.class).name();
-    if (name == null || name.isEmpty()) {
-      name = entityClass.getSimpleName();
-    }
-    return name;
-  }
-
-  /** Returns a list of extra tables that need to be cleared before each test is run. */
-  protected List<String> getExtraTablesToClear() {
-    return new ArrayList<>();
-  }
-
-  private String getDeleteQuery(String tableName) {
-    return "hibernate_sequence".equals(tableName) ? "": "DELETE FROM " + tableName + " where 1=1";
+    afterEntityManagerFactoryBuilt();
   }
 
   private PersistenceUnitDescriptor buildPersistenceUnitDescriptor() {
-    return new TestingPersistenceUnitDescriptorImpl(getClass().getSimpleName());
-  }
-
-  @SuppressWarnings("unchecked")
-  protected Map buildSettings() {
-    Map settings = getConfig();
-    addMappings(settings);
-
-    if (createSchema()) {
-      settings.put(org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO, "update");
-    }
-    settings.put(org.hibernate.cfg.AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
-    settings.put(org.hibernate.cfg.AvailableSettings.DIALECT, getDialect().getClass().getName());
-    return settings;
-  }
-
-  @SuppressWarnings("unchecked")
-  protected void addMappings(Map settings) {
-    String[] mappings = getMappings();
-    if (mappings != null) {
-      settings.put(AvailableSettings.HBXML_FILES, String.join(",", mappings));
-    }
-  }
-
-  protected String[] getMappings() {
-    return NO_MAPPINGS;
-  }
-
-  protected Map getConfig() {
-    Map<Object, Object> config = Environment.getProperties();
-    ArrayList<Class> classes = new ArrayList<Class>();
-
-    config.put(AvailableSettings.CLASSLOADERS, getClass().getClassLoader());
-
-    classes.addAll(Arrays.asList(getAnnotatedClasses()));
-    config.put(AvailableSettings.LOADED_CLASSES, classes);
-    for (Map.Entry<Class, String> entry : getCachedClasses().entrySet()) {
-      config.put(AvailableSettings.CLASS_CACHE_PREFIX + "." + entry.getKey().getName(),
-          entry.getValue());
-    }
-    for (Map.Entry<String, String> entry : getCachedCollections().entrySet()) {
-      config
-          .put(AvailableSettings.COLLECTION_CACHE_PREFIX + "." + entry.getKey(), entry.getValue());
-    }
-    if (getEjb3DD().length > 0) {
-      ArrayList<String> dds = new ArrayList<String>();
-      dds.addAll(Arrays.asList(getEjb3DD()));
-      config.put(AvailableSettings.XML_FILE_NAMES, dds);
-    }
-
-    addConfigOptions(config);
-    return config;
-  }
-
-  protected void addConfigOptions(Map options) {
-  }
-
-  protected Class<?>[] getAnnotatedClasses() {
-    return NO_CLASSES;
-  }
-
-  public Map<Class, String> getCachedClasses() {
-    return new HashMap<Class, String>();
-  }
-
-  public Map<String, String> getCachedCollections() {
-    return new HashMap<String, String>();
-  }
-
-  public String[] getEjb3DD() {
-    return new String[]{};
-  }
-
-  protected void afterEntityManagerFactoryBuilt() {
-  }
-
-  protected boolean createSchema() {
-    return true;
-  }
-
-  protected EntityManager getOrCreateEntityManager() {
-    if (em == null || !em.isOpen()) {
-      em = entityManagerFactory.createEntityManager();
-    }
-    return em;
-  }
-
-  protected EntityManager createIsolatedEntityManager() {
-    EntityManager isolatedEm = entityManagerFactory.createEntityManager();
-    isolatedEms.add(isolatedEm);
-    return isolatedEm;
-  }
-
-  protected EntityManager createIsolatedEntityManager(Map props) {
-    EntityManager isolatedEm = entityManagerFactory.createEntityManager(props);
-    isolatedEms.add(isolatedEm);
-    return isolatedEm;
-  }
-
-  protected EntityManager createEntityManager() {
-    return createEntityManager(Collections.emptyMap());
-  }
-
-  protected EntityManager createEntityManager(Map properties) {
-    // always reopen a new EM and close the existing one
-    if (em != null && em.isOpen()) {
-      em.close();
-    }
-    em = entityManagerFactory.createEntityManager(properties);
-    return em;
+    return new TestingPersistenceUnitDescriptorImpl( getClass().getSimpleName() );
   }
 
   public static class TestingPersistenceUnitDescriptorImpl implements PersistenceUnitDescriptor {
-
     private final String name;
 
     public TestingPersistenceUnitDescriptorImpl(String name) {
@@ -495,5 +177,157 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
     @Override
     public void pushClassTransformer(EnhancementContext enhancementContext) {
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  protected Map buildSettings() {
+    Map settings = getConfig();
+    addMappings( settings );
+
+    if ( createSchema() ) {
+      settings.put( org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO, "create-drop" );
+    }
+    settings.put( org.hibernate.cfg.AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
+    settings.put( org.hibernate.cfg.AvailableSettings.DIALECT, getDialect().getClass().getName() );
+    return settings;
+  }
+
+  @SuppressWarnings("unchecked")
+  protected void addMappings(Map settings) {
+    String[] mappings = getMappings();
+    if ( mappings != null ) {
+      settings.put( AvailableSettings.HBXML_FILES, String.join( ",", mappings ) );
+    }
+  }
+
+  protected static final String[] NO_MAPPINGS = new String[0];
+
+  protected String[] getMappings() {
+    return NO_MAPPINGS;
+  }
+
+  protected Map getConfig() {
+    Map<Object, Object> config = Environment.getProperties();
+    ArrayList<Class> classes = new ArrayList<Class>();
+
+    classes.addAll( Arrays.asList( getAnnotatedClasses() ) );
+    config.put( AvailableSettings.LOADED_CLASSES, classes );
+    for ( Map.Entry<Class, String> entry : getCachedClasses().entrySet() ) {
+      config.put( AvailableSettings.CLASS_CACHE_PREFIX + "." + entry.getKey().getName(), entry.getValue() );
+    }
+    for ( Map.Entry<String, String> entry : getCachedCollections().entrySet() ) {
+      config.put( AvailableSettings.COLLECTION_CACHE_PREFIX + "." + entry.getKey(), entry.getValue() );
+    }
+    if ( getEjb3DD().length > 0 ) {
+      ArrayList<String> dds = new ArrayList<String>();
+      dds.addAll( Arrays.asList( getEjb3DD() ) );
+      config.put( AvailableSettings.XML_FILE_NAMES, dds );
+    }
+
+    addConfigOptions( config );
+    return config;
+  }
+
+  protected void addConfigOptions(Map options) {
+  }
+
+  protected static final Class<?>[] NO_CLASSES = new Class[0];
+
+  protected Class<?>[] getAnnotatedClasses() {
+    return NO_CLASSES;
+  }
+
+  public Map<Class, String> getCachedClasses() {
+    return new HashMap<Class, String>();
+  }
+
+  public Map<String, String> getCachedCollections() {
+    return new HashMap<String, String>();
+  }
+
+  public String[] getEjb3DD() {
+    return new String[] { };
+  }
+
+  protected void afterEntityManagerFactoryBuilt() {
+  }
+
+  protected boolean createSchema() {
+    return true;
+  }
+
+
+  @After
+  @SuppressWarnings( {"UnusedDeclaration"})
+  public void releaseResources() {
+    try {
+      releaseUnclosedEntityManagers();
+    }
+    finally {
+      if ( entityManagerFactory != null && entityManagerFactory.isOpen()) {
+        entityManagerFactory.close();
+      }
+    }
+    // Note we don't destroy the service registry as we are not the ones creating it
+  }
+
+  private void releaseUnclosedEntityManagers() {
+    releaseUnclosedEntityManager( this.em );
+
+    for ( EntityManager isolatedEm : isolatedEms ) {
+      releaseUnclosedEntityManager( isolatedEm );
+    }
+  }
+
+  private void releaseUnclosedEntityManager(EntityManager em) {
+    if ( em == null ) {
+      return;
+    }
+    if ( !em.isOpen() ) {
+      return;
+    }
+
+    if ( em.getTransaction().isActive() ) {
+      em.getTransaction().rollback();
+      log.warn("You left an open transaction! Fix your test case. For now, we are closing it for you.");
+    }
+    if ( em.isOpen() ) {
+      // as we open an EM before the test runs, it will still be open if the test uses a custom EM.
+      // or, the person may have forgotten to close. So, do not raise a "fail", but log the fact.
+      em.close();
+      log.warn("The EntityManager is not closed. Closing it.");
+    }
+  }
+
+  protected EntityManager getOrCreateEntityManager() {
+    if ( em == null || !em.isOpen() ) {
+      em = entityManagerFactory.createEntityManager();
+    }
+    return em;
+  }
+
+  protected EntityManager createIsolatedEntityManager() {
+    EntityManager isolatedEm = entityManagerFactory.createEntityManager();
+    isolatedEms.add( isolatedEm );
+    return isolatedEm;
+  }
+
+  protected EntityManager createIsolatedEntityManager(Map props) {
+    EntityManager isolatedEm = entityManagerFactory.createEntityManager(props);
+    isolatedEms.add( isolatedEm );
+    return isolatedEm;
+  }
+
+  protected EntityManager createEntityManager() {
+    return createEntityManager( Collections.emptyMap() );
+  }
+
+  protected EntityManager createEntityManager(Map properties) {
+    // always reopen a new EM and close the existing one
+    if ( em != null && em.isOpen() ) {
+      em.close();
+    }
+    em = entityManagerFactory.createEntityManager( properties );
+    return em;
   }
 }

@@ -58,13 +58,6 @@ public class BasicTypeCollectionTest extends BaseCoreFunctionalTestCase {
 		return configuration;
 	}
 
-	@Before
-	public void cleanTables() {
-		doInHibernate( this::sessionFactory, entityManager -> {
-			Arrays.stream(getAnnotatedClasses()).forEach(x-> entityManager.createQuery("DELETE FROM "+ x.getAnnotation(Entity.class).name() + " where 1=1").executeUpdate());
-		} );
-	}
-
 	//tag::collections-comma-delimited-collection-example[]
 	@Entity(name = "Person_base_type_collection")
 	private static class Person {

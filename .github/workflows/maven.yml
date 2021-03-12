@@ -47,7 +47,7 @@ jobs:
         env:
           JDBC_URL: jdbc:cloudspanner://localhost:9010/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/hibernate-sample-db?usePlainText=true
         run: |
-          mvn verify -f google-cloud-spanner-hibernate-samples/pom.xml \
+          mvn verify -Dhibernate.show_sql=false \
               -Dhibernate.connection.url=$JDBC_URL \
               -Dspring.datasource.url=$JDBC_URL \
               -Dquarkus.datasource.jdbc.url=$JDBC_URL

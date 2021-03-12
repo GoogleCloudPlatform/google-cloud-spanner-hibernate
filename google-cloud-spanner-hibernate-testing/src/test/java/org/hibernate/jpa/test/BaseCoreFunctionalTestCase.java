@@ -105,32 +105,6 @@ public abstract class BaseCoreFunctionalTestCase extends BaseUnitTestCase {
     return session;
   }
 
-  public void cleanTables() {
-    doInJPA(this::sessionFactory, entityManager -> {
-
-      ((MetamodelImpl) entityManager.getMetamodel()).collectionPersisters()
-          .values()
-          .forEach(x -> {
-            String deleteQuery = getDeleteQuery(((AbstractCollectionPersister) x).getTableName());
-            entityManager.createNativeQuery(deleteQuery).executeUpdate();
-          });
-
-      Arrays.stream(getAnnotatedClasses())
-          .filter(entity -> entity.getAnnotation(Subselect.class) == null)
-          .forEach(x -> {
-            String name = x.getAnnotation(Entity.class).name();
-            if (name == null || name.isEmpty()) {
-              name = x.getSimpleName();
-            }
-            entityManager.createQuery(getDeleteQuery(name)).executeUpdate();
-          });
-    });
-  }
-
-  private String getDeleteQuery(String tableName) {
-    return "DELETE FROM " + tableName + " where 1=1";
-  }
-
   // before/after test class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   @BeforeClassOnce
@@ -197,7 +171,7 @@ public abstract class BaseCoreFunctionalTestCase extends BaseUnitTestCase {
     configuration.setProperty( AvailableSettings.CACHE_REGION_FACTORY, CachingRegionFactory.class.getName() );
     configuration.setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
     if ( createSchema() ) {
-      configuration.setProperty( Environment.HBM2DDL_AUTO, "update" );
+      configuration.setProperty( Environment.HBM2DDL_AUTO, "create-drop" );
       final String secondSchemaName = createSecondSchema();
       if ( StringHelper.isNotEmpty( secondSchemaName ) ) {
         if ( !( getDialect() instanceof H2Dialect ) ) {
@@ -371,7 +345,6 @@ public abstract class BaseCoreFunctionalTestCase extends BaseUnitTestCase {
   @Before
   public final void beforeTest() throws Exception {
     prepareTest();
-    cleanTables();
   }
 
   protected void prepareTest() throws Exception {

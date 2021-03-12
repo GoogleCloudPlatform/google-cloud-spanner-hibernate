@@ -41,11 +41,6 @@ public class MoneyConverterHbmTest extends BaseEntityManagerFunctionalTestCase {
 	}
 
 	@Override
-	protected List<String> getExtraTablesToClear() {
-		return Collections.singletonList("account_MoneyConverterHbmTest");
-	}
-
-	@Override
 	protected String[] getMappings() {
 		return new String[] {
 				"MoneyConverterHbmTest.hbm.xml"
