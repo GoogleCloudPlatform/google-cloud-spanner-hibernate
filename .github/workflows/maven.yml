@@ -43,11 +43,24 @@ jobs:
       - name: Build with Maven
         run: mvn install -B -V -DskipTests
 
-      - name: Run Tests
+      - name: Run Unit Tests
+        run: mvn test
+
+      - name: Run Samples Tests
         env:
           JDBC_URL: jdbc:cloudspanner://localhost:9010/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/hibernate-sample-db?usePlainText=true
         run: |
-          mvn verify -Dhibernate.show_sql=false \
+          mvn verify -f google-cloud-spanner-hibernate-samples/pom.xml \
+              -Dhibernate.connection.url=$JDBC_URL \
+              -Dspring.datasource.url=$JDBC_URL \
+              -Dquarkus.datasource.jdbc.url=$JDBC_URL
+
+      - name: Run Hibernate Integration Tests
+        env:
+          JDBC_URL: jdbc:cloudspanner://localhost:9010/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/test-database?usePlainText=true
+        run: |
+          mvn verify -f google-cloud-spanner-hibernate-testing/pom.xml \
+              -Dhibernate.show_sql=false \
               -Dhibernate.connection.url=$JDBC_URL \
               -Dspring.datasource.url=$JDBC_URL \
               -Dquarkus.datasource.jdbc.url=$JDBC_URL
