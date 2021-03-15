@@ -62,5 +62,3 @@ jobs:
           mvn verify -f google-cloud-spanner-hibernate-testing/pom.xml \
               -Dhibernate.show_sql=false \
               -Dhibernate.connection.url=$JDBC_URL \
-              -Dspring.datasource.url=$JDBC_URL \
-              -Dquarkus.datasource.jdbc.url=$JDBC_URL
