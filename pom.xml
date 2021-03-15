@@ -329,7 +329,7 @@
                 </goals>
                 <configuration>
                   <!-- ignore javadoc errors -->
-                  <additionalparam>-Xdoclint:none</additionalparam>
+                  <additionalJOption>-Xdoclint:none</additionalJOption>
                   <source>8</source>
                 </configuration>
               </execution>
