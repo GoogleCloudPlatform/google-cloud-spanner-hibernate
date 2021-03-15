@@ -20,8 +20,11 @@ package com.google.cloud.spanner.hibernate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import com.google.cloud.spanner.hibernate.SpannerDialect.DoNothingLockingStrategy;
+import java.sql.Connection;
+import java.sql.SQLException;
 import org.hibernate.LockOptions;
 import org.junit.Before;
 import org.junit.Test;
@@ -95,9 +98,12 @@ public class SpannerDialectTests {
   }
 
   @Test
-  public void getSchemaResolverTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getSchemaNameResolver())
-        .isInstanceOf(UnsupportedOperationException.class);
+  public void getSchemaResolverTest() throws SQLException {
+    String schemaName =
+        this.spannerDialect.getSchemaNameResolver()
+            .resolveSchemaName(mock(Connection.class), this.spannerDialect);
+
+    assertThat(schemaName).isEmpty();
   }
 
   @Test

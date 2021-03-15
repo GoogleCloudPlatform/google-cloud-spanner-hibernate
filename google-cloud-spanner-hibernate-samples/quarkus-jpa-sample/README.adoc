@@ -13,7 +13,7 @@ Alternatively, have the https://cloud.google.com/sdk/[Google Cloud SDK] installe
 
 3. Enable the https://console.cloud.google.com/apis/api/spanner.googleapis.com/overview[Cloud Spanner API].
 
-4. In the http://console.cloud.google.com/spanner[Spanner Cloud Console UI], create a Cloud Spanner instance and database and insert those details into the `quarkus.datasource.url` defined in the file `src/main/resources/application.properties`.
+4. In the http://console.cloud.google.com/spanner[Spanner Cloud Console UI], create a Cloud Spanner instance and database and insert those details into the `quarkus.datasource.jdbc.url` defined in the file `src/main/resources/application.properties`.
 This setting configures the connection URL which specifies the database that your application will connect to.
 +
 ----
@@ -22,7 +22,7 @@ This setting configures the connection URL which specifies the database that you
 # - ${INSTANCE_ID} Replace with your Spanner instance ID
 # - ${DATABASE_NAME} Replace with the name of your Spanner database that you created inside your Spanner instance
 
-quarkus.datasource.url=jdbc:cloudspanner:/projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DATABASE_NAME}
+quarkus.datasource.jdbc.url=jdbc:cloudspanner:/projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DATABASE_NAME}
 ----
 
 5. Open a terminal instance inside this directory and run `mvn compile quarkus:dev` to start the app.
