@@ -24,6 +24,9 @@ import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 
+/**
+ * Simple Hibernate entity used in Interleaved tests.
+ */
 @Entity
 @Interleaved(parentEntity = GrandParent.class)
 public class Parent {
@@ -33,6 +36,9 @@ public class Parent {
 
   public String name;
 
+  /**
+   * Parent interleaved table entity used in Interleaved tests.
+   */
   @Embeddable
   public static class ParentId implements Serializable {
 

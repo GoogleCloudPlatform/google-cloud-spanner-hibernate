@@ -153,12 +153,12 @@ public class SpannerDialectTests {
   }
 
   @Test
-  public void getTableCommentTEst() {
+  public void getTableCommentTest() {
     assertThat(this.spannerDialect.getTableComment("test")).isEqualTo("");
   }
 
   @Test
-  public void getColumnCommentTEst() {
+  public void getColumnCommentTest() {
     assertThat(this.spannerDialect.getColumnComment("test")).isEqualTo("");
   }
 

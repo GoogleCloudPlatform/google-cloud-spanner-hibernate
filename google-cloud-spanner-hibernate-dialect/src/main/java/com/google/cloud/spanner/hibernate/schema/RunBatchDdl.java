@@ -37,6 +37,7 @@ public class RunBatchDdl implements AuxiliaryDatabaseObject {
 
   /**
    * Constructs the {@link RunBatchDdl} auxiliary database object.
+   *
    * @param schemaAction the DDL mode being used for schema generation.
    */
   public RunBatchDdl(Action schemaAction) {

@@ -38,6 +38,7 @@ public class SpannerEntityFieldKey {
 
   /**
    * Constructor.
+   *
    * @param declaringClass - declaring class
    * @param type           - field type
    * @param name           - field name

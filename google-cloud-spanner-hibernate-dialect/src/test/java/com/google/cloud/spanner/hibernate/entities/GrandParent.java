@@ -22,6 +22,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+/**
+ * The parent Interleaved entity in the interleaved test cases.
+ */
 @Entity
 public class GrandParent {
 
@@ -30,6 +33,4 @@ public class GrandParent {
   public long grandParentId;
 
   public String name;
-
-
 }

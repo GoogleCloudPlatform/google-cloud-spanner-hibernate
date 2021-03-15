@@ -36,6 +36,9 @@ import org.hibernate.mapping.Table;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Tests correct creation of Spanner foreign keys.
+ */
 public class SpannerForeignKeyExporterTests {
 
   private SpannerForeignKeyExporter spannerForeignKeyExporter;
