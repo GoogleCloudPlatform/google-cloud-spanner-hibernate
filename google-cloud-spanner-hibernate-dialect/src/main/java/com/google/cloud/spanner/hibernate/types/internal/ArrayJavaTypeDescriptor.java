@@ -19,7 +19,9 @@
 package com.google.cloud.spanner.hibernate.types.internal;
 
 import com.google.cloud.spanner.Type.Code;
-import com.google.cloud.spanner.hibernate.reflection.ReflectionUtils;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.SQLException;
@@ -29,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.AbstractTypeDescriptor;
 import org.hibernate.usertype.DynamicParameterizedType;
@@ -97,22 +100,31 @@ public class ArrayJavaTypeDescriptor
     }
 
     // Get the class and the field name.
-    Class<?> entityClass =
-        ReflectionUtils.getClassOrFail(parameters.getProperty(DynamicParameterizedType.ENTITY));
-    String fieldName = parameters.getProperty(DynamicParameterizedType.PROPERTY);
+    Class<?> entityClass = getClass(parameters.getProperty(DynamicParameterizedType.ENTITY));
+    Field field = FieldUtils.getDeclaredField(
+        entityClass, parameters.getProperty(DynamicParameterizedType.PROPERTY), true);
 
-    // Get the parameterized type of the List<T>
-    List<Class<?>> parameterizedTypes =
-        ReflectionUtils.getParameterizedTypes(entityClass, fieldName);
-    if (parameterizedTypes.isEmpty()) {
+    Type genericType = field.getGenericType();
+    if (genericType instanceof ParameterizedType) {
+      ParameterizedType parameterizedType = (ParameterizedType) genericType;
+
+      // Note: This is safe since we know the type is List<T> at this point.
+      Class<?> listParamType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+      spannerType = listParamType;
+      spannerTypeCode = getSpannerTypeCode(listParamType);
+    } else {
       throw new IllegalArgumentException(
           "You must specify an explicit parameterized type for your List type; i.e. List<Integer>");
     }
-    Class<?> listType = parameterizedTypes.get(0);
+  }
 
-    // Get the Spanner type string for the Java list type.
-    spannerType = listType;
-    spannerTypeCode = getSpannerTypeCode(listType);
+  private static Class<?> getClass(String name) {
+    try {
+      return Class.forName(
+          name, false, Thread.currentThread().getContextClassLoader());
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Failed to find class: " + name, e);
+    }
   }
 
   public Code getSpannerTypeCode() {

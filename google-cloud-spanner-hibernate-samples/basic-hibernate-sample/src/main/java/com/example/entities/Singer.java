@@ -34,10 +34,10 @@ import org.hibernate.annotations.TypeDefs;
  * Hibernate entity demonstrating a one-to-many relationship with {@link Album} entity.
  */
 @TypeDefs({
-  @TypeDef(
-    name = "spanner-array",
-    typeClass = SpannerArrayListType.class
-  )
+    @TypeDef(
+      name = "spanner-array",
+      typeClass = SpannerArrayListType.class
+    )
 })
 @Entity
 public class Singer {
@@ -55,6 +55,9 @@ public class Singer {
   @Type(type = "spanner-array")
   private List<String> nickNames;
 
+  /**
+   * Singer entity constructor.
+   */
   public Singer(String name, List<Album> albums, List<String> nickNames) {
     this.name = name;
     this.albums = albums;
@@ -104,8 +107,8 @@ public class Singer {
 
   @Override
   public String toString() {
-    return "Singer{" +
-        "singerId=" + singerId
+    return "Singer{"
+        + "singerId=" + singerId
         + ", name='" + name + '\''
         + ", albums=" + albums
         + ", nickNames=" + nickNames

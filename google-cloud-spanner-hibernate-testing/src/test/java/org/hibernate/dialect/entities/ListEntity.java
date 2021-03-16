@@ -2,6 +2,7 @@ package org.hibernate.dialect.entities;
 
 import com.google.cloud.spanner.hibernate.types.SpannerArrayListType;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -37,7 +38,7 @@ public class ListEntity {
   private List<byte[]> byteList;
 
   @Type(type = "spanner-array")
-  private List<Date> dateList;
+  private List<Timestamp> timestampList;
 
   @Type(type = "spanner-array")
   private List<Double> doubleList;
@@ -67,12 +68,12 @@ public class ListEntity {
     this.byteList = byteList;
   }
 
-  public List<Date> getDateList() {
-    return dateList;
+  public List<Timestamp> getTimestampList() {
+    return timestampList;
   }
 
-  public void setDateList(List<Date> dateList) {
-    this.dateList = dateList;
+  public void setTimestampList(List<Timestamp> timestampList) {
+    this.timestampList = timestampList;
   }
 
   public List<Double> getDoubleList() {
