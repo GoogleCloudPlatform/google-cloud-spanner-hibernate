@@ -198,7 +198,7 @@ public class SpannerTableStatements {
    */
   private String buildColumnTypeString(Column col, Metadata metadata) {
     String typeString;
-    if (col.getSqlTypeCode(metadata) == Types.ARRAY) {
+    if (col.getValue() != null && col.getSqlTypeCode(metadata) == Types.ARRAY) {
       Code typeCode = ((SpannerArrayListType) (col.getValue().getType())).getSpannerSqlType();
 
       String arrayType = typeCode.toString();
