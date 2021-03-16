@@ -30,6 +30,9 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
+/**
+ * Hibernate entity demonstrating a one-to-many relationship with {@link Album} entity.
+ */
 @TypeDefs({
   @TypeDef(
     name = "spanner-array",

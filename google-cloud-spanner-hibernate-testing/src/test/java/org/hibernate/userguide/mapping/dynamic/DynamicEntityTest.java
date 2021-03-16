@@ -38,11 +38,6 @@ public class DynamicEntityTest extends BaseEntityManagerFunctionalTestCase {
 		return settings;
 	}
 
-	@Override
-	protected List<String> getExtraTablesToClear() {
-		return Collections.singletonList("Book_DynamicEntityTest");
-	}
-
 	@Test
 	public void test() {
 		doInJPA( this::entityManagerFactory, entityManager -> {

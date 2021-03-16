@@ -35,7 +35,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 
@@ -43,7 +42,6 @@ import org.springframework.util.LinkedMultiValueMap;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = CoffeeApplication.class)
-@TestPropertySource("classpath:application-test.properties")
 public class CoffeeApplicationIT {
 
   @Autowired

@@ -32,6 +32,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import org.hibernate.annotations.Type;
 
+/**
+ * Sample Hibernate entity.
+ */
 @Entity
 @Interleaved(parentEntity = Singer.class, cascadeDelete = true)
 @IdClass(AlbumId.class)

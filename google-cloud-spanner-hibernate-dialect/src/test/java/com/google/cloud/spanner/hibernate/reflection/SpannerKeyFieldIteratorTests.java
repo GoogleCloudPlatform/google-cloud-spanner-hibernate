@@ -34,7 +34,7 @@ public class SpannerKeyFieldIteratorTests {
   @Test
   public void simpleClassFieldIteration() {
     Set<SpannerEntityFieldKey> fields = new HashSet<>();
-    for (Field field: SpannerKeyFieldIterator.iterable(Parent.class)) {
+    for (Field field : SpannerKeyFieldIterator.iterable(Parent.class)) {
       fields.add(
           new SpannerEntityFieldKey(field.getDeclaringClass(), field.getType(), field.getName())
       );
@@ -53,7 +53,7 @@ public class SpannerKeyFieldIteratorTests {
   @Test
   public void subclassFieldIteration() {
     Set<SpannerEntityFieldKey> fields = new HashSet<>();
-    for (Field field: SpannerKeyFieldIterator.iterable(ParentSubClass.class)) {
+    for (Field field : SpannerKeyFieldIterator.iterable(ParentSubClass.class)) {
       fields.add(
           new SpannerEntityFieldKey(field.getDeclaringClass(), field.getType(), field.getName())
       );
@@ -73,7 +73,7 @@ public class SpannerKeyFieldIteratorTests {
   @Test
   public void genericClassImplIteration() {
     Set<SpannerEntityFieldKey> fields = new HashSet<>();
-    for (Field field: SpannerKeyFieldIterator.iterable(GenericParentImpl.class)) {
+    for (Field field : SpannerKeyFieldIterator.iterable(GenericParentImpl.class)) {
       fields.add(
           new SpannerEntityFieldKey(field.getDeclaringClass(), field.getType(), field.getName())
       );

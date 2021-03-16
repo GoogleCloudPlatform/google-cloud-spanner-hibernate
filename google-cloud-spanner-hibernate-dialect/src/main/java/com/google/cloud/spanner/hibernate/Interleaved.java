@@ -41,21 +41,21 @@ import javax.persistence.Entity;
  *
  * <p>The following Java definition should be used:
  *
- * <pre>{@code
- * @Entity
- * @Table(name = "ParentTable")
+ * <pre>
+ * &#64;Entity
+ * &#64;Table(name = "ParentTable")
  * public class Parent {
- *   @Id
+ *   &#64;Id
  *   private Long parentId;
  *
- *   @Column
+ *   &#64;Column
  *   private String name;
  *   ...
  * }
  *
- * @Entity
- * @Table(name = "ChildTable")
- * @Interleaved(parentEntity = Parent.class)
+ * &#64;Entity
+ * &#64;Table(name = "ChildTable")
+ * &#64;Interleaved(parentEntity = Parent.class)
  * public class Child {
  *   public static class ChildId implements Serializable {
  *     private Long parentId;
@@ -63,14 +63,14 @@ import javax.persistence.Entity;
  *     ...
  *   }
  *
- *   @EmbeddedId
+ *   &#64;EmbeddedId
  *   private ChildId id;
  *
- *   @Column
+ *   &#64;Column
  *   private String ChildName
  *   ...
  * }
- * }</pre>
+ * </pre>
  *
  * @since 1.1
  */

@@ -31,6 +31,9 @@ import javax.persistence.Id;
 import javax.persistence.IdClass;
 import org.junit.Test;
 
+/**
+ * Tests for the Spanner schema utilities.
+ */
 public class SchemaUtilsTests {
 
   @Test

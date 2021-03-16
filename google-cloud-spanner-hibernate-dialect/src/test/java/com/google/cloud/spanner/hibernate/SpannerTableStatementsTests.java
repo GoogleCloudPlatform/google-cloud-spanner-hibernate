@@ -35,6 +35,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+/**
+ * Tests to verify DDL statement generation for table creation.
+ */
 public class SpannerTableStatementsTests {
 
   private SpannerDatabaseInfo spannerDatabaseInfo;

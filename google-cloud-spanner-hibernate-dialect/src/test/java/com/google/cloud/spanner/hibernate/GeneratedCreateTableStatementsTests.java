@@ -39,6 +39,9 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Verifies correct DDL generation of create table statements.
+ */
 public class GeneratedCreateTableStatementsTests {
 
   private StandardServiceRegistry registry;
