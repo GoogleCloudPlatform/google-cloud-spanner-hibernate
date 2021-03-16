@@ -31,6 +31,7 @@ public class Producer {
 
   /**
    * Produces a JPA {@link EntityManager}.
+   *
    * @return EntityManager for the persistence unit.
    */
   @Produces
@@ -41,6 +42,7 @@ public class Producer {
 
   /**
    * Closes the {@link EntityManager} on shutdown.
+   *
    * @param entityManager {@link EntityManager} to close.
    */
   public void close(EntityManager entityManager) {

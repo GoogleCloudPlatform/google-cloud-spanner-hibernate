@@ -21,6 +21,9 @@ package com.example.entities;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
+/**
+ * Hibernate entity demonstrating inheritance.
+ */
 @Entity
 public class CreditCardPayment extends Payment {
 
