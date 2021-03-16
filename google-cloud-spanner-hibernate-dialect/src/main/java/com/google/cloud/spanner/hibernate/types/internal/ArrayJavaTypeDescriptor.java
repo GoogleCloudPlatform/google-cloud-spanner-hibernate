@@ -33,6 +33,9 @@ import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.AbstractTypeDescriptor;
 import org.hibernate.usertype.DynamicParameterizedType;
 
+/**
+ * A Hibernate type descriptor which provides parameterized type information about Java types.
+ */
 public class ArrayJavaTypeDescriptor
     extends AbstractTypeDescriptor<List<?>>
     implements DynamicParameterizedType {
@@ -45,11 +48,7 @@ public class ArrayJavaTypeDescriptor
 
   public ArrayJavaTypeDescriptor() {
     // This cast is needed to pass Object.class to the parent class
-    super((Class<List<?>>)(Class<?>) List.class);
-  }
-
-  public Code getSpannerTypeCode() {
-    return spannerTypeCode;
+    super((Class<List<?>>) (Class<?>) List.class);
   }
 
   @Override
@@ -114,6 +113,10 @@ public class ArrayJavaTypeDescriptor
     // Get the Spanner type string for the Java list type.
     spannerType = listType;
     spannerTypeCode = getSpannerTypeCode(listType);
+  }
+
+  public Code getSpannerTypeCode() {
+    return spannerTypeCode;
   }
 
   /**

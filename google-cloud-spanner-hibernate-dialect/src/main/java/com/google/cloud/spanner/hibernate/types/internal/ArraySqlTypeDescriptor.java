@@ -32,6 +32,9 @@ import org.hibernate.type.descriptor.sql.BasicBinder;
 import org.hibernate.type.descriptor.sql.BasicExtractor;
 import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
 
+/**
+ * A custom Hibernate type to map Java List types to Spanner array columns.
+ */
 public class ArraySqlTypeDescriptor implements SqlTypeDescriptor {
 
   public static final ArraySqlTypeDescriptor INSTANCE = new ArraySqlTypeDescriptor();
