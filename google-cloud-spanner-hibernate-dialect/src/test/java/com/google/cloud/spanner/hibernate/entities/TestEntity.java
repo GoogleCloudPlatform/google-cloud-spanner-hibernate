@@ -50,6 +50,9 @@ public class TestEntity {
   @ElementCollection
   List<String> stringList;
 
+  /**
+   * A simple Hibernate embedded ID used in tests.
+   */
   @Embeddable
   public static class IdClass implements Serializable {
 

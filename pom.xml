@@ -243,7 +243,7 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>8.29</version>
+            <version>8.41</version>
           </dependency>
         </dependencies>
         <executions>
@@ -255,6 +255,7 @@
             </goals>
             <configuration>
               <configLocation>google_checks.xml</configLocation>
+              <suppressionsLocation>checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
             </configuration>
           </execution>
           <execution>
@@ -329,7 +330,7 @@
                 </goals>
                 <configuration>
                   <!-- ignore javadoc errors -->
-                  <additionalparam>-Xdoclint:none</additionalparam>
+                  <additionalJOption>-Xdoclint:none</additionalJOption>
                   <source>8</source>
                 </configuration>
               </execution>

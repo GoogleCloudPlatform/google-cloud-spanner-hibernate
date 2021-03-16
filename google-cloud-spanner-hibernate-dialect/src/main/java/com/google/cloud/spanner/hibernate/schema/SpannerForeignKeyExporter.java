@@ -23,6 +23,9 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.tool.schema.internal.StandardForeignKeyExporter;
 
+/**
+ * Produces the Foreign Key DDL strings for Hibernate table creation.
+ */
 public class SpannerForeignKeyExporter extends StandardForeignKeyExporter {
 
   private SpannerDatabaseInfo spannerDatabaseInfo;

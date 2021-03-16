@@ -33,6 +33,9 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Verifies correct DDL generation of update table statements.
+ */
 public class GeneratedUpdateTableStatementsTests {
 
   private StandardServiceRegistry registry;

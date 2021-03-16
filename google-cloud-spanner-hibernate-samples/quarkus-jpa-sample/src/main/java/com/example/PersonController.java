@@ -52,6 +52,7 @@ public class PersonController {
 
   /**
    * Create a new {@link Person} entity with auto-generated ID.
+   *
    * @param person JSON payload for Person
    * @return created {@link Person} entity
    */
@@ -69,6 +70,7 @@ public class PersonController {
 
   /**
    * Retrieve a {@link Person} entity by ID.
+   *
    * @param id UUID String to lookup
    * @return a {@link Person} entity
    */

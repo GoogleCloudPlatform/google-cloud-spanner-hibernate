@@ -24,6 +24,9 @@ import org.hibernate.dialect.unique.DefaultUniqueDelegate;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.UniqueKey;
 
+/**
+ * Hibernate implementer which generates unique index strings in DDL statements.
+ */
 public class SpannerUniqueDelegate extends DefaultUniqueDelegate {
 
   /**

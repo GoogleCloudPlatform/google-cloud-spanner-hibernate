@@ -116,7 +116,7 @@ class SchemaUtils {
     boolean keepAllFields = embeddedId != null || entity.getAnnotation(Embeddable.class) != null;
 
     Set<SpannerEntityFieldKey> ids = new HashSet<>();
-    for (Field field: SpannerKeyFieldIterator.iterable(compositeKeyClazz)) {
+    for (Field field : SpannerKeyFieldIterator.iterable(compositeKeyClazz)) {
       if (keepAllFields || field.getAnnotation(Id.class) != null) {
         Class<?> fieldType = field.getType();
 

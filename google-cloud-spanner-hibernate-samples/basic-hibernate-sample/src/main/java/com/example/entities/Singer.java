@@ -27,6 +27,9 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import org.hibernate.annotations.Type;
 
+/**
+ * Hibernate entity demonstrating a one-to-many relationship with {@link Album} entity.
+ */
 @Entity
 public class Singer {
 
