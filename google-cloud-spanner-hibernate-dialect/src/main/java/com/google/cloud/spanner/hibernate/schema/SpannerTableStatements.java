@@ -18,8 +18,11 @@
 
 package com.google.cloud.spanner.hibernate.schema;
 
+import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.hibernate.Interleaved;
 import com.google.cloud.spanner.hibernate.SpannerDialect;
+import com.google.cloud.spanner.hibernate.types.SpannerArrayListType;
+import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -194,7 +197,21 @@ public class SpannerTableStatements {
    * Converts a {@link Column} into its column + type string; i.e. "col_name string not null"
    */
   private String buildColumnTypeString(Column col, Metadata metadata) {
-    return col.getQuotedName() + " " + col.getSqlType(this.spannerDialect, metadata)
+    String typeString;
+    if (col.getValue() != null && col.getSqlTypeCode(metadata) == Types.ARRAY) {
+      Code typeCode = ((SpannerArrayListType) (col.getValue().getType())).getSpannerSqlType();
+
+      String arrayType = typeCode.toString();
+      if (typeCode == Code.STRING || typeCode == Code.BYTES) {
+        // If String or Bytes, must specify size in parentheses.
+        arrayType += "(" + col.getLength() + ")";
+      }
+      typeString = String.format("ARRAY<%s>", arrayType);
+    } else {
+      typeString = col.getSqlType(this.spannerDialect, metadata);
+    }
+
+    return col.getQuotedName() + " " + typeString
         + (col.isNullable() ? this.spannerDialect.getNullColumnString() : " not null");
   }
 
