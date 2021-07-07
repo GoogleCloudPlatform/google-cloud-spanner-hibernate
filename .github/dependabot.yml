@@ -9,4 +9,4 @@ updates:
   - match:
       dependency_name: "io.quarkus:quarkus-universe-bom"
       # Quarkus 2 requires Java 11, which is too high.
-      version_requirement: ">=2.0.0.Final"
+      version_requirement: "2.x"
