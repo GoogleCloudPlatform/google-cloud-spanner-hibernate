@@ -31,9 +31,7 @@ import org.hibernate.usertype.DynamicParameterizedType;
 public class JsonJavaTypeDescriptor extends AbstractTypeDescriptor<Object>
     implements DynamicParameterizedType {
 
-  private static final Gson gson = new GsonBuilder()
-      .setPrettyPrinting()
-      .create();
+  private static final Gson gson = new Gson();
 
   // The JSON type declared in the entity.
   private Class<?> propertyType = Object.class;
