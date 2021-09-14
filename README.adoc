@@ -116,6 +116,7 @@ This results in sequential IDs that are https://cloud.google.com/spanner/docs/sc
 Spanner offers custom column types not commonly found in other databases.
 This project offers https://docs.jboss.org/hibernate/orm/4.3/manual/en-US/html/ch06.html#types-custom[custom Hibernate type mappings] that correspond with these Spanner column types.
 
+[options="header"]
 |===
 | Spanner Data Type | Hibernate Type
 | https://cloud.google.com/spanner/docs/data-types#array_type[ARRAY]
