@@ -19,7 +19,6 @@
 package com.google.cloud.spanner.hibernate.types.internal;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.util.Properties;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.AbstractTypeDescriptor;
