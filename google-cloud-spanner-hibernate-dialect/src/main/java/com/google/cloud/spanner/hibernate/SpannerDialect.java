@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
+import com.google.cloud.spanner.jdbc.JsonType;
 import java.io.Serializable;
 import java.sql.Types;
 import java.util.Map;
@@ -94,6 +95,7 @@ public class SpannerDialect extends Dialect {
     registerColumnType(Types.CLOB, "STRING(MAX)");
     registerColumnType(Types.NCLOB, "STRING(MAX)");
     registerColumnType(Types.BLOB, "BYTES(MAX)");
+    registerColumnType(JsonType.VENDOR_TYPE_NUMBER, "JSON");
 
     registerColumnType(Types.DECIMAL, "NUMERIC");
     registerColumnType(Types.NUMERIC, "NUMERIC");

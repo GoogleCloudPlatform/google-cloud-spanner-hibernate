@@ -111,10 +111,20 @@ public class Employee {
 
 This results in sequential IDs that are https://cloud.google.com/spanner/docs/schema-and-data-model#primary_keys[not optimal for Cloud Spanner] and makes use of the `hibernate_sequence` table for generating IDs.
 
-==== Array Column Types
+==== Custom Spanner Column Types
 
-Spanner allows you to use https://cloud.google.com/spanner/docs/data-types#array_type[arrays as a data type] for your table columns.
-It is possible to map Hibernate entity fields to array columns by using the `com.google.cloud.spanner.hibernate.types.SpannerArrayListType`.
+This project offers the following https://docs.jboss.org/hibernate/orm/4.3/manual/en-US/html/ch06.html#types-custom[custom Hibernate type mappings] for specific Spanner column types:
+
+[options="header"]
+|===
+| Spanner Data Type | Hibernate Type
+| https://cloud.google.com/spanner/docs/data-types#array_type[ARRAY]
+| `com.google.cloud.spanner.hibernate.types.SpannerArrayListType`
+| https://cloud.google.com/spanner/docs/data-types#json_type[JSON]
+| `com.google.cloud.spanner.hibernate.types.SpannerJsonType`
+|===
+
+You can use these type mappings through the Hibernate `@TypeDefs` system:
 
 [source, java]
 ----
