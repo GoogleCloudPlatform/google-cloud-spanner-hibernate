@@ -36,7 +36,6 @@ public class JsonJavaTypeDescriptor extends AbstractTypeDescriptor<Object>
   private Class<?> propertyType = Object.class;
 
   public JsonJavaTypeDescriptor() {
-    // This cast is needed to pass Object.class to the parent class
     super(Object.class);
   }
 
