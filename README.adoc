@@ -19,7 +19,7 @@ Maven coordinates for the dialect:
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
-  <version>1.5.0</version>
+  <version>1.5.1</version>
 </dependency>
 ----
 
