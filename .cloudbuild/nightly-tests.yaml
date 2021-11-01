@@ -1,0 +1,7 @@
+steps:
+  - name: maven:3-openjdk-11
+    entrypoint: mvn
+    args: ['install', '-DskipTests']
+
+timeout: 3600s # 60 minutes
+
