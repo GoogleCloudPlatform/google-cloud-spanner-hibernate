@@ -12,14 +12,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Start the Spanner Emulator in a separate service
-    services:
-      emulator:
-        image: gcr.io/cloud-spanner-emulator/emulator:latest
-        ports:
-          - 9010:9010
-          - 9020:9020
-
     steps:
       - uses: actions/checkout@v2
 
@@ -36,20 +28,10 @@ jobs:
         with:
           java-version: 1.8
 
-      # Create an instance and database in the Spanner emulator
-      - name: Initialize Emulator
-        run: ./.github/emulator-init.sh
-
       - name: Build with Maven
         run: mvn install -B -V -DskipTests
 
       - name: Run Unit Tests
         run: mvn test
 
-      - name: Run Hibernate Integration Tests
-        env:
-          JDBC_URL: jdbc:cloudspanner://localhost:9010/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/test-database?usePlainText=true
-        run: |
-          mvn verify -f google-cloud-spanner-hibernate-testing/pom.xml \
-              -Dhibernate.show_sql=false \
-              -Dhibernate.connection.url=$JDBC_URL \
+
