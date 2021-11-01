@@ -21,7 +21,7 @@ steps:
         '-f',
         'google-cloud-spanner-hibernate-testing/pom.xml ',
         '-Dhibernate.show_sql=false',
-        '-Dhibernate.connection.url=$JDBC_URL_INTEGRATION'
+        '-Dhibernate.connection.url=$_JDBC_URL_INTEGRATION'
     ]
 
 timeout: 180m
