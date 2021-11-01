@@ -3,7 +3,7 @@ steps:
     entrypoint: mvn
     args: ['install', '-DskipTests', '--batch-mode']
 
-  - name: Run Samples Tests
+  - name: maven:3-openjdk-11
     entrypoint: mvn
     args: [
         'verify',
