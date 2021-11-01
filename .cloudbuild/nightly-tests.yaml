@@ -9,11 +9,11 @@ steps:
         'verify',
         '-f',
         'google-cloud-spanner-hibernate-samples/pom.xml',
-        '-Dhibernate.connection.url=$JDBC_URL',
-        '-Dspring.datasource.url=$JDBC_URL',
-        '-Dquarkus.datasource.jdbc.url=$JDBC_URL'
+        '-Dhibernate.connection.url=$_JDBC_URL',
+        '-Dspring.datasource.url=$_JDBC_URL',
+        '-Dquarkus.datasource.jdbc.url=$_JDBC_URL'
     ]
 
 timeout: 120m
 substitutions:
-  JDBC_URL: 'JDBC_URL=jdbc:cloudspanner:/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/hibernate-sample-db'
+  _JDBC_URL: 'JDBC_URL=jdbc:cloudspanner:/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/hibernate-sample-db'
