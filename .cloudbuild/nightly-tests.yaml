@@ -22,4 +22,4 @@ options:
       path: /root/.m2
 
 substitutions:
-  _JDBC_URL: 'JDBC_URL=jdbc:cloudspanner:/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/hibernate-sample-db'
+  _JDBC_URL: 'jdbc:cloudspanner:/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/hibernate-sample-db'
