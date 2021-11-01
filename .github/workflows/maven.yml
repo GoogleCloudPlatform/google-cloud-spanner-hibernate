@@ -46,15 +46,6 @@ jobs:
       - name: Run Unit Tests
         run: mvn test
 
-      - name: Run Samples Tests
-        env:
-          JDBC_URL: jdbc:cloudspanner://localhost:9010/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/hibernate-sample-db?usePlainText=true
-        run: |
-          mvn verify -f google-cloud-spanner-hibernate-samples/pom.xml \
-              -Dhibernate.connection.url=$JDBC_URL \
-              -Dspring.datasource.url=$JDBC_URL \
-              -Dquarkus.datasource.jdbc.url=$JDBC_URL
-
       - name: Run Hibernate Integration Tests
         env:
           JDBC_URL: jdbc:cloudspanner://localhost:9010/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/test-database?usePlainText=true
