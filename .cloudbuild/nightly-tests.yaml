@@ -4,13 +4,17 @@ steps:
     args: ['install', '-DskipTests', '--batch-mode']
 
   - name: Run Samples Tests
+    entrypoint: mvn
+    args: [
+        'verify',
+        '-f',
+        'google-cloud-spanner-hibernate-samples/pom.xml',
+        '-Dhibernate.connection.url=$JDBC_URL',
+        '-Dspring.datasource.url=$JDBC_URL',
+        '-Dquarkus.datasource.jdbc.url=$JDBC_URL'
+    ]
     env:
       'JDBC_URL=jdbc:cloudspanner:/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/hibernate-sample-db'
-    run: |
-      mvn verify -f google-cloud-spanner-hibernate-samples/pom.xml \
-          -Dhibernate.connection.url=$JDBC_URL \
-          -Dspring.datasource.url=$JDBC_URL \
-          -Dquarkus.datasource.jdbc.url=$JDBC_URL
 
 timeout: 3600s # 60 minutes
 
