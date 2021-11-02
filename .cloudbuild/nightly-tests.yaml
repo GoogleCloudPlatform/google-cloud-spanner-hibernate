@@ -24,7 +24,7 @@ steps:
         '-Dhibernate.connection.url=$_JDBC_URL_INTEGRATION'
     ]
 
-timeout: 180m
+timeout: 300m
 
 options:
   volumes:
