@@ -19,7 +19,7 @@ steps:
     args: [
         'verify',
         '-f',
-        'google-cloud-spanner-hibernate-testing/pom.xml ',
+        'google-cloud-spanner-hibernate-testing/pom.xml',
         '-Dhibernate.show_sql=false',
         '-Dhibernate.connection.url=$_JDBC_URL_INTEGRATION'
     ]
