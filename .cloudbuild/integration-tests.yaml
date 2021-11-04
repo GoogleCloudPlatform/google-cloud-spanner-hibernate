@@ -1,0 +1,36 @@
+steps:
+  - name: maven:3-openjdk-11
+    entrypoint: mvn
+    args: ['install', '-DskipTests', '--batch-mode']
+
+  - name: maven:3-openjdk-11
+    entrypoint: mvn
+    args: [
+        'verify',
+        '-f',
+        'google-cloud-spanner-hibernate-samples/pom.xml',
+        '-Dhibernate.connection.url=$_JDBC_URL_SAMPLES',
+        '-Dspring.datasource.url=$_JDBC_URL_SAMPLES',
+        '-Dquarkus.datasource.jdbc.url=$_JDBC_URL_SAMPLES'
+    ]
+
+  - name: maven:3-openjdk-11
+    entrypoint: mvn
+    args: [
+        'verify',
+        '-f',
+        'google-cloud-spanner-hibernate-testing/pom.xml',
+        '-Dhibernate.show_sql=false',
+        '-Dhibernate.connection.url=$_JDBC_URL_INTEGRATION'
+    ]
+
+timeout: 300m
+
+options:
+  volumes:
+    - name: 'm2-cache'
+      path: /root/.m2
+
+substitutions:
+  _JDBC_URL_SAMPLES: 'jdbc:cloudspanner:/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/hibernate-sample-db'
+  _JDBC_URL_INTEGRATION: 'jdbc:cloudspanner:/projects/cloud-spanner-hibernate-ci/instances/test-instance/databases/test-database'

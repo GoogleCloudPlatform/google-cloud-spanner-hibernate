@@ -11,7 +11,7 @@ import org.hibernate.dialect.entities.JsonEntity.Employee;
 import org.hibernate.jpa.test.BaseEntityManagerFunctionalTestCase;
 import org.junit.Test;
 
-public class JsonColumnTypeIT extends BaseEntityManagerFunctionalTestCase {
+public class JsonColumnTypeTest extends BaseEntityManagerFunctionalTestCase {
 
   @Override
   protected Class<?>[] getAnnotatedClasses() {
