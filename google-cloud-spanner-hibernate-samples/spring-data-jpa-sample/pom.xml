@@ -13,7 +13,7 @@
   <artifactId>spring-data-jpa-sample</artifactId>
 
   <properties>
-      <spring-boot-version>2.6.0</spring-boot-version>
+      <spring-boot-version>2.6.1</spring-boot-version>
   </properties>
 
   <dependencyManagement>
