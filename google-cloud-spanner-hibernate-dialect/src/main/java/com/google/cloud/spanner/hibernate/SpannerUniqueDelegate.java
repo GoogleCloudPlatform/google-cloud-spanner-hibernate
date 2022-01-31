@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import org.hibernate.boot.Metadata;
+import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.unique.DefaultUniqueDelegate;
 import org.hibernate.mapping.Index;
@@ -40,14 +41,16 @@ public class SpannerUniqueDelegate extends DefaultUniqueDelegate {
   }
 
   @Override
-  public String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
-    return Index.buildSqlCreateIndexString(
-        dialect, uniqueKey.getName(), uniqueKey.getTable(), uniqueKey.columnIterator(),
+  public String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata,
+      SqlStringGenerationContext context) {
+    return Index.buildSqlCreateIndexString(context,
+        uniqueKey.getName(), uniqueKey.getTable(), uniqueKey.getColumnIterator(),
         uniqueKey.getColumnOrderMap(), true, metadata);
   }
 
   @Override
-  public String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata) {
+  public String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata,
+      SqlStringGenerationContext context) {
     StringBuilder buf = new StringBuilder("DROP INDEX ");
     buf.append(dialect.quote(uniqueKey.getName()));
     return buf.toString();

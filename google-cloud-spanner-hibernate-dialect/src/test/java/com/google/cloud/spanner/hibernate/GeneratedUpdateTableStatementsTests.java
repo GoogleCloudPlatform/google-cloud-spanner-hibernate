@@ -94,9 +94,6 @@ public class GeneratedUpdateTableStatementsTests {
     List<String> sqlStrings = mockConnection.getStatementResultSetHandler().getExecutedStatements();
     assertThat(sqlStrings).containsExactly(
         "START BATCH DDL",
-        "alter table Employee ADD COLUMN id INT64 not null",
-        "alter table Employee ADD COLUMN name STRING(255)",
-        "alter table Employee ADD COLUMN manager_id INT64",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
         "create index name_index on Employee (name)",
         "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
@@ -104,6 +101,8 @@ public class GeneratedUpdateTableStatementsTests {
         "RUN BATCH",
         "INSERT INTO hibernate_sequence (next_val) VALUES(1)"
     );
+
+    mockConnection.close();
   }
 
   /**

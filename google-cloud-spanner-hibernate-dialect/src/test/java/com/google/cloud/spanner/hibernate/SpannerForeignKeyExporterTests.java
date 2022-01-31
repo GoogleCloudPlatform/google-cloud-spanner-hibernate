@@ -27,10 +27,8 @@ import com.google.cloud.spanner.hibernate.schema.SpannerDatabaseInfo;
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
 import java.util.Collections;
 import org.hibernate.boot.Metadata;
-import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.QualifiedTableName;
-import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
-import org.hibernate.engine.jdbc.env.spi.QualifiedObjectNameFormatter;
+import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
 import org.junit.Before;
@@ -47,6 +45,9 @@ public class SpannerForeignKeyExporterTests {
 
   private Metadata metadata;
 
+  private SqlStringGenerationContext context;
+
+
   /**
    * Setup the mocks needed for the Spanner foreign key tests.
    */
@@ -57,29 +58,32 @@ public class SpannerForeignKeyExporterTests {
     when(spannerDatabaseInfo.getImportedForeignKeys("address"))
         .thenReturn(Collections.singleton("address_fk"));
 
-    this.metadata = setupMetadataMock();
+    this.metadata = mock(Metadata.class);
     this.spannerForeignKeyExporter = new SpannerForeignKeyExporter(new SpannerDialect());
     this.spannerForeignKeyExporter.init(spannerDatabaseInfo);
+    this.context = mock(SqlStringGenerationContext.class);
+    when(this.context.format(any(QualifiedTableName.class))).thenAnswer(invocation ->
+        ((QualifiedTableName) invocation.getArguments()[0]).getTableName().getCanonicalName());
   }
 
   @Test
   public void testDropForeignKey() {
     String[] dropStatements = spannerForeignKeyExporter.getSqlDropStrings(
-        foreignKey("address", "address_fk"), metadata);
+        foreignKey("address", "address_fk"), metadata, this.context);
     assertThat(dropStatements).containsExactly("alter table address drop constraint address_fk");
   }
 
   @Test
   public void testDropMissingForeignKey_missingTable() {
     String[] dropStatements = spannerForeignKeyExporter.getSqlDropStrings(
-        foreignKey("person", "person_fk"), metadata);
+        foreignKey("person", "person_fk"), metadata, context);
     assertThat(dropStatements).isEmpty();
   }
 
   @Test
   public void testDropMissingForeignKey_missingForeignKey() {
     String[] dropStatements = spannerForeignKeyExporter.getSqlDropStrings(
-        foreignKey("address", "other_fk"), metadata);
+        foreignKey("address", "other_fk"), metadata, this.context);
     assertThat(dropStatements).isEmpty();
   }
 
@@ -93,24 +97,6 @@ public class SpannerForeignKeyExporterTests {
     foreignKey.setReferencedTable(table);
 
     return foreignKey;
-  }
-
-  private static Metadata setupMetadataMock() {
-    Metadata metadata = mock(Metadata.class);
-    Database database = mock(Database.class);
-    JdbcEnvironment jdbcEnvironment = mock(JdbcEnvironment.class);
-    QualifiedObjectNameFormatter qualifiedObjectNameFormatter =
-        mock(QualifiedObjectNameFormatter.class);
-
-    when(metadata.getDatabase()).thenReturn(database);
-    when(database.getJdbcEnvironment()).thenReturn(jdbcEnvironment);
-    when(jdbcEnvironment.getQualifiedObjectNameFormatter())
-        .thenReturn(qualifiedObjectNameFormatter);
-    when(qualifiedObjectNameFormatter.format(any(QualifiedTableName.class), any()))
-        .thenAnswer(invocation ->
-            ((QualifiedTableName) invocation.getArguments()[0]).getTableName().getCanonicalName());
-
-    return metadata;
   }
 }
 
