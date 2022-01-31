@@ -76,7 +76,7 @@ public class SpannerForeignKeyExporterTests {
   @Test
   public void testDropMissingForeignKey_missingTable() {
     String[] dropStatements = spannerForeignKeyExporter.getSqlDropStrings(
-        foreignKey("person", "person_fk"), metadata, context);
+        foreignKey("person", "person_fk"), metadata, this.context);
     assertThat(dropStatements).isEmpty();
   }
 
