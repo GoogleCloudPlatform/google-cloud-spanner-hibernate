@@ -40,6 +40,26 @@ public class JsonColumnTypeTest extends BaseEntityManagerFunctionalTestCase {
     });
   }
 
+  @Test
+  public void jsonColumnTestNullJsonColumn() {
+    doInJPA(this::entityManagerFactory, entityManager -> {
+      JsonEntity jsonEntity = new JsonEntity();
+      jsonEntity.setEmployee(null);
+
+      entityManager.persist(jsonEntity);
+      entityManager.flush();
+
+      Session session = entityManager.unwrap(Session.class);
+      List<JsonEntity> entities =
+          session.createQuery(
+              "from JsonEntity", JsonEntity.class).list();
+      assertThat(entities).hasSizeGreaterThan(0);
+
+      JsonEntity entity = entities.get(0);
+      assertThat(entity.getEmployee()).isNull();
+    });
+  }
+
   private static Employee createEmployee() {
     Employee employee = new Employee();
     employee.setName("Helen");
