@@ -1,5 +1,7 @@
 = Cloud Spanner Quarkus JPA and Panache with Hibernate Sample
 
+WARNING: This sample temporarily does not work; it hangs when trying to acquire Spanner sessions. See https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/373 for context.
+
 This sample application demonstrates using https://quarkus.io/[Quarkus] with https://quarkus.io/guides/hibernate-orm[JPA], https://quarkus.io/guides/hibernate-orm-panache[Panache] and https://cloud.google.com/spanner/[Google Cloud Spanner].
 
 This sample is only tested with Quarkus in JVM mode. Native mode is not tested/supported.
