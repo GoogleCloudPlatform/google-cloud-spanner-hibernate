@@ -92,10 +92,10 @@ public class SpannerTableExporterTests {
     List<String> statements = Files.readAllLines(scriptFile.toPath());
     assertThat(statements)
         .containsExactly(
-            "START BATCH DDL",
-            "drop table `TestEntity_stringList`",
-            "drop table `test_table`",
-            "RUN BATCH");
+            "START BATCH DDL;",
+            "drop table `TestEntity_stringList`;",
+            "drop table `test_table`;",
+            "RUN BATCH;");
   }
 
   @Test
@@ -115,11 +115,11 @@ public class SpannerTableExporterTests {
     List<String> statements = Files.readAllLines(scriptFile.toPath());
 
     assertThat(statements).containsExactly(
-        "START BATCH DDL",
-        "drop index name_index",
-        "drop table Employee",
-        "drop table hibernate_sequence",
-        "RUN BATCH");
+        "START BATCH DDL;",
+        "drop index name_index;",
+        "drop table Employee;",
+        "drop table hibernate_sequence;",
+        "RUN BATCH;");
   }
 
   @Test
@@ -139,13 +139,13 @@ public class SpannerTableExporterTests {
 
     assertThat(statements).containsExactly(
         // This omits creating the Employee table since it is declared to exist in metadata.
-        "START BATCH DDL",
-        "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
-        "create index name_index on Employee (name)",
+        "START BATCH DDL;",
+        "create table hibernate_sequence (next_val INT64) PRIMARY KEY ();",
+        "create index name_index on Employee (name);",
         "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
-            + "foreign key (manager_id) references Employee (id)",
-        "RUN BATCH",
-        "INSERT INTO hibernate_sequence (next_val) VALUES(1)"
+            + "foreign key (manager_id) references Employee (id);",
+        "RUN BATCH;",
+        "INSERT INTO hibernate_sequence (next_val) VALUES(1);"
     );
   }
 
@@ -163,22 +163,22 @@ public class SpannerTableExporterTests {
     // implementation maps types.
     String expectedCreateString = "create table `test_table` (`ID1` INT64 not null,id2"
         + " STRING(255) not null,`boolColumn` BOOL,longVal INT64 not null,stringVal"
-        + " STRING(255)) PRIMARY KEY (`ID1`,id2)";
+        + " STRING(255)) PRIMARY KEY (`ID1`,id2);";
 
     String expectedCollectionCreateString = "create table `TestEntity_stringList` "
         + "(`TestEntity_ID1` INT64 not null,`TestEntity_id2` STRING(255) not null,"
-        + "stringList STRING(255)) PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList)";
+        + "stringList STRING(255)) PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList);";
 
     String foreignKeyString =
         "alter table `TestEntity_stringList` add constraint FK2is6fwy3079dmfhjot09x5och "
             + "foreign key (`TestEntity_ID1`, `TestEntity_id2`) "
-            + "references `test_table` (`ID1`, id2)";
+            + "references `test_table` (`ID1`, id2);";
 
-    assertThat(statements.get(0)).isEqualTo("START BATCH DDL");
+    assertThat(statements.get(0)).isEqualTo("START BATCH DDL;");
     assertThat(statements.subList(1, 4))
         .containsExactlyInAnyOrder(
             expectedCreateString, expectedCollectionCreateString, foreignKeyString);
-    assertThat(statements.get(4)).isEqualTo("RUN BATCH");
+    assertThat(statements.get(4)).isEqualTo("RUN BATCH;");
   }
 
   @Test
