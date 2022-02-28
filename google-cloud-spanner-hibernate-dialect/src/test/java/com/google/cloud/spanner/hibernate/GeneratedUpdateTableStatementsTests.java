@@ -90,8 +90,10 @@ public class GeneratedUpdateTableStatementsTests {
   @Test
   public void testUpdateStatements_alterTables() throws SQLException {
     setupTestTables("Employee");
-
     List<String> sqlStrings = mockConnection.getStatementResultSetHandler().getExecutedStatements();
+    // The "alter table Employee ADD COLUMN" statements are no longer included in the generated
+    // schema when updating an existing table. This schema change was introduced from Hibernate
+    // 5.5.2 onwards.
     assertThat(sqlStrings).containsExactly(
         "START BATCH DDL",
         "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
