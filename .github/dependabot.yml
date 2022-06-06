@@ -8,8 +8,7 @@ updates:
   commit-message:
     # Prefix all commit messages from dependabot with "deps:"
     prefix: "deps:"
-  ignored_updates:
-  - match:
-      dependency_name: "io.quarkus:quarkus-universe-bom"
-      # Quarkus 2 requires Java 11, which is too high.
-      version_requirement: "2.x"
+  ignore:
+    - dependency-name: "io.quarkus:quarkus-universe-bom"
+    # Quarkus 2 requires Java 11, which is too high.
+    versions: "2.x"
