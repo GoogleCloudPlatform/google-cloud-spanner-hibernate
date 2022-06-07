@@ -11,4 +11,4 @@ updates:
   ignore:
     - dependency-name: "io.quarkus:quarkus-universe-bom"
     # Quarkus 2 requires Java 11, which is too high.
-    versions: "2.x"
+    versions: "[2.x]"
