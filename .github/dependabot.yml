@@ -1,15 +1,14 @@
 version: 2
 updates:
-- package-ecosystem: maven
-  directory: "/"
-  schedule:
+ - package-ecosystem: maven
+   directory: "/"
+   schedule:
     interval: daily
-  open-pull-requests-limit: 10
-  commit-message:
+   open-pull-requests-limit: 10
+   commit-message:
     # Prefix all commit messages from dependabot with "deps:"
-    prefix: "deps:"
-  ignored_updates:
-  - match:
-      dependency_name: "io.quarkus:quarkus-universe-bom"
-      # Quarkus 2 requires Java 11, which is too high.
-      version_requirement: "2.x"
+     prefix: "deps:"
+   ignore:
+     - dependency-name: "io.quarkus:quarkus-universe-bom"
+    # Quarkus 2 requires Java 11, which is too high.
+       versions: ["2.x"]
