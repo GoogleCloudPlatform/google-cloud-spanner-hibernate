@@ -1,5 +1,5 @@
 version: 2
-updates:
+updates:       
  - package-ecosystem: maven
    directory: "/"
    schedule:
@@ -8,6 +8,7 @@ updates:
    commit-message:
     # Prefix all commit messages from dependabot with "deps:"
      prefix: "deps:"
+     prefix-development: "test(deps):"
    ignore:
      - dependency-name: "io.quarkus:quarkus-universe-bom"
     # Quarkus 2 requires Java 11, which is too high.
