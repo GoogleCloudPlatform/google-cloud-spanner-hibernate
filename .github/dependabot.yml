@@ -1,6 +1,18 @@
 version: 2
 updates:       
  - package-ecosystem: "maven"
+   directory: "/google-cloud-spanner-hibernate-samples"
+   schedule:
+    interval: daily
+   open-pull-requests-limit: 10
+   commit-message:
+    # Prefix all commit messages from dependabot in samples with "chore(deps):"
+     prefix: "chore(deps):"
+   ignore:
+     - dependency-name: "io.quarkus:quarkus-universe-bom"
+    # Quarkus 2 requires Java 11, which is too high.
+       versions: ["2.x"]     
+ - package-ecosystem: "maven"
    directory: "/"
    schedule:
     interval: daily
