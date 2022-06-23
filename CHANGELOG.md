@@ -1,0 +1,67 @@
+# Changelog
+
+
+## [1.5.3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/1.5.2...1.5.3) (2022-03-01)
+Upgrades the project to Hibernate 5.6.
+
+## [1.5.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/1.5.1...1.5.2) (2021-12-10)
+This release upgraded dependencies including log4j.
+
+## [1.5.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/1.5.0...1.5.1) (2021-10-04)
+This release introduces the com.google.cloud.spanner.hibernate.type.SpannerJsonType which allows for mapping JSON columns to Hibernate entity fields. The Custom Spanner Types section explains how to use this feature.
+
+
+## [1.5.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/1.4.0...1.5.0) (2021-03-29)
+This release adds support to map Spanner Array column types to List<?> fields in Hibernate entities.
+
+Please see the Array Column documentation or example code for how to use this feature.
+
+In addition, this release adds several dependency version upgrades and minor bug fixes.
+
+
+## [1.4.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/1.3.0...1.4.0) (2020-09-29)
+This release adds important bug fixes to improve the Cloud Spanner Hibernate Dialect support.
+
+You can now use the Spanner Dialect with other dialects without having the Spanner dialect interfere with the Hibernate settings for other databases. Previously you would need a separate Maven profile to be able to connect to both Spanner and another database through Hibernate. (Fixed by #208 thanks to olavloite@)
+
+Statements using both limits and offsets will now be generated correctly. (#207)
+
+
+
+## [1.3.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/1.2.0...1.3.0) (2020-09-15)
+This release adds support for the NUMERIC data type.
+
+Hibernate entities can now declare java.math.BigDecimal fields and these will be correctly interpreted to use the NUMERIC type in Cloud Spanner in DDL and DML statements.
+
+
+
+## [1.2.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/1.1.0...1.2.0) (2020-04-23)
+This release extends the Cloud Spanner Hibernate dialect to generate Foreign Key statements during schema generation.
+
+Changes since v1.1.0:
+
+When Hibernate is started with hibernate.hbm2ddl.auto enabled, it will generate the correct Foreign Key clauses in the generated DDL statements for the entities using @OneToOne, @OneToMany, and @ManyToOne annotations.
+
+
+## [1.1.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/1.0.0...1.1.0) (2020-02-25)
+This release provides additional features for the Google Cloud Spanner Dialect for Hibernate ORM.
+
+Changes since v1.0.0:
+
+Schema generation in Hibernate is functional for all schema-generation modes: CREATE, CREATE-DROP, and UPDATE.
+Introduced the @Interleaved annotation for generating Interleaved tables in Spanner through Hibernate.
+Added support for using @Column(unique = true) which marks columns as unique in Hibernate entities in Spanner.
+
+
+## [1.0.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/0.1.0...1.0.0) (2019-11-15)
+The first GA release of the Google Cloud Spanner Dialect for Hibernate ORM.
+
+Changes since v0.1.0:
+
+InlineIdsOrClauseBulkIdStrategy is now automatically configured as the default bulk id strategy (#151)
+Schema generation DDL statements are now batched for schema creation and dropping (#148)
+
+
+## 0.1.0 (2019-10-15)
+* The first beta release of the Google Cloud Spanner Dialect for Hibernate ORM
+
