@@ -1,6 +1,15 @@
 # Changelog
 
 
+## [1.5.4](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/1.5.3...v1.5.4) (2022-06-27)
+
+
+### Dependencies
+
+* Bump google-cloud-spanner-jdbc to 2.7.3 ([4ad5262](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/4ad52625bdf5425ea98f8c2fa1da4a1fd897fd4d))
+* Bump hibernate.version to 5.6.9.Final ([4ad5262](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/4ad52625bdf5425ea98f8c2fa1da4a1fd897fd4d))
+
+
 ## [1.5.3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/1.5.2...1.5.3) (2022-03-01)
 Upgrades the project to Hibernate 5.6.
 
@@ -64,4 +73,3 @@ Schema generation DDL statements are now batched for schema creation and droppin
 
 ## 0.1.0 (2019-10-15)
 * The first beta release of the Google Cloud Spanner Dialect for Hibernate ORM
-
