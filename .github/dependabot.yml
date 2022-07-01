@@ -13,7 +13,7 @@ updates:
     # Quarkus 2 requires Java 11, which is too high.
        versions: ["2.x"]     
  - package-ecosystem: "maven"
-   directory: "/"
+   directory: "/google-cloud-spanner-hibernate-dialect"
    schedule:
     interval: daily
    open-pull-requests-limit: 10
@@ -21,6 +21,18 @@ updates:
     # Prefix all commit messages from dependabot with "deps:"
      prefix: "deps:"
      prefix-development: "test(deps):"
+   ignore:
+     - dependency-name: "io.quarkus:quarkus-universe-bom"
+    # Quarkus 2 requires Java 11, which is too high.
+       versions: ["2.x"]
+ - package-ecosystem: "maven"
+   directory: "/google-cloud-spanner-hibernate-testing"
+   schedule:
+    interval: daily
+   open-pull-requests-limit: 10
+   commit-message:
+    # This module is not deployable; only contains tests
+     prefix: "test(deps):" 
    ignore:
      - dependency-name: "io.quarkus:quarkus-universe-bom"
     # Quarkus 2 requires Java 11, which is too high.
