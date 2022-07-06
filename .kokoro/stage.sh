@@ -43,4 +43,12 @@ create_settings_xml_file $MAVEN_SETTINGS_FILE
   -Dgpg.homedir=${GPG_HOMEDIR} \
   -P release
 
+# promote release
+if [[ -n "${AUTORELEASE_PR}" ]]
+then
+  mvn nexus-staging:release -B \
+    -DperformRelease=true \
+    --settings=settings.xml
+fi
+
 popd
