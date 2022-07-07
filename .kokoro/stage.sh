@@ -38,10 +38,10 @@ create_settings_xml_file $MAVEN_SETTINGS_FILE
 ./mvnw clean deploy -B \
   -DskipTests=true \
   --settings ${MAVEN_SETTINGS_FILE} \
+  -DperformRelease=true \
   -Dgpg.executable=gpg \
   -Dgpg.passphrase=${GPG_PASSPHRASE} \
-  -Dgpg.homedir=${GPG_HOMEDIR} \
-  -P release
+  -Dgpg.homedir=${GPG_HOMEDIR}
 
 # promote release
 if [[ -n "${AUTORELEASE_PR}" ]]
