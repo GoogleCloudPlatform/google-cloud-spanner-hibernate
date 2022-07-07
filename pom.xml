@@ -175,7 +175,7 @@
           <version>1.6.13</version>
           <extensions>true</extensions>
           <configuration>
-            <serverId>ossrh</serverId>
+            <serverId>sonatype-nexus-staging</serverId>
             <nexusUrl>https://google.oss.sonatype.org/</nexusUrl>
             <stagingProgressTimeoutMinutes>15</stagingProgressTimeoutMinutes>
           </configuration>
