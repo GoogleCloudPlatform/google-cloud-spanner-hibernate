@@ -47,9 +47,10 @@ create_settings_xml_file $MAVEN_SETTINGS_FILE
 # promote release
 if [[ -n "${AUTORELEASE_PR}" ]]
 then
-  mvn nexus-staging:release -B \
+  ./mvnw nexus-staging:release -B \
     -DperformRelease=true \
     --settings=settings.xml
+    -P release
 fi
 
 popd
