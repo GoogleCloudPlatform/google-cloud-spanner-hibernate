@@ -49,7 +49,7 @@ if [[ -n "${AUTORELEASE_PR}" ]]
 then
   ./mvnw nexus-staging:release -B \
     -DperformRelease=true \
-    --settings=settings.xml
+    --settings=settings.xml \
     -P release
 fi
 
