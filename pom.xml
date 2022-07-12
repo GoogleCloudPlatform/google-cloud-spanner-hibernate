@@ -6,7 +6,7 @@
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-hibernate</artifactId>
   <packaging>pom</packaging>
-  <version>1.5.4</version>
+  <version>1.5.4</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
