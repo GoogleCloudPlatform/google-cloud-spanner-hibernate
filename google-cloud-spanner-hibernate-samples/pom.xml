@@ -2,20 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.google.cloud</groupId>
-	<artifactId>google-cloud-spanner-hibernate-samples</artifactId><!-- This artifact should not be released -->
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
-	<name>Google Cloud Spanner Hibernate Sample Applications</name>
-	<url>https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate</url>
-
-
 	<parent>
 		<artifactId>google-cloud-spanner-hibernate</artifactId>
 		<groupId>com.google.cloud</groupId>
 		<version>1.5.4</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
 	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<name>Google Cloud Spanner Hibernate Sample Applications</name>
+	<artifactId>google-cloud-spanner-hibernate-samples</artifactId>
+	<packaging>pom</packaging>
 
 	<modules>
 		<module>basic-hibernate-sample</module>
