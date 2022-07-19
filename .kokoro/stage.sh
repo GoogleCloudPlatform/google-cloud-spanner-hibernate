@@ -23,7 +23,9 @@ pyenv global 3.6
 echo "account-info"
 id
 
-sh $(dirname $0)/populate-secrets.sh 
+chmod +x $(dirname $0)/populate-secrets.sh
+
+$(dirname $0)/populate-secrets.sh 
 
 # Start the releasetool reporter
 python3 -m pip install gcp-releasetool
