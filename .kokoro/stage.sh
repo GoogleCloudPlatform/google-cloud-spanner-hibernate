@@ -16,12 +16,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 
 set -eo pipefail
+set -x
+
+pyenv global 3.7.2
 
 echo "account-info"
 id
 
 # Start the releasetool reporter
-python3 -m pip install gcp-releasetool --user
+python3 -m pip install gcp-releasetool
 
 echo "copying contents"
 python3 -m releasetool publish-reporter-script > /tmp/publisher-script; 
