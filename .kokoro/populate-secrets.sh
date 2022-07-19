@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -eo pipefail
+#set -eo pipefail
 
 function now { date +"%Y-%m-%d %H:%M:%S" | tr -d '\n' ;}
 function msg { println "$*" >&2 ;}
