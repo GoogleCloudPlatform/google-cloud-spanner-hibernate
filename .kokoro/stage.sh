@@ -17,6 +17,9 @@
 
 set -eo pipefail
 
+echo "account-info"
+id
+
 # Start the releasetool reporter
 python3 -m pip install gcp-releasetool
 python3 -m releasetool publish-reporter-script > /tmp/publisher-script; source /tmp/publisher-script
