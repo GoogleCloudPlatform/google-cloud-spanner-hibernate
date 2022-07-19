@@ -22,7 +22,12 @@ id
 
 # Start the releasetool reporter
 python3 -m pip install gcp-releasetool --user
-python3 -m releasetool publish-reporter-script > /tmp/publisher-script; source /tmp/publisher-script
+
+echo "copying contents"
+python3 -m releasetool publish-reporter-script > /tmp/publisher-script; 
+
+echo "source command"
+source /tmp/publisher-script
 
 dir=$(dirname "$0")
 
