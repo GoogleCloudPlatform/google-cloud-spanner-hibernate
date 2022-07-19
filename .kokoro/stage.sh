@@ -18,7 +18,7 @@
 set -eo pipefail
 set -x
 
-pyenv global 3.6
+pyenv global 3.7.2
 
 echo "account-info"
 id
