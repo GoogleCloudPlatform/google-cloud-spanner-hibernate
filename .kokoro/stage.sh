@@ -21,7 +21,7 @@ echo "account-info"
 id
 
 # Start the releasetool reporter
-python3 -m pip install gcp-releasetool
+python3 -m pip install gcp-releasetool --user
 python3 -m releasetool publish-reporter-script > /tmp/publisher-script; source /tmp/publisher-script
 
 dir=$(dirname "$0")
