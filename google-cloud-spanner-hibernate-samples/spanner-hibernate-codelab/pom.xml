@@ -1,36 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>google-cloud-spanner-hibernate-samples</artifactId>
     <groupId>com.google.cloud</groupId>
-    <version>1.5.5</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
+    <version>1.5.5
+    </version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
   <name>Google Cloud Spanner Hibernate Codelab</name>
   <artifactId>spanner-hibernate-codelab</artifactId>
-  <description>Source code for the Cloud Spanner with Hibernate ORM Codelab</description>
+  <description>Source code for the Cloud Spanner with Hibernate ORM Codelab
+  </description>
 
   <dependencies>
-
-    <!-- Spanner Dialect -->
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
     <!-- JDBC Driver -->
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner-jdbc</artifactId>
     </dependency>
 
-    <!-- Hibernate -->
+    <!-- Hibernate-->
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <groupId>org.hibernate.orm</groupId>
       <artifactId>hibernate-core</artifactId>
     </dependency>
 
