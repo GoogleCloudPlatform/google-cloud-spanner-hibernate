@@ -18,12 +18,12 @@
 
 package codelab;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import java.util.UUID;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 
 /**
  * An entity representing a musical album.
@@ -33,7 +33,7 @@ public class Album {
 
   @Id
   @GeneratedValue
-  @Type(type = "uuid-char")
+  @JdbcTypeCode(java.sql.Types.VARCHAR)
   UUID albumId;
 
   @ManyToOne
