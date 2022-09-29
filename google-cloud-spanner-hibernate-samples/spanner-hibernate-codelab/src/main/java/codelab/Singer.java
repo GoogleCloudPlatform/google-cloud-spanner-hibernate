@@ -18,14 +18,14 @@
 
 package codelab;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import java.util.Date;
 import java.util.UUID;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 
 /**
  * An entity representing a singer.
@@ -35,7 +35,7 @@ public class Singer {
 
   @Id
   @GeneratedValue
-  @Type(type = "uuid-char")
+  @JdbcTypeCode(java.sql.Types.VARCHAR)
   private UUID singerId;
 
   private String firstName;
