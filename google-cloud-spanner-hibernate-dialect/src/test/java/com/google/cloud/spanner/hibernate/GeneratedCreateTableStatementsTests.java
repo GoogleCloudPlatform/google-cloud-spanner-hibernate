@@ -250,17 +250,26 @@ public class GeneratedCreateTableStatementsTests {
   }
 
   @Test
+  public void testStartBatchDdlFails() {
+    testBatchFailure("START BATCH DDL");
+  }
+
+  @Test
   public void testRunBatchFails() {
+    testBatchFailure("RUN BATCH");
+  }
+
+  private void testBatchFailure(String batchCommand) {
     this.connection
         .getStatementResultSetHandler()
-        .prepareThrowsSQLException("RUN BATCH", new SQLException("test exception"));
+        .prepareThrowsSQLException(batchCommand, new SQLException("test exception"));
     Metadata metadata =
         new MetadataSources(this.registry).addAnnotatedClass(Account.class).buildMetadata();
 
     // Without the custom DdlTransactionIsolater that is returned by SpannerSchemaManagementTool,
     // the SQLException would just be silently ignored by Hibernate.
     SpannerException spannerException =
-        assertThrows(SpannerException.class, () -> metadata.buildSessionFactory().openSession());
+        assertThrows(SpannerException.class, metadata::buildSessionFactory);
     assertEquals("UNKNOWN: test exception", spannerException.getMessage());
   }
 }

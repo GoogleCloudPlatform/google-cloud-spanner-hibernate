@@ -95,50 +95,59 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
                 if (method.equals(createStatementMethod)) {
                   // Create a proxy for the returned Statement that will override the behavior of
                   // Statement#execute(String).
-                  Statement delegateStatement = delegateConnection.createStatement();
-                  return Proxy.newProxyInstance(
-                      delegateConnection.getClass().getClassLoader(),
-                      new Class[] {Statement.class},
-                      (proxy1, method1, args1) -> {
-                        // Only handle the Statement#execute(String) method differently.
-                        // All other methods are just passed through.
-                        if (method1.equals(executeMethod)
-                            && args1 != null
-                            && args1.length == 1
-                            && args1[0] instanceof String) {
-                          // Check if the statement that is being executed is either `START BATCH
-                          // DDL` or `RUN BATCH`.
-                          String sql = (String) args1[0];
-                          ParsedStatement statement =
-                              PARSER.parse(com.google.cloud.spanner.Statement.of(sql));
-                          if (statement.getType() == StatementType.CLIENT_SIDE) {
-                            if (statement.getClientSideStatementType()
-                                    == ClientSideStatementType.START_BATCH_DDL
-                                || statement.getClientSideStatementType()
-                                    == ClientSideStatementType.RUN_BATCH) {
-                              try {
-                                // Try to execute the statement, and convert any SQLException to a
-                                // SpannerException.
-                                return method1.invoke(delegateStatement, args1);
-                              } catch (InvocationTargetException exception) {
-                                if (exception.getTargetException() instanceof SQLException) {
-                                  throw SpannerExceptionFactory.newSpannerException(
-                                      exception.getTargetException());
-                                }
-                                throw exception.getTargetException();
-                              }
-                            }
-                          }
-                        }
-                        try {
-                          return method1.invoke(delegateStatement, args1);
-                        } catch (InvocationTargetException e) {
-                          throw e.getTargetException();
-                        }
-                      });
+                  return createProxyStatement(delegateConnection);
                 }
                 try {
                   return method.invoke(delegateConnection, args);
+                } catch (InvocationTargetException e) {
+                  throw e.getTargetException();
+                }
+              });
+    }
+
+    /**
+     * Creates a proxy for a {@link Statement} that will throw a {@link
+     * com.google.cloud.spanner.SpannerException} instead of a {@link SQLException} if a `START
+     * BATCH DDL` or `RUN BATCH` statement fails.
+     */
+    private Statement createProxyStatement(Connection delegateConnection) throws SQLException {
+      Statement delegateStatement = delegateConnection.createStatement();
+      return (Statement)
+          Proxy.newProxyInstance(
+              delegateConnection.getClass().getClassLoader(),
+              new Class[] {Statement.class},
+              (proxy1, method1, args1) -> {
+                // Only handle the Statement#execute(String) method differently.
+                // All other methods are just passed through.
+                if (method1.equals(executeMethod)
+                    && args1 != null
+                    && args1.length == 1
+                    && args1[0] instanceof String) {
+                  // Check if the statement that is being executed is either `START BATCH
+                  // DDL` or `RUN BATCH`.
+                  String sql = (String) args1[0];
+                  ParsedStatement statement =
+                      PARSER.parse(com.google.cloud.spanner.Statement.of(sql));
+                  if (statement.getType() == StatementType.CLIENT_SIDE
+                      && (statement.getClientSideStatementType()
+                              == ClientSideStatementType.START_BATCH_DDL
+                          || statement.getClientSideStatementType()
+                              == ClientSideStatementType.RUN_BATCH)) {
+                    try {
+                      // Try to execute the statement, and convert any SQLException to a
+                      // SpannerException.
+                      return method1.invoke(delegateStatement, args1);
+                    } catch (InvocationTargetException exception) {
+                      if (exception.getTargetException() instanceof SQLException) {
+                        throw SpannerExceptionFactory.newSpannerException(
+                            exception.getTargetException());
+                      }
+                      throw exception.getTargetException();
+                    }
+                  }
+                }
+                try {
+                  return method1.invoke(delegateStatement, args1);
                 } catch (InvocationTargetException e) {
                   throw e.getTargetException();
                 }
