@@ -19,7 +19,10 @@
 package com.google.cloud.spanner.hibernate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.hibernate.entities.Account;
 import com.google.cloud.spanner.hibernate.entities.Airplane;
 import com.google.cloud.spanner.hibernate.entities.Airport;
@@ -244,5 +247,29 @@ public class GeneratedCreateTableStatementsTests {
             + "foreign key (Airport_id) references Airport (id)",
         "RUN BATCH"
     );
+  }
+
+  @Test
+  public void testStartBatchDdlFails() {
+    testBatchFailure("START BATCH DDL");
+  }
+
+  @Test
+  public void testRunBatchFails() {
+    testBatchFailure("RUN BATCH");
+  }
+
+  private void testBatchFailure(String batchCommand) {
+    this.connection
+        .getStatementResultSetHandler()
+        .prepareThrowsSQLException(batchCommand, new SQLException("test exception"));
+    Metadata metadata =
+        new MetadataSources(this.registry).addAnnotatedClass(Account.class).buildMetadata();
+
+    // Without the custom DdlTransactionIsolater that is returned by SpannerSchemaManagementTool,
+    // the SQLException would just be silently ignored by Hibernate.
+    SpannerException spannerException =
+        assertThrows(SpannerException.class, metadata::buildSessionFactory);
+    assertEquals("UNKNOWN: test exception", spannerException.getMessage());
   }
 }
