@@ -17,10 +17,6 @@
 
 set -eo pipefail
 
-# Start the releasetool reporter
-python3 -m pip install gcp-releasetool
-python3 -m releasetool publish-reporter-script > /tmp/publisher-script; source /tmp/publisher-script
-
 dir=$(dirname "$0")
 
 source $dir/common.sh
