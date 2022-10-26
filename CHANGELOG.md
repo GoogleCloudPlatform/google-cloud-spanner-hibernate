@@ -1,7 +1,7 @@
 # Changelog
 
 
-## [1.5.6](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.5.5...v1.5.6) (2022-10-26)
+## [1.5.6](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.5.4...v1.5.6) (2022-10-26)
 
 
 ### Bug Fixes
