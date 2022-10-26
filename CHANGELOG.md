@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [1.5.6](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.5.5...v1.5.6) (2022-10-26)
+
+
+### Bug Fixes
+
+* do not ignore exception during schema migration ([#471](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/471)) ([71e53f3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/71e53f379287a39863527674f8ddfc91b93ffcb1))
+
 ## [1.5.5](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.5.4...v1.5.5) (2022-07-18)
 
 
