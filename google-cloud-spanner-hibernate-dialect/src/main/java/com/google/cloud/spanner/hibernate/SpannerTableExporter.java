@@ -75,13 +75,13 @@ public class SpannerTableExporter implements Exporter<Table> {
     List<InitCommand> initCommands = table.getInitCommands(context);
     // Use only the replaced commands if the list contains both normal InitCommands and
     // ReplaceInitCommands.
-    if (initCommands.stream().anyMatch(cmd -> cmd instanceof ReplaceInitCommand)
-        && initCommands.stream().anyMatch(cmd -> !(cmd instanceof ReplaceInitCommand))) {
+    if (initCommands.stream().anyMatch(ReplaceInitCommand.class::isInstance)
+        && initCommands.stream().anyMatch(cmd -> !ReplaceInitCommand.class.isInstance(cmd))) {
       initCommands =
           initCommands.stream()
-              .filter(cmd -> cmd instanceof ReplaceInitCommand)
+              .filter(ReplaceInitCommand.class::isInstance)
               .collect(Collectors.toList());
-    } else if (initCommands.stream().anyMatch(cmd -> cmd instanceof ReplaceInitCommand)) {
+    } else if (initCommands.stream().anyMatch(ReplaceInitCommand.class::isInstance)) {
       // Only ReplaceInitCommands, but there is nothing to replace, so we return early.
       return;
     }
@@ -124,7 +124,7 @@ public class SpannerTableExporter implements Exporter<Table> {
     // Find the RunBatchDdl auxiliary object which can run statements after the DDL batch.
     Optional<RunBatchDdl> runBatchDdl =
         metadata.getDatabase().getAuxiliaryDatabaseObjects().stream()
-            .filter(obj -> obj instanceof RunBatchDdl)
+            .filter(RunBatchDdl.class::isInstance)
             .map(obj -> (RunBatchDdl) obj)
             .findFirst();
 

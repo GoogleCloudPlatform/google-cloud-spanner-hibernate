@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Properties;
 import org.hibernate.HibernateException;
@@ -160,10 +161,16 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
   @Override
   public Serializable generate(SharedSessionContractImplementor session, Object object)
       throws HibernateException {
-    Serializable id = super.generate(session, object);
+    Serializable id = generateBaseValue(session, object);
     if (id instanceof Long) {
       return Long.reverse((Long) id);
     }
     return id;
+  }
+
+  @VisibleForTesting
+  protected Serializable generateBaseValue(
+      SharedSessionContractImplementor session, Object object) {
+    return super.generate(session, object);
   }
 }

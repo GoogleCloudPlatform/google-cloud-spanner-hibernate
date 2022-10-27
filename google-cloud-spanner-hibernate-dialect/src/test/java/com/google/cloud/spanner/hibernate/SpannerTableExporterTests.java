@@ -20,6 +20,7 @@ package com.google.cloud.spanner.hibernate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.spanner.hibernate.entities.Employee;
 import com.google.cloud.spanner.hibernate.entities.TestEntity;
@@ -212,6 +213,17 @@ public class SpannerTableExporterTests {
         .hasMessage(
             "No identifier specified for entity: "
                 + "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$NoPkEntity");
+  }
+
+  @Test
+  public void testAddStatementAfterDdlBatchFailsWithNoBatch() {
+    Metadata metadata =
+        new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
+    assertThrows(
+        IllegalStateException.class,
+        () ->
+            SpannerTableExporter.addStatementAfterDdlBatch(
+                metadata, new String[] {"insert into foo"}));
   }
 
   @Entity
