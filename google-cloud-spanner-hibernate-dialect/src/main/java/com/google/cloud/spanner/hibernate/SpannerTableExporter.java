@@ -84,9 +84,6 @@ public class SpannerTableExporter implements Exporter<Table> {
     } else if (initCommands.stream().anyMatch(cmd -> cmd instanceof ReplaceInitCommand)) {
       // Only ReplaceInitCommands, but there is nothing to replace, so we return early.
       return;
-    } else {
-      // Only 'normal' InitCommands. Check if some of them are invalid and need to be replaced.
-
     }
     for (InitCommand initCommand : initCommands) {
       addStatementAfterDdlBatch(metadata, initCommand.getInitCommands());
