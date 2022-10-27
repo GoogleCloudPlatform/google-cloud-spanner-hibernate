@@ -1,20 +1,22 @@
 # Changelog
 
 
-## [1.5.6](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.5.5...v1.5.6) (2022-10-26)
+## [1.5.6](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.5.4...v1.5.6) (2022-10-26)
 
 
 ### Bug Fixes
 
 * do not ignore exception during schema migration ([#471](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/471)) ([71e53f3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/71e53f379287a39863527674f8ddfc91b93ffcb1))
 
-## [1.5.5](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.5.4...v1.5.5) (2022-07-18)
-
-
 ### Dependencies
 
 * bump google-cloud-spanner-jdbc from 2.7.3 to 2.7.4 ([#449](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/449)) ([c774d71](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/c774d71c29471ce89729046e22e93f4f4f0cbe00))
 * bump hibernate.version from 5.6.9.Final to 5.6.10.Final ([#456](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/456)) ([8b83632](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/8b836326300032c21b69cdc07275788b1302a422))
+
+
+## [1.5.5](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.5.4...v1.5.5) (2022-07-18)
+
+The 1.5.5 release never went out, and 1.5.4 will be succeeded by 1.5.6.
 
 ## [1.5.4](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/1.5.3...v1.5.4) (2022-06-27)
 
