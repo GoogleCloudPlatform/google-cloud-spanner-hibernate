@@ -27,6 +27,7 @@ import com.google.cloud.spanner.hibernate.entities.Account;
 import com.google.cloud.spanner.hibernate.entities.Airplane;
 import com.google.cloud.spanner.hibernate.entities.Airport;
 import com.google.cloud.spanner.hibernate.entities.Child;
+import com.google.cloud.spanner.hibernate.entities.Customer;
 import com.google.cloud.spanner.hibernate.entities.Employee;
 import com.google.cloud.spanner.hibernate.entities.GrandParent;
 import com.google.cloud.spanner.hibernate.entities.Parent;
@@ -158,6 +159,32 @@ public class GeneratedCreateTableStatementsTests {
         "START BATCH DDL",
         "create table Account (id INT64 not null,amount NUMERIC,name STRING(255)) PRIMARY KEY (id)",
         "RUN BATCH"
+    );
+  }
+
+  @Test
+  public void testCreateBitReversedSequenceTable() {
+    Metadata metadata =
+        new MetadataSources(this.registry)
+            .addAnnotatedClass(Customer.class)
+            .buildMetadata();
+
+    Session session = metadata.buildSessionFactory().openSession();
+    session.beginTransaction();
+    session.close();
+
+    List<String> sqlStrings =
+        this.connection.getStatementResultSetHandler().getExecutedStatements();
+
+    assertThat(sqlStrings).containsExactly(
+        "START BATCH DDL",
+        "RUN BATCH",
+        "START BATCH DDL",
+        "create table Customer "
+            + "(customerId INT64 not null,name STRING(255)) PRIMARY KEY (customerId)",
+        "create table customerId (next_val INT64) PRIMARY KEY ()",
+        "RUN BATCH",
+        "insert into customerId (next_val) values ( 50000 )"
     );
   }
 
