@@ -32,10 +32,17 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
+import org.hibernate.boot.model.relational.SqlStringGenerationContext;
+import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.resource.transaction.spi.DdlTransactionIsolator;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.tool.schema.extract.internal.InformationExtractorJdbcDatabaseMetaDataImpl;
+import org.hibernate.tool.schema.extract.spi.ExtractionContext;
+import org.hibernate.tool.schema.extract.spi.InformationExtractor;
 import org.hibernate.tool.schema.internal.HibernateSchemaManagementTool;
 import org.hibernate.tool.schema.internal.exec.JdbcContext;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
+import org.hibernate.tool.schema.spi.ExtractionTool;
 import org.hibernate.tool.schema.spi.SchemaCreator;
 import org.hibernate.tool.schema.spi.SchemaDropper;
 import org.hibernate.tool.schema.spi.SchemaMigrator;
@@ -182,6 +189,43 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
       return new SpannerDdlTransactionIsolator(delegate);
     } catch (Throwable ignore) {
       return delegate;
+    }
+  }
+
+  @Override
+  public ExtractionTool getExtractionTool() {
+    return SpannerExtractionTool.INSTANCE;
+  }
+
+  /**
+   * {@link SpannerExtractionTool} creates an {@link ExtractionContext} that uses a separate JDBC
+   * connection for extracting additional metadata from the database. This prevents queries from
+   * being executed on the connection that is executing the DDL batch for the migration.
+   */
+  private static class SpannerExtractionTool implements ExtractionTool {
+
+    private static final SpannerExtractionTool INSTANCE = new SpannerExtractionTool();
+
+    private SpannerExtractionTool() {}
+
+    @Override
+    public ExtractionContext createExtractionContext(
+        ServiceRegistry serviceRegistry,
+        JdbcEnvironment jdbcEnvironment,
+        SqlStringGenerationContext sqlStringGenerationContext,
+        DdlTransactionIsolator ddlTransactionIsolator,
+        ExtractionContext.DatabaseObjectAccess databaseObjectAccess) {
+      return new SpannerExtractionContext(
+          serviceRegistry,
+          jdbcEnvironment,
+          sqlStringGenerationContext,
+          ddlTransactionIsolator,
+          databaseObjectAccess);
+    }
+
+    @Override
+    public InformationExtractor createInformationExtractor(ExtractionContext extractionContext) {
+      return new InformationExtractorJdbcDatabaseMetaDataImpl(extractionContext);
     }
   }
 
