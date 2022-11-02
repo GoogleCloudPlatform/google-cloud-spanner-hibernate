@@ -26,6 +26,7 @@ import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.resource.transaction.spi.DdlTransactionIsolator;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.tool.schema.internal.exec.ImprovedExtractionContextImpl;
+import org.jboss.logging.Logger;
 
 /**
  * {@link SpannerExtractionContext} uses a separate JDBC connection for extracting metadata from the
@@ -33,6 +34,7 @@ import org.hibernate.tool.schema.internal.exec.ImprovedExtractionContextImpl;
  * SpannerSchemaManagementTool} while that connection is in a DDL batch.
  */
 public class SpannerExtractionContext extends ImprovedExtractionContextImpl {
+  private static final Logger log = Logger.getLogger(SpannerExtractionContext.class);
   private final JdbcConnectionAccess jdbcConnectionAccess;
   private Connection extractionConnection;
 
@@ -59,7 +61,11 @@ public class SpannerExtractionContext extends ImprovedExtractionContextImpl {
       if (extractionConnection == null) {
         extractionConnection = jdbcConnectionAccess.obtainConnection();
       }
-    } catch (SQLException ignore) {
+    } catch (SQLException exception) {
+      log.warn(
+          "An exception was thrown while obtaining a JDBC connection for metadata extraction. "
+              + "Falling back to the default connection used for DDL execution.",
+          exception);
       // Fallback and use the original connection if anything goes wrong.
       extractionConnection = super.getJdbcConnection();
     }
@@ -72,8 +78,11 @@ public class SpannerExtractionContext extends ImprovedExtractionContextImpl {
     if (extractionConnection != null) {
       try {
         extractionConnection.close();
-      } catch (SQLException ignore) {
-        // Nothing we can do, just ignore it.
+      } catch (SQLException exception) {
+        log.warn(
+            "An exception was thrown while closing the JDBC connection "
+                + "that was used for metadata extraction",
+            exception);
       }
     }
   }
