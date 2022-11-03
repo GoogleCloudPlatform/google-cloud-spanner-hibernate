@@ -18,13 +18,18 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import com.google.common.collect.ImmutableList;
 import com.mockrunner.mock.jdbc.MockDatabaseMetaData;
 import com.mockrunner.mock.jdbc.MockResultSet;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Helper class to building mock objects for the mock JDBC driver.
@@ -41,6 +46,13 @@ public class MockJdbcUtils {
       "TYPE_NAME", "COLUMN_SIZE", "DECIMAL_DIGITS", "IS_NULLABLE",
   };
 
+  private static final String[] IMPORTED_KEY_COLUMNS = new String[]{
+      "PKTABLE_CAT", "PKTABLE_SCHEM", "PKTABLE_NAME", "PKCOLUMN_NAME",
+      "FKTABLE_CAT", "FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME",
+      "KEY_SEQ", "UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME",
+      "DEFERRABILITY"
+  };
+
   /**
    * Creates the metadata object read by Hibernate to determine which tables already exist.
    */
@@ -51,20 +63,22 @@ public class MockJdbcUtils {
   /**
    * Constructs a mock Column metadata {@link ResultSet} describing fake columns of the tables.
    */
-  private static ResultSet createColumnMetadataResultSet(String... tableNames) {
+  private static ResultSet createColumnMetadataResultSet(Map<String, List<String>> columns) {
     MockResultSet mockResultSet = initResultSet(COLUMN_METADATA_LABELS);
 
-    for (int i = 0; i < tableNames.length; i++) {
-      Object[] row = new Object[COLUMN_METADATA_LABELS.length];
-      Arrays.fill(row, "");
-      row[2] = tableNames[i];
-      row[3] = "column";
-      row[4] = Types.VARCHAR;
-      row[5] = "string(255)";
-      row[6] = 255;
-      row[7] = 0;
-      row[8] = 0;
-      mockResultSet.addRow(row);
+    for (Entry<String, List<String>> entry : columns.entrySet()) {
+      for (String column : entry.getValue()) {
+        Object[] row = new Object[COLUMN_METADATA_LABELS.length];
+        Arrays.fill(row, "");
+        row[2] = entry.getKey();
+        row[3] = column;
+        row[4] = Types.VARCHAR;
+        row[5] = "string(255)";
+        row[6] = 255;
+        row[7] = 0;
+        row[8] = 0;
+        mockResultSet.addRow(row);
+      }
     }
 
     return mockResultSet;
@@ -103,6 +117,26 @@ public class MockJdbcUtils {
 
   }
 
+  private static ResultSet createImportedKeysResultSet(
+      String pkTable, String pkColumn, String fkTable, String fkColumn, String fkName) {
+
+    String[] row = new String[IMPORTED_KEY_COLUMNS.length];
+    Arrays.fill(row, "");
+    row[0] = ""; // pk catalog
+    row[1] = ""; // fk catalog
+    row[2] = pkTable;
+    row[3] = pkColumn;
+    row[4] = ""; // fk catalog
+    row[5] = ""; // fk schema
+    row[6] = fkTable;
+    row[7] = fkColumn;
+    row[11] = fkName;
+    MockResultSet mockResultSet = initResultSet(IMPORTED_KEY_COLUMNS);
+    mockResultSet.addRow(row);
+
+    return mockResultSet;
+  }
+
   private static ResettingMockResultSet initResultSet(String... columnLabels) {
     ResettingMockResultSet mockResultSet =
         new ResettingMockResultSet(UUID.randomUUID().toString());
@@ -124,12 +158,23 @@ public class MockJdbcUtils {
     private ResultSet importedKeys = new MockResultSet(UUID.randomUUID().toString());
     private ResultSet exportedKeys = new MockResultSet(UUID.randomUUID().toString());
 
-    /**
-     * Sets which tables are present in the Spanner database.
-     */
+    /** Sets which tables are present in the Spanner database. */
     public MockDatabaseMetaDataBuilder setTables(String... tables) {
       this.tables = createTableMetadataResultSet(tables);
-      this.columns = createColumnMetadataResultSet(tables);
+      this.columns =
+          createColumnMetadataResultSet(
+              Arrays.stream(tables)
+                  .map(t -> new String[] {t, "column"})
+                  .collect(
+                      Collectors.<String[], String, List<String>>toMap(
+                          c -> c[0], c -> ImmutableList.of(c[1]))));
+      return this;
+    }
+
+    /** Sets which tables with which columns are present in the Spanner database. */
+    public MockDatabaseMetaDataBuilder setTables(Map<String, List<String>> tablesAndColumns) {
+      this.tables = createTableMetadataResultSet(tablesAndColumns.keySet().toArray(new String[0]));
+      this.columns = createColumnMetadataResultSet(tablesAndColumns);
       return this;
     }
 
@@ -141,12 +186,25 @@ public class MockJdbcUtils {
       return this;
     }
 
+    /** Sets the imported keys that should be returned. */
+    public MockDatabaseMetaDataBuilder setImportedKeys(
+        String pkTable, String pkColumn, String fkTable, String fkColumn, String fkName) {
+      this.importedKeys = createImportedKeysResultSet(pkTable, pkColumn, fkTable, fkColumn, fkName);
+      return this;
+    }
+
     /**
      * Builds the {@link MockDatabaseMetaData} object which is used by Hibernate to get information
      * about the Spanner Database.
      */
     public MockDatabaseMetaData build() {
       MockDatabaseMetaData mockDatabaseMetaData = new MockDatabaseMetaData();
+      mockDatabaseMetaData.setStoresLowerCaseIdentifiers(false);
+      mockDatabaseMetaData.setStoresUpperCaseIdentifiers(false);
+      mockDatabaseMetaData.setStoresMixedCaseIdentifiers(true);
+      mockDatabaseMetaData.setStoresLowerCaseQuotedIdentifiers(false);
+      mockDatabaseMetaData.setStoresUpperCaseQuotedIdentifiers(false);
+      mockDatabaseMetaData.setStoresMixedCaseIdentifiers(true);
       mockDatabaseMetaData.setColumns(columns);
       mockDatabaseMetaData.setTables(tables);
       mockDatabaseMetaData.setIndexInfo(indexInfo);
