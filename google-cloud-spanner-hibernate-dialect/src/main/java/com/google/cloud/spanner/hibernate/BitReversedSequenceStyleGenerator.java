@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory.JdbcAbortedDueToConcurrentModificationException;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Properties;
@@ -30,6 +31,8 @@ import org.hibernate.boot.model.relational.QualifiedName;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.exception.GenericJDBCException;
+import org.hibernate.id.IdentifierGenerationException;
 import org.hibernate.id.enhanced.DatabaseStructure;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.id.enhanced.TableStructure;
@@ -154,6 +157,8 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
         type.getReturnedClass());
   }
 
+  private static final int MAX_ATTEMPTS = 100;
+
   /**
    * Generates a new ID. This uses the normal sequence strategy, but the returned ID is bit-reversed
    * before it is returned to the application.
@@ -161,7 +166,36 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
   @Override
   public Serializable generate(SharedSessionContractImplementor session, Object object)
       throws HibernateException {
-    Serializable id = generateBaseValue(session, object);
+    Serializable id;
+    int attempts = 0;
+    // Loop to retry the transaction that updates the table-backed sequence if it fails due to a
+    // concurrent modification error. This can happen if multiple entities are using the same
+    // sequence for generated primary keys.
+    while (true) {
+      try {
+        id = generateBaseValue(session, object);
+        break;
+      } catch (GenericJDBCException exception) {
+        JdbcAbortedDueToConcurrentModificationException aborted;
+        if (exception.getSQLException()
+            instanceof JdbcAbortedDueToConcurrentModificationException) {
+          aborted = (JdbcAbortedDueToConcurrentModificationException) exception.getSQLException();
+        } else {
+          throw exception;
+        }
+        attempts++;
+        if (attempts == MAX_ATTEMPTS) {
+          throw exception;
+        }
+        try {
+          Thread.sleep(aborted.getCause().getRetryDelayInMillis());
+        } catch (InterruptedException interruptedException) {
+          Thread.currentThread().interrupt();
+          throw new IdentifierGenerationException("Interrupted while trying to generate a new ID",
+              interruptedException);
+        }
+      }
+    }
     if (id instanceof Long) {
       return Long.reverse((Long) id);
     }

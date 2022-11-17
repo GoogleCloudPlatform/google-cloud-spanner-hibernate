@@ -19,11 +19,18 @@
 package com.google.cloud.spanner.hibernate;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.hibernate.entities.Customer;
+import com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory.JdbcAbortedDueToConcurrentModificationException;
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.exception.GenericJDBCException;
 import org.junit.Test;
 
 /** Tests for {@link BitReversedSequenceStyleGenerator}. */
@@ -44,4 +51,66 @@ public class BitReversedSequenceStyleGeneratorTests {
         0b1000100100000000000000000000000000000111111111111111111111111111L,
         generator.generate(session, customer));
   }
+
+  @Test
+  public void testGenerateRetriesAbortedException() {
+    JdbcAbortedDueToConcurrentModificationException jdbcAbortedException =
+        mock(JdbcAbortedDueToConcurrentModificationException.class);
+    AbortedDueToConcurrentModificationException abortedException =
+        mock(AbortedDueToConcurrentModificationException.class);
+    when(jdbcAbortedException.getCause()).thenReturn(abortedException);
+    SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
+    Customer customer = new Customer();
+    AtomicInteger attempt = new AtomicInteger();
+    BitReversedSequenceStyleGenerator generator =
+        new BitReversedSequenceStyleGenerator() {
+          protected Serializable generateBaseValue(
+              SharedSessionContractImplementor session, Object entity) {
+            if (attempt.addAndGet(1) == 1) {
+              throw new GenericJDBCException("Transaction was aborted", jdbcAbortedException);
+            } else {
+              return 1L;
+            }
+          }
+        };
+    assertEquals(
+        Long.reverse(1L),
+        generator.generate(session, customer));
+    assertEquals(2, attempt.get());
+  }
+
+  @Test
+  public void testGeneratePropagatesOtherExceptions() {
+    SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
+    Customer customer = new Customer();
+    BitReversedSequenceStyleGenerator generator =
+        new BitReversedSequenceStyleGenerator() {
+          protected Serializable generateBaseValue(
+              SharedSessionContractImplementor session, Object entity) {
+            throw mock(SpannerException.class);
+          }
+        };
+    assertThrows(SpannerException.class, () -> generator.generate(session, customer));
+  }
+
+  @Test
+  public void testGenerateGivesUpEventually() {
+    JdbcAbortedDueToConcurrentModificationException jdbcAbortedException =
+        mock(JdbcAbortedDueToConcurrentModificationException.class);
+    AbortedDueToConcurrentModificationException abortedException =
+        mock(AbortedDueToConcurrentModificationException.class);
+    when(jdbcAbortedException.getCause()).thenReturn(abortedException);
+    SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
+    Customer customer = new Customer();
+    BitReversedSequenceStyleGenerator generator =
+        new BitReversedSequenceStyleGenerator() {
+          protected Serializable generateBaseValue(
+              SharedSessionContractImplementor session, Object entity) {
+            throw new GenericJDBCException("Transaction was aborted", jdbcAbortedException);
+          }
+        };
+    assertThrows(GenericJDBCException.class,
+        () -> generator.generate(session, customer));
+  }
+
 }
