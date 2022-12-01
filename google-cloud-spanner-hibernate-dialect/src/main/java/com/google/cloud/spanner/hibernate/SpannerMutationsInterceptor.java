@@ -37,7 +37,6 @@ import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
 public class SpannerMutationsInterceptor extends EmptyInterceptor {
   private AbstractSharedSessionContract session;
   private final Method flushBeforeTransactionCompletion;
-  private boolean changedMutationsConversion = false;
 
   /** Public constructor is necessary for instantiation by reflection. */
   public SpannerMutationsInterceptor() {
@@ -73,26 +72,8 @@ public class SpannerMutationsInterceptor extends EmptyInterceptor {
           connection -> {
             CloudSpannerJdbcConnection cloudSpannerJdbcConnection =
                 connection.unwrap(CloudSpannerJdbcConnection.class);
-            if (cloudSpannerJdbcConnection != null
-                && !cloudSpannerJdbcConnection.isConvertDmlToMutations()) {
-              changedMutationsConversion = true;
-              cloudSpannerJdbcConnection.setConvertDmlToMutations(true);
-            }
-          });
-    }
-  }
-
-  @Override
-  public void afterTransactionCompletion(Transaction tx) {
-    if (changedMutationsConversion && session != null) {
-      session.doWork(
-          connection -> {
-            CloudSpannerJdbcConnection cloudSpannerJdbcConnection =
-                connection.unwrap(CloudSpannerJdbcConnection.class);
             if (cloudSpannerJdbcConnection != null) {
-              cloudSpannerJdbcConnection.setConvertDmlToMutations(false);
-              // Reset the flag here, as there could in theory be multiple flushes for one session.
-              changedMutationsConversion = false;
+              cloudSpannerJdbcConnection.setConvertDmlToMutations(true);
             }
           });
     }
