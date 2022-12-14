@@ -1,2 +1,2 @@
 com.google.cloud.spanner.hibernate.SpannerServiceContributor
-
+com.google.cloud.spanner.hibernate.batch.SpannerHibernateOptimizer
