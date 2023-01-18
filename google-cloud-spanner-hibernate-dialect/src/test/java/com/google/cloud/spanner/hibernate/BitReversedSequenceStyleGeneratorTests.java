@@ -136,7 +136,8 @@ public class BitReversedSequenceStyleGeneratorTests {
             throw new GenericJDBCException("Transaction was aborted", jdbcAbortedException);
           }
         };
-    IdentifierGenerationException exception = assertThrows(IdentifierGenerationException.class, () -> generator.generate(session, customer));
+    IdentifierGenerationException exception = assertThrows(
+        IdentifierGenerationException.class, () -> generator.generate(session, customer));
     assertEquals("Interrupted while trying to generate a new ID", exception.getMessage());
     assertTrue(Thread.interrupted());
   }
