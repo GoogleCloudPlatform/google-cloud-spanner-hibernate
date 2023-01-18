@@ -20,6 +20,7 @@ package com.google.cloud.spanner.hibernate;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,9 +29,11 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.hibernate.entities.Customer;
 import com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory.JdbcAbortedDueToConcurrentModificationException;
 import java.io.Serializable;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.exception.GenericJDBCException;
+import org.hibernate.id.IdentifierGenerationException;
 import org.junit.Test;
 
 /** Tests for {@link BitReversedSequenceStyleGenerator}. */
@@ -49,6 +52,39 @@ public class BitReversedSequenceStyleGeneratorTests {
         };
     assertEquals(
         0b1000100100000000000000000000000000000111111111111111111111111111L,
+        generator.generate(session, customer));
+  }
+
+  @Test
+  public void testIntegersAreNotBitReversed() {
+    SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
+    Customer customer = new Customer();
+    BitReversedSequenceStyleGenerator generator =
+        new BitReversedSequenceStyleGenerator() {
+          protected Serializable generateBaseValue(
+              SharedSessionContractImplementor session, Object entity) {
+            return 100;
+          }
+        };
+    assertEquals(
+        100,
+        generator.generate(session, customer));
+  }
+
+  @Test
+  public void testStringsAreNotBitReversed() {
+    SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
+    Customer customer = new Customer();
+    String id = UUID.randomUUID().toString();
+    BitReversedSequenceStyleGenerator generator =
+        new BitReversedSequenceStyleGenerator() {
+          protected Serializable generateBaseValue(
+              SharedSessionContractImplementor session, Object entity) {
+            return id;
+          }
+        };
+    assertEquals(
+        id,
         generator.generate(session, customer));
   }
 
@@ -80,6 +116,32 @@ public class BitReversedSequenceStyleGeneratorTests {
   }
 
   @Test
+  public void testGeneratePropagatesInterruptedExceptionDuringRetry() {
+    JdbcAbortedDueToConcurrentModificationException jdbcAbortedException =
+        mock(JdbcAbortedDueToConcurrentModificationException.class);
+    AbortedDueToConcurrentModificationException abortedException =
+        mock(AbortedDueToConcurrentModificationException.class);
+    when(jdbcAbortedException.getCause()).thenReturn(abortedException);
+    SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
+    Customer customer = new Customer();
+    BitReversedSequenceStyleGenerator generator =
+        new BitReversedSequenceStyleGenerator() {
+          @Override
+          protected void sleep(long millis) throws InterruptedException {
+            throw new InterruptedException();
+          }
+
+          protected Serializable generateBaseValue(
+              SharedSessionContractImplementor session, Object entity) {
+            throw new GenericJDBCException("Transaction was aborted", jdbcAbortedException);
+          }
+        };
+    IdentifierGenerationException exception = assertThrows(IdentifierGenerationException.class, () -> generator.generate(session, customer));
+    assertEquals("Interrupted while trying to generate a new ID", exception.getMessage());
+    assertTrue(Thread.interrupted());
+  }
+
+  @Test
   public void testGeneratePropagatesOtherExceptions() {
     SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
     Customer customer = new Customer();
@@ -102,15 +164,18 @@ public class BitReversedSequenceStyleGeneratorTests {
     when(jdbcAbortedException.getCause()).thenReturn(abortedException);
     SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
     Customer customer = new Customer();
+    AtomicInteger attempts = new AtomicInteger();
     BitReversedSequenceStyleGenerator generator =
         new BitReversedSequenceStyleGenerator() {
           protected Serializable generateBaseValue(
               SharedSessionContractImplementor session, Object entity) {
+            attempts.incrementAndGet();
             throw new GenericJDBCException("Transaction was aborted", jdbcAbortedException);
           }
         };
     assertThrows(GenericJDBCException.class,
         () -> generator.generate(session, customer));
+    assertEquals(BitReversedSequenceStyleGenerator.MAX_ATTEMPTS, attempts.get());
   }
 
 }

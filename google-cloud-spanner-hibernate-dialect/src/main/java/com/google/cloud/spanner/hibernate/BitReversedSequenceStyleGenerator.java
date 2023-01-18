@@ -157,7 +157,8 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
         type.getReturnedClass());
   }
 
-  private static final int MAX_ATTEMPTS = 100;
+  @VisibleForTesting
+  static final int MAX_ATTEMPTS = 100;
 
   /**
    * Generates a new ID. This uses the normal sequence strategy, but the returned ID is bit-reversed
@@ -188,7 +189,7 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
           throw exception;
         }
         try {
-          Thread.sleep(aborted.getCause().getRetryDelayInMillis());
+          sleep(aborted.getCause().getRetryDelayInMillis());
         } catch (InterruptedException interruptedException) {
           Thread.currentThread().interrupt();
           throw new IdentifierGenerationException("Interrupted while trying to generate a new ID",
@@ -200,6 +201,11 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
       return Long.reverse((Long) id);
     }
     return id;
+  }
+
+  @VisibleForTesting
+  protected void sleep(long millis) throws InterruptedException {
+    Thread.sleep(millis);
   }
 
   @VisibleForTesting
