@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [1.6.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.5.6...v1.6.0) (2023-01-19)
+
+
+### Features
+
+* support bit-reversed sequences ([#478](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/478)) ([ab80b04](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/ab80b04ab86197fc1fed14e49daec5d4b3d51e66))
+
+
+### Bug Fixes
+
+* retry transaction for sequence.next_val update ([#486](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/486)) ([132bb3c](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/132bb3c081a57dca96d6db47c25d5ec3fcec287e))
+* use separate JDBC connection for extraction ([#481](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/481)) ([cf5f96d](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/cf5f96d2f8e8d33704816a510ec3fee51b43950d))
+
 ## [1.5.6](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.5.4...v1.5.6) (2022-10-26)
 
 
