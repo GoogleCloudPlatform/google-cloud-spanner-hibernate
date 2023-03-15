@@ -474,7 +474,7 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public boolean supportsCascadeDelete() {
-    return false;
+    return true;
   }
 
   @Override

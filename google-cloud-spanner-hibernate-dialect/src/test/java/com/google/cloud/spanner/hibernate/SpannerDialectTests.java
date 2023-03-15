@@ -310,7 +310,7 @@ public class SpannerDialectTests {
 
   @Test
   public void supportsCascadeDeleteTest() {
-    assertThat(this.spannerDialect.supportsCascadeDelete()).isFalse();
+    assertThat(this.spannerDialect.supportsCascadeDelete()).isTrue();
   }
 
   @Test
