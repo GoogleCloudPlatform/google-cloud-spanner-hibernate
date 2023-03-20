@@ -1,4 +1,0 @@
-START BATCH DDL;
-drop table `TestEntity_stringList`;
-drop table `test_table`;
-RUN BATCH;

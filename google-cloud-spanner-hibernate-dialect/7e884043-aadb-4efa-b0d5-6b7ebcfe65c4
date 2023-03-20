@@ -1,5 +1,0 @@
-START BATCH DDL;
-create table `TestEntity_stringList` (`TestEntity_ID1` INT64 not null,`TestEntity_id2` STRING(255) not null,stringList STRING(255)) PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList);
-create table `test_table` (`ID1` INT64 not null,id2 STRING(255) not null,`boolColumn` BOOL,longVal INT64 not null,stringVal STRING(255)) PRIMARY KEY (`ID1`,id2);
-alter table `TestEntity_stringList` add constraint FK2is6fwy3079dmfhjot09x5och foreign key (`TestEntity_ID1`, `TestEntity_id2`) references `test_table` (`ID1`, id2);
-RUN BATCH;
