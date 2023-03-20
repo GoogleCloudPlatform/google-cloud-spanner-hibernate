@@ -154,6 +154,10 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
     }
   }
 
+  /**
+   * Configuration property for defining ranges that should be excluded by a bit-reversed sequence
+   * generator.
+   */
   public static final String EXCLUDE_RANGES_PARAM = "exclude_ranges";
 
   private QualifiedName sequenceName;
