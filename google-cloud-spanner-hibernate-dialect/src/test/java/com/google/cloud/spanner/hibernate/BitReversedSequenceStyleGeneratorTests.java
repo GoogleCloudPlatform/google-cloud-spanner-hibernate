@@ -18,6 +18,8 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import static com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator.EXCLUDE_RANGES_PARAM;
+import static com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator.parseExcludedRanges;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -28,9 +30,17 @@ import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.hibernate.entities.Customer;
 import com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory.JdbcAbortedDueToConcurrentModificationException;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Range;
 import java.io.Serializable;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import org.hibernate.MappingException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.id.IdentifierGenerationException;
@@ -38,6 +48,14 @@ import org.junit.Test;
 
 /** Tests for {@link BitReversedSequenceStyleGenerator}. */
 public class BitReversedSequenceStyleGeneratorTests {
+
+  static Properties asProperties(Map<String, String> map) {
+    Properties properties = new Properties();
+    for (Entry<String, String> entry : map.entrySet()) {
+      properties.setProperty(entry.getKey(), entry.getValue());
+    }
+    return properties;
+  }
 
   @Test
   public void testIsBitReversed() {
@@ -66,9 +84,7 @@ public class BitReversedSequenceStyleGeneratorTests {
             return 100;
           }
         };
-    assertEquals(
-        100,
-        generator.generate(session, customer));
+    assertEquals(100, generator.generate(session, customer));
   }
 
   @Test
@@ -83,9 +99,7 @@ public class BitReversedSequenceStyleGeneratorTests {
             return id;
           }
         };
-    assertEquals(
-        id,
-        generator.generate(session, customer));
+    assertEquals(id, generator.generate(session, customer));
   }
 
   @Test
@@ -109,9 +123,7 @@ public class BitReversedSequenceStyleGeneratorTests {
             }
           }
         };
-    assertEquals(
-        Long.reverse(1L),
-        generator.generate(session, customer));
+    assertEquals(Long.reverse(1L), generator.generate(session, customer));
     assertEquals(2, attempt.get());
   }
 
@@ -136,8 +148,9 @@ public class BitReversedSequenceStyleGeneratorTests {
             throw new GenericJDBCException("Transaction was aborted", jdbcAbortedException);
           }
         };
-    IdentifierGenerationException exception = assertThrows(
-        IdentifierGenerationException.class, () -> generator.generate(session, customer));
+    IdentifierGenerationException exception =
+        assertThrows(
+            IdentifierGenerationException.class, () -> generator.generate(session, customer));
     assertEquals("Interrupted while trying to generate a new ID", exception.getMessage());
     assertTrue(Thread.interrupted());
   }
@@ -174,9 +187,114 @@ public class BitReversedSequenceStyleGeneratorTests {
             throw new GenericJDBCException("Transaction was aborted", jdbcAbortedException);
           }
         };
-    assertThrows(GenericJDBCException.class,
-        () -> generator.generate(session, customer));
+    assertThrows(GenericJDBCException.class, () -> generator.generate(session, customer));
     assertEquals(BitReversedSequenceStyleGenerator.MAX_ATTEMPTS, attempts.get());
   }
 
+  @Test
+  public void testGenerateSkipsExcludedRanges() {
+    SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
+    Customer customer = new Customer();
+    Properties params = new Properties();
+    long bitReversed1 = Long.reverse(1L);
+    long bitReversed2 = Long.reverse(2L);
+    params.setProperty(
+        EXCLUDE_RANGES_PARAM,
+        String.format("[%d,%d] [%d,%d]", bitReversed1, bitReversed1, bitReversed2, bitReversed2));
+    AtomicLong counter = new AtomicLong();
+    BitReversedSequenceStyleGenerator generator =
+        new BitReversedSequenceStyleGenerator() {
+          protected Serializable generateBaseValue(
+              SharedSessionContractImplementor session, Object entity) {
+            return counter.incrementAndGet();
+          }
+        };
+    generator.configureExcludedRanges("test_sequence", params);
+    assertEquals(Long.reverse(3L), generator.generate(session, customer));
+  }
+
+  @Test
+  public void testParseExcludedRanges() {
+    assertEquals(ImmutableList.of(), parseExcludedRanges("test_sequence", new Properties()));
+    assertEquals(
+        ImmutableList.of(Range.closed(1L, 1L)),
+        parseExcludedRanges(
+            "test_sequence", asProperties(ImmutableMap.of(EXCLUDE_RANGES_PARAM, "[1,1]"))));
+    assertEquals(
+        ImmutableList.of(Range.closed(1L, 1000L)),
+        parseExcludedRanges(
+            "test_sequence", asProperties(ImmutableMap.of(EXCLUDE_RANGES_PARAM, "[1,1000]"))));
+    assertEquals(
+        ImmutableList.of(Range.closed(-2000L, -1000L)),
+        parseExcludedRanges(
+            "test_sequence", asProperties(ImmutableMap.of(EXCLUDE_RANGES_PARAM, "[-2000,-1000]"))));
+    assertEquals(
+        ImmutableList.of(Range.closed(1L, 10L), Range.closed(20L, 30L)),
+        parseExcludedRanges(
+            "test_sequence",
+            asProperties(ImmutableMap.of(EXCLUDE_RANGES_PARAM, "[1,10] [20,30]"))));
+    assertEquals(
+        ImmutableList.of(Range.closed(1L, 10L), Range.closed(20L, 30L), Range.closed(-30L, -20L)),
+        parseExcludedRanges(
+            "test_sequence",
+            asProperties(ImmutableMap.of(EXCLUDE_RANGES_PARAM, "[1,10] [20,30] [-30,-20]"))));
+
+    assertEquals(
+        "Invalid range found for the [test_sequence] sequence: For input string: \"foo\"\n"
+            + "Excluded ranges must be given as a space-separated sequence of ranges between "
+            + "square brackets, e.g. '[1,1000] [2001,3000]'. Found '[foo,-2000]'",
+        assertThrows(
+                MappingException.class,
+                () ->
+                    parseExcludedRanges(
+                        "test_sequence",
+                        asProperties(ImmutableMap.of(EXCLUDE_RANGES_PARAM, "[foo,-2000]"))))
+            .getMessage());
+    assertEquals(
+        "Invalid range found for the [test_sequence] sequence: For input string: \"\"\n"
+            + "Excluded ranges must be given as a space-separated sequence of ranges between "
+            + "square brackets, e.g. '[1,1000] [2001,3000]'. Found '[,1000]'",
+        assertThrows(
+                MappingException.class,
+                () ->
+                    parseExcludedRanges(
+                        "test_sequence",
+                        asProperties(ImmutableMap.of(EXCLUDE_RANGES_PARAM, "[,1000]"))))
+            .getMessage());
+    assertEquals(
+        "Invalid range found for the [test_sequence] sequence: "
+            + "Range does not contain exactly two elements\n"
+            + "Excluded ranges must be given as a space-separated sequence of ranges between "
+            + "square brackets, e.g. '[1,1000] [2001,3000]'. Found '[1,1000][2000,3000]'",
+        assertThrows(
+                MappingException.class,
+                () ->
+                    parseExcludedRanges(
+                        "test_sequence",
+                        asProperties(ImmutableMap.of(EXCLUDE_RANGES_PARAM, "[1,1000][2000,3000]"))))
+            .getMessage());
+    assertEquals(
+        "Invalid range found for the [test_sequence] sequence: " 
+            + "Range is not enclosed between '[' and ']'\n"
+            + "Excluded ranges must be given as a space-separated sequence of ranges between "
+            + "square brackets, e.g. '[1,1000] [2001,3000]'. Found '1,1000'",
+        assertThrows(
+                MappingException.class,
+                () ->
+                    parseExcludedRanges(
+                        "test_sequence",
+                        asProperties(ImmutableMap.of(EXCLUDE_RANGES_PARAM, "1,1000 2000,3000"))))
+            .getMessage());
+    assertEquals(
+        "Invalid range found for the [test_sequence] sequence: Invalid range: [-1000..-2000]\n"
+            + "Excluded ranges must be given as a space-separated sequence of ranges "
+            + "between square brackets, e.g. '[1,1000] [2001,3000]'. Found '[-1000,-2000]'",
+        assertThrows(
+                MappingException.class,
+                () ->
+                    parseExcludedRanges(
+                        "test_sequence",
+                        asProperties(ImmutableMap.of(EXCLUDE_RANGES_PARAM, "[-1000,-2000]"))))
+            .getMessage());
+  }
 }
