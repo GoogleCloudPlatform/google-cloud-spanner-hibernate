@@ -1,6 +1,29 @@
 # Changelog
 
 
+## [1.7.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.6.0...v1.7.0) (2023-03-21)
+
+
+### Features
+
+* exclude ranges option for bit-reversed sequence ([#585](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/585)) ([c7925e9](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/c7925e9c78ef5ef648016f75b06ca3b1fcf0cab2))
+
+
+### Dependencies
+
+* Bump google-cloud-spanner-jdbc ([#576](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/576)) ([873cc70](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/873cc70f9d389f65bcb40209eea0780aa6ce64a8))
+* bump google-cloud-spanner-jdbc ([#588](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/588)) ([7f8e445](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/7f8e445f9ab84cd069b10252c178a302a56c319a))
+* bump google-cloud-spanner-jdbc from 2.9.5 to 2.9.7 in /google-cloud-spanner-hibernate-dialect ([#564](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/564)) ([c60ad6f](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/c60ad6ff904324e16ddb7f6aaf8d27c2919b6073))
+* bump hibernate.version from 5.6.10.Final to 5.6.15.Final in /google-cloud-spanner-hibernate-dialect ([#542](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/542)) ([b2b1206](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/b2b1206dd49a517712562062a242c22ca38ac15a))
+* bump maven-checkstyle-plugin from 3.1.2 to 3.2.1 in /google-cloud-spanner-hibernate-dialect ([#517](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/517)) ([f736f92](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/f736f92a5ff04f0f9b5fd16e9821277f6fc606e8))
+* bump maven-deploy-plugin ([#535](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/535)) ([deaf26a](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/deaf26a50aea0c20638ac73892732170eb2fb31d))
+* bump maven-failsafe-plugin ([#581](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/581)) ([20e7b77](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/20e7b771f402c6783cb4a86baf3c7212de33bf59))
+* bump maven-failsafe-plugin from 3.0.0-M8 to 3.0.0-M9 in /google-cloud-spanner-hibernate-dialect ([#548](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/548)) ([09e8e22](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/09e8e22259744d63ad9c4f7b222a41afa22ab91a))
+* bump maven-jar-plugin from 3.2.2 to 3.3.0 in /google-cloud-spanner-hibernate-dialect ([#523](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/523)) ([cff1d66](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/cff1d6657b6898ec835fb55b2aacb61dd326da58))
+* bump maven-javadoc-plugin from 3.4.1 to 3.5.0 in /google-cloud-spanner-hibernate-dialect ([#554](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/554)) ([c56ef22](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/c56ef2279a2e11e9401d93b7fa446736c3077678))
+* bump maven-surefire-plugin from 3.0.0-M7 to 3.0.0-M8 in /google-cloud-spanner-hibernate-dialect ([#519](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/519)) ([90f63f7](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/90f63f7f71fbf27c54a37568f4aac652ef8d5999))
+* bump maven-surefire-plugin from 3.0.0-M8 to 3.0.0-M9 in /google-cloud-spanner-hibernate-dialect ([#547](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/547)) ([5086bc2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/5086bc2147cce4291e8615fe2b2a0077d14c7f8a))
+
 ## [1.6.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.5.6...v1.6.0) (2023-01-19)
 
 
