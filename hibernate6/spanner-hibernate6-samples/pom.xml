@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.google.cloud</groupId>
+    <artifactId>google-cloud-spanner-hibernate6</artifactId>
+    <version>1.7.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
+  </parent>
+
+  <artifactId>google-cloud-spanner-hibernate6-samples</artifactId>
+  <name>Google Cloud Spanner samples for Hibernate 6.x ORM</name>
+  <description>
+    This module contains samples for using Cloud Spanner with Hibernate 6.x.
+  </description>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>bit-reversed-sequence-sample</module>
+    <module>spring-data-jpa-sample</module>
+  </modules>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <configuration>
+          <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

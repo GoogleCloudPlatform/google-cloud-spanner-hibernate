@@ -297,6 +297,7 @@
         <module>google-cloud-spanner-hibernate-samples</module>
         <module>google-cloud-spanner-hibernate-testing</module>
         <module>google-cloud-spanner-hibernate-dialect</module>
+        <module>hibernate6</module>
       </modules>
     </profile>
     <profile>

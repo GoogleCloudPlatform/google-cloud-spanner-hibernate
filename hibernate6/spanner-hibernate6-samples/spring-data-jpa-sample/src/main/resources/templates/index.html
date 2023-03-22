@@ -1,0 +1,146 @@
+<html xmlns:th="https://www.thymeleaf.org">
+
+<html>
+  <head>
+    <title>Coffee Shop Web Application</title>
+    <style>
+      html * {
+        font-family: Roboto, Verdana, sans-serif;
+      }
+
+      body {
+        width: 70em;
+      }
+
+      li {
+        padding: 0.25em;
+      }
+
+      .panel {
+        float: left;
+        margin: 1em;
+        padding: 1em;
+        border: 1px solid black;
+        border-radius: 5px;
+        width: 40em;
+      }
+
+      .orderInfo {
+        width: 20em;
+      }
+
+      .highlight {
+        background-color: #d6f5d6;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Coffee Shop Sample</h1>
+
+    <div class="panel">
+      <p>
+        <b>Overview:</b> This is a sample app which demonstrates basic Spring Data JPA
+        repository usage with a Cloud Spanner database.
+      </p>
+
+      <p>
+        The interface below allows you to create/delete customers and coffee orders for each
+        customer. All of the data interactions and persistence to Cloud Spanner is achieved
+        via Spring Data JPA Repositories.
+      </p>
+
+      <p>
+        View all the saved data by opening a connection to the following JDBC URL:
+        <p><code>jdbc:cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?autoConfigEmulator=true</code></p>
+      </p>
+      <p>
+        You can do this in IntelliJ by following the instructions here:
+        <a href="https://www.jetbrains.com/help/idea/other-databases.html">IntelliJ - Other Databases</a>.
+        The Google Cloud Spanner driver is listed under Other Databases.
+      </p>
+      <p>
+        You can do this in DBeaver by following the instructions here:
+        <a href="https://medium.com/google-cloud/cloud-spanner-in-dbeaver-853998faa0ba#2f9f">Steps to Connect to Emulator in DBeaver</a>.
+      </p>
+    </div>
+
+
+    <div class="panel orderInfo">
+      <h3>Pending Customer Order Counts</h3>
+
+      <ul>
+        <li th:each="c : ${customers}"
+            th:text="${c.getName()} + ' has ' + ${c.coffees.size()} + ' orders.'" />
+      </ul>
+    </div>
+
+    <div class="panel">
+      Create a new customer.
+
+      <form method="POST" action="/createCustomer">
+
+        <ol>
+          <li>Customer name: <input type="text" name="name"/></li>
+          <li>Customer email: <input type="text" name="email"/></li>
+          <li><input type="submit" value="create"/></li>
+        </ol>
+      </form>
+    </div>
+
+    <div class="panel">
+      Order coffees for a customer.
+      <form method="POST" action="/orderCoffee">
+        <ol>
+          <li>
+            Select a customer. (All customers saved in your Spanner instance are listed here.)
+            <br>
+              <select name="customerId">
+                <option
+                    th:each="c : ${customers}"
+                    th:value="${c.getId()}"
+                    th:text="${c.getName()} + ' (' + ${c.getEmail()} + ')'" />
+              </select>
+          </li>
+          <li>
+            Size:
+            <select name="size">
+              <option>small</option>
+              <option>medium</option>
+              <option>large</option>
+              <option>extra large</option>
+            </select>
+          </li>
+          <li>Number of coffees to order: <input name="coffeeCount" type="number" value="1"/></li>
+          <li><input type="submit" value="Submit Order"/></li>
+        </ol>
+      </form>
+    </div>
+
+    <div class="panel">
+      Delete a customer.
+      <form method="POST" action="/deleteCustomer">
+        <ol>
+          <li>
+            Delete a customer record.
+            (All customers saved in your Spanner instance are listed here.)
+            This will execute a cascading delete on the customer and all coffee objects ordered
+            by the customer.
+            <br>
+            <select name="customerId">
+              <option
+                  th:each="c : ${customers}"
+                  th:value="${c.getId()}"
+                  th:text="${c.getName()} + ' (' + ${c.getEmail()} + ')'" />
+            </select>
+          </li>
+          <li><input type="submit" value="Delete Customer Record"/></li>
+        </ol>
+      </form>
+    </div>
+
+    <div class="panel highlight" th:if="${message}">
+      [[${message}]]
+    </div>
+  </body>
+</html>
