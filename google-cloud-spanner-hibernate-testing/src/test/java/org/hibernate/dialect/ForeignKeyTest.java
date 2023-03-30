@@ -1,3 +1,10 @@
+/*
+ * Hibernate, Relational Persistence for Idiomatic Java
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later.
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
+
 package org.hibernate.dialect;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -121,30 +128,33 @@ public class ForeignKeyTest extends BaseCoreFunctionalTestCase {
 
   @Test
   public void testForeignKeyConstraint_verifyDeletingReferencedKey() throws Exception {
+    Cart cart = new Cart();
+    cart.setCartId(4L);
+    cart.setItems(new HashSet<>());
+
+    Item item = new Item();
+    item.setItemId(4L);
+    item.setCart(cart);
+
+    CartSession cartSession = new CartSession();
+    cartSession.setSessionId(4L);
+    cartSession.setCart(cart);
+
+    cart.addItem(item);
+    cart.setSession(cartSession);
 
     doInHibernate(this::sessionFactory, session -> {
-      Cart cart = new Cart();
-      cart.setCartId(4L);
-      cart.setItems(new HashSet<>());
-
-      Item item = new Item();
-      item.setItemId(4L);
-      item.setCart(cart);
-
-      CartSession cartSession = new CartSession();
-      cartSession.setSessionId(4L);
-      cartSession.setCart(cart);
-
-      cart.addItem(item);
-      cart.setSession(cartSession);
-
       session.persist(cart);
       session.persist(item);
       session.persist(cartSession);
 
       // Delete the referenced cart object referenced by Item/CartSession child tables.
-      session.delete(cart);
+      assertThat(session.get(Item.class, 4L)).isNotNull();
+      assertThat(session.get(CartSession.class, 4L)).isNotNull();
+    });
 
+    doInHibernate(this::sessionFactory, session -> {
+      session.delete(cart);
     });
 
     doInHibernate(this::sessionFactory, session -> {
@@ -152,7 +162,6 @@ public class ForeignKeyTest extends BaseCoreFunctionalTestCase {
       assertThat(session.get(Item.class, 4L)).isNull();
       assertThat(session.get(CartSession.class, 4L)).isNull();
     });
-
 
     verifyOnDeleteCascadeReferentialConstraints();
   }
