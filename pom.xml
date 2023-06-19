@@ -17,7 +17,7 @@
     <log4j.version>2.20.0</log4j.version>
 
     <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
-    <maven-failsafe-plugin.version>3.1.0</maven-failsafe-plugin.version>
+    <maven-failsafe-plugin.version>3.1.2</maven-failsafe-plugin.version>
   </properties>
 
   <name>Google Cloud Spanner Dialect for Hibernate ORM Parent</name>
