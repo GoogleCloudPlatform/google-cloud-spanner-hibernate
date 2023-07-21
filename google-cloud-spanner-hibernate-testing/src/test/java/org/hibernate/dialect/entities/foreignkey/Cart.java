@@ -34,7 +34,7 @@ public class Cart {
   @OneToMany(mappedBy="cart")
   public Set<Item> items;
 
-  @OneToOne(mappedBy="cart", cascade= CascadeType.REMOVE)
+  @OneToOne(mappedBy="cart", cascade=CascadeType.REMOVE)
   public CartSession session;
 
   public Cart() {
