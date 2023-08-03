@@ -20,11 +20,10 @@ package com.google.cloud.spanner.hibernate;
 
 import static org.junit.Assert.assertEquals;
 
-import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.connection.SpannerPool;
 import com.google.cloud.spanner.hibernate.entities.Singer;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -32,37 +31,13 @@ import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
-import io.grpc.Server;
-import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /** Tests Hibernate configuration using an in-memory mock Spanner server. */
-public class HibernateMockSpannerServerTest {
-  private static Server server;
-  private static MockSpannerServiceImpl mockSpanner;
-
-  /** Setup in-memory mock Spanner server. */
-  @BeforeClass
-  public static void setup() throws IOException {
-    mockSpanner = new MockSpannerServiceImpl();
-    InetSocketAddress address = new InetSocketAddress("localhost", 0);
-    server = NettyServerBuilder.forAddress(address).addService(mockSpanner).build().start();
-  }
-  
-  /** Stop and cleanup mock Spanner server. */
-  @AfterClass
-  public static void teardown() throws InterruptedException {
-    SpannerPool.closeSpannerPool();
-    server.shutdown();
-    server.awaitTermination();
-  }
+public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTest {
+  private static final ImmutableList<Class<?>> ENTITY_CLASSES = ImmutableList.of(Singer.class);
 
   @Test
   public void testHibernateGetSinger() {
@@ -91,7 +66,8 @@ public class HibernateMockSpannerServerTest {
                         .build())
                 .build()));
 
-    try (SessionFactory sessionFactory = createTestHibernateConfig().buildSessionFactory();
+    try (SessionFactory sessionFactory =
+            createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
         Session session = sessionFactory.openSession()) {
       Singer singer = session.get(Singer.class, 1L);
       assertEquals(1L, singer.getId());
@@ -130,7 +106,8 @@ public class HibernateMockSpannerServerTest {
                 .build(),
             1L));
 
-    try (SessionFactory sessionFactory = createTestHibernateConfig().buildSessionFactory();
+    try (SessionFactory sessionFactory =
+            createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
         Session session = sessionFactory.openSession()) {
       long id = (long) session.save(new Singer());
       assertEquals(Long.reverse(50000L), id);
@@ -179,30 +156,12 @@ public class HibernateMockSpannerServerTest {
                 .build(),
             1L));
 
-    try (SessionFactory sessionFactory = createTestHibernateConfig().buildSessionFactory();
+    try (SessionFactory sessionFactory =
+            createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
         Session session = sessionFactory.openSession()) {
 
       long id = (long) session.save(new Singer());
       assertEquals(expectedId, id);
     }
-  }
-
-  String createTestJdbcUrl() {
-    return String.format(
-        "jdbc:cloudspanner://localhost:%d/projects/my-project/instances/my-instance"
-            + "/databases/my-database?usePlainText=true",
-        server.getPort());
-  }
-
-  Configuration createTestHibernateConfig() {
-    Configuration config = new Configuration();
-
-    config.setProperty(
-        "hibernate.connection.driver_class", "com.google.cloud.spanner.jdbc.JdbcDriver");
-    config.setProperty("hibernate.connection.url", createTestJdbcUrl());
-    config.setProperty("hibernate.dialect", "com.google.cloud.spanner.hibernate.SpannerDialect");
-    config.addAnnotatedClass(Singer.class);
-
-    return config;
   }
 }
