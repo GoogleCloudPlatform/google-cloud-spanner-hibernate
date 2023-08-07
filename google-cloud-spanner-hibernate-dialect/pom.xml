@@ -21,6 +21,7 @@
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
+      <!-- Provided scope allwos the user to provide the specific Hibernate 6.x they want. -->
       <scope>provided</scope>
     </dependency>
 
