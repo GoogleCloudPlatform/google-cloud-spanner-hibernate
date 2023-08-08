@@ -18,14 +18,14 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
-import java.io.Serializable;
-import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * A test entity class used for generating schema statements.
