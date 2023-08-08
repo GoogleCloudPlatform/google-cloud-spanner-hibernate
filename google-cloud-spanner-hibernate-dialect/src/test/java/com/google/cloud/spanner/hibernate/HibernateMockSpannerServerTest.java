@@ -69,7 +69,7 @@ public class HibernateMockSpannerServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(
-                    "select singer0_.id as id1_0_0_ from Singer singer0_ where singer0_.id=@p1")
+                    "select s1_0.id from Singer s1_0 where s1_0.id=@p1")
                 .bind("p1")
                 .to(1L)
                 .build(),
