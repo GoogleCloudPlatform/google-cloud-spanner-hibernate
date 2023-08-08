@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,13 +22,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.hibernate.Interleaved;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import java.io.Serializable;
-import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
 import org.junit.Test;
 
 /**
@@ -72,7 +72,7 @@ public class SchemaUtilsTests {
   }
 
   @Entity
-  class Parent {
+  static class Parent {
 
     @Id
     @GeneratedValue
@@ -80,13 +80,13 @@ public class SchemaUtilsTests {
   }
 
   @Entity
-  class ExtendedParent extends Parent {
+  static class ExtendedParent extends Parent {
     // Intentionally empty class
   }
 
   @Entity
   @Interleaved(parentEntity = Parent.class)
-  class ChildMissingEmbeddedId {
+  static class ChildMissingEmbeddedId {
 
     // Intentionally no embedded Id
     @Id
@@ -95,12 +95,12 @@ public class SchemaUtilsTests {
 
   @Entity
   @Interleaved(parentEntity = Parent.class)
-  class ChildIncompleteEmbeddedId {
+  static class ChildIncompleteEmbeddedId {
 
     @EmbeddedId
     CompositeId id;
 
-    class CompositeId {
+    static class CompositeId implements Serializable {
       // Intentionally no reference to the primary key in the Parent
       String childId;
     }
@@ -108,18 +108,18 @@ public class SchemaUtilsTests {
 
   @Entity
   @Interleaved(parentEntity = Parent.class)
-  class ValidChild {
+  static class ValidChild {
 
     @EmbeddedId
     CompositeId childId;
 
-    class CompositeId {
+    static class CompositeId implements Serializable {
       String parentId;
       String childId;
     }
   }
 
-  class ChildId {
+  static class ChildId implements Serializable {
     @Id
     String parentId;
 
@@ -130,7 +130,7 @@ public class SchemaUtilsTests {
   @Entity
   @IdClass(value = ChildId.class)
   @Interleaved(parentEntity = Parent.class)
-  class ValidChildWithIdClass {
+  static class ValidChildWithIdClass {
     @Id
     String parentId;
 
@@ -140,45 +140,45 @@ public class SchemaUtilsTests {
 
   @Entity
   @Interleaved(parentEntity = ExtendedParent.class)
-  class ValidChildParentHeirarchy {
+  static class ValidChildParentHeirarchy {
 
     @EmbeddedId
     CompositeId childId;
 
-    class CompositeId {
+    static class CompositeId implements Serializable {
       String parentId;
       String childId;
     }
   }
 
   // for testing nested embeddable ids
-  class GrandParent {
+  static class GrandParent {
     @Id
     @GeneratedValue
     public long grandParentId;
   }
 
   @Interleaved(parentEntity = GrandParent.class)
-  class NestedParent {
+  static class NestedParent {
 
     @EmbeddedId
     public ParentId parentId;
 
     @Embeddable
-    class ParentId implements Serializable {
+    static class ParentId implements Serializable {
       long grandParentId;
       long parentId;
     }
   }
 
   @Interleaved(parentEntity = NestedParent.class)
-  class NestedChild {
+  static class NestedChild {
 
     @EmbeddedId
     public ChildId childId;
 
     @Embeddable
-    class ChildId implements Serializable {
+    static class ChildId implements Serializable {
       NestedParent.ParentId parentId;
       long childId;
     }
