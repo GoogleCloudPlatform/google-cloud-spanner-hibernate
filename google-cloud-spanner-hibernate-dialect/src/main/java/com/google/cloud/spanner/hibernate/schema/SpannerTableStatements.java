@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.hibernate.boot.Metadata;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.mapping.Collection;
@@ -87,7 +86,7 @@ public class SpannerTableStatements {
       return Collections.emptyList();
     }
 
-    Iterable<Column> keyColumns;
+    java.util.Collection<Column> keyColumns;
 
     if (table.hasPrimaryKey()) {
       // a typical table that corresponds to an entity type
@@ -114,18 +113,18 @@ public class SpannerTableStatements {
   }
 
   private List<String> getCreateTableStrings(
-      Table table, Metadata metadata, Iterable<Column> keyColumns) {
+      Table table, Metadata metadata, java.util.Collection<Column> keyColumns) {
 
     // Get the comma separated string of the primary keys of the table.
     String primaryKeyColNames =
-        StreamSupport.stream(keyColumns.spliterator(), false)
+        keyColumns.stream()
             .map(Column::getQuotedName)
             .collect(Collectors.joining(","));
 
     // Get the comma separated string of all columns of the table.
-    Iterable<Column> columnIterable = table.getColumns();
+    //Iterable<Column> columnIterable = table.getColumns();
     String allColumnNames =
-        StreamSupport.stream(columnIterable.spliterator(), false)
+        table.getColumns().stream()
             .map(column -> buildColumnTypeString(column, metadata))
             .collect(Collectors.joining(","));
 
