@@ -19,15 +19,17 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <groupId>org.hibernate.orm</groupId>
       <artifactId>hibernate-core</artifactId>
-      <!-- Provided scope allwos the user to provide the specific Hibernate 6.x they want. -->
+      <!-- Provided scope allows the user to provide the specific Hibernate 6.x they want. -->
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner-jdbc</artifactId>
+      <!-- Provided scope allows the user to provide the specific JDBC version they want. -->
+      <scope>provided</scope>
     </dependency>
 
     <!-- Used for reflection utilities -->
@@ -41,7 +43,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.37.0</version>
+      <version>6.45.0</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
