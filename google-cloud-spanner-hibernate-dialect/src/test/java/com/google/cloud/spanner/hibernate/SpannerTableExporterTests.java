@@ -102,7 +102,7 @@ public class SpannerTableExporterTests {
   @Test
   public void generateDeleteStringsWithIndices() throws IOException, SQLException {
     this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
-        .setTables("Employee", "hibernate_sequence")
+        .setTables("Employee")
         .setIndices("name_index")
         .build());
 
@@ -119,7 +119,6 @@ public class SpannerTableExporterTests {
         "START BATCH DDL;",
         "drop index name_index;",
         "drop table Employee;",
-        "drop table hibernate_sequence;",
         "RUN BATCH;");
   }
 
@@ -141,12 +140,12 @@ public class SpannerTableExporterTests {
     assertThat(statements).containsExactly(
         // This omits creating the Employee table since it is declared to exist in metadata.
         "START BATCH DDL;",
-        "create table hibernate_sequence (next_val INT64) PRIMARY KEY ();",
+        "create table Employee_SEQ (next_val int64) PRIMARY KEY ();",
         "create index name_index on Employee (name);",
-        "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
-            + "foreign key (manager_id) references Employee (id);",
+        "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 foreign key "
+            + "(manager_id) references Employee (id);",
         "RUN BATCH;",
-        "INSERT INTO hibernate_sequence (next_val) VALUES(1);"
+        "insert into Employee_SEQ values ( 1 );"
     );
   }
 
@@ -162,13 +161,13 @@ public class SpannerTableExporterTests {
 
     // The types in the following string need to be updated when SpannerDialect
     // implementation maps types.
-    String expectedCreateString = "create table `test_table` (`ID1` INT64 not null,id2"
-        + " STRING(255) not null,`boolColumn` BOOL,longVal INT64 not null,stringVal"
-        + " STRING(255)) PRIMARY KEY (`ID1`,id2);";
+    String expectedCreateString = "create table `test_table` (`ID1` int64 not null,id2"
+        + " string(255) not null,`boolColumn` bool,longVal int64 not null,stringVal"
+        + " string(255)) PRIMARY KEY (`ID1`,id2);";
 
     String expectedCollectionCreateString = "create table `TestEntity_stringList` "
-        + "(`TestEntity_ID1` INT64 not null,`TestEntity_id2` STRING(255) not null,"
-        + "stringList STRING(255)) PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList);";
+        + "(`TestEntity_ID1` int64 not null,`TestEntity_id2` string(255) not null,"
+        + "stringList string(255)) PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList);";
 
     String foreignKeyString =
         "alter table `TestEntity_stringList` add constraint FK2is6fwy3079dmfhjot09x5och "
@@ -194,8 +193,9 @@ public class SpannerTableExporterTests {
     })
         .isInstanceOf(AnnotationException.class)
         .hasMessage(
-            "No identifier specified for entity: "
-                + "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$EmptyEntity");
+            "Entity 'com.google.cloud.spanner.hibernate.SpannerTableExporterTests$EmptyEntity' "
+                + "has no identifier (every '@Entity' class must declare or inherit at least "
+                + "one '@Id' or '@EmbeddedId' property)");
   }
 
   @Test
@@ -211,8 +211,9 @@ public class SpannerTableExporterTests {
     })
         .isInstanceOf(AnnotationException.class)
         .hasMessage(
-            "No identifier specified for entity: "
-                + "com.google.cloud.spanner.hibernate.SpannerTableExporterTests$NoPkEntity");
+            "Entity 'com.google.cloud.spanner.hibernate.SpannerTableExporterTests$NoPkEntity' "
+                + "has no identifier (every '@Entity' class must declare or inherit at least "
+                + "one '@Id' or '@EmbeddedId' property)");
   }
 
   @Test
