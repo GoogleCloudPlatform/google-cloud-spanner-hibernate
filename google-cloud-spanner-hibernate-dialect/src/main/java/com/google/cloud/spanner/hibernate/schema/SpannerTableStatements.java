@@ -23,12 +23,11 @@ import com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator.Repl
 import com.google.cloud.spanner.hibernate.Interleaved;
 import com.google.cloud.spanner.hibernate.SpannerDialect;
 import com.google.cloud.spanner.hibernate.types.SpannerArrayListType;
+import com.google.common.collect.Sets;
 import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,9 +36,7 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
-import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
-import org.hibernate.mapping.UniqueKey;
 
 /** Generates the SQL statements for creating and dropping tables in Spanner. */
 public class SpannerTableStatements {
@@ -81,25 +78,13 @@ public class SpannerTableStatements {
   }
 
   private Set<String> getTableIndices(Table table) {
-    Set<String> tableIndices = new HashSet<>();
-
-    Iterator<Index> indexIterator = table.getIndexIterator();
-    while (indexIterator.hasNext()) {
-      tableIndices.add(indexIterator.next().getName());
-    }
-
-    Iterator<UniqueKey> keyIterator = table.getUniqueKeyIterator();
-    while (keyIterator.hasNext()) {
-      tableIndices.add(keyIterator.next().getName());
-    }
-
-    return tableIndices;
+    return Sets.union(table.getIndexes().keySet(), table.getUniqueKeys().keySet());
   }
 
   /** Generates the statements needed to create a table. */
   public List<String> createTable(Table table, Metadata metadata) {
     if (spannerDatabaseInfo.getAllTables().contains(table.getName())) {
-      return Collections.EMPTY_LIST;
+      return Collections.emptyList();
     }
 
     Iterable<Column> keyColumns;
@@ -109,7 +94,7 @@ public class SpannerTableStatements {
       keyColumns = getSortedPkColumns(table, metadata);
     } else if (isElementCollection(table, metadata)) {
       // a table that is actually an element collection property
-      keyColumns = table::getColumnIterator;
+      keyColumns = table.getColumns();
     } else {
       // the case corresponding to a sequence-table that will only have 1 row.
       keyColumns = Collections.emptyList();
@@ -138,7 +123,7 @@ public class SpannerTableStatements {
             .collect(Collectors.joining(","));
 
     // Get the comma separated string of all columns of the table.
-    Iterable<Column> columnIterable = () -> (Iterator<Column>) table.getColumnIterator();
+    Iterable<Column> columnIterable = table.getColumns();
     String allColumnNames =
         StreamSupport.stream(columnIterable.spliterator(), false)
             .map(column -> buildColumnTypeString(column, metadata))
