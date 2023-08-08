@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.cloud.spanner.hibernate.entities.SubTestEntity;
 import com.google.cloud.spanner.hibernate.entities.TestEntity;
 import com.google.cloud.spanner.hibernate.entities.TestEntity.IdClass;
+import com.google.common.collect.ImmutableList;
 import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
 import com.mockrunner.mock.jdbc.MockConnection;
 import com.mockrunner.mock.jdbc.MockPreparedStatement;
@@ -93,8 +94,7 @@ public class GeneratedSelectStatementsTests {
           .setFirstResult(8).setMaxResults(15);
       q.setLockMode(LockModeType.PESSIMISTIC_READ);
       q.list();
-    }, "select subtestent0_.id as id1_1_, subtestent0_.id1 as id2_1_, "
-        + "subtestent0_.id2 as id3_1_ from SubTestEntity subtestent0_ limit ? offset ?");
+    }, "select s1_0.id,s1_0.id1,s1_0.id2 from SubTestEntity s1_0 limit ? offset ?");
   }
 
   @Test
@@ -118,8 +118,8 @@ public class GeneratedSelectStatementsTests {
               .getPreparedStatementResultSetHandler().getPreparedStatements().stream()
               .map(MockPreparedStatement::getSQL).findFirst().get();
       assertThat(preparedStatement).isEqualTo(
-          "insert into `test_table` (`boolColumn`, longVal, "
-              + "stringVal, `ID1`, id2) values (?, ?, ?, ?, ?)");
+          "insert into `test_table` (`boolColumn`,longVal,stringVal,`ID1`,id2) "
+              + "values (?,?,?,?,?)");
     }
   }
 
@@ -137,8 +137,7 @@ public class GeneratedSelectStatementsTests {
         .get(0);
 
     assertThat(statement.getSQL()).isEqualTo(
-        "select subtestent0_.id as id1_1_, subtestent0_.id1 as id2_1_, subtestent0_.id2 "
-            + "as id3_1_ from SubTestEntity subtestent0_ limit ? offset ?");
+        "select s1_0.id,s1_0.id1,s1_0.id2 from SubTestEntity s1_0 limit ? offset ?");
     assertThat(statement.getParameter(1)).isEqualTo(15);
     assertThat(statement.getParameter(2)).isEqualTo(8);
   }
@@ -147,17 +146,20 @@ public class GeneratedSelectStatementsTests {
   public void deleteDmlTest() {
     testUpdateStatementTranslation(
         "delete TestEntity where boolVal = true",
-        "delete from `test_table` where `boolColumn`=TRUE");
+        ImmutableList.of("delete from `TestEntity_stringList` "
+                + "where exists (select 1 from `test_table` t1_0 "
+                + "where (t1_0.`ID1`=`TestEntity_stringList`.`TestEntity_ID1` "
+                + "and t1_0.id2=`TestEntity_stringList`.`TestEntity_id2`) "
+                + "and (t1_0.`boolColumn`=true))",
+            "delete from `test_table` where `boolColumn`=true"));
   }
 
   @Test
   public void selectJoinTest() {
     testReadStatementTranslation(
         "select s from SubTestEntity s inner join s.testEntity",
-        "select subtestent0_.id as id1_1_, subtestent0_.id1 "
-            + "as id2_1_, subtestent0_.id2 as id3_1_ from SubTestEntity subtestent0_ inner "
-            + "join `test_table` testentity1_ on subtestent0_.id1=testentity1_.`ID1`"
-            + " and subtestent0_.id2=testentity1_.id2");
+        "select s1_0.id,s1_0.id1,s1_0.id2 from SubTestEntity s1_0 "
+            + "join `test_table` t1_0 on t1_0.`ID1`=s1_0.id1 and t1_0.id2=s1_0.id2");
   }
 
   private void openSessionAndDo(Consumer<Session> func) {
@@ -169,6 +171,11 @@ public class GeneratedSelectStatementsTests {
 
   private void testStatementTranslation(Consumer<Session> hibernateOperation,
       String executedStatement) {
+    testStatementTranslation(hibernateOperation, ImmutableList.of(executedStatement));
+  }
+
+  private void testStatementTranslation(Consumer<Session> hibernateOperation,
+      List<String> executedStatement) {
     openSessionAndDo(hibernateOperation);
 
     List<String> statements = this.jdbcMockObjectFactory.getMockConnection()
@@ -176,11 +183,16 @@ public class GeneratedSelectStatementsTests {
         .map(MockPreparedStatement::getSQL).collect(
             Collectors.toList());
 
-    assertThat(statements.get(0)).isEqualTo(executedStatement);
+    assertThat(statements).isEqualTo(executedStatement);
   }
 
   private void testUpdateStatementTranslation(String updateStatement,
       String expectedDatabaseStatement) {
+    testUpdateStatementTranslation(updateStatement, ImmutableList.of(expectedDatabaseStatement));
+  }
+
+  private void testUpdateStatementTranslation(String updateStatement,
+      List<String> expectedDatabaseStatement) {
     testStatementTranslation(x -> x.createQuery(updateStatement).executeUpdate(),
         expectedDatabaseStatement);
   }

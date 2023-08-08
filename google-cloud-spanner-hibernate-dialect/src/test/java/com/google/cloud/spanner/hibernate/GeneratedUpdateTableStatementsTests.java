@@ -111,14 +111,14 @@ public class GeneratedUpdateTableStatementsTests {
     assertThat(sqlStrings)
         .containsExactly(
             "START BATCH DDL",
-            "create table Employee (id INT64 not null,name STRING(255),manager_id INT64) "
+            "create table Employee (id int64 not null,name string(255),manager_id int64) "
                 + "PRIMARY KEY (id)",
-            "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+            "create table Employee_SEQ (next_val int64) PRIMARY KEY ()",
             "create index name_index on Employee (name)",
             "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
                 + "foreign key (manager_id) references Employee (id)",
             "RUN BATCH",
-            "INSERT INTO hibernate_sequence (next_val) VALUES(1)");
+            "insert into Employee_SEQ values ( 1 )");
   }
 
   @Test
@@ -132,12 +132,12 @@ public class GeneratedUpdateTableStatementsTests {
     assertThat(sqlStrings)
         .containsExactly(
             "START BATCH DDL",
-            "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+            "create table Employee_SEQ (next_val int64) PRIMARY KEY ()",
             "create index name_index on Employee (name)",
             "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
                 + "foreign key (manager_id) references Employee (id)",
             "RUN BATCH",
-            "INSERT INTO hibernate_sequence (next_val) VALUES(1)");
+            "insert into Employee_SEQ values ( 1 )");
   }
 
   @Test
