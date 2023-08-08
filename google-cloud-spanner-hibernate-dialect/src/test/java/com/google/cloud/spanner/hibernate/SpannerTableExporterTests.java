@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,6 +26,7 @@ import com.google.cloud.spanner.hibernate.entities.Employee;
 import com.google.cloud.spanner.hibernate.entities.TestEntity;
 import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
 import com.mockrunner.mock.jdbc.MockConnection;
+import jakarta.persistence.Entity;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,7 +34,6 @@ import java.sql.SQLException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
-import javax.persistence.Entity;
 import org.hibernate.AnnotationException;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;

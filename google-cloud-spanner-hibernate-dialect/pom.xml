@@ -41,6 +41,11 @@
     
     <!-- Test dependencies -->
     <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-ant</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
       <version>6.45.0</version>
