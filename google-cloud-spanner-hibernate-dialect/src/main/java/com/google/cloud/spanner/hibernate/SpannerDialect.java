@@ -80,7 +80,7 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   @Override
   public String getDropForeignKeyString() {
     // TODO: Remove when the override in the super class has been fixed.
-    return " drop constraint ";
+    return "drop constraint";
   }
 
   @Override
