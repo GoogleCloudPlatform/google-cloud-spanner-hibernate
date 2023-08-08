@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,9 +18,9 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import java.math.BigDecimal;
-import javax.persistence.Entity;
-import javax.persistence.Id;
 
 /**
  * Sample entity with a {@link BigDecimal} column to demonstrate NUMERIC support.
@@ -36,8 +36,7 @@ public class Account {
   private BigDecimal amount;
 
   // Default constructor for Hibernate
-  Account() {
-
+  protected Account() {
   }
 
   /**

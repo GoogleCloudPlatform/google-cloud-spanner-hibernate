@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,11 +18,12 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
@@ -49,7 +50,7 @@ public class Customer {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customerId")
   @GenericGenerator(
       name = "customerId",
-      strategy = "com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator",
+      type = BitReversedSequenceStyleGenerator.class,
       parameters = {
         @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
         @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "customerId"),
