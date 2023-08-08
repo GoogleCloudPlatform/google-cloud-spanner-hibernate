@@ -20,7 +20,9 @@ package com.google.cloud.spanner.hibernate;
 
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
 import org.hibernate.HibernateException;
+import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.mapping.Constraint;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.metamodel.mapping.EntityMappingType;
@@ -34,6 +36,7 @@ import org.hibernate.sql.ast.SqlAstTranslatorFactory;
 import org.hibernate.sql.ast.spi.StandardSqlAstTranslatorFactory;
 import org.hibernate.sql.ast.tree.Statement;
 import org.hibernate.sql.exec.spi.JdbcOperation;
+import org.hibernate.tool.schema.internal.StandardUniqueKeyExporter;
 import org.hibernate.tool.schema.spi.Exporter;
 
 /** Hibernate 6.x dialect for Cloud Spanner. */
@@ -56,6 +59,11 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   private final SpannerForeignKeyExporter spannerForeignKeyExporter =
       new SpannerForeignKeyExporter(this);
 
+  private final StandardUniqueKeyExporter spannerUniqueKeyExporter =
+      new StandardUniqueKeyExporter(this);
+
+  private final SpannerUniqueDelegate spannerUniqueDelegate = new SpannerUniqueDelegate(this);
+
   @Override
   public SqlAstTranslatorFactory getSqlAstTranslatorFactory() {
     return new StandardSqlAstTranslatorFactory() {
@@ -75,6 +83,11 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   @Override
   public Exporter<ForeignKey> getForeignKeyExporter() {
     return this.spannerForeignKeyExporter;
+  }
+
+  @Override
+  public Exporter<Constraint> getUniqueKeyExporter() {
+    return spannerUniqueKeyExporter;
   }
 
   @Override
@@ -114,6 +127,11 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   @Override
   public boolean supportsCascadeDelete() {
     return true;
+  }
+
+  @Override
+  public UniqueDelegate getUniqueDelegate() {
+    return spannerUniqueDelegate;
   }
 
   @Override
