@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -83,11 +83,6 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
     }
 
     @Override
-    public void prepare() {
-      delegate.prepare();
-    }
-
-    @Override
     public Connection getIsolatedConnection() {
       Connection delegateConnection = this.delegate.getIsolatedConnection();
       // Create a proxy for the connection that will override the call to
@@ -137,9 +132,9 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
                       PARSER.parse(com.google.cloud.spanner.Statement.of(sql));
                   if (statement.getType() == StatementType.CLIENT_SIDE
                       && (statement.getClientSideStatementType()
-                              == ClientSideStatementType.START_BATCH_DDL
-                          || statement.getClientSideStatementType()
-                              == ClientSideStatementType.RUN_BATCH)) {
+                      == ClientSideStatementType.START_BATCH_DDL
+                      || statement.getClientSideStatementType()
+                      == ClientSideStatementType.RUN_BATCH)) {
                     try {
                       // Try to execute the statement, and convert any SQLException to a
                       // SpannerException.
