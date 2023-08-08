@@ -117,7 +117,7 @@ public class SpannerDialectTests {
 
   @Test
   public void getAddColumnStringTest() {
-    assertThat(this.spannerDialect.getAddColumnString()).isEqualTo("ADD COLUMN");
+    assertThat(this.spannerDialect.getAddColumnString()).isEqualTo("add column");
   }
 
   @Test

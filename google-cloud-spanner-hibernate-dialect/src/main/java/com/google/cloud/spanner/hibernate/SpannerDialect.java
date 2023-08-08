@@ -112,6 +112,11 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   }
 
   @Override
+  public boolean supportsCascadeDelete() {
+    return true;
+  }
+
+  @Override
   public SqmMultiTableInsertStrategy getFallbackSqmInsertStrategy(
       EntityMappingType entityDescriptor, RuntimeModelCreationContext runtimeModelCreationContext) {
     return NoOpSqmMultiTableInsertStrategy.INSTANCE;
