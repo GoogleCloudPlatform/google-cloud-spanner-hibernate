@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,35 +21,28 @@ package com.google.cloud.spanner.hibernate.schema;
 import com.google.cloud.spanner.hibernate.Interleaved;
 import com.google.cloud.spanner.hibernate.reflection.SpannerEntityFieldKey;
 import com.google.cloud.spanner.hibernate.reflection.SpannerKeyFieldIterator;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Id;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Id;
 import org.hibernate.boot.Metadata;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
 
-/**
- * Schema utilities for reading table {@link Metadata} in Hibernate.
- */
+/** Schema utilities for reading table {@link Metadata} in Hibernate. */
 class SchemaUtils {
 
-  private SchemaUtils() {
-  }
+  private SchemaUtils() {}
 
-  /**
-   * Returns the {@link Interleaved} annotation on a table if it exists.
-   */
+  /** Returns the {@link Interleaved} annotation on a table if it exists. */
   public static Interleaved getInterleaveAnnotation(Table table, Metadata metadata) {
     Class<?> entityClass = getEntityClass(table, metadata);
     return null != entityClass ? entityClass.getAnnotation(Interleaved.class) : null;
   }
 
-  /**
-   * Returns the bound entity class on a table if it exists.
-   */
+  /** Returns the bound entity class on a table if it exists. */
   public static Class<?> getEntityClass(Table table, Metadata metadata) {
     for (PersistentClass pc : metadata.getEntityBindings()) {
       if (pc.getTable().equals(table) && pc.getMappedClass() != null) {
@@ -60,9 +53,7 @@ class SchemaUtils {
     return null;
   }
 
-  /**
-   * Gets the Spanner {@link Table} by entity class.
-   */
+  /** Gets the Spanner {@link Table} by entity class. */
   public static Table getTable(Class<?> entityClass, Metadata metadata) {
     PersistentClass pc = metadata.getEntityBinding(entityClass.getCanonicalName());
     if (pc != null) {
@@ -74,9 +65,8 @@ class SchemaUtils {
   }
 
   /**
-   * Verifies that the composite key for an interleaved class is a super set of
-   * the parent class primary key. Assumes all tables are being verified, so does
-   * not recurse.
+   * Verifies that the composite key for an interleaved class is a super set of the parent class
+   * primary key. Assumes all tables are being verified, so does not recurse.
    */
   public static boolean validateInterleaved(Class<?> potentialChild) {
     Interleaved interleaved = potentialChild.getAnnotation(Interleaved.class);
@@ -87,8 +77,7 @@ class SchemaUtils {
     }
 
     try {
-      Set<SpannerEntityFieldKey> childIds =
-          resolveIdFields(potentialChild, new HashSet<>());
+      Set<SpannerEntityFieldKey> childIds = resolveIdFields(potentialChild, new HashSet<>());
       Set<SpannerEntityFieldKey> parentIds =
           resolveIdFields(interleaved.parentEntity(), new HashSet<>());
 
@@ -132,9 +121,7 @@ class SchemaUtils {
     return ids;
   }
 
-  /**
-   * Returns the field marked with the {@link EmbeddedId} annotation on a class if it exists.
-   */
+  /** Returns the field marked with the {@link EmbeddedId} annotation on a class if it exists. */
   public static Field getEmbeddedId(Class<?> entity) throws SecurityException {
     for (Field field : SpannerKeyFieldIterator.iterable(entity)) {
       if (field.getAnnotation(EmbeddedId.class) != null) {
