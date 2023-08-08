@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,12 +20,11 @@ package com.google.cloud.spanner.hibernate.schema;
 
 import com.google.cloud.spanner.hibernate.SpannerDialect;
 import org.hibernate.boot.model.relational.AuxiliaryDatabaseObject;
+import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.tool.schema.Action;
 
-/**
- * Custom {@link AuxiliaryDatabaseObject} which generates the START BATCH DDL statement.
- */
+/** Custom {@link AuxiliaryDatabaseObject} which generates the START BATCH DDL statement. */
 public class StartBatchDdl implements AuxiliaryDatabaseObject {
   private static final long serialVersionUID = 1L;
 
@@ -51,16 +50,16 @@ public class StartBatchDdl implements AuxiliaryDatabaseObject {
   }
 
   @Override
-  public String[] sqlCreateStrings(Dialect dialect) {
+  public String[] sqlCreateStrings(SqlStringGenerationContext context) {
     return new String[] {"START BATCH DDL"};
   }
 
   @Override
-  public String[] sqlDropStrings(Dialect dialect) {
+  public String[] sqlDropStrings(SqlStringGenerationContext context) {
     if (schemaAction == Action.UPDATE) {
-      return new String[]{};
+      return new String[] {};
     } else {
-      return new String[]{"START BATCH DDL"};
+      return new String[] {"START BATCH DDL"};
     }
   }
 }
