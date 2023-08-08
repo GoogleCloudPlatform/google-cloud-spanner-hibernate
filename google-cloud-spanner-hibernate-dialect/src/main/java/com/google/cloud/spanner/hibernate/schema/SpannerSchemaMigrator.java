@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,13 +22,14 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import org.hibernate.boot.Metadata;
 import org.hibernate.tool.schema.Action;
+import org.hibernate.tool.schema.spi.ContributableMatcher;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
 import org.hibernate.tool.schema.spi.SchemaMigrator;
 import org.hibernate.tool.schema.spi.TargetDescriptor;
 
 /**
- * A wrapper around the {@link SchemaMigrator} which initializes the Spanner table exporter
- * before performing the schema migration.
+ * A wrapper around the {@link SchemaMigrator} which initializes the Spanner table exporter before
+ * performing the schema migration.
  *
  * @since 1.1
  */
@@ -44,7 +45,10 @@ public class SpannerSchemaMigrator implements SchemaMigrator {
 
   @Override
   public void doMigration(
-      Metadata metadata, ExecutionOptions options, TargetDescriptor targetDescriptor) {
+      Metadata metadata,
+      ExecutionOptions options,
+      ContributableMatcher contributableInclusionFilter,
+      TargetDescriptor targetDescriptor) {
 
     // Add auxiliary database objects to batch DDL statements
     metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl(Action.UPDATE));
@@ -54,7 +58,7 @@ public class SpannerSchemaMigrator implements SchemaMigrator {
       SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.UPDATE);
       tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
-      schemaMigrator.doMigration(metadata, options, targetDescriptor);
+      schemaMigrator.doMigration(metadata, options, contributableInclusionFilter, targetDescriptor);
     } catch (SQLException e) {
       throw new RuntimeException("Failed to update Spanner table schema.", e);
     }
