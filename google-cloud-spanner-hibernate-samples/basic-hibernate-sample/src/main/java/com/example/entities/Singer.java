@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,33 +18,26 @@
 
 package com.example.entities;
 
-import com.google.cloud.spanner.hibernate.types.SpannerArrayListType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import java.util.List;
 import java.util.UUID;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * Hibernate entity demonstrating a one-to-many relationship with {@link Album} entity.
  */
-@TypeDefs({
-    @TypeDef(
-      name = "spanner-array",
-      typeClass = SpannerArrayListType.class
-    )
-})
 @Entity
 public class Singer {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  @Type(type = "uuid-char")
+  @JdbcTypeCode(SqlTypes.CHAR)
   private UUID singerId;
 
   private String name;
@@ -52,7 +45,9 @@ public class Singer {
   @OneToMany(mappedBy = "singer")
   List<Album> albums;
 
-  @Type(type = "spanner-array")
+  // @Type(type = "spanner-array")
+  // TODO: Figure out how to map this
+  @Transient
   private List<String> nickNames;
 
   /**
