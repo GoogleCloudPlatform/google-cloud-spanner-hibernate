@@ -45,8 +45,9 @@ public class Singer {
   @OneToMany(mappedBy = "singer")
   List<Album> albums;
 
+  // TODO: User types (and therefore also array types) have changed majorly between Hibernate 5 and
+  //       Hibernate 6, and therefore needs to be re-implemented. Commenting out for now.
   // @Type(type = "spanner-array")
-  // TODO: Figure out how to map this
   @Transient
   private List<String> nickNames;
 

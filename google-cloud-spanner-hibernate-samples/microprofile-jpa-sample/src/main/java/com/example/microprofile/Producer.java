@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,8 @@ package com.example.microprofile;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
-import javax.persistence.EntityManager;
-import javax.persistence.Persistence;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Persistence;
 
 /**
  * Create an {@link EntityManager} bean that can be injected via CDI.

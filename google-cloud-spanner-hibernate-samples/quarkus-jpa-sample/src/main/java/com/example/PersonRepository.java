@@ -18,9 +18,9 @@
 
 package com.example;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import java.util.UUID;
-import javax.enterprise.context.ApplicationScoped;
 
 /**
  * A Panache CRUD repository for the {@link Person} entity.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,23 +18,24 @@
 
 package model;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
 public class Customer {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  @Type(type = "uuid-char")
+  @JdbcTypeCode(Types.CHAR)
   private UUID id;
 
   private String name;
@@ -45,7 +46,7 @@ public class Customer {
   private List<Coffee> coffees = new ArrayList<>();
 
   // Default constructor for Spring Data JPA.
-  Customer() {
+  protected Customer() {
 
   }
 
