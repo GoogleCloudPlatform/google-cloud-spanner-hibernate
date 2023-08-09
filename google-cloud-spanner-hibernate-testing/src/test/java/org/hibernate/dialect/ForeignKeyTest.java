@@ -23,6 +23,7 @@ import static org.hibernate.testing.transaction.TransactionUtil.doInHibernate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
+import jakarta.persistence.PersistenceException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -32,7 +33,6 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import javax.persistence.PersistenceException;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.entities.foreignkey.Cart;
 import org.hibernate.dialect.entities.foreignkey.Item;

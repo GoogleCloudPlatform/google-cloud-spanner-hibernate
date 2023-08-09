@@ -1,55 +1,79 @@
+/*
+ * Copyright 2023 Google LLC
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
 package org.hibernate.dialect.entities;
 
-import com.google.cloud.spanner.hibernate.types.SpannerArrayListType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Date;
+import java.sql.Types;
 import java.util.List;
 import java.util.UUID;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import org.hibernate.annotations.JdbcTypeCode;
 
 /**
  * A test entity with a lot of Array column fields.
  */
-@TypeDefs({
-    @TypeDef(
-        name = "spanner-array",
-        typeClass = SpannerArrayListType.class
-    )
-})
+// TODO: Re-implement array types
+//@TypeDefs({
+//    @TypeDef(
+//        name = "spanner-array",
+//        typeClass = SpannerArrayListType.class
+//    )
+//})
 @Entity
 public class ListEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  @Type(type = "uuid-char")
+  @JdbcTypeCode(Types.CHAR)
   private UUID id;
 
-  @Type(type = "spanner-array")
+  @Transient
+  //@Type(type = "spanner-array")
   private List<Boolean> booleanList;
 
-  @Type(type = "spanner-array")
+  @Transient
+  //@Type(type = "spanner-array")
   private List<byte[]> byteList;
 
-  @Type(type = "spanner-array")
+  @Transient
+  //@Type(type = "spanner-array")
   private List<Timestamp> timestampList;
 
-  @Type(type = "spanner-array")
+  @Transient
+  //@Type(type = "spanner-array")
   private List<Double> doubleList;
 
-  @Type(type = "spanner-array")
+  @Transient
+  //@Type(type = "spanner-array")
   private List<Integer> intList;
 
-  @Type(type = "spanner-array")
+  @Transient
+  //@Type(type = "spanner-array")
   private List<BigDecimal> bigDecimalList;
 
-  @Type(type = "spanner-array")
+  @Transient
+  //@Type(type = "spanner-array")
   private List<String> stringList;
 
   public List<Boolean> getBooleanList() {
