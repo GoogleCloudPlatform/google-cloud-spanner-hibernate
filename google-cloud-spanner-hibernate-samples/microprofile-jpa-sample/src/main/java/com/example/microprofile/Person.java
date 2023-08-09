@@ -18,12 +18,12 @@
 
 package com.example.microprofile;
 
+import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.sql.Types;
 import java.util.UUID;
-import jakarta.persistence.Entity;
 import org.hibernate.annotations.JdbcTypeCode;
 
 /**
