@@ -13,7 +13,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <hibernate.version>5.6.15.Final</hibernate.version>
-    <spanner-jdbc-driver.version>2.11.8</spanner-jdbc-driver.version>
+    <spanner-jdbc-driver.version>2.11.9</spanner-jdbc-driver.version>
     <log4j.version>2.20.0</log4j.version>
 
     <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
