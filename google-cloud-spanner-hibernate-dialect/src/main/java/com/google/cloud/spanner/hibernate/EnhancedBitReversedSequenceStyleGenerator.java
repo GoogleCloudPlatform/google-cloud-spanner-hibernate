@@ -125,7 +125,7 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
   }
 
   private static long getMaxSkipRange(List<Range<Long>> excludeRanges) {
-    return excludeRanges.stream().map(Range::upperEndpoint).min(Long::compare)
+    return excludeRanges.stream().map(Range::upperEndpoint).max(Long::compare)
         .orElse(Long.MAX_VALUE);
   }
 

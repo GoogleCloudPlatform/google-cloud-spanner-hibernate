@@ -26,7 +26,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.hibernate.entities.Account;
 import com.google.cloud.spanner.hibernate.entities.Airplane;
 import com.google.cloud.spanner.hibernate.entities.Airport;
-import com.google.cloud.spanner.hibernate.entities.BatchedSequenceEntity;
+import com.google.cloud.spanner.hibernate.entities.EnhancedSequenceEntity;
 import com.google.cloud.spanner.hibernate.entities.Child;
 import com.google.cloud.spanner.hibernate.entities.Customer;
 import com.google.cloud.spanner.hibernate.entities.Employee;
@@ -395,7 +395,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
         + ")\n"
         + "SELECT n FROM t";
-    String insertSql = "insert into BatchedSequenceEntity (name, id) values (@p1, @p2)";
+    String insertSql = "insert into EnhancedSequenceEntity (name, id) values (@p1, @p2)";
     mockSpanner.putStatementResult(StatementResult.query(Statement.of(selectSequenceNextVals),
         ResultSet.newBuilder()
             .setMetadata(ResultSetMetadata.newBuilder()
@@ -418,16 +418,16 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         .bind("p1").to("test2")
         .bind("p2").to(Long.reverse(2L))
         .build(), 1L));
-
+    
     try (SessionFactory sessionFactory =
         createTestHibernateConfig(
-            ImmutableList.of(BatchedSequenceEntity.class),
+            ImmutableList.of(EnhancedSequenceEntity.class),
             ImmutableMap.of(Environment.HBM2DDL_AUTO, "create-only",
                 Environment.STATEMENT_BATCH_SIZE, "50"))
             .buildSessionFactory(); Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
-      assertEquals(Long.reverse(1L), session.save(new BatchedSequenceEntity("test1")));
-      assertEquals(Long.reverse(2L), session.save(new BatchedSequenceEntity("test2")));
+      assertEquals(Long.reverse(1L), session.save(new EnhancedSequenceEntity("test1")));
+      assertEquals(Long.reverse(2L), session.save(new EnhancedSequenceEntity("test2")));
       transaction.commit();
     }
 
@@ -461,10 +461,11 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     int index = -1;
 
     assertEquals(
-        "create sequence batch_sequence options(sequence_kind=\"bit_reversed_positive\", start_with_counter=5000)",
+        "create sequence batch_sequence options(sequence_kind=\"bit_reversed_positive\", " 
+            + "start_with_counter=5000, skip_range_min=1, skip_range_max=20000)",
         request.getStatements(++index));
     assertEquals(
-        "create table BatchedSequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
+        "create table EnhancedSequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
   }
 
@@ -476,7 +477,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     mockSpanner.putStatementResult(
         StatementResult.query(GET_TABLES_STATEMENT, ResultSet.newBuilder()
             .setMetadata(GET_TABLES_METADATA)
-            .addRows(createTableRow("BatchedSequenceEntity"))
+            .addRows(createTableRow("EnhancedSequenceEntity"))
             .build()));
     mockSpanner.putStatementResult(
         StatementResult.query(GET_SEQUENCES_STATEMENT, ResultSet.newBuilder()
@@ -485,8 +486,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             .build()));
     mockSpanner.putStatementResult(StatementResult.query(GET_COLUMNS_STATEMENT, ResultSet.newBuilder()
             .setMetadata(GET_COLUMNS_METADATA)
-            .addRows(createColumnRow("BatchedSequenceEntity", "id", Types.BIGINT, "INT64", 1))
-            .addRows(createColumnRow("BatchedSequenceEntity", "name", Types.NVARCHAR, "STRING(MAX)", 2))
+            .addRows(createColumnRow("EnhancedSequenceEntity", "id", Types.BIGINT, "INT64", 1))
+            .addRows(createColumnRow("EnhancedSequenceEntity", "name", Types.NVARCHAR, "STRING(MAX)", 2))
         .build()));
 
     long sequenceBatchSize = 5L;
@@ -502,7 +503,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
         + ")\n"
         + "SELECT n FROM t";
-    String insertSql = "insert into BatchedSequenceEntity (name, id) values (@p1, @p2)";
+    String insertSql = "insert into EnhancedSequenceEntity (name, id) values (@p1, @p2)";
     mockSpanner.putStatementResult(StatementResult.query(Statement.of(selectSequenceNextVals),
         ResultSet.newBuilder()
             .setMetadata(ResultSetMetadata.newBuilder()
@@ -528,13 +529,13 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
 
     try (SessionFactory sessionFactory =
         createTestHibernateConfig(
-            ImmutableList.of(BatchedSequenceEntity.class),
+            ImmutableList.of(EnhancedSequenceEntity.class),
             ImmutableMap.of(Environment.HBM2DDL_AUTO, "update",
                 Environment.STATEMENT_BATCH_SIZE, "50"))
             .buildSessionFactory(); Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
-      assertEquals(Long.reverse(1L), session.save(new BatchedSequenceEntity("test1")));
-      assertEquals(Long.reverse(2L), session.save(new BatchedSequenceEntity("test2")));
+      assertEquals(Long.reverse(1L), session.save(new EnhancedSequenceEntity("test1")));
+      assertEquals(Long.reverse(2L), session.save(new EnhancedSequenceEntity("test2")));
       transaction.commit();
     }
 
