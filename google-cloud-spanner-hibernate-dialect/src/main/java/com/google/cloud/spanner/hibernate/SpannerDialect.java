@@ -20,6 +20,7 @@ package com.google.cloud.spanner.hibernate;
 
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
 import com.google.cloud.spanner.jdbc.JsonType;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.sql.Types;
@@ -91,7 +92,7 @@ public class SpannerDialect extends Dialect {
   private final SpannerForeignKeyExporter spannerForeignKeyExporter =
       new SpannerForeignKeyExporter(this);
 
-  private final StandardSequenceExporter sequenceExporter = new StandardSequenceExporter(this);
+  private final StandardSequenceExporter sequenceExporter = new SpannerSequenceExporter(this);
 
   private static final LockingStrategy LOCKING_STRATEGY = new DoNothingLockingStrategy();
 
@@ -308,27 +309,32 @@ public class SpannerDialect extends Dialect {
 
   @Override
   protected String getCreateSequenceString(String sequenceName) throws MappingException {
-    return getCreateSequenceString(sequenceName, 1);
+    return getCreateSequenceString(sequenceName, 1, "");
   }
 
   @Override
   protected String getCreateSequenceString(String sequenceName, int initialValue, int incrementSize)
       throws MappingException {
     if (incrementSize == 1) {
-      return getCreateSequenceString(sequenceName, initialValue);
+      return getCreateSequenceString(sequenceName, initialValue, "");
     }
     return super.getCreateSequenceString(sequenceName, initialValue, incrementSize);
   }
 
-  private String getCreateSequenceString(String sequenceName, int initialValue) {
+  String getCreateSequenceString(String sequenceName, int initialValue, String additionalOptions) {
     ImmutableMap.Builder<String, String> options = ImmutableMap.builder();
     options.put("sequence_kind", "\"bit_reversed_positive\"");
     if (initialValue != 1) {
       options.put("start_with_counter", String.valueOf(initialValue));
     }
+    if (!Strings.isNullOrEmpty(additionalOptions)) {
+      additionalOptions = ", " + additionalOptions + ")";
+    } else {
+      additionalOptions = ")";
+    }
     return "create sequence " + sequenceName + options.build().entrySet().stream()
         .map(option -> option.getKey() + "=" + option.getValue()).collect(
-            Collectors.joining(", ", " options(", ")"));
+            Collectors.joining(", ", " options(", additionalOptions));
   }
 
   @Override

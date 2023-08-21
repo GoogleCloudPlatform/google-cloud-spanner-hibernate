@@ -18,7 +18,6 @@
 
 package model;
 
-import com.google.cloud.spanner.hibernate.BatchedBitReversedSequenceStyleGenerator;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

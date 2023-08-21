@@ -36,10 +36,10 @@ public class BatchedSequenceEntity {
   )
   @GenericGenerator(
       name = "batch_sequence",
-      strategy = "com.google.cloud.spanner.hibernate.BatchedBitReversedSequenceStyleGenerator",
+      strategy = "com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator",
       parameters = {
           @Parameter(name = "sequence_name", value = "batch_sequence"),
-          @Parameter(name = "fetch_size", value = "5"),
+          @Parameter(name = "increment_size", value = "5"),
           @Parameter(name = "initial_value", value = "5000")
       }
   )
