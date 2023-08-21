@@ -40,7 +40,6 @@ import com.google.cloud.spanner.hibernate.entities.TestEntity;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ListValue;
-import com.google.protobuf.NullValue;
 import com.google.protobuf.Value;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.v1.CommitRequest;
@@ -52,6 +51,7 @@ import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
+import java.sql.Types;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -59,7 +59,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Environment;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -68,7 +67,9 @@ import org.junit.Test;
  */
 public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMockServerTest {
 
-  /** Set up empty mocked results for schema queries. */
+  /**
+   * Set up empty mocked results for schema queries.
+   */
   public static void setupEmptySchemaQueryResults() {
     mockSpanner.putStatementResult(
         StatementResult.query(
@@ -85,14 +86,16 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
                         .setRowType(StructType.newBuilder().build())
                         .build())
                 .build()));
-    mockSpanner.putStatementResult(StatementResult.query(GET_COLUMNS_STATEMENT, ResultSet.newBuilder()
+    mockSpanner.putStatementResult(
+        StatementResult.query(GET_COLUMNS_STATEMENT, ResultSet.newBuilder()
             .setMetadata(ResultSetMetadata.newBuilder()
                 .setRowType(StructType.newBuilder().build())
                 .build())
-        .build()));
-    mockSpanner.putStatementResult(StatementResult.query(GET_SEQUENCES_STATEMENT, ResultSet.newBuilder()
+            .build()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(GET_SEQUENCES_STATEMENT, ResultSet.newBuilder()
             .setMetadata(GET_SEQUENCES_METADATA)
-        .build()));
+            .build()));
   }
 
   @Test
@@ -103,8 +106,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     //noinspection EmptyTryBlock
     try (SessionFactory ignore =
         createTestHibernateConfig(
-                ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
+            ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
+            ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
             .buildSessionFactory()) {
       // do nothing, just generate the schema.
     }
@@ -145,42 +148,49 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
 
   @Test
   public void testGenerateEmployeeSchema() {
-    setupEmptySchemaQueryResults();
-    addDdlResponseToSpannerAdmin();
+    // Disable sequences for the duration of this test, as it was built with table-backed sequences
+    // in mind.
+    SpannerDialect.disableSpannerSequences();
+    try {
+      setupEmptySchemaQueryResults();
+      addDdlResponseToSpannerAdmin();
 
-    //noinspection EmptyTryBlock
-    try (SessionFactory ignore =
-        createTestHibernateConfig(
-                ImmutableList.of(Employee.class),
-                ImmutableMap.of(
-                    "hibernate.hbm2ddl.auto", "create-only",
-                    "spanner.disable_sequence_support", "true"))
-            .buildSessionFactory()) {
-      // do nothing, just generate the schema.
+      //noinspection EmptyTryBlock
+      try (SessionFactory ignore =
+          createTestHibernateConfig(
+              ImmutableList.of(Employee.class),
+              ImmutableMap.of(
+                  "hibernate.hbm2ddl.auto", "create-only",
+                  "spanner.disable_sequence_support", "true"))
+              .buildSessionFactory()) {
+        // do nothing, just generate the schema.
+      }
+
+      // Check the DDL statements that were generated.
+      List<UpdateDatabaseDdlRequest> requests =
+          mockDatabaseAdmin.getRequests().stream()
+              .filter(request -> request instanceof UpdateDatabaseDdlRequest)
+              .map(request -> (UpdateDatabaseDdlRequest) request)
+              .collect(Collectors.toList());
+      assertEquals(1, requests.size());
+      UpdateDatabaseDdlRequest request = requests.get(0);
+      assertEquals(4, request.getStatementsCount());
+
+      int index = -1;
+
+      assertEquals(
+          "create table Employee (id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
+          request.getStatements(++index));
+      assertEquals(
+          "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+          request.getStatements(++index));
+      assertEquals("create index name_index on Employee (name)", request.getStatements(++index));
+      assertEquals(
+          "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 foreign key (manager_id) references Employee (id)",
+          request.getStatements(++index));
+    } finally {
+      SpannerDialect.enableSpannerSequences();
     }
-
-    // Check the DDL statements that were generated.
-    List<UpdateDatabaseDdlRequest> requests =
-        mockDatabaseAdmin.getRequests().stream()
-            .filter(request -> request instanceof UpdateDatabaseDdlRequest)
-            .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
-    assertEquals(1, requests.size());
-    UpdateDatabaseDdlRequest request = requests.get(0);
-    assertEquals(4, request.getStatementsCount());
-
-    int index = -1;
-
-    assertEquals(
-        "create table Employee (id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
-        request.getStatements(++index));
-    assertEquals(
-        "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
-        request.getStatements(++index));
-    assertEquals("create index name_index on Employee (name)", request.getStatements(++index));
-    assertEquals(
-        "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 foreign key (manager_id) references Employee (id)",
-        request.getStatements(++index));
   }
 
   @Test
@@ -191,8 +201,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     //noinspection EmptyTryBlock
     try (SessionFactory ignore =
         createTestHibernateConfig(
-                ImmutableList.of(Airplane.class, Airport.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
+            ImmutableList.of(Airplane.class, Airport.class),
+            ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
             .buildSessionFactory()) {
       // do nothing, just generate the schema.
     }
@@ -235,44 +245,49 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
 
   @Test
   public void testGenerateParentChildSchema() {
-    setupEmptySchemaQueryResults();
-    addDdlResponseToSpannerAdmin();
+    SpannerDialect.disableSpannerSequences();
+    try {
+      setupEmptySchemaQueryResults();
+      addDdlResponseToSpannerAdmin();
 
-    //noinspection EmptyTryBlock
-    try (SessionFactory ignore =
-        createTestHibernateConfig(
-                ImmutableList.of(GrandParent.class, Parent.class, Child.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
-            .buildSessionFactory()) {
-      // do nothing, just generate the schema.
+      //noinspection EmptyTryBlock
+      try (SessionFactory ignore =
+          createTestHibernateConfig(
+              ImmutableList.of(GrandParent.class, Parent.class, Child.class),
+              ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
+              .buildSessionFactory()) {
+        // do nothing, just generate the schema.
+      }
+
+      // Check the DDL statements that were generated.
+      List<UpdateDatabaseDdlRequest> requests =
+          mockDatabaseAdmin.getRequests().stream()
+              .filter(request -> request instanceof UpdateDatabaseDdlRequest)
+              .map(request -> (UpdateDatabaseDdlRequest) request)
+              .collect(Collectors.toList());
+      assertEquals(1, requests.size());
+      UpdateDatabaseDdlRequest request = requests.get(0);
+      assertEquals(4, request.getStatementsCount());
+
+      int index = -1;
+
+      assertEquals(
+          "create table GrandParent (grandParentId INT64 not null,name STRING(255)) PRIMARY KEY (grandParentId)",
+          request.getStatements(++index));
+      assertEquals(
+          "create table Parent (grandParentId INT64 not null,parentId INT64 not null,name STRING(255)) "
+              + "PRIMARY KEY (grandParentId,parentId), INTERLEAVE IN PARENT GrandParent",
+          request.getStatements(++index));
+      assertEquals(
+          "create table Child (childId INT64 not null,grandParentId INT64 not null,parentId INT64 not null,name STRING(255)) "
+              + "PRIMARY KEY (grandParentId,parentId,childId), INTERLEAVE IN PARENT Parent",
+          request.getStatements(++index));
+      assertEquals(
+          "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+          request.getStatements(++index));
+    } finally {
+      SpannerDialect.enableSpannerSequences();
     }
-
-    // Check the DDL statements that were generated.
-    List<UpdateDatabaseDdlRequest> requests =
-        mockDatabaseAdmin.getRequests().stream()
-            .filter(request -> request instanceof UpdateDatabaseDdlRequest)
-            .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
-    assertEquals(1, requests.size());
-    UpdateDatabaseDdlRequest request = requests.get(0);
-    assertEquals(4, request.getStatementsCount());
-
-    int index = -1;
-
-    assertEquals(
-        "create table GrandParent (grandParentId INT64 not null,name STRING(255)) PRIMARY KEY (grandParentId)",
-        request.getStatements(++index));
-    assertEquals(
-        "create table Parent (grandParentId INT64 not null,parentId INT64 not null,name STRING(255)) "
-            + "PRIMARY KEY (grandParentId,parentId), INTERLEAVE IN PARENT GrandParent",
-        request.getStatements(++index));
-    assertEquals(
-        "create table Child (childId INT64 not null,grandParentId INT64 not null,parentId INT64 not null,name STRING(255)) "
-            + "PRIMARY KEY (grandParentId,parentId,childId), INTERLEAVE IN PARENT Parent",
-        request.getStatements(++index));
-    assertEquals(
-        "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
-        request.getStatements(++index));
   }
 
   @Test
@@ -283,8 +298,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     //noinspection EmptyTryBlock
     try (SessionFactory ignore =
         createTestHibernateConfig(
-                ImmutableList.of(TestEntity.class, SubTestEntity.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
+            ImmutableList.of(TestEntity.class, SubTestEntity.class),
+            ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
             .buildSessionFactory()) {
       // do nothing, just generate the schema.
     }
@@ -385,17 +400,19 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         ResultSet.newBuilder()
             .setMetadata(ResultSetMetadata.newBuilder()
                 .setRowType(StructType.newBuilder()
-                    .addFields(Field.newBuilder().setName("n").setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build())
+                    .addFields(Field.newBuilder().setName("n")
+                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build())
                     .build())
                 .build())
             .addAllRows(LongStream.rangeClosed(1L, sequenceBatchSize)
                 .mapToObj(id -> ListValue.newBuilder()
-                    .addValues(Value.newBuilder().setStringValue(String.valueOf(Long.reverse(id))).build())
+                    .addValues(
+                        Value.newBuilder().setStringValue(String.valueOf(Long.reverse(id))).build())
                     .build()).collect(Collectors.toList()))
-        .build()));
+            .build()));
     mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
-            .bind("p1").to("test1")
-            .bind("p2").to(Long.reverse(1L))
+        .bind("p1").to("test1")
+        .bind("p2").to(Long.reverse(1L))
         .build(), 1L));
     mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
         .bind("p1").to("test2")
@@ -421,7 +438,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     assertTrue(sequenceRequest.getTransaction().hasBegin());
     assertTrue(sequenceRequest.getTransaction().getBegin().hasReadWrite());
     assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
-    ExecuteBatchDmlRequest insertRequest = mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).get(0);
+    ExecuteBatchDmlRequest insertRequest = mockSpanner.getRequestsOfType(
+        ExecuteBatchDmlRequest.class).get(0);
     assertTrue(insertRequest.hasTransaction());
     assertTrue(insertRequest.getTransaction().hasBegin());
     assertTrue(insertRequest.getTransaction().getBegin().hasReadWrite());
@@ -443,7 +461,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     int index = -1;
 
     assertEquals(
-        "create sequence batch_sequence options(sequence_kind=\"bit_reversed_positive\")",
+        "create sequence batch_sequence options(sequence_kind=\"bit_reversed_positive\", start_with_counter=5000)",
         request.getStatements(++index));
     assertEquals(
         "create table BatchedSequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
@@ -455,13 +473,20 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     addDdlResponseToSpannerAdmin();
 
     // Setup schema results.
-    mockSpanner.putStatementResult(StatementResult.query(GET_TABLES_STATEMENT, ResultSet.newBuilder()
+    mockSpanner.putStatementResult(
+        StatementResult.query(GET_TABLES_STATEMENT, ResultSet.newBuilder()
             .setMetadata(GET_TABLES_METADATA)
             .addRows(createTableRow("BatchedSequenceEntity"))
-        .build()));
-    mockSpanner.putStatementResult(StatementResult.query(GET_SEQUENCES_STATEMENT, ResultSet.newBuilder()
+            .build()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(GET_SEQUENCES_STATEMENT, ResultSet.newBuilder()
             .setMetadata(GET_SEQUENCES_METADATA)
             .addRows(createSequenceRow("batch_sequence"))
+            .build()));
+    mockSpanner.putStatementResult(StatementResult.query(GET_COLUMNS_STATEMENT, ResultSet.newBuilder()
+            .setMetadata(GET_COLUMNS_METADATA)
+            .addRows(createColumnRow("BatchedSequenceEntity", "id", Types.BIGINT, "INT64", 1))
+            .addRows(createColumnRow("BatchedSequenceEntity", "name", Types.NVARCHAR, "STRING(MAX)", 2))
         .build()));
 
     long sequenceBatchSize = 5L;
@@ -482,12 +507,14 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         ResultSet.newBuilder()
             .setMetadata(ResultSetMetadata.newBuilder()
                 .setRowType(StructType.newBuilder()
-                    .addFields(Field.newBuilder().setName("n").setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build())
+                    .addFields(Field.newBuilder().setName("n")
+                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build())
                     .build())
                 .build())
             .addAllRows(LongStream.rangeClosed(1L, sequenceBatchSize)
                 .mapToObj(id -> ListValue.newBuilder()
-                    .addValues(Value.newBuilder().setStringValue(String.valueOf(Long.reverse(id))).build())
+                    .addValues(
+                        Value.newBuilder().setStringValue(String.valueOf(Long.reverse(id))).build())
                     .build()).collect(Collectors.toList()))
             .build()));
     mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
@@ -518,7 +545,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     assertTrue(sequenceRequest.getTransaction().hasBegin());
     assertTrue(sequenceRequest.getTransaction().getBegin().hasReadWrite());
     assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
-    ExecuteBatchDmlRequest insertRequest = mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).get(0);
+    ExecuteBatchDmlRequest insertRequest = mockSpanner.getRequestsOfType(
+        ExecuteBatchDmlRequest.class).get(0);
     assertTrue(insertRequest.hasTransaction());
     assertTrue(insertRequest.getTransaction().hasBegin());
     assertTrue(insertRequest.getTransaction().getBegin().hasReadWrite());
@@ -527,24 +555,13 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     assertEquals(insertSql, insertRequest.getStatements(1).getSql());
     assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
 
-    // Check the DDL statements that were generated.
+    // Check that there were no DDL statements generated as the data model is up-to-date.
     List<UpdateDatabaseDdlRequest> requests =
         mockDatabaseAdmin.getRequests().stream()
             .filter(request -> request instanceof UpdateDatabaseDdlRequest)
             .map(request -> (UpdateDatabaseDdlRequest) request)
             .collect(Collectors.toList());
-    assertEquals(1, requests.size());
-    UpdateDatabaseDdlRequest request = requests.get(0);
-    assertEquals(2, request.getStatementsCount());
-
-    int index = -1;
-
-    assertEquals(
-        "create sequence batch_sequence options(sequence_kind=\"bit_reversed_positive\")",
-        request.getStatements(++index));
-    assertEquals(
-        "create table BatchedSequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
-        request.getStatements(++index));
+    assertEquals(0, requests.size());
   }
 
 }

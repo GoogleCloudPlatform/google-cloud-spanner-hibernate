@@ -25,6 +25,7 @@ import javax.persistence.Id;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
+/** Test entity that uses a simple bit-reversed sequence. This entity does not support batching. */
 @Entity
 public class SequenceEntity {
   @Id

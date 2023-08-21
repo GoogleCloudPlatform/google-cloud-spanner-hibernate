@@ -43,7 +43,6 @@ import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.boot.model.relational.QualifiedName;
 import org.hibernate.boot.model.relational.QualifiedNameParser;
-import org.hibernate.boot.model.relational.QualifiedNameParser.NameParts;
 import org.hibernate.boot.model.relational.QualifiedSequenceName;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.boot.model.relational.SqlStringGenerationContext;
@@ -65,13 +64,18 @@ import org.hibernate.type.Type;
 public class BatchedBitReversedSequenceStyleGenerator implements
     BulkInsertionCapableIdentifierGenerator, PersistentIdentifierGenerator {
 
-  private static final Iterator<Long> EMPTY_ITERATOR = ImmutableList.<Long>of().iterator();
-
-  /** The number of values to fetch at once. The default is {@link #DEFAULT_FETCH_SIZE}. */
+  /**
+   * The number of values to fetch at once. The default is {@link #DEFAULT_FETCH_SIZE}.
+   */
   public static final String FETCH_SIZE_PARAM = "fetch_size";
-
   public static final int DEFAULT_FETCH_SIZE = 100;
-
+  /**
+   * The start value of the sequence. The first returned value of the sequence will be the
+   * bit-reversed value of this initial value.
+   */
+  public static final String INITIAL_VALUE_PARAM = "initial_value";
+  public static final int DEFAULT_INITIAL_VALUE = 1;
+  private static final Iterator<Long> EMPTY_ITERATOR = ImmutableList.<Long>of().iterator();
   private final Lock lock = new ReentrantLock();
 
   private QualifiedSequenceName sequenceName;
@@ -80,44 +84,39 @@ public class BatchedBitReversedSequenceStyleGenerator implements
   private Iterator<Long> identifiers = EMPTY_ITERATOR;
   private DatabaseStructure databaseStructure;
 
-  @Override
-  public void configure(Type type, Properties params, ServiceRegistry serviceRegistry)
-      throws MappingException {
-    JdbcEnvironment jdbcEnvironment = serviceRegistry.getService(JdbcEnvironment.class);
-    this.sequenceName = determineSequenceName(jdbcEnvironment, params);
-    this.fetchSize = determineFetchSize(params);
-    this.select = buildSelect(jdbcEnvironment.getDialect());
-    this.databaseStructure = buildDatabaseStructure(type, sequenceName, jdbcEnvironment);
-  }
-
-  private String buildSelect(Dialect dialect) {
+  private static String buildSelect(Dialect dialect, QualifiedSequenceName sequenceName,
+      int fetchSize) {
     return "WITH t AS (\n" + IntStream.range(0, fetchSize)
-        .mapToObj(ignore -> "\t" + dialect.getSequenceNextValString(sequenceName.render()) + " AS n")
+        .mapToObj(
+            ignore -> "\t" + dialect.getSequenceNextValString(sequenceName.render()) + " AS n")
         .collect(Collectors.joining("\n\tUNION ALL\n")) + "\n)\n" + "SELECT n FROM t";
   }
 
-  private SequenceStructure buildDatabaseStructure(Type type, QualifiedName sequenceName,
-      JdbcEnvironment jdbcEnvironment) {
-    return new SequenceStructure(jdbcEnvironment, sequenceName, 1, 1, type.getReturnedClass());
+  private static SequenceStructure buildDatabaseStructure(Type type,
+      QualifiedSequenceName sequenceName, int initialValue, JdbcEnvironment jdbcEnvironment) {
+    return new SequenceStructure(jdbcEnvironment, sequenceName, initialValue, 1,
+        type.getReturnedClass());
   }
 
-  private static QualifiedSequenceName determineSequenceName(JdbcEnvironment jdbcEnvironment, Properties params) {
+  private static QualifiedSequenceName determineSequenceName(JdbcEnvironment jdbcEnvironment,
+      Properties params) {
     String sequenceName = params.getProperty(SEQUENCE_PARAM);
     if (sequenceName == null) {
       throw new MappingException("no sequence name specified");
     }
-    if ( sequenceName.contains( "." ) ) {
+    if (sequenceName.contains(".")) {
       QualifiedName qualifiedName = QualifiedNameParser.INSTANCE.parse(sequenceName);
-      return new QualifiedSequenceName(qualifiedName.getCatalogName(), qualifiedName.getSchemaName(), qualifiedName.getObjectName());
-    }
-    else {
+      return new QualifiedSequenceName(qualifiedName.getCatalogName(),
+          qualifiedName.getSchemaName(), qualifiedName.getObjectName());
+    } else {
       final Identifier catalog = jdbcEnvironment.getIdentifierHelper().toIdentifier(
           ConfigurationHelper.getString(CATALOG, params)
       );
-      final Identifier schema =  jdbcEnvironment.getIdentifierHelper().toIdentifier(
+      final Identifier schema = jdbcEnvironment.getIdentifierHelper().toIdentifier(
           ConfigurationHelper.getString(SCHEMA, params)
       );
-      return new QualifiedSequenceName(catalog, schema, jdbcEnvironment.getIdentifierHelper().toIdentifier(sequenceName));
+      return new QualifiedSequenceName(catalog, schema,
+          jdbcEnvironment.getIdentifierHelper().toIdentifier(sequenceName));
     }
   }
 
@@ -127,6 +126,27 @@ public class BatchedBitReversedSequenceStyleGenerator implements
       throw new MappingException("fetch size must be positive");
     }
     return fetchSize;
+  }
+
+  private static int determineInitialValue(Properties params) {
+    int initialValue = ConfigurationHelper.getInt(INITIAL_VALUE_PARAM, params,
+        DEFAULT_INITIAL_VALUE);
+    if (initialValue <= 0) {
+      throw new MappingException("initial value must be positive");
+    }
+    return initialValue;
+  }
+
+  @Override
+  public void configure(Type type, Properties params, ServiceRegistry serviceRegistry)
+      throws MappingException {
+    JdbcEnvironment jdbcEnvironment = serviceRegistry.getService(JdbcEnvironment.class);
+    this.sequenceName = determineSequenceName(jdbcEnvironment, params);
+    this.fetchSize = determineFetchSize(params);
+    int initialValue = determineInitialValue(params);
+    this.select = buildSelect(jdbcEnvironment.getDialect(), sequenceName, fetchSize);
+    this.databaseStructure = buildDatabaseStructure(type, sequenceName, initialValue,
+        jdbcEnvironment);
   }
 
   @Override
@@ -160,7 +180,8 @@ public class BatchedBitReversedSequenceStyleGenerator implements
 
   @Override
   public void registerExportables(Database database) {
-    Namespace namespace = database.locateNamespace(sequenceName.getCatalogName(), sequenceName.getSchemaName());
+    Namespace namespace = database.locateNamespace(sequenceName.getCatalogName(),
+        sequenceName.getSchemaName());
     Sequence sequence = namespace.locateSequence(sequenceName.getSequenceName());
     if (sequence == null) {
       this.databaseStructure.registerExportables(database);
@@ -199,6 +220,7 @@ public class BatchedBitReversedSequenceStyleGenerator implements
         try {
           session.getJdbcConnectionAccess().releaseConnection(connection);
         } catch (SQLException ignore) {
+          // ignore any errors during release of the connection.
         }
       }
     }

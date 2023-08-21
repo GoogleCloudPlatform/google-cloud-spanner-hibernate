@@ -170,7 +170,8 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
                 CloudSpannerJdbcConnection.class)) {
           // Clear the current DDL batch (if any).
           // TODO: Call RESET instead once available in the JDBC driver.
-          delegate.getIsolatedConnection().unwrap(CloudSpannerJdbcConnection.class).createStatement().execute("abort batch");
+          delegate.getIsolatedConnection().unwrap(CloudSpannerJdbcConnection.class)
+              .createStatement().execute("abort batch");
         }
       } catch (SQLException ignore) {
         // ignore any errors.
