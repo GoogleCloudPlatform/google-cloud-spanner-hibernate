@@ -18,7 +18,6 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
-import com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
