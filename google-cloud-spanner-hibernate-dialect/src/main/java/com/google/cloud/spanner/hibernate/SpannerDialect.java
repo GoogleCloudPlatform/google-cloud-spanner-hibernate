@@ -25,6 +25,7 @@ import java.sql.Types;
 import java.util.Map;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
+import org.hibernate.MappingException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.relational.Exportable;
@@ -37,9 +38,12 @@ import org.hibernate.dialect.lock.LockingStrategyException;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.env.spi.SchemaNameResolver;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.id.IdentityGenerator;
+import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.tool.schema.internal.StandardSequenceExporter;
 import org.hibernate.tool.schema.spi.Exporter;
 import org.hibernate.type.StandardBasicTypes;
 
@@ -62,6 +66,8 @@ public class SpannerDialect extends Dialect {
 
   private final SpannerForeignKeyExporter spannerForeignKeyExporter =
       new SpannerForeignKeyExporter(this);
+
+  private final StandardSequenceExporter sequenceExporter = new StandardSequenceExporter(this);
 
   private static final LockingStrategy LOCKING_STRATEGY = new DoNothingLockingStrategy();
 
@@ -273,6 +279,64 @@ public class SpannerDialect extends Dialect {
     return this.spannerForeignKeyExporter;
   }
 
+  @Override
+  public Exporter<Sequence> getSequenceExporter() {
+    return this.sequenceExporter;
+  }
+
+  @Override
+  protected String getCreateSequenceString(String sequenceName) throws MappingException {
+    return "create sequence " + sequenceName + " options(sequence_kind=\"bit_reversed_positive\")";
+  }
+
+  @Override
+  protected String getCreateSequenceString(String sequenceName, int initialValue, int incrementSize)
+      throws MappingException {
+    if (initialValue == 1 && incrementSize == 1) {
+      return getCreateSequenceString(sequenceName);
+    }
+    return super.getCreateSequenceString(sequenceName, initialValue, incrementSize);
+  }
+
+  @Override
+  public String getDropSequenceString(String sequenceName) {
+    return "drop sequence " + sequenceName;
+  }
+
+  @Override
+  public String getSequenceNextValString(String sequenceName) {
+    return "select " + getSelectSequenceNextValString( sequenceName );
+  }
+
+  @Override
+  public String getSelectSequenceNextValString(String sequenceName) {
+    return "get_next_sequence_value(sequence " + sequenceName + ")";
+  }
+
+  @Override
+  public boolean supportsSequences() {
+    String disableSequences = System.getProperty("hibernate.spanner.disable_sequences", "false");
+    try {
+      return !Boolean.parseBoolean(disableSequences);
+    } catch (Throwable ignore) {
+      return true;
+    }
+  }
+
+  @Override
+  public boolean supportsPooledSequences() {
+    // 'Pooled' sequences support an increment size > 1.
+    return false;
+  }
+
+  @Override
+  public String getQuerySequencesString() {
+    return "select catalog as sequence_catalog, schema as sequence_schema, name as sequence_name, "
+        + "1 as start_value, 1 as minimum_value, " + Long.MAX_VALUE + " as maximum_value, "
+        + "1 as increment "
+        + "from information_schema.sequences";
+  }
+
   /* SELECT-related functions */
 
   @Override
@@ -450,11 +514,6 @@ public class SpannerDialect extends Dialect {
   }
 
   /* Unsupported Hibernate Exporters */
-
-  @Override
-  public Exporter<Sequence> getSequenceExporter() {
-    return NOOP_EXPORTER;
-  }
 
   @Override
   public String applyLocksToSql(String sql, LockOptions aliasedLockOptions,

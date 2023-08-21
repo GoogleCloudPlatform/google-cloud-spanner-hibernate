@@ -25,6 +25,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.cloud.spanner.hibernate.SpannerTableExporter;
+import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -163,6 +164,17 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
 
     @Override
     public void release() {
+      try {
+        if (delegate.getIsolatedConnection() != null && delegate.getIsolatedConnection()
+            .isWrapperFor(
+                CloudSpannerJdbcConnection.class)) {
+          // Clear the current DDL batch (if any).
+          // TODO: Call RESET instead once available in the JDBC driver.
+          delegate.getIsolatedConnection().unwrap(CloudSpannerJdbcConnection.class).createStatement().execute("abort batch");
+        }
+      } catch (SQLException ignore) {
+        // ignore any errors.
+      }
       delegate.release();
     }
   }

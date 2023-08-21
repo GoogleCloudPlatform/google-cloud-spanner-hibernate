@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,49 +16,48 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package model;
+package com.google.cloud.spanner.hibernate.entities;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import javax.persistence.CascadeType;
+import com.google.cloud.spanner.hibernate.BatchedBitReversedSequenceStyleGenerator;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 @Entity
-public class Customer {
-
+public class BatchedSequenceEntity {
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  @Type(type = "uuid-char")
-  private UUID id;
+  @GeneratedValue(
+      strategy = GenerationType.SEQUENCE,
+      generator = "batch_sequence"
+  )
+  @GenericGenerator(
+      name = "batch_sequence",
+      strategy = "com.google.cloud.spanner.hibernate.BatchedBitReversedSequenceStyleGenerator",
+      parameters = {
+          @Parameter(name = "sequence_name", value = "batch_sequence"),
+          @Parameter(name = "fetch_size", value = "5")
+      }
+  )
+  private long id;
 
+  @Column
   private String name;
 
-  private String email;
+  public BatchedSequenceEntity() {}
 
-  @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer")
-  private List<Coffee> coffees = new ArrayList<>();
-
-  // Default constructor for Spring Data JPA.
-  protected Customer() {
-
-  }
-
-  public Customer(String name, String email) {
+  public BatchedSequenceEntity(String name) {
     this.name = name;
-    this.email = email;
   }
 
-  public UUID getId() {
+  public long getId() {
     return id;
   }
 
-  public void setId(UUID id) {
+  public void setId(long id) {
     this.id = id;
   }
 
@@ -70,19 +69,4 @@ public class Customer {
     this.name = name;
   }
 
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public List<Coffee> getCoffees() {
-    return coffees;
-  }
-
-  public void setCoffees(List<Coffee> coffees) {
-    this.coffees = coffees;
-  }
 }

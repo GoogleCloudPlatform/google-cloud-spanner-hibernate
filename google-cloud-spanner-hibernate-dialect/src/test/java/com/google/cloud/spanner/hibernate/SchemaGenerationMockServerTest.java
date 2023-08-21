@@ -19,30 +19,46 @@
 package com.google.cloud.spanner.hibernate;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.hibernate.entities.Account;
 import com.google.cloud.spanner.hibernate.entities.Airplane;
 import com.google.cloud.spanner.hibernate.entities.Airport;
+import com.google.cloud.spanner.hibernate.entities.BatchedSequenceEntity;
 import com.google.cloud.spanner.hibernate.entities.Child;
 import com.google.cloud.spanner.hibernate.entities.Customer;
 import com.google.cloud.spanner.hibernate.entities.Employee;
 import com.google.cloud.spanner.hibernate.entities.GrandParent;
 import com.google.cloud.spanner.hibernate.entities.Invoice;
 import com.google.cloud.spanner.hibernate.entities.Parent;
+import com.google.cloud.spanner.hibernate.entities.SequenceEntity;
 import com.google.cloud.spanner.hibernate.entities.Singer;
 import com.google.cloud.spanner.hibernate.entities.SubTestEntity;
 import com.google.cloud.spanner.hibernate.entities.TestEntity;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
+import com.google.protobuf.Value;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
+import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
+import com.google.spanner.v1.StructType.Field;
+import com.google.spanner.v1.Type;
+import com.google.spanner.v1.TypeCode;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Environment;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -50,89 +66,38 @@ import org.junit.Test;
  * Verifies that the correct database schema is being generated, and that the schema generation uses
  * a DDL batch.
  */
-public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTest {
+public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMockServerTest {
 
   /** Set up empty mocked results for schema queries. */
-  @BeforeClass
-  public static void setupSchemaQueryResults() {
+  public static void setupEmptySchemaQueryResults() {
     mockSpanner.putStatementResult(
         StatementResult.query(
-            Statement.newBuilder(
-                    "SELECT TABLE_CATALOG AS TABLE_CAT, TABLE_SCHEMA AS TABLE_SCHEM, TABLE_NAME,\n"
-                        + "       CASE WHEN TABLE_TYPE = 'BASE TABLE' THEN 'TABLE' ELSE TABLE_TYPE END AS TABLE_TYPE,\n"
-                        + "       NULL AS REMARKS, NULL AS TYPE_CAT, NULL AS TYPE_SCHEM, NULL AS TYPE_NAME,\n"
-                        + "       NULL AS SELF_REFERENCING_COL_NAME, NULL AS REF_GENERATION\n"
-                        + "FROM INFORMATION_SCHEMA.TABLES AS T\n"
-                        + "WHERE UPPER(TABLE_CATALOG) LIKE @p1\n"
-                        + "  AND UPPER(TABLE_SCHEMA) LIKE @p2\n"
-                        + "  AND UPPER(TABLE_NAME) LIKE @p3\n"
-                        + "  AND (\n"
-                        + "            (CASE WHEN TABLE_TYPE = 'BASE TABLE' THEN 'TABLE' ELSE TABLE_TYPE END) LIKE @p4\n"
-                        + "        OR\n"
-                        + "            (CASE WHEN TABLE_TYPE = 'BASE TABLE' THEN 'TABLE' ELSE TABLE_TYPE END) LIKE @p5\n"
-                        + "    )\n"
-                        + "ORDER BY TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME")
-                .bind("p1")
-                .to("%")
-                .bind("p2")
-                .to("%")
-                .bind("p3")
-                .to("%")
-                .bind("p4")
-                .to("TABLE")
-                .bind("p5")
-                .to("VIEW")
-                .build(),
+            GET_TABLES_STATEMENT,
+            ResultSet.newBuilder()
+                .setMetadata(GET_TABLES_METADATA)
+                .build()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            GET_INDEXES_STATEMENT,
             ResultSet.newBuilder()
                 .setMetadata(
                     ResultSetMetadata.newBuilder()
                         .setRowType(StructType.newBuilder().build())
                         .build())
                 .build()));
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            Statement.newBuilder(
-                    "SELECT IDX.TABLE_CATALOG AS TABLE_CAT, IDX.TABLE_SCHEMA AS TABLE_SCHEM, IDX.TABLE_NAME,\n"
-                        + "  CASE WHEN IS_UNIQUE THEN FALSE ELSE TRUE END AS NON_UNIQUE,\n"
-                        + "  IDX.TABLE_CATALOG AS INDEX_QUALIFIER, IDX.INDEX_NAME,\n"
-                        + "  CASE WHEN IDX.INDEX_NAME = 'PRIMARY_KEY' THEN 1 ELSE 2 END AS TYPE,\n"
-                        + "  ORDINAL_POSITION, COLUMN_NAME, SUBSTR(COLUMN_ORDERING, 1, 1) AS ASC_OR_DESC,\n"
-                        + "  -1 AS CARDINALITY, \n"
-                        + "  -1 AS PAGES, \n"
-                        + "  NULL AS FILTER_CONDITION\n"
-                        + "FROM INFORMATION_SCHEMA.INDEXES IDX\n"
-                        + "INNER JOIN INFORMATION_SCHEMA.INDEX_COLUMNS COL\n"
-                        + "  ON  IDX.TABLE_CATALOG=COL.TABLE_CATALOG\n"
-                        + "  AND IDX.TABLE_SCHEMA=COL.TABLE_SCHEMA\n"
-                        + "  AND IDX.TABLE_NAME=COL.TABLE_NAME\n"
-                        + "  AND IDX.INDEX_NAME=COL.INDEX_NAME\n"
-                        + "WHERE UPPER(IDX.TABLE_CATALOG) LIKE @p1\n"
-                        + "  AND UPPER(IDX.TABLE_SCHEMA) LIKE @p2\n"
-                        + "  AND UPPER(IDX.TABLE_NAME) LIKE @p3\n"
-                        + "  AND UPPER(IDX.INDEX_NAME) LIKE @p4\n"
-                        + "  AND (CASE WHEN IS_UNIQUE THEN 'YES' ELSE 'NO' END) LIKE @p5\n"
-                        + "ORDER BY IDX.TABLE_NAME, IS_UNIQUE DESC, IDX.INDEX_NAME, CASE WHEN ORDINAL_POSITION IS NULL THEN 0 ELSE ORDINAL_POSITION END")
-                .bind("p1")
-                .to("%")
-                .bind("p2")
-                .to("%")
-                .bind("p3")
-                .to("%")
-                .bind("p4")
-                .to("%")
-                .bind("p5")
-                .to("%")
-                .build(),
-            ResultSet.newBuilder()
-                .setMetadata(
-                    ResultSetMetadata.newBuilder()
-                        .setRowType(StructType.newBuilder().build())
-                        .build())
-                .build()));
+    mockSpanner.putStatementResult(StatementResult.query(GET_COLUMNS_STATEMENT, ResultSet.newBuilder()
+            .setMetadata(ResultSetMetadata.newBuilder()
+                .setRowType(StructType.newBuilder().build())
+                .build())
+        .build()));
+    mockSpanner.putStatementResult(StatementResult.query(GET_SEQUENCES_STATEMENT, ResultSet.newBuilder()
+            .setMetadata(GET_SEQUENCES_METADATA)
+        .build()));
   }
 
   @Test
   public void testGenerateSchema() {
+    setupEmptySchemaQueryResults();
     addDdlResponseToSpannerAdmin();
 
     //noinspection EmptyTryBlock
@@ -180,13 +145,16 @@ public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTes
 
   @Test
   public void testGenerateEmployeeSchema() {
+    setupEmptySchemaQueryResults();
     addDdlResponseToSpannerAdmin();
 
     //noinspection EmptyTryBlock
     try (SessionFactory ignore =
         createTestHibernateConfig(
                 ImmutableList.of(Employee.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
+                ImmutableMap.of(
+                    "hibernate.hbm2ddl.auto", "create-only",
+                    "spanner.disable_sequence_support", "true"))
             .buildSessionFactory()) {
       // do nothing, just generate the schema.
     }
@@ -217,6 +185,7 @@ public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTes
 
   @Test
   public void testGenerateAirportSchema() {
+    setupEmptySchemaQueryResults();
     addDdlResponseToSpannerAdmin();
 
     //noinspection EmptyTryBlock
@@ -266,6 +235,7 @@ public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTes
 
   @Test
   public void testGenerateParentChildSchema() {
+    setupEmptySchemaQueryResults();
     addDdlResponseToSpannerAdmin();
 
     //noinspection EmptyTryBlock
@@ -307,6 +277,7 @@ public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTes
 
   @Test
   public void testGenerateTestEntitySchema() {
+    setupEmptySchemaQueryResults();
     addDdlResponseToSpannerAdmin();
 
     //noinspection EmptyTryBlock
@@ -357,4 +328,223 @@ public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTes
             + "foreign key (id1, id2) references `test_table` (`ID1`, id2)",
         request.getStatements(++index));
   }
+
+  @Test
+  public void testGenerateSequence() {
+    setupEmptySchemaQueryResults();
+    addDdlResponseToSpannerAdmin();
+
+    //noinspection EmptyTryBlock
+    try (SessionFactory ignore =
+        createTestHibernateConfig(
+            ImmutableList.of(SequenceEntity.class),
+            ImmutableMap.of("hibernate.hbm2ddl.auto", "update"))
+            .buildSessionFactory()) {
+      // do nothing, just generate the schema.
+    }
+
+    // Check the DDL statements that were generated.
+    List<UpdateDatabaseDdlRequest> requests =
+        mockDatabaseAdmin.getRequests().stream()
+            .filter(request -> request instanceof UpdateDatabaseDdlRequest)
+            .map(request -> (UpdateDatabaseDdlRequest) request)
+            .collect(Collectors.toList());
+    assertEquals(1, requests.size());
+    UpdateDatabaseDdlRequest request = requests.get(0);
+    assertEquals(2, request.getStatementsCount());
+
+    int index = -1;
+
+    assertEquals(
+        "create table SequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
+        request.getStatements(++index));
+    assertEquals(
+        "create sequence test_sequence options(sequence_kind=\"bit_reversed_positive\")",
+        request.getStatements(++index));
+  }
+
+  @Test
+  public void testBatchedSequenceEntity_CreateOnly() {
+    setupEmptySchemaQueryResults();
+    addDdlResponseToSpannerAdmin();
+    long sequenceBatchSize = 5L;
+    String selectSequenceNextVals = "WITH t AS (\n"
+        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + ")\n"
+        + "SELECT n FROM t";
+    String insertSql = "insert into BatchedSequenceEntity (name, id) values (@p1, @p2)";
+    mockSpanner.putStatementResult(StatementResult.query(Statement.of(selectSequenceNextVals),
+        ResultSet.newBuilder()
+            .setMetadata(ResultSetMetadata.newBuilder()
+                .setRowType(StructType.newBuilder()
+                    .addFields(Field.newBuilder().setName("n").setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build())
+                    .build())
+                .build())
+            .addAllRows(LongStream.rangeClosed(1L, sequenceBatchSize)
+                .mapToObj(id -> ListValue.newBuilder()
+                    .addValues(Value.newBuilder().setStringValue(String.valueOf(Long.reverse(id))).build())
+                    .build()).collect(Collectors.toList()))
+        .build()));
+    mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
+            .bind("p1").to("test1")
+            .bind("p2").to(Long.reverse(1L))
+        .build(), 1L));
+    mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
+        .bind("p1").to("test2")
+        .bind("p2").to(Long.reverse(2L))
+        .build(), 1L));
+
+    try (SessionFactory sessionFactory =
+        createTestHibernateConfig(
+            ImmutableList.of(BatchedSequenceEntity.class),
+            ImmutableMap.of(Environment.HBM2DDL_AUTO, "create-only",
+                Environment.STATEMENT_BATCH_SIZE, "50"))
+            .buildSessionFactory(); Session session = sessionFactory.openSession()) {
+      Transaction transaction = session.beginTransaction();
+      assertEquals(Long.reverse(1L), session.save(new BatchedSequenceEntity("test1")));
+      assertEquals(Long.reverse(2L), session.save(new BatchedSequenceEntity("test2")));
+      transaction.commit();
+    }
+
+    ExecuteSqlRequest sequenceRequest = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class)
+        .stream().filter(request -> request.getSql().equals(selectSequenceNextVals))
+        .findFirst().orElse(ExecuteSqlRequest.getDefaultInstance());
+    assertTrue(sequenceRequest.hasTransaction());
+    assertTrue(sequenceRequest.getTransaction().hasBegin());
+    assertTrue(sequenceRequest.getTransaction().getBegin().hasReadWrite());
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    ExecuteBatchDmlRequest insertRequest = mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).get(0);
+    assertTrue(insertRequest.hasTransaction());
+    assertTrue(insertRequest.getTransaction().hasBegin());
+    assertTrue(insertRequest.getTransaction().getBegin().hasReadWrite());
+    assertEquals(2, insertRequest.getStatementsCount());
+    assertEquals(insertSql, insertRequest.getStatements(0).getSql());
+    assertEquals(insertSql, insertRequest.getStatements(1).getSql());
+    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
+
+    // Check the DDL statements that were generated.
+    List<UpdateDatabaseDdlRequest> requests =
+        mockDatabaseAdmin.getRequests().stream()
+            .filter(request -> request instanceof UpdateDatabaseDdlRequest)
+            .map(request -> (UpdateDatabaseDdlRequest) request)
+            .collect(Collectors.toList());
+    assertEquals(1, requests.size());
+    UpdateDatabaseDdlRequest request = requests.get(0);
+    assertEquals(2, request.getStatementsCount());
+
+    int index = -1;
+
+    assertEquals(
+        "create sequence batch_sequence options(sequence_kind=\"bit_reversed_positive\")",
+        request.getStatements(++index));
+    assertEquals(
+        "create table BatchedSequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
+        request.getStatements(++index));
+  }
+
+  @Test
+  public void testBatchedSequenceEntity_Update() {
+    addDdlResponseToSpannerAdmin();
+
+    // Setup schema results.
+    mockSpanner.putStatementResult(StatementResult.query(GET_TABLES_STATEMENT, ResultSet.newBuilder()
+            .setMetadata(GET_TABLES_METADATA)
+            .addRows(createTableRow("BatchedSequenceEntity"))
+        .build()));
+    mockSpanner.putStatementResult(StatementResult.query(GET_SEQUENCES_STATEMENT, ResultSet.newBuilder()
+            .setMetadata(GET_SEQUENCES_METADATA)
+            .addRows(createSequenceRow("batch_sequence"))
+        .build()));
+
+    long sequenceBatchSize = 5L;
+    String selectSequenceNextVals = "WITH t AS (\n"
+        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + ")\n"
+        + "SELECT n FROM t";
+    String insertSql = "insert into BatchedSequenceEntity (name, id) values (@p1, @p2)";
+    mockSpanner.putStatementResult(StatementResult.query(Statement.of(selectSequenceNextVals),
+        ResultSet.newBuilder()
+            .setMetadata(ResultSetMetadata.newBuilder()
+                .setRowType(StructType.newBuilder()
+                    .addFields(Field.newBuilder().setName("n").setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build())
+                    .build())
+                .build())
+            .addAllRows(LongStream.rangeClosed(1L, sequenceBatchSize)
+                .mapToObj(id -> ListValue.newBuilder()
+                    .addValues(Value.newBuilder().setStringValue(String.valueOf(Long.reverse(id))).build())
+                    .build()).collect(Collectors.toList()))
+            .build()));
+    mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
+        .bind("p1").to("test1")
+        .bind("p2").to(Long.reverse(1L))
+        .build(), 1L));
+    mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
+        .bind("p1").to("test2")
+        .bind("p2").to(Long.reverse(2L))
+        .build(), 1L));
+
+    try (SessionFactory sessionFactory =
+        createTestHibernateConfig(
+            ImmutableList.of(BatchedSequenceEntity.class),
+            ImmutableMap.of(Environment.HBM2DDL_AUTO, "update",
+                Environment.STATEMENT_BATCH_SIZE, "50"))
+            .buildSessionFactory(); Session session = sessionFactory.openSession()) {
+      Transaction transaction = session.beginTransaction();
+      assertEquals(Long.reverse(1L), session.save(new BatchedSequenceEntity("test1")));
+      assertEquals(Long.reverse(2L), session.save(new BatchedSequenceEntity("test2")));
+      transaction.commit();
+    }
+
+    ExecuteSqlRequest sequenceRequest = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class)
+        .stream().filter(request -> request.getSql().equals(selectSequenceNextVals))
+        .findFirst().orElse(ExecuteSqlRequest.getDefaultInstance());
+    assertTrue(sequenceRequest.hasTransaction());
+    assertTrue(sequenceRequest.getTransaction().hasBegin());
+    assertTrue(sequenceRequest.getTransaction().getBegin().hasReadWrite());
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    ExecuteBatchDmlRequest insertRequest = mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).get(0);
+    assertTrue(insertRequest.hasTransaction());
+    assertTrue(insertRequest.getTransaction().hasBegin());
+    assertTrue(insertRequest.getTransaction().getBegin().hasReadWrite());
+    assertEquals(2, insertRequest.getStatementsCount());
+    assertEquals(insertSql, insertRequest.getStatements(0).getSql());
+    assertEquals(insertSql, insertRequest.getStatements(1).getSql());
+    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
+
+    // Check the DDL statements that were generated.
+    List<UpdateDatabaseDdlRequest> requests =
+        mockDatabaseAdmin.getRequests().stream()
+            .filter(request -> request instanceof UpdateDatabaseDdlRequest)
+            .map(request -> (UpdateDatabaseDdlRequest) request)
+            .collect(Collectors.toList());
+    assertEquals(1, requests.size());
+    UpdateDatabaseDdlRequest request = requests.get(0);
+    assertEquals(2, request.getStatementsCount());
+
+    int index = -1;
+
+    assertEquals(
+        "create sequence batch_sequence options(sequence_kind=\"bit_reversed_positive\")",
+        request.getStatements(++index));
+    assertEquals(
+        "create table BatchedSequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
+        request.getStatements(++index));
+  }
+
 }
