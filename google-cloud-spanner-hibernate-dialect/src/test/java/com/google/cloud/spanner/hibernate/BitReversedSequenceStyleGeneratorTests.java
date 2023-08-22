@@ -19,7 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import static com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator.EXCLUDE_RANGES_PARAM;
-import static com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator.parseExcludedRanges;
+import static com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator.parseExcludedRanges;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;

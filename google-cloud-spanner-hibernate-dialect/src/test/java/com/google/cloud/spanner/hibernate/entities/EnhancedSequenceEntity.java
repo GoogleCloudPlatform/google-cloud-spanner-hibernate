@@ -18,7 +18,6 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
-import com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -27,30 +26,28 @@ import javax.persistence.Id;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
-/** Test entity for using a bit-reversed sequence that supports batching. */
+/**
+ * Test entity for using a bit-reversed sequence that supports batching.
+ */
 @Entity
 public class EnhancedSequenceEntity {
+
   @Id
-  @GeneratedValue(
-      strategy = GenerationType.SEQUENCE,
-      generator = "batch_sequence"
-  )
-  @GenericGenerator(
-      name = "batch_sequence",
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "batch_sequence")
+  @GenericGenerator(name = "batch_sequence",
       strategy = "com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator",
       parameters = {
           @Parameter(name = "sequence_name", value = "batch_sequence"),
           @Parameter(name = "increment_size", value = "5"),
           @Parameter(name = "initial_value", value = "5000"),
-          @Parameter(name = "exclude_ranges", value = "[1,1000] [10000,20000]")
-      }
-  )
+          @Parameter(name = "exclude_ranges", value = "[1,1000] [10000,20000]")})
   private long id;
 
   @Column
   private String name;
 
-  public EnhancedSequenceEntity() {}
+  public EnhancedSequenceEntity() {
+  }
 
   public EnhancedSequenceEntity(String name) {
     this.name = name;

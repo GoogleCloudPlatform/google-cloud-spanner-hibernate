@@ -18,10 +18,11 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import static com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator.parseExcludedRanges;
+
 import com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory.JdbcAbortedDueToConcurrentModificationException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Range;
 import java.io.Serializable;
 import java.util.List;
@@ -41,7 +42,6 @@ import org.hibernate.id.IdentifierGenerationException;
 import org.hibernate.id.enhanced.DatabaseStructure;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.id.enhanced.TableStructure;
-import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.mapping.Table;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
@@ -50,9 +50,9 @@ import org.jboss.logging.Logger;
 /**
  * Table backed ID generator that reverses the bits in the returned sequence value.
  * 
- * <p>This generator uses a table to emulate a sequence. Cloud Spanner also supports bit-reversed
- * sequences that are stored and managed in the database. These are recommended above this table
- * backed solution.
+ * <p>This generator uses a <strong>table to emulate a sequence</strong>. Cloud Spanner also
+ * supports bit-reversed sequences that are stored and managed in the database. These are
+ * recommended above this table backed solution.
  *
  * <p>Using a bit-reversed sequence for ID generation is recommended above sequences that return a
  * monotonically increasing value for Cloud Spanner. This generator also supports both an increment
@@ -211,46 +211,6 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
   @VisibleForTesting
   void configureExcludedRanges(String sequenceName, Properties params) throws MappingException {
     this.excludeRanges = parseExcludedRanges(sequenceName, params);
-  }
-
-  @VisibleForTesting
-  static List<Range<Long>> parseExcludedRanges(String sequenceName, Properties params) {
-    String[] excludedRangesArray =
-        ConfigurationHelper.toStringArray(EXCLUDE_RANGES_PARAM, " ", params);
-    if (excludedRangesArray == null) {
-      return ImmutableList.of();
-    }
-    Builder<Range<Long>> builder = ImmutableList.builder();
-    for (String rangeString : excludedRangesArray) {
-      rangeString = rangeString.trim();
-      String invalidRangeMessage =
-          String.format(
-              "Invalid range found for the [%s] sequence: %%s\n"
-                  + "Excluded ranges must be given as a space-separated sequence of ranges between "
-                  + "square brackets, e.g. '[1,1000] [2001,3000]'. "
-                  + "Found '%s'",
-              sequenceName, rangeString);
-      if (!(rangeString.startsWith("[") && rangeString.endsWith("]"))) {
-        throw new MappingException(
-            String.format(invalidRangeMessage, "Range is not enclosed between '[' and ']'"));
-      }
-      rangeString = rangeString.substring(1, rangeString.length() - 1);
-      String[] values = rangeString.split(",");
-      if (values.length != 2) {
-        throw new MappingException(
-            String.format(invalidRangeMessage, "Range does not contain exactly two elements"));
-      }
-      long from;
-      long to;
-      try {
-        from = Long.parseLong(values[0]);
-        to = Long.parseLong(values[1]);
-        builder.add(Range.closed(from, to));
-      } catch (IllegalArgumentException e) {
-        throw new MappingException(String.format(invalidRangeMessage, e.getMessage()), e);
-      }
-    }
-    return builder.build();
   }
 
   @VisibleForTesting static final int MAX_ATTEMPTS = 100;
