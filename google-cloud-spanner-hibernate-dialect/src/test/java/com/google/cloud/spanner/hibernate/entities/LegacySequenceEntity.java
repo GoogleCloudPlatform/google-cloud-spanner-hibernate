@@ -27,29 +27,30 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 /**
- * Test entity for using a bit-reversed sequence that supports batching.
+ * Test entity for using a bit-reversed sequence that supports batching, using the configuration
+ * parameter names of the table-backed bit-reversed sequence solution.
  */
 @Entity
-public class EnhancedSequenceEntity {
+public class LegacySequenceEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "batch_bit_reversed_generator")
-  @GenericGenerator(name = "batch_bit_reversed_generator",
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "legacy_sequence")
+  @GenericGenerator(name = "legacy_sequence",
       strategy = "com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator",
       parameters = {
-          @Parameter(name = "sequence_name", value = "enhanced_sequence"),
+          @Parameter(name = "sequence_name", value = "legacy_entity_sequence"),
           @Parameter(name = "increment_size", value = "5"),
           @Parameter(name = "initial_value", value = "5000"),
-          @Parameter(name = "exclude_range", value = "[1,1000]")})
+          @Parameter(name = "exclude_ranges", value = "[1,1000] [10000,20000]")})
   private long id;
 
   @Column
   private String name;
 
-  public EnhancedSequenceEntity() {
+  public LegacySequenceEntity() {
   }
 
-  public EnhancedSequenceEntity(String name) {
+  public LegacySequenceEntity(String name) {
     this.name = name;
   }
 

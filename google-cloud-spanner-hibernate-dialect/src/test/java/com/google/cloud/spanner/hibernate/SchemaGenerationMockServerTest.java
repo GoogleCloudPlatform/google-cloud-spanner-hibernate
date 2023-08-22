@@ -32,6 +32,7 @@ import com.google.cloud.spanner.hibernate.entities.Employee;
 import com.google.cloud.spanner.hibernate.entities.EnhancedSequenceEntity;
 import com.google.cloud.spanner.hibernate.entities.GrandParent;
 import com.google.cloud.spanner.hibernate.entities.Invoice;
+import com.google.cloud.spanner.hibernate.entities.LegacySequenceEntity;
 import com.google.cloud.spanner.hibernate.entities.Parent;
 import com.google.cloud.spanner.hibernate.entities.SequenceEntity;
 import com.google.cloud.spanner.hibernate.entities.Singer;
@@ -384,15 +385,15 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     addDdlResponseToSpannerAdmin();
     long sequenceBatchSize = 5L;
     String selectSequenceNextVals = "WITH t AS (\n"
-        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
         + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
         + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
         + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
         + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
         + ")\n"
         + "SELECT n FROM t";
     String insertSql = "insert into EnhancedSequenceEntity (name, id) values (@p1, @p2)";
@@ -421,7 +422,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     
     try (SessionFactory sessionFactory =
         createTestHibernateConfig(
-            ImmutableList.of(EnhancedSequenceEntity.class),
+            ImmutableList.of(EnhancedSequenceEntity.class, LegacySequenceEntity.class),
             ImmutableMap.of(Environment.HBM2DDL_AUTO, "create-only",
                 Environment.STATEMENT_BATCH_SIZE, "50"))
             .buildSessionFactory(); Session session = sessionFactory.openSession()) {
@@ -456,16 +457,24 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             .collect(Collectors.toList());
     assertEquals(1, requests.size());
     UpdateDatabaseDdlRequest request = requests.get(0);
-    assertEquals(2, request.getStatementsCount());
+    assertEquals(4, request.getStatementsCount());
 
     int index = -1;
 
     assertEquals(
-        "create sequence batch_sequence options(sequence_kind=\"bit_reversed_positive\", " 
-            + "start_with_counter=5000, skip_range_min=1, skip_range_max=20000)",
+        "create sequence enhanced_sequence options(sequence_kind=\"bit_reversed_positive\", " 
+            + "start_with_counter=5000, skip_range_min=1, skip_range_max=1000)",
+        request.getStatements(++index));
+    assertEquals(
+        "create sequence legacy_entity_sequence " 
+            + "options(sequence_kind=\"bit_reversed_positive\", start_with_counter=5000, " 
+            + "skip_range_min=1, skip_range_max=20000)",
         request.getStatements(++index));
     assertEquals(
         "create table EnhancedSequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
+        request.getStatements(++index));
+    assertEquals(
+        "create table LegacySequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
   }
 
@@ -482,25 +491,31 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     mockSpanner.putStatementResult(
         StatementResult.query(GET_SEQUENCES_STATEMENT, ResultSet.newBuilder()
             .setMetadata(GET_SEQUENCES_METADATA)
-            .addRows(createSequenceRow("batch_sequence"))
+            .addRows(createSequenceRow("enhanced_sequence"))
             .build()));
     mockSpanner.putStatementResult(StatementResult.query(GET_COLUMNS_STATEMENT, ResultSet.newBuilder()
             .setMetadata(GET_COLUMNS_METADATA)
             .addRows(createColumnRow("EnhancedSequenceEntity", "id", Types.BIGINT, "INT64", 1))
             .addRows(createColumnRow("EnhancedSequenceEntity", "name", Types.NVARCHAR, "STRING(MAX)", 2))
         .build()));
+    mockSpanner.putStatementResult(StatementResult.query(GET_INDEXES_STATEMENT, ResultSet.newBuilder()
+        .setMetadata(
+            ResultSetMetadata.newBuilder()
+                .setRowType(StructType.newBuilder().build())
+                .build())
+        .build()));
 
     long sequenceBatchSize = 5L;
     String selectSequenceNextVals = "WITH t AS (\n"
-        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
         + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
         + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
         + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
         + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence batch_sequence) AS n\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
         + ")\n"
         + "SELECT n FROM t";
     String insertSql = "insert into EnhancedSequenceEntity (name, id) values (@p1, @p2)";
@@ -545,6 +560,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     assertTrue(sequenceRequest.hasTransaction());
     assertTrue(sequenceRequest.getTransaction().hasBegin());
     assertTrue(sequenceRequest.getTransaction().getBegin().hasReadWrite());
+    // Note the existence of an ExecuteBatchDml request. This verifies that our bit-reversed
+    // sequence generator supports batch inserts.
     assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
     ExecuteBatchDmlRequest insertRequest = mockSpanner.getRequestsOfType(
         ExecuteBatchDmlRequest.class).get(0);

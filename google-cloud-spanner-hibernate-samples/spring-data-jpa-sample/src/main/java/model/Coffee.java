@@ -29,17 +29,22 @@ import org.hibernate.annotations.Parameter;
 @Entity
 public class Coffee {
 
+  /**
+   * This entity uses a bit-reversed sequence to generate identifiers. See
+   * {@link com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator} for more
+   * information.
+   */
   @Id
   @GeneratedValue(
       strategy = GenerationType.SEQUENCE,
-      generator = "coffee_sequence"
+      generator = "coffee_id_generator"
   )
   @GenericGenerator(
-      name = "coffee_sequence",
-      strategy = "com.google.cloud.spanner.hibernate.BatchedBitReversedSequenceStyleGenerator",
+      name = "coffee_id_generator",
+      strategy = "com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator",
       parameters = {
           @Parameter(name = "sequence_name", value = "coffee_id"),
-          @Parameter(name = "fetch_size", value = "200")
+          @Parameter(name = "increment_size", value = "200")
       }
   )
   private Long id;
