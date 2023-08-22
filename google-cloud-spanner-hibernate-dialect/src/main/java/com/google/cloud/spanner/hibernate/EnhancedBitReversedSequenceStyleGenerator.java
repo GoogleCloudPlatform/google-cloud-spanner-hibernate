@@ -70,7 +70,7 @@ import org.hibernate.type.Type;
  *
  * <p>Using a bit-reversed sequence for ID generation is recommended above sequences that return a
  * monotonically increasing value for Cloud Spanner. This generator also supports both an increment
- * size larger than 1 and an initial value larger than 1.
+ * size larger than 1 and an initial value larger than 1. The increment value can not exceed 200.
  *
  * <p>Use the {@link #EXCLUDE_RANGE_PARAM} to exclude a range of values that should be skipped by
  * the generator if your entity table already contains data. The excluded values should be given as
@@ -89,7 +89,7 @@ import org.hibernate.type.Type;
  *       strategy = "com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator",
  *       parameters = {
  *           @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "customerId"),
- *           @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
+ *           @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "200"),
  *           @Parameter(name = SequenceStyleGenerator.INITIAL_PARAM, value = "50000"),
  *           @Parameter(name = EnhancedBitReversedSequenceStyleGenerator.EXCLUDE_RANGE_PARAM,
  *                      value = "[1,1000]"),
@@ -105,6 +105,9 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
    * The default increment (fetch) size for an {@link EnhancedBitReversedSequenceStyleGenerator}.
    */
   public static final int DEFAULT_INCREMENT_SIZE = 100;
+  
+  /** The maximum allowed increment size is 200. */
+  private static final int MAX_INCREMENT_SIZE = 200;
 
   /**
    * Configuration property for defining a range that should be excluded by a bit-reversed sequence
@@ -187,6 +190,9 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
     }
     if (fetchSize <= 0) {
       throw new MappingException("increment size must be positive");
+    }
+    if (fetchSize > MAX_INCREMENT_SIZE) {
+      throw new MappingException("increment size must be <= " + MAX_INCREMENT_SIZE);
     }
     return fetchSize;
   }
