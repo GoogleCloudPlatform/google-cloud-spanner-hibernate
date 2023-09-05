@@ -652,5 +652,4 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             .collect(Collectors.toList());
     assertEquals(0, requests.size());
   }
-
 }
