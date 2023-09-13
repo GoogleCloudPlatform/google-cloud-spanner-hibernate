@@ -109,6 +109,11 @@
         <version>${hibernate.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.hibernate.orm</groupId>
+        <artifactId>hibernate-ant</artifactId>
+        <version>${hibernate.version}</version>
+      </dependency>
+      <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-spanner-jdbc</artifactId>
         <version>${spanner-jdbc-driver.version}</version>
