@@ -319,7 +319,8 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
       // retries of the actual business transaction.
       connection = session.getJdbcConnectionAccess().obtainConnection();
       if (connection.isWrapperFor(CloudSpannerJdbcConnection.class)) {
-        // Do not try to retry any aborted errors, as a sequence will return new values in all cases.
+        // Do not try to retry any aborted errors, as a sequence will return new values in all
+        // cases.
         CloudSpannerJdbcConnection cloudSpannerJdbcConnection = connection.unwrap(
             CloudSpannerJdbcConnection.class);
         retryAbortsInternally = cloudSpannerJdbcConnection.isRetryAbortsInternally();
@@ -368,6 +369,7 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
     try {
       runnable.run();
     } catch (SQLException ignore) {
+      // ignore any SQLException
     }
   }
 
