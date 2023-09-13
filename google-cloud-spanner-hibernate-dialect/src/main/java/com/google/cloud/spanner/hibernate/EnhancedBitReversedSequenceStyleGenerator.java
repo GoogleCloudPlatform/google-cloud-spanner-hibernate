@@ -21,6 +21,7 @@ package com.google.cloud.spanner.hibernate;
 import static com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator.EXCLUDE_RANGES_PARAM;
 import static org.hibernate.id.enhanced.SequenceStyleGenerator.SEQUENCE_PARAM;
 
+import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import com.google.cloud.spanner.jdbc.JdbcSqlException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -76,7 +77,8 @@ import org.hibernate.type.Type;
  * the generator if your entity table already contains data. The excluded values should be given as
  * closed range. E.g. "[1,1000]" to skip all values between 1 and 1000 (inclusive).
  *
- * <p>It is recommended to use a separate sequence for each entity. Set the sequence name to use for
+ * <p>It is recommended to use a separate sequence for each entity. Set the sequence name to use
+ * for
  * a generator with the SequenceStyleGenerator.SEQUENCE_PARAM parameter (see example below).
  *
  * <p>Example usage:
@@ -105,16 +107,15 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
    * The default increment (fetch) size for an {@link EnhancedBitReversedSequenceStyleGenerator}.
    */
   public static final int DEFAULT_INCREMENT_SIZE = 100;
-  
-  /** The maximum allowed increment size is 200. */
-  private static final int MAX_INCREMENT_SIZE = 200;
-
   /**
    * Configuration property for defining a range that should be excluded by a bit-reversed sequence
    * generator.
    */
   public static final String EXCLUDE_RANGE_PARAM = "exclude_range";
-
+  /**
+   * The maximum allowed increment size is 200.
+   */
+  private static final int MAX_INCREMENT_SIZE = 200;
   private static final Iterator<Long> EMPTY_ITERATOR = ImmutableList.<Long>of().iterator();
   private final Lock lock = new ReentrantLock();
 
@@ -206,20 +207,6 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
     return initialValue;
   }
 
-  @Override
-  public void configure(Type type, Properties params, ServiceRegistry serviceRegistry)
-      throws MappingException {
-    JdbcEnvironment jdbcEnvironment = serviceRegistry.getService(JdbcEnvironment.class);
-    this.sequenceName = determineSequenceName(jdbcEnvironment, params);
-    this.fetchSize = determineFetchSize(params);
-    int initialValue = determineInitialValue(params);
-    this.select = buildSelect(jdbcEnvironment.getDialect(), sequenceName, fetchSize);
-    List<Range<Long>> excludeRanges = parseExcludedRanges(sequenceName.getObjectName().getText(),
-        params);
-    this.databaseStructure = buildDatabaseStructure(type, sequenceName, initialValue, excludeRanges,
-        jdbcEnvironment);
-  }
-
   @VisibleForTesting
   static List<Range<Long>> parseExcludedRanges(String sequenceName, Properties params) {
     // Accept both 'excluded_range' and 'excluded_ranges' params to accommodate anyone moving from
@@ -270,6 +257,20 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
   }
 
   @Override
+  public void configure(Type type, Properties params, ServiceRegistry serviceRegistry)
+      throws MappingException {
+    JdbcEnvironment jdbcEnvironment = serviceRegistry.getService(JdbcEnvironment.class);
+    this.sequenceName = determineSequenceName(jdbcEnvironment, params);
+    this.fetchSize = determineFetchSize(params);
+    int initialValue = determineInitialValue(params);
+    this.select = buildSelect(jdbcEnvironment.getDialect(), sequenceName, fetchSize);
+    List<Range<Long>> excludeRanges = parseExcludedRanges(sequenceName.getObjectName().getText(),
+        params);
+    this.databaseStructure = buildDatabaseStructure(type, sequenceName, initialValue, excludeRanges,
+        jdbcEnvironment);
+  }
+
+  @Override
   public boolean supportsBulkInsertionIdentifierGeneration() {
     return true;
   }
@@ -311,22 +312,36 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
   private Iterator<Long> fetchIdentifiers(SharedSessionContractImplementor session)
       throws HibernateException {
     Connection connection = null;
+    Boolean retryAbortsInternally = null;
     try {
       // Use a separate connection to get new sequence values. This ensures that it also uses a
       // separate read/write transaction, which again means that it will not interfere with any
       // retries of the actual business transaction.
       connection = session.getJdbcConnectionAccess().obtainConnection();
-      connection.createStatement().execute("begin");
-      connection.createStatement().execute("set transaction read write");
-      List<Long> identifiers = new ArrayList<>(this.fetchSize);
-      try (Statement statement = connection.createStatement();
-          ResultSet resultSet = statement.executeQuery(this.select)) {
-        while (resultSet.next()) {
-          identifiers.add(resultSet.getLong(1));
-        }
+      if (connection.isWrapperFor(CloudSpannerJdbcConnection.class)) {
+        // Do not try to retry any aborted errors, as a sequence will return new values in all cases.
+        CloudSpannerJdbcConnection cloudSpannerJdbcConnection = connection.unwrap(
+            CloudSpannerJdbcConnection.class);
+        retryAbortsInternally = cloudSpannerJdbcConnection.isRetryAbortsInternally();
+        cloudSpannerJdbcConnection.setRetryAbortsInternally(false);
       }
-      return identifiers.iterator();
+      try (Statement statement = connection.createStatement()) {
+        statement.execute("begin");
+        statement.execute("set transaction read write");
+        List<Long> identifiers = new ArrayList<>(this.fetchSize);
+        try (ResultSet resultSet = statement.executeQuery(this.select)) {
+          while (resultSet.next()) {
+            identifiers.add(resultSet.getLong(1));
+          }
+        }
+        connection.createStatement().execute("commit");
+        return identifiers.iterator();
+      }
     } catch (SQLException sqlException) {
+      if (connection != null) {
+        Connection finalConnection = connection;
+        ignoreSqlException(() -> finalConnection.createStatement().execute("rollback"));
+      }
       if (sqlException instanceof JdbcSqlException) {
         JdbcSqlException jdbcSqlException = (JdbcSqlException) sqlException;
         if (jdbcSqlException.getCode() == Code.ABORTED) {
@@ -337,18 +352,33 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
           .convert(sqlException, "could not get next sequence values", this.select);
     } finally {
       if (connection != null) {
-        try {
-          session.getJdbcConnectionAccess().releaseConnection(connection);
-        } catch (SQLException ignore) {
-          // ignore any errors during release of the connection.
+        Connection finalConnection = connection;
+        if (retryAbortsInternally != null) {
+          boolean finalRetryAbortsInternally = retryAbortsInternally;
+          ignoreSqlException(() -> finalConnection.unwrap(CloudSpannerJdbcConnection.class)
+              .setRetryAbortsInternally(finalRetryAbortsInternally));
         }
+        ignoreSqlException(
+            () -> session.getJdbcConnectionAccess().releaseConnection(finalConnection));
       }
+    }
+  }
+
+  private void ignoreSqlException(SqlRunnable runnable) {
+    try {
+      runnable.run();
+    } catch (SQLException ignore) {
     }
   }
 
   @Override
   public String toString() {
     return getSequenceName();
+  }
+
+  private interface SqlRunnable {
+
+    void run() throws SQLException;
   }
 
 }

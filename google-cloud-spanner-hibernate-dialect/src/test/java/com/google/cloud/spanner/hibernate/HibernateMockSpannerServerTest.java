@@ -19,25 +19,67 @@
 package com.google.cloud.spanner.hibernate;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.hibernate.entities.Singer;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
+import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.junit.Test;
 
-/** Tests Hibernate configuration using an in-memory mock Spanner server. */
+/**
+ * Tests Hibernate configuration using an in-memory mock Spanner server.
+ */
 public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTest {
+
   private static final ImmutableList<Class<?>> ENTITY_CLASSES = ImmutableList.of(Singer.class);
+
+  static ResultSet createBitReversedSequenceResultSet(long startValue, long endValue) {
+    return ResultSet.newBuilder()
+        .setMetadata(
+            ResultSetMetadata.newBuilder()
+                .setRowType(
+                    StructType.newBuilder()
+                        .addFields(
+                            Field.newBuilder()
+                                .setName("n")
+                                .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
+                                .build())
+                        .build())
+                .build())
+        .addAllRows(LongStream.range(startValue, endValue).map(Long::reverse)
+            .mapToObj(id -> ListValue.newBuilder()
+                .addValues(Value.newBuilder().setStringValue(String.valueOf(id)).build())
+                .build()).collect(
+                Collectors.toList()))
+        .build();
+  }
 
   @Test
   public void testHibernateGetSinger() {
@@ -67,7 +109,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
                 .build()));
 
     try (SessionFactory sessionFactory =
-            createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
+        createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
         Session session = sessionFactory.openSession()) {
       Singer singer = session.get(Singer.class, 1L);
       assertEquals(1L, singer.getId());
@@ -107,7 +149,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
             1L));
 
     try (SessionFactory sessionFactory =
-            createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
+        createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
         Session session = sessionFactory.openSession()) {
       long id = (long) session.save(new Singer());
       assertEquals(Long.reverse(50000L), id);
@@ -157,11 +199,152 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
             1L));
 
     try (SessionFactory sessionFactory =
-            createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
+        createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
         Session session = sessionFactory.openSession()) {
 
       long id = (long) session.save(new Singer());
       assertEquals(expectedId, id);
     }
+  }
+
+  @Test
+  public void testHibernateEnhancedSequenceEntity_skipsExcludedRange() {
+    // batch_bit_reversed_generator will skip the range [1,20000] (bit-reversed sequences only
+    // support one range that can be skipped, not multiple, so the skipped range is the min/max
+    // of all the skipped ranges.
+
+    String getSequenceValuesSql = "WITH t AS (\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+        + ")\n"
+        + "SELECT n FROM t";
+
+    long initialValue = 20000L;
+    long expectedId = Long.reverse(initialValue + 1L);
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.of(getSequenceValuesSql),
+            createBitReversedSequenceResultSet(20001L, 20005L)));
+
+    String insertSql = "insert into test-entity (name, id) values (@p1, @p2)";
+    mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
+        .bind("p1").to((String) null)
+        .bind("p2").to(expectedId)
+        .build(), 1L));
+
+    try (SessionFactory sessionFactory =
+        createTestHibernateConfig(ImmutableList.of(TestSequenceEntity.class)).buildSessionFactory();
+        Session session = sessionFactory.openSession()) {
+      Transaction transaction = session.beginTransaction();
+      long id = (long) session.save(new TestSequenceEntity());
+      assertEquals(expectedId, id);
+      transaction.commit();
+    }
+    
+    // We should have two read/write transactions:
+    // 1. A separate transaction for getting the values from the bit-reversed sequence.
+    // 2. A transaction corresponding to the Hibernate transaction.
+    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
+
+    assertEquals(1, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+        .filter(request -> request.getSql().equals(getSequenceValuesSql)).count());
+    ExecuteSqlRequest getSequenceValuesRequest = mockSpanner.getRequestsOfType(
+            ExecuteSqlRequest.class).stream()
+        .filter(request -> request.getSql().equals(getSequenceValuesSql)).findFirst().orElseThrow(
+            Suppliers.ofInstance(new AssertionError("missing request")));
+    assertTrue(getSequenceValuesRequest.hasTransaction());
+    assertTrue(getSequenceValuesRequest.getTransaction().hasBegin());
+    assertTrue(getSequenceValuesRequest.getTransaction().getBegin().hasReadWrite());
+
+    assertEquals(1, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+        .filter(request -> request.getSql().equals(insertSql)).count());
+    ExecuteSqlRequest insertRequest = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class)
+        .stream().filter(request -> request.getSql().equals(insertSql)).findFirst().orElseThrow(
+            Suppliers.ofInstance(new AssertionError("missing request")));
+    assertTrue(insertRequest.hasTransaction());
+    assertTrue(insertRequest.getTransaction().hasBegin());
+    assertTrue(insertRequest.getTransaction().getBegin().hasReadWrite());
+  }
+
+  @Test
+  public void testHibernateEnhancedSequenceEntity_abortedErrorRetriesSequence() {
+    String getSequenceValuesSql = "WITH t AS (\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+        + "\tUNION ALL\n"
+        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+        + ")\n"
+        + "SELECT n FROM t";
+
+    long initialValue = 20000L;
+    // TODO: Update this once the bug in the mock server has been fixed.
+    //       StatementResult.queryAndThen(..) does not work, and always returns the first result.
+    long expectedId = Long.reverse(initialValue + 1L);
+    mockSpanner.putStatementResult(
+        StatementResult.queryAndThen(
+            Statement.of(getSequenceValuesSql),
+            createBitReversedSequenceResultSet(20001L, 20005L),
+            createBitReversedSequenceResultSet(20006L, 20010L)));
+    mockSpanner.setCommitExecutionTime(SimulatedExecutionTime.ofException(
+        mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+
+    String insertSql = "insert into test-entity (name, id) values (@p1, @p2)";
+    mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
+        .bind("p1").to((String) null)
+        .bind("p2").to(expectedId)
+        .build(), 1L));
+
+    try (SessionFactory sessionFactory =
+        createTestHibernateConfig(ImmutableList.of(TestSequenceEntity.class)).buildSessionFactory();
+        Session session = sessionFactory.openSession()) {
+      Transaction transaction = session.beginTransaction();
+      long id = (long) session.save(new TestSequenceEntity());
+      assertEquals(expectedId, id);
+      transaction.commit();
+    }
+
+    // We should have three read/write transactions:
+    // 1. Two transactions for getting the values from the bit-reversed sequence. The first one is
+    //    aborted.
+    // 2. A transaction corresponding to the Hibernate transaction.
+    assertEquals(3, mockSpanner.countRequestsOfType(CommitRequest.class));
+
+    // We should have two attempts to get sequence values.
+    assertEquals(2, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+        .filter(request -> request.getSql().equals(getSequenceValuesSql)).count());
+    // We should only have one insert statement.
+    assertEquals(1, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+        .filter(request -> request.getSql().equals(insertSql)).count());
+  }
+
+  @Table(name = "test-entity")
+  @Entity
+  static class TestSequenceEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "batch_bit_reversed_generator")
+    @GenericGenerator(name = "batch_bit_reversed_generator",
+        strategy = "com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator",
+        parameters = {
+            @Parameter(name = "sequence_name", value = "enhanced_sequence"),
+            @Parameter(name = "increment_size", value = "5"),
+            @Parameter(name = "initial_value", value = "500"),
+            @Parameter(name = "exclude_ranges", value = "[1,1000] [10000,20000]")})
+    private long id;
+
+    @Column
+    private String name;
   }
 }
