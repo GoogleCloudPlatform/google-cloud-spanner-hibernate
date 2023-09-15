@@ -19,18 +19,22 @@
 package com.google.cloud.spanner.hibernate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.spanner.hibernate.schema.SpannerDatabaseInfo;
 import com.google.cloud.spanner.hibernate.schema.SpannerTableStatements;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import org.hibernate.boot.Metadata;
+import org.hibernate.boot.model.relational.Database;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.PrimaryKey;
 import org.hibernate.mapping.Table;
+import org.hibernate.type.spi.TypeConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -39,8 +43,6 @@ import org.mockito.Mockito;
  * Tests to verify DDL statement generation for table creation.
  */
 public class SpannerTableStatementsTests {
-
-  private SpannerDatabaseInfo spannerDatabaseInfo;
 
   private SpannerTableStatements spannerTableStatements;
 
@@ -53,14 +55,17 @@ public class SpannerTableStatementsTests {
   public void setupSpannerDatabaseInfo() {
     // Metadata mocks
     metadata = Mockito.mock(Metadata.class);
-
+    Database database = mock(Database.class);
+    when(metadata.getDatabase()).thenReturn(database);
+    TypeConfiguration typeConfiguration = mock(TypeConfiguration.class);
+    when(database.getTypeConfiguration()).thenReturn(typeConfiguration);
 
     // Initialize SpannerDatabaseInfo
-    spannerDatabaseInfo = Mockito.mock(SpannerDatabaseInfo.class);
+    SpannerDatabaseInfo spannerDatabaseInfo = Mockito.mock(SpannerDatabaseInfo.class);
     when(spannerDatabaseInfo.getAllTables()).thenReturn(
         new HashSet<>(Arrays.asList("Student", "Teacher", "House")));
     when(spannerDatabaseInfo.getAllIndices()).thenReturn(
-        new HashSet<>(Arrays.asList("address")));
+        new HashSet<>(Collections.singletonList("address")));
 
     // Initialize SpannerStatements
     spannerTableStatements = new SpannerTableStatements(new SpannerDialect());
@@ -69,7 +74,7 @@ public class SpannerTableStatementsTests {
 
   @Test
   public void testDropTableStatement() {
-    Table table = new Table();
+    Table table = new Table("orm");
     table.setName("House");
 
     List<String> statements = spannerTableStatements.dropTable(table);
@@ -78,7 +83,7 @@ public class SpannerTableStatementsTests {
 
   @Test
   public void testDropTableStatement_missingTable() {
-    Table table = new Table();
+    Table table = new Table("orm");
     table.setName("Missing_Table");
 
     List<String> statements = spannerTableStatements.dropTable(table);
@@ -87,7 +92,7 @@ public class SpannerTableStatementsTests {
 
   @Test
   public void testDropTableStatement_withIndex() {
-    Table table = new Table();
+    Table table = new Table("orm");
     table.setName("House");
 
     Index index = new Index();
@@ -100,7 +105,7 @@ public class SpannerTableStatementsTests {
 
   @Test
   public void testCreateTableStatement() {
-    Table table = new Table();
+    Table table = new Table("orm");
     table.setName("Test");
 
     Column col = new Column();
