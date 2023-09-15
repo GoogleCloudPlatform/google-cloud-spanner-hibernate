@@ -18,16 +18,16 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import jakarta.persistence.Entity;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import javax.persistence.Entity;
 
 /**
- * This annotation can be used to annotate an {@link Entity} class that should be interleaved in
- * a parent table. This annotation is Cloud Spanner specific and is only used when automatic schema
+ * This annotation can be used to annotate an {@link Entity} class that should be interleaved in a
+ * parent table. This annotation is Cloud Spanner specific and is only used when automatic schema
  * generation is used. If you create your schema manually, you may leave this annotation out.
  *
  * <p>To generate the following schema:
@@ -80,8 +80,8 @@ import javax.persistence.Entity;
 public @interface Interleaved {
 
   /**
-   * The parent table that this table will be interleaved in. This must be specified
-   * for this annotation.
+   * The parent table that this table will be interleaved in. This must be specified for this
+   * annotation.
    *
    * @return the entity class of the parent table
    */
