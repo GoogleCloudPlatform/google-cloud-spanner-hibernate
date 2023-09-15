@@ -4,6 +4,7 @@ allowedLicenses:
 - 'Apache-2.0'
 - 'MIT'
 - 'BSD-3'
+- 'LGPL'
 sourceFileExtensions:
 - 'ts'
 - 'js'
