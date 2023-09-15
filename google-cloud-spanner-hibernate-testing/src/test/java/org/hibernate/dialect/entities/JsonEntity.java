@@ -1,34 +1,53 @@
+/*
+ * Copyright 2023 Google LLC
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
 package org.hibernate.dialect.entities;
 
-import com.google.cloud.spanner.hibernate.types.SpannerJsonType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
+import java.sql.Types;
 import java.util.Objects;
 import java.util.UUID;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import org.hibernate.annotations.JdbcTypeCode;
 
 /**
  * A Test entity with JSON entity fields.
  */
-@TypeDefs({
-    @TypeDef(
-        name = "json",
-        typeClass = SpannerJsonType.class
-    )
-})
+// TODO: User-defined types need a re-implementation for Hibernate 6.
+//@TypeDefs({
+//    @TypeDef(
+//        name = "json",
+//        typeClass = SpannerJsonType.class
+//    )
+//})
 @Entity
 public class JsonEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  @Type(type = "uuid-char")
+  @JdbcTypeCode(Types.CHAR)
   private UUID id;
 
-  @Type(type = "json")
+  // TODO: Update mapping to use JSON
+  @Transient
   private Employee employee;
 
   public UUID getId() {

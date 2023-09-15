@@ -7,6 +7,11 @@
  */
 package org.hibernate.jpa.test;
 
+import com.google.cloud.spanner.hibernate.SpannerDialect;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.SharedCacheMode;
+import jakarta.persistence.ValidationMode;
+import jakarta.persistence.spi.PersistenceUnitTransactionType;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,17 +20,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import javax.persistence.EntityManager;
-import javax.persistence.SharedCacheMode;
-import javax.persistence.ValidationMode;
-import javax.persistence.spi.PersistenceUnitTransactionType;
 
 import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
 import org.hibernate.bytecode.enhance.spi.EnhancementContext;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Environment;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.spi.Bootstrap;
 import org.hibernate.jpa.boot.spi.PersistenceUnitDescriptor;
@@ -47,7 +48,7 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   // IMPL NOTE : Here we use @Before and @After (instead of @BeforeClassOnce and @AfterClassOnce like we do in
   // BaseCoreFunctionalTestCase) because the old HEM test methodology was to create an EMF for each test method.
 
-  private static final Dialect dialect = Dialect.getDialect();
+  private static final Dialect dialect = new SpannerDialect();
 
   private StandardServiceRegistryImpl serviceRegistry;
   private SessionFactoryImplementor entityManagerFactory;
@@ -187,7 +188,8 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
     if ( createSchema() ) {
       settings.put( org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO, "create-drop" );
     }
-    settings.put( org.hibernate.cfg.AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
+    // TODO: Figure out what the equivalent in Hibernate 6 is for this.
+    // settings.put( org.hibernate.cfg.AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
     settings.put( org.hibernate.cfg.AvailableSettings.DIALECT, getDialect().getClass().getName() );
     return settings;
   }
@@ -196,7 +198,7 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   protected void addMappings(Map settings) {
     String[] mappings = getMappings();
     if ( mappings != null ) {
-      settings.put( AvailableSettings.HBXML_FILES, String.join( ",", mappings ) );
+      settings.put( AvailableSettings.HBM_XML_FILES, String.join( ",", mappings ) );
     }
   }
 
@@ -221,7 +223,7 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
     if ( getEjb3DD().length > 0 ) {
       ArrayList<String> dds = new ArrayList<String>();
       dds.addAll( Arrays.asList( getEjb3DD() ) );
-      config.put( AvailableSettings.XML_FILE_NAMES, dds );
+      config.put( AvailableSettings.ORM_XML_FILES, dds );
     }
 
     addConfigOptions( config );
