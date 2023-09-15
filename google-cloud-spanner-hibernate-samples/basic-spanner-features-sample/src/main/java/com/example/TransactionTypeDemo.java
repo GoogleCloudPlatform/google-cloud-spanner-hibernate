@@ -19,7 +19,7 @@
 package com.example;
 
 import com.example.entities.Book;
-import javax.persistence.PersistenceException;
+import jakarta.persistence.PersistenceException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;

@@ -31,6 +31,12 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- Hibernate -->
+    <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-core</artifactId>
+    </dependency>
+
     <!-- Spanner Dialect -->
     <dependency>
       <groupId>com.google.cloud</groupId>
