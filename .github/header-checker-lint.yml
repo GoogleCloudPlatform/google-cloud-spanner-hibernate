@@ -5,5 +5,5 @@ allowedLicenses:
 - 'MIT'
 - 'BSD-3'
 # Deliberately empty to disable the check.
-sourceFileExtensions:
+sourceFileExtensions: []
 # ignoreFiles are empty
