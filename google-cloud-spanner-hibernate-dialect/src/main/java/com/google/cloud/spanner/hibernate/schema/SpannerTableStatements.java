@@ -122,7 +122,6 @@ public class SpannerTableStatements {
             .collect(Collectors.joining(","));
 
     // Get the comma separated string of all columns of the table.
-    //Iterable<Column> columnIterable = table.getColumns();
     String allColumnNames =
         table.getColumns().stream()
             .map(column -> buildColumnTypeString(column, metadata))
