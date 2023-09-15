@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import org.hibernate.boot.Metadata;
 import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.internal.SchemaDropperImpl;
+import org.hibernate.tool.schema.spi.ContributableMatcher;
 import org.hibernate.tool.schema.spi.DelayedDropAction;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
 import org.hibernate.tool.schema.spi.SchemaDropper;
@@ -30,8 +31,8 @@ import org.hibernate.tool.schema.spi.SourceDescriptor;
 import org.hibernate.tool.schema.spi.TargetDescriptor;
 
 /**
- * A modified version of the {@link SchemaDropperImpl} which batches DDL statements
- * to optimize performance.
+ * A modified version of the {@link SchemaDropperImpl} which batches DDL statements to optimize
+ * performance.
  */
 public class SpannerSchemaDropper implements SchemaDropper {
 
@@ -47,6 +48,7 @@ public class SpannerSchemaDropper implements SchemaDropper {
   public void doDrop(
       Metadata metadata,
       ExecutionOptions options,
+      ContributableMatcher contributableInclusionFilter,
       SourceDescriptor sourceDescriptor,
       TargetDescriptor targetDescriptor) {
 
@@ -59,7 +61,8 @@ public class SpannerSchemaDropper implements SchemaDropper {
       SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.DROP);
       tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
-      schemaDropper.doDrop(metadata, options, sourceDescriptor, targetDescriptor);
+      schemaDropper.doDrop(
+          metadata, options, contributableInclusionFilter, sourceDescriptor, targetDescriptor);
     } catch (SQLException e) {
       throw new RuntimeException("Failed to update Spanner table schema.", e);
     }
@@ -67,15 +70,18 @@ public class SpannerSchemaDropper implements SchemaDropper {
 
   @Override
   public DelayedDropAction buildDelayedAction(
-      Metadata metadata, ExecutionOptions options, SourceDescriptor sourceDescriptor) {
+      Metadata metadata,
+      ExecutionOptions options,
+      ContributableMatcher contributableInclusionFilter,
+      SourceDescriptor sourceDescriptor) {
 
     try (Connection connection = tool.getDatabaseMetadataConnection(options)) {
       // Initialize exporters with drop table dependencies so tables are dropped in the right order.
       SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
-      tool.getSpannerTableExporter(options).init(
-          metadata, spannerDatabaseInfo, Action.DROP);
+      tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.DROP);
       tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
-      return schemaDropper.buildDelayedAction(metadata, options, sourceDescriptor);
+      return schemaDropper.buildDelayedAction(
+          metadata, options, contributableInclusionFilter, sourceDescriptor);
     } catch (SQLException e) {
       throw new RuntimeException("Failed to update Spanner table schema.", e);
     }
