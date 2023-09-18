@@ -157,22 +157,22 @@ public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTes
     int index = -1;
 
     assertEquals(
-        "create table Account (id INT64 not null,amount NUMERIC,name STRING(255)) PRIMARY KEY (id)",
+        "create table Account (amount float64,id int64 not null,name string(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
     assertEquals(
-        "create table Customer (customerId INT64 not null,name STRING(255)) PRIMARY KEY (customerId)",
+        "create table Customer (customerId int64 not null,name string(255)) PRIMARY KEY (customerId)",
         request.getStatements(++index));
     assertEquals(
-        "create table customerId (next_val INT64) PRIMARY KEY ()", request.getStatements(++index));
+        "create table customerId (next_val int64) PRIMARY KEY ()", request.getStatements(++index));
     assertEquals(
-        "create table Invoice (invoiceId INT64 not null,number STRING(255),customer_customerId INT64) PRIMARY KEY (invoiceId)",
+        "create table Invoice (customer_customerId int64,invoiceId int64 not null,number string(255)) PRIMARY KEY (invoiceId)",
         request.getStatements(++index));
     assertEquals(
-        "create table invoiceId (next_val INT64) PRIMARY KEY ()", request.getStatements(++index));
+        "create table invoiceId (next_val int64) PRIMARY KEY ()", request.getStatements(++index));
     assertEquals(
-        "create table Singer (id INT64 not null) PRIMARY KEY (id)", request.getStatements(++index));
+        "create table Singer (id int64 not null) PRIMARY KEY (id)", request.getStatements(++index));
     assertEquals(
-        "create table singerId (next_val INT64) PRIMARY KEY ()", request.getStatements(++index));
+        "create table singerId (next_val int64) PRIMARY KEY ()", request.getStatements(++index));
     assertEquals(
         "alter table Invoice add constraint fk_invoice_customer foreign key (customer_customerId) references Customer (customerId) on delete cascade",
         request.getStatements(++index));
@@ -204,10 +204,10 @@ public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTes
     int index = -1;
 
     assertEquals(
-        "create table Employee (id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
+        "create table Employee (id int64 not null,manager_id int64,name string(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
     assertEquals(
-        "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+        "create table Employee_SEQ (next_val int64) PRIMARY KEY ()",
         request.getStatements(++index));
     assertEquals("create index name_index on Employee (name)", request.getStatements(++index));
     assertEquals(
@@ -241,13 +241,13 @@ public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTes
     int index = -1;
 
     assertEquals(
-        "create table Airplane (id STRING(255) not null,modelName STRING(255)) PRIMARY KEY (id)",
+        "create table Airplane (id string(36) not null,modelName string(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
     assertEquals(
-        "create table Airport (id STRING(255) not null) PRIMARY KEY (id)",
+        "create table Airport (id string(36) not null) PRIMARY KEY (id)",
         request.getStatements(++index));
     assertEquals(
-        "create table Airport_Airplane (Airport_id STRING(255) not null,airplanes_id STRING(255) not null) PRIMARY KEY (Airport_id,airplanes_id)",
+        "create table Airport_Airplane (Airport_id string(36) not null,airplanes_id string(36) not null) PRIMARY KEY (Airport_id,airplanes_id)",
         request.getStatements(++index));
 
     assertEquals(
@@ -290,18 +290,18 @@ public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTes
     int index = -1;
 
     assertEquals(
-        "create table GrandParent (grandParentId INT64 not null,name STRING(255)) PRIMARY KEY (grandParentId)",
+        "create table GrandParent (grandParentId int64 not null,name string(255)) PRIMARY KEY (grandParentId)",
         request.getStatements(++index));
     assertEquals(
-        "create table Parent (grandParentId INT64 not null,parentId INT64 not null,name STRING(255)) "
+        "create table Parent (grandParentId int64 not null,parentId int64 not null,name string(255)) "
             + "PRIMARY KEY (grandParentId,parentId), INTERLEAVE IN PARENT GrandParent",
         request.getStatements(++index));
     assertEquals(
-        "create table Child (childId INT64 not null,grandParentId INT64 not null,parentId INT64 not null,name STRING(255)) "
+        "create table Child (childId int64 not null,grandParentId int64 not null,parentId int64 not null,name string(255)) "
             + "PRIMARY KEY (grandParentId,parentId,childId), INTERLEAVE IN PARENT Parent",
         request.getStatements(++index));
     assertEquals(
-        "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+        "create table GrandParent_SEQ (next_val int64) PRIMARY KEY ()",
         request.getStatements(++index));
   }
 
@@ -332,21 +332,21 @@ public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTes
 
     assertEquals(
         "create table `TestEntity_stringList` ("
-            + "`TestEntity_ID1` INT64 not null,"
-            + "`TestEntity_id2` STRING(255) not null,"
-            + "stringList STRING(255)) "
+            + "`TestEntity_ID1` int64 not null,"
+            + "`TestEntity_id2` string(255) not null,"
+            + "stringList string(255)) "
             + "PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList)",
         request.getStatements(++index));
     assertEquals(
-        "create table SubTestEntity (id STRING(255) not null,id1 INT64,id2 STRING(255)) PRIMARY KEY (id)",
+        "create table SubTestEntity (id1 int64,id string(255) not null,id2 string(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
     assertEquals(
-        "create table `test_table` ("
-            + "`ID1` INT64 not null,id2 STRING(255) not null,"
-            + "`boolColumn` BOOL,"
-            + "longVal INT64 not null,"
-            + "stringVal STRING(255)) "
-            + "PRIMARY KEY (`ID1`,id2)",
+        "create table `test_table` (" 
+            + "`boolColumn` bool," 
+            + "`ID1` int64 not null," 
+            + "longVal int64 not null," 
+            + "id2 string(255) not null" 
+            + ",stringVal string(255)) PRIMARY KEY (`ID1`,id2)",
         request.getStatements(++index));
     assertEquals(
         "alter table `TestEntity_stringList` add constraint FK2is6fwy3079dmfhjot09x5och "

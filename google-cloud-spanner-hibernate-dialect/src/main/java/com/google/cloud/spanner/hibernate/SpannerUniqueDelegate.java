@@ -44,7 +44,7 @@ public class SpannerUniqueDelegate extends DefaultUniqueDelegate {
   public String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata,
       SqlStringGenerationContext context) {
     return Index.buildSqlCreateIndexString(context,
-        uniqueKey.getName(), uniqueKey.getTable(), uniqueKey.getColumnIterator(),
+        uniqueKey.getName(), uniqueKey.getTable(), uniqueKey.getColumns(),
         uniqueKey.getColumnOrderMap(), true, metadata);
   }
 
