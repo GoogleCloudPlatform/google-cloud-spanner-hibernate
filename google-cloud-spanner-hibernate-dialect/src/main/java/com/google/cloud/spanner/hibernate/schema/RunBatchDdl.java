@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,12 +22,11 @@ import com.google.cloud.spanner.hibernate.SpannerDialect;
 import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.boot.model.relational.AuxiliaryDatabaseObject;
+import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.tool.schema.Action;
 
-/**
- * Custom {@link AuxiliaryDatabaseObject} which generates the RUN BATCH statement.
- */
+/** Custom {@link AuxiliaryDatabaseObject} which generates the RUN BATCH statement. */
 public class RunBatchDdl implements AuxiliaryDatabaseObject {
   private static final long serialVersionUID = 1L;
 
@@ -66,18 +65,19 @@ public class RunBatchDdl implements AuxiliaryDatabaseObject {
 
   @Override
   public boolean beforeTablesOnCreation() {
-    return schemaAction == Action.UPDATE;
+    return schemaAction != Action.CREATE && schemaAction != Action.CREATE_ONLY
+        && schemaAction != Action.UPDATE;
   }
 
   @Override
-  public String[] sqlCreateStrings(Dialect dialect) {
+  public String[] sqlCreateStrings(SqlStringGenerationContext context) {
     return statements.toArray(new String[statements.size()]);
   }
 
   @Override
-  public String[] sqlDropStrings(Dialect dialect) {
+  public String[] sqlDropStrings(SqlStringGenerationContext context) {
     if (schemaAction == Action.UPDATE) {
-      return new String[]{};
+      return new String[] {};
     } else {
       return statements.toArray(new String[statements.size()]);
     }
