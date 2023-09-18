@@ -28,6 +28,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
@@ -55,6 +57,7 @@ public class Invoice {
 
   @ManyToOne
   @JoinColumn(foreignKey = @ForeignKey(name = "fk_invoice_customer"))
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Customer customer;
 
 }

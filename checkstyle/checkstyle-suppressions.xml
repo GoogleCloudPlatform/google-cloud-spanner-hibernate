@@ -6,4 +6,6 @@
 <suppressions>
   <suppress checks="AbbreviationAsWordInName" files=".*IT.java" />
   <suppress checks="MissingJavadocType" files="[\\/]google-cloud-spanner-hibernate-samples[\\/]" />
+  <!--Ignore long lines in mock server tests, as these use a lot of mocked SQL that can be very long, and that is easier to read if it is formatted in its original form. -->
+  <suppress checks="LineLength" files=".*MockServerTest.java" />
 </suppressions>
