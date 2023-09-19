@@ -51,7 +51,9 @@ import org.junit.Test;
  */
 public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMockServerTest {
 
-  /** Set up empty mocked results for schema queries. */
+  /**
+   * Set up empty mocked results for schema queries.
+   */
   @BeforeClass
   public static void setupSchemaQueryResults() {
     mockSpanner.putStatementResult(
@@ -72,232 +74,253 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
                         .setRowType(StructType.newBuilder().build())
                         .build())
                 .build()));
+    mockSpanner.putStatementResult(StatementResult.query(GET_COLUMNS_STATEMENT, ResultSet
+        .newBuilder()
+        .setMetadata(GET_COLUMNS_METADATA)
+        .build()));
   }
 
   @Test
   public void testGenerateSchema() {
-    addDdlResponseToSpannerAdmin();
+    for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
+      mockDatabaseAdmin.getRequests().clear();
+      addDdlResponseToSpannerAdmin();
 
-    //noinspection EmptyTryBlock
-    try (SessionFactory ignore =
-        createTestHibernateConfig(
-                ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
-            .buildSessionFactory()) {
-      // do nothing, just generate the schema.
+      //noinspection EmptyTryBlock
+      try (SessionFactory ignore =
+          createTestHibernateConfig(
+              ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
+              ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
+              .buildSessionFactory()) {
+        // do nothing, just generate the schema.
+      }
+
+      // Check the DDL statements that were generated.
+      List<UpdateDatabaseDdlRequest> requests =
+          mockDatabaseAdmin.getRequests().stream()
+              .filter(request -> request instanceof UpdateDatabaseDdlRequest)
+              .map(request -> (UpdateDatabaseDdlRequest) request)
+              .collect(Collectors.toList());
+      assertEquals(1, requests.size());
+      UpdateDatabaseDdlRequest request = requests.get(0);
+      assertEquals(8, request.getStatementsCount());
+
+      int index = -1;
+
+      assertEquals(
+          "create table Account (id INT64 not null,amount NUMERIC,name STRING(255)) PRIMARY KEY (id)",
+          request.getStatements(++index));
+      assertEquals(
+          "create table Customer (customerId INT64 not null,name STRING(255)) PRIMARY KEY (customerId)",
+          request.getStatements(++index));
+      assertEquals(
+          "create table customerId (next_val INT64) PRIMARY KEY ()",
+          request.getStatements(++index));
+      assertEquals(
+          "create table Invoice (invoiceId INT64 not null,number STRING(255),customer_customerId INT64) PRIMARY KEY (invoiceId)",
+          request.getStatements(++index));
+      assertEquals(
+          "create table invoiceId (next_val INT64) PRIMARY KEY ()", request.getStatements(++index));
+      assertEquals(
+          "create table Singer (id INT64 not null) PRIMARY KEY (id)",
+          request.getStatements(++index));
+      assertEquals(
+          "create table singerId (next_val INT64) PRIMARY KEY ()", request.getStatements(++index));
+      assertEquals(
+          "alter table Invoice add constraint fk_invoice_customer foreign key (customer_customerId) references Customer (customerId) on delete cascade",
+          request.getStatements(++index));
     }
-
-    // Check the DDL statements that were generated.
-    List<UpdateDatabaseDdlRequest> requests =
-        mockDatabaseAdmin.getRequests().stream()
-            .filter(request -> request instanceof UpdateDatabaseDdlRequest)
-            .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
-    assertEquals(1, requests.size());
-    UpdateDatabaseDdlRequest request = requests.get(0);
-    assertEquals(8, request.getStatementsCount());
-
-    int index = -1;
-
-    assertEquals(
-        "create table Account (id INT64 not null,amount NUMERIC,name STRING(255)) PRIMARY KEY (id)",
-        request.getStatements(++index));
-    assertEquals(
-        "create table Customer (customerId INT64 not null,name STRING(255)) PRIMARY KEY (customerId)",
-        request.getStatements(++index));
-    assertEquals(
-        "create table customerId (next_val INT64) PRIMARY KEY ()", request.getStatements(++index));
-    assertEquals(
-        "create table Invoice (invoiceId INT64 not null,number STRING(255),customer_customerId INT64) PRIMARY KEY (invoiceId)",
-        request.getStatements(++index));
-    assertEquals(
-        "create table invoiceId (next_val INT64) PRIMARY KEY ()", request.getStatements(++index));
-    assertEquals(
-        "create table Singer (id INT64 not null) PRIMARY KEY (id)", request.getStatements(++index));
-    assertEquals(
-        "create table singerId (next_val INT64) PRIMARY KEY ()", request.getStatements(++index));
-    assertEquals(
-        "alter table Invoice add constraint fk_invoice_customer foreign key (customer_customerId) references Customer (customerId) on delete cascade",
-        request.getStatements(++index));
   }
 
   @Test
   public void testGenerateEmployeeSchema() {
-    addDdlResponseToSpannerAdmin();
+    for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
+      mockDatabaseAdmin.getRequests().clear();
+      addDdlResponseToSpannerAdmin();
 
-    //noinspection EmptyTryBlock
-    try (SessionFactory ignore =
-        createTestHibernateConfig(
-                ImmutableList.of(Employee.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
-            .buildSessionFactory()) {
-      // do nothing, just generate the schema.
+      //noinspection EmptyTryBlock
+      try (SessionFactory ignore =
+          createTestHibernateConfig(
+              ImmutableList.of(Employee.class),
+              ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
+              .buildSessionFactory()) {
+        // do nothing, just generate the schema.
+      }
+
+      // Check the DDL statements that were generated.
+      List<UpdateDatabaseDdlRequest> requests =
+          mockDatabaseAdmin.getRequests().stream()
+              .filter(request -> request instanceof UpdateDatabaseDdlRequest)
+              .map(request -> (UpdateDatabaseDdlRequest) request)
+              .collect(Collectors.toList());
+      assertEquals(1, requests.size());
+      UpdateDatabaseDdlRequest request = requests.get(0);
+      assertEquals(4, request.getStatementsCount());
+
+      int index = -1;
+
+      assertEquals(
+          "create table Employee (id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
+          request.getStatements(++index));
+      assertEquals(
+          "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+          request.getStatements(++index));
+      assertEquals("create index name_index on Employee (name)", request.getStatements(++index));
+      assertEquals(
+          "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 foreign key (manager_id) references Employee (id)",
+          request.getStatements(++index));
     }
-
-    // Check the DDL statements that were generated.
-    List<UpdateDatabaseDdlRequest> requests =
-        mockDatabaseAdmin.getRequests().stream()
-            .filter(request -> request instanceof UpdateDatabaseDdlRequest)
-            .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
-    assertEquals(1, requests.size());
-    UpdateDatabaseDdlRequest request = requests.get(0);
-    assertEquals(4, request.getStatementsCount());
-
-    int index = -1;
-
-    assertEquals(
-        "create table Employee (id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
-        request.getStatements(++index));
-    assertEquals(
-        "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
-        request.getStatements(++index));
-    assertEquals("create index name_index on Employee (name)", request.getStatements(++index));
-    assertEquals(
-        "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 foreign key (manager_id) references Employee (id)",
-        request.getStatements(++index));
   }
 
   @Test
   public void testGenerateAirportSchema() {
-    addDdlResponseToSpannerAdmin();
+    for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
+      mockDatabaseAdmin.getRequests().clear();
+      addDdlResponseToSpannerAdmin();
 
-    //noinspection EmptyTryBlock
-    try (SessionFactory ignore =
-        createTestHibernateConfig(
-                ImmutableList.of(Airplane.class, Airport.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
-            .buildSessionFactory()) {
-      // do nothing, just generate the schema.
+      //noinspection EmptyTryBlock
+      try (SessionFactory ignore =
+          createTestHibernateConfig(
+              ImmutableList.of(Airplane.class, Airport.class),
+              ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
+              .buildSessionFactory()) {
+        // do nothing, just generate the schema.
+      }
+
+      // Check the DDL statements that were generated.
+      List<UpdateDatabaseDdlRequest> requests =
+          mockDatabaseAdmin.getRequests().stream()
+              .filter(request -> request instanceof UpdateDatabaseDdlRequest)
+              .map(request -> (UpdateDatabaseDdlRequest) request)
+              .collect(Collectors.toList());
+      assertEquals(1, requests.size());
+      UpdateDatabaseDdlRequest request = requests.get(0);
+      assertEquals(7, request.getStatementsCount());
+
+      int index = -1;
+
+      assertEquals(
+          "create table Airplane (id STRING(255) not null,modelName STRING(255)) PRIMARY KEY (id)",
+          request.getStatements(++index));
+      assertEquals(
+          "create table Airport (id STRING(255) not null) PRIMARY KEY (id)",
+          request.getStatements(++index));
+      assertEquals(
+          "create table Airport_Airplane (Airport_id STRING(255) not null,airplanes_id STRING(255) not null) PRIMARY KEY (Airport_id,airplanes_id)",
+          request.getStatements(++index));
+
+      assertEquals(
+          "create unique index UK_gc568wb30sampsuirwne5jqgh on Airplane (modelName)",
+          request.getStatements(++index));
+      assertEquals(
+          "create unique index UK_em0lqvwoqdwt29x0b0r010be on Airport_Airplane (airplanes_id)",
+          request.getStatements(++index));
+      assertEquals(
+          "alter table Airport_Airplane add constraint FKkn0enwaxbwk7csf52x0eps73d foreign key (airplanes_id) references Airplane (id)",
+          request.getStatements(++index));
+      assertEquals(
+          "alter table Airport_Airplane add constraint FKh186t28ublke8o13fo4ppogs7 foreign key (Airport_id) references Airport (id)",
+          request.getStatements(++index));
     }
-
-    // Check the DDL statements that were generated.
-    List<UpdateDatabaseDdlRequest> requests =
-        mockDatabaseAdmin.getRequests().stream()
-            .filter(request -> request instanceof UpdateDatabaseDdlRequest)
-            .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
-    assertEquals(1, requests.size());
-    UpdateDatabaseDdlRequest request = requests.get(0);
-    assertEquals(7, request.getStatementsCount());
-
-    int index = -1;
-
-    assertEquals(
-        "create table Airplane (id STRING(255) not null,modelName STRING(255)) PRIMARY KEY (id)",
-        request.getStatements(++index));
-    assertEquals(
-        "create table Airport (id STRING(255) not null) PRIMARY KEY (id)",
-        request.getStatements(++index));
-    assertEquals(
-        "create table Airport_Airplane (Airport_id STRING(255) not null,airplanes_id STRING(255) not null) PRIMARY KEY (Airport_id,airplanes_id)",
-        request.getStatements(++index));
-
-    assertEquals(
-        "create unique index UK_gc568wb30sampsuirwne5jqgh on Airplane (modelName)",
-        request.getStatements(++index));
-    assertEquals(
-        "create unique index UK_em0lqvwoqdwt29x0b0r010be on Airport_Airplane (airplanes_id)",
-        request.getStatements(++index));
-    assertEquals(
-        "alter table Airport_Airplane add constraint FKkn0enwaxbwk7csf52x0eps73d foreign key (airplanes_id) references Airplane (id)",
-        request.getStatements(++index));
-    assertEquals(
-        "alter table Airport_Airplane add constraint FKh186t28ublke8o13fo4ppogs7 foreign key (Airport_id) references Airport (id)",
-        request.getStatements(++index));
   }
 
   @Test
   public void testGenerateParentChildSchema() {
-    addDdlResponseToSpannerAdmin();
+    for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
+      mockDatabaseAdmin.getRequests().clear();
+      addDdlResponseToSpannerAdmin();
 
-    //noinspection EmptyTryBlock
-    try (SessionFactory ignore =
-        createTestHibernateConfig(
-                ImmutableList.of(GrandParent.class, Parent.class, Child.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
-            .buildSessionFactory()) {
-      // do nothing, just generate the schema.
+      //noinspection EmptyTryBlock
+      try (SessionFactory ignore =
+          createTestHibernateConfig(
+              ImmutableList.of(GrandParent.class, Parent.class, Child.class),
+              ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
+              .buildSessionFactory()) {
+        // do nothing, just generate the schema.
+      }
+
+      // Check the DDL statements that were generated.
+      List<UpdateDatabaseDdlRequest> requests =
+          mockDatabaseAdmin.getRequests().stream()
+              .filter(request -> request instanceof UpdateDatabaseDdlRequest)
+              .map(request -> (UpdateDatabaseDdlRequest) request)
+              .collect(Collectors.toList());
+      assertEquals(1, requests.size());
+      UpdateDatabaseDdlRequest request = requests.get(0);
+      assertEquals(4, request.getStatementsCount());
+
+      int index = -1;
+
+      assertEquals(
+          "create table GrandParent (grandParentId INT64 not null,name STRING(255)) PRIMARY KEY (grandParentId)",
+          request.getStatements(++index));
+      assertEquals(
+          "create table Parent (grandParentId INT64 not null,parentId INT64 not null,name STRING(255)) "
+              + "PRIMARY KEY (grandParentId,parentId), INTERLEAVE IN PARENT GrandParent",
+          request.getStatements(++index));
+      assertEquals(
+          "create table Child (childId INT64 not null,grandParentId INT64 not null,parentId INT64 not null,name STRING(255)) "
+              + "PRIMARY KEY (grandParentId,parentId,childId), INTERLEAVE IN PARENT Parent",
+          request.getStatements(++index));
+      assertEquals(
+          "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+          request.getStatements(++index));
     }
-
-    // Check the DDL statements that were generated.
-    List<UpdateDatabaseDdlRequest> requests =
-        mockDatabaseAdmin.getRequests().stream()
-            .filter(request -> request instanceof UpdateDatabaseDdlRequest)
-            .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
-    assertEquals(1, requests.size());
-    UpdateDatabaseDdlRequest request = requests.get(0);
-    assertEquals(4, request.getStatementsCount());
-
-    int index = -1;
-
-    assertEquals(
-        "create table GrandParent (grandParentId INT64 not null,name STRING(255)) PRIMARY KEY (grandParentId)",
-        request.getStatements(++index));
-    assertEquals(
-        "create table Parent (grandParentId INT64 not null,parentId INT64 not null,name STRING(255)) "
-            + "PRIMARY KEY (grandParentId,parentId), INTERLEAVE IN PARENT GrandParent",
-        request.getStatements(++index));
-    assertEquals(
-        "create table Child (childId INT64 not null,grandParentId INT64 not null,parentId INT64 not null,name STRING(255)) "
-            + "PRIMARY KEY (grandParentId,parentId,childId), INTERLEAVE IN PARENT Parent",
-        request.getStatements(++index));
-    assertEquals(
-        "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
-        request.getStatements(++index));
   }
 
   @Test
   public void testGenerateTestEntitySchema() {
-    addDdlResponseToSpannerAdmin();
+    for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
+      mockDatabaseAdmin.getRequests().clear();
+      addDdlResponseToSpannerAdmin();
 
-    //noinspection EmptyTryBlock
-    try (SessionFactory ignore =
-        createTestHibernateConfig(
-                ImmutableList.of(TestEntity.class, SubTestEntity.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "create-only"))
-            .buildSessionFactory()) {
-      // do nothing, just generate the schema.
+      //noinspection EmptyTryBlock
+      try (SessionFactory ignore =
+          createTestHibernateConfig(
+              ImmutableList.of(TestEntity.class, SubTestEntity.class),
+              ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
+              .buildSessionFactory()) {
+        // do nothing, just generate the schema.
+      }
+
+      // Check the DDL statements that were generated.
+      List<UpdateDatabaseDdlRequest> requests =
+          mockDatabaseAdmin.getRequests().stream()
+              .filter(request -> request instanceof UpdateDatabaseDdlRequest)
+              .map(request -> (UpdateDatabaseDdlRequest) request)
+              .collect(Collectors.toList());
+      assertEquals(1, requests.size());
+      UpdateDatabaseDdlRequest request = requests.get(0);
+      assertEquals(5, request.getStatementsCount());
+
+      int index = -1;
+
+      assertEquals(
+          "create table `TestEntity_stringList` ("
+              + "`TestEntity_ID1` INT64 not null,"
+              + "`TestEntity_id2` STRING(255) not null,"
+              + "stringList STRING(255)) "
+              + "PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList)",
+          request.getStatements(++index));
+      assertEquals(
+          "create table SubTestEntity (id STRING(255) not null,id1 INT64,id2 STRING(255)) PRIMARY KEY (id)",
+          request.getStatements(++index));
+      assertEquals(
+          "create table `test_table` ("
+              + "`ID1` INT64 not null,id2 STRING(255) not null,"
+              + "`boolColumn` BOOL,"
+              + "longVal INT64 not null,"
+              + "stringVal STRING(255)) "
+              + "PRIMARY KEY (`ID1`,id2)",
+          request.getStatements(++index));
+      assertEquals(
+          "alter table `TestEntity_stringList` add constraint FK2is6fwy3079dmfhjot09x5och "
+              + "foreign key (`TestEntity_ID1`, `TestEntity_id2`) references `test_table` (`ID1`, id2)",
+          request.getStatements(++index));
+      assertEquals(
+          "alter table SubTestEntity add constraint FK45l9js1jvci3yy21exuclnku0 "
+              + "foreign key (id1, id2) references `test_table` (`ID1`, id2)",
+          request.getStatements(++index));
     }
-
-    // Check the DDL statements that were generated.
-    List<UpdateDatabaseDdlRequest> requests =
-        mockDatabaseAdmin.getRequests().stream()
-            .filter(request -> request instanceof UpdateDatabaseDdlRequest)
-            .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
-    assertEquals(1, requests.size());
-    UpdateDatabaseDdlRequest request = requests.get(0);
-    assertEquals(5, request.getStatementsCount());
-
-    int index = -1;
-
-    assertEquals(
-        "create table `TestEntity_stringList` ("
-            + "`TestEntity_ID1` INT64 not null,"
-            + "`TestEntity_id2` STRING(255) not null,"
-            + "stringList STRING(255)) "
-            + "PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList)",
-        request.getStatements(++index));
-    assertEquals(
-        "create table SubTestEntity (id STRING(255) not null,id1 INT64,id2 STRING(255)) PRIMARY KEY (id)",
-        request.getStatements(++index));
-    assertEquals(
-        "create table `test_table` ("
-            + "`ID1` INT64 not null,id2 STRING(255) not null,"
-            + "`boolColumn` BOOL,"
-            + "longVal INT64 not null,"
-            + "stringVal STRING(255)) "
-            + "PRIMARY KEY (`ID1`,id2)",
-        request.getStatements(++index));
-    assertEquals(
-        "alter table `TestEntity_stringList` add constraint FK2is6fwy3079dmfhjot09x5och "
-            + "foreign key (`TestEntity_ID1`, `TestEntity_id2`) references `test_table` (`ID1`, id2)",
-        request.getStatements(++index));
-    assertEquals(
-        "alter table SubTestEntity add constraint FK45l9js1jvci3yy21exuclnku0 "
-            + "foreign key (id1, id2) references `test_table` (`ID1`, id2)",
-        request.getStatements(++index));
   }
 }
