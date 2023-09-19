@@ -21,7 +21,6 @@ package com.google.cloud.spanner.hibernate;
 import static org.junit.Assert.assertEquals;
 
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.hibernate.entities.Account;
 import com.google.cloud.spanner.hibernate.entities.Airplane;
 import com.google.cloud.spanner.hibernate.entities.Airport;
@@ -50,39 +49,14 @@ import org.junit.Test;
  * Verifies that the correct database schema is being generated, and that the schema generation uses
  * a DDL batch.
  */
-public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTest {
+public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMockServerTest {
 
   /** Set up empty mocked results for schema queries. */
   @BeforeClass
   public static void setupSchemaQueryResults() {
     mockSpanner.putStatementResult(
         StatementResult.query(
-            Statement.newBuilder(
-                    "SELECT TABLE_CATALOG AS TABLE_CAT, TABLE_SCHEMA AS TABLE_SCHEM, TABLE_NAME,\n"
-                        + "       CASE WHEN TABLE_TYPE = 'BASE TABLE' THEN 'TABLE' ELSE TABLE_TYPE END AS TABLE_TYPE,\n"
-                        + "       NULL AS REMARKS, NULL AS TYPE_CAT, NULL AS TYPE_SCHEM, NULL AS TYPE_NAME,\n"
-                        + "       NULL AS SELF_REFERENCING_COL_NAME, NULL AS REF_GENERATION\n"
-                        + "FROM INFORMATION_SCHEMA.TABLES AS T\n"
-                        + "WHERE UPPER(TABLE_CATALOG) LIKE @p1\n"
-                        + "  AND UPPER(TABLE_SCHEMA) LIKE @p2\n"
-                        + "  AND UPPER(TABLE_NAME) LIKE @p3\n"
-                        + "  AND (\n"
-                        + "            (CASE WHEN TABLE_TYPE = 'BASE TABLE' THEN 'TABLE' ELSE TABLE_TYPE END) LIKE @p4\n"
-                        + "        OR\n"
-                        + "            (CASE WHEN TABLE_TYPE = 'BASE TABLE' THEN 'TABLE' ELSE TABLE_TYPE END) LIKE @p5\n"
-                        + "    )\n"
-                        + "ORDER BY TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME")
-                .bind("p1")
-                .to("%")
-                .bind("p2")
-                .to("%")
-                .bind("p3")
-                .to("%")
-                .bind("p4")
-                .to("TABLE")
-                .bind("p5")
-                .to("VIEW")
-                .build(),
+            GET_TABLES_STATEMENT,
             ResultSet.newBuilder()
                 .setMetadata(
                     ResultSetMetadata.newBuilder()
@@ -91,38 +65,7 @@ public class SchemaGenerationMockServerTest extends AbstractMockSpannerServerTes
                 .build()));
     mockSpanner.putStatementResult(
         StatementResult.query(
-            Statement.newBuilder(
-                    "SELECT IDX.TABLE_CATALOG AS TABLE_CAT, IDX.TABLE_SCHEMA AS TABLE_SCHEM, IDX.TABLE_NAME,\n"
-                        + "  CASE WHEN IS_UNIQUE THEN FALSE ELSE TRUE END AS NON_UNIQUE,\n"
-                        + "  IDX.TABLE_CATALOG AS INDEX_QUALIFIER, IDX.INDEX_NAME,\n"
-                        + "  CASE WHEN IDX.INDEX_NAME = 'PRIMARY_KEY' THEN 1 ELSE 2 END AS TYPE,\n"
-                        + "  ORDINAL_POSITION, COLUMN_NAME, SUBSTR(COLUMN_ORDERING, 1, 1) AS ASC_OR_DESC,\n"
-                        + "  -1 AS CARDINALITY, \n"
-                        + "  -1 AS PAGES, \n"
-                        + "  NULL AS FILTER_CONDITION\n"
-                        + "FROM INFORMATION_SCHEMA.INDEXES IDX\n"
-                        + "INNER JOIN INFORMATION_SCHEMA.INDEX_COLUMNS COL\n"
-                        + "  ON  IDX.TABLE_CATALOG=COL.TABLE_CATALOG\n"
-                        + "  AND IDX.TABLE_SCHEMA=COL.TABLE_SCHEMA\n"
-                        + "  AND IDX.TABLE_NAME=COL.TABLE_NAME\n"
-                        + "  AND IDX.INDEX_NAME=COL.INDEX_NAME\n"
-                        + "WHERE UPPER(IDX.TABLE_CATALOG) LIKE @p1\n"
-                        + "  AND UPPER(IDX.TABLE_SCHEMA) LIKE @p2\n"
-                        + "  AND UPPER(IDX.TABLE_NAME) LIKE @p3\n"
-                        + "  AND UPPER(IDX.INDEX_NAME) LIKE @p4\n"
-                        + "  AND (CASE WHEN IS_UNIQUE THEN 'YES' ELSE 'NO' END) LIKE @p5\n"
-                        + "ORDER BY IDX.TABLE_NAME, IS_UNIQUE DESC, IDX.INDEX_NAME, CASE WHEN ORDINAL_POSITION IS NULL THEN 0 ELSE ORDINAL_POSITION END")
-                .bind("p1")
-                .to("%")
-                .bind("p2")
-                .to("%")
-                .bind("p3")
-                .to("%")
-                .bind("p4")
-                .to("%")
-                .bind("p5")
-                .to("%")
-                .build(),
+            GET_INDEXES_STATEMENT,
             ResultSet.newBuilder()
                 .setMetadata(
                     ResultSetMetadata.newBuilder()
