@@ -27,6 +27,7 @@ import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
+import java.sql.DatabaseMetaData;
 
 /**
  * Abstract base class for mock server tests that auto-generate the database schema.
@@ -219,6 +220,72 @@ public class AbstractSchemaGenerationMockServerTest extends AbstractMockSpannerS
           Field.newBuilder().setName("increment")
               .setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build()).build()).build();
 
+  protected static final Statement GET_FOREIGN_KEYS_STATEMENT = Statement.of("SELECT *\n"
+      + "FROM (\n"
+      + "\tSELECT PARENT.TABLE_CATALOG AS PKTABLE_CAT, PARENT.TABLE_SCHEMA AS PKTABLE_SCHEM,\n"
+      + "\t       PARENT.TABLE_NAME AS PKTABLE_NAME, PARENT_INDEX_COLUMNS.COLUMN_NAME AS PKCOLUMN_NAME,\n"
+      + "\t       CHILD.TABLE_CATALOG AS FKTABLE_CAT, CHILD.TABLE_SCHEMA AS FKTABLE_SCHEM,\n"
+      + "\t       CHILD.TABLE_NAME AS FKTABLE_NAME, PARENT_INDEX_COLUMNS.COLUMN_NAME AS FKCOLUMN_NAME,\n"
+      + "\t       PARENT_INDEX_COLUMNS.ORDINAL_POSITION AS KEY_SEQ,\n"
+      + "\t       1 AS UPDATE_RULE, \n"
+      + "\t       CASE WHEN CHILD.ON_DELETE_ACTION='CASCADE' THEN 0 ELSE 1 END AS DELETE_RULE, \n"
+      + "\t       NULL AS FK_NAME, 'PRIMARY_KEY' AS PK_NAME,\n"
+      + "\t       7 AS DEFERRABILITY \n"
+      + "\tFROM INFORMATION_SCHEMA.TABLES PARENT\n"
+      + "\tINNER JOIN INFORMATION_SCHEMA.TABLES CHILD ON CHILD.PARENT_TABLE_NAME=PARENT.TABLE_NAME\n"
+      + "\tINNER JOIN INFORMATION_SCHEMA.INDEX_COLUMNS PARENT_INDEX_COLUMNS ON\n"
+      + "\t           PARENT_INDEX_COLUMNS.TABLE_NAME=PARENT.TABLE_NAME\n"
+      + "\t       AND PARENT_INDEX_COLUMNS.INDEX_NAME='PRIMARY_KEY'\n"
+      + "\t\n"
+      + "\tUNION ALL\n"
+      + "\t\n"
+      + "\tSELECT PARENT.TABLE_CATALOG AS PKTABLE_CAT, PARENT.TABLE_SCHEMA AS PKTABLE_SCHEM, PARENT.TABLE_NAME AS PKTABLE_NAME,\n"
+      + "\t       PARENT.COLUMN_NAME AS PKCOLUMN_NAME, CHILD.TABLE_CATALOG AS FKTABLE_CAT, CHILD.TABLE_SCHEMA AS FKTABLE_SCHEM,\n"
+      + "\t       CHILD.TABLE_NAME AS FKTABLE_NAME, CHILD.COLUMN_NAME AS FKCOLUMN_NAME,\n"
+      + "\t       CHILD.ORDINAL_POSITION AS KEY_SEQ,\n"
+      + "\t       1 AS UPDATE_RULE, \n"
+      + "\t       1 AS DELETE_RULE, \n"
+      + "\t       CONSTRAINTS.CONSTRAINT_NAME AS FK_NAME, CONSTRAINTS.UNIQUE_CONSTRAINT_NAME AS PK_NAME,\n"
+      + "\t       7 AS DEFERRABILITY \n"
+      + "\tFROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS CONSTRAINTS\n"
+      + "\tINNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE CHILD  ON CONSTRAINTS.CONSTRAINT_CATALOG=CHILD.CONSTRAINT_CATALOG AND CONSTRAINTS.CONSTRAINT_SCHEMA= CHILD.CONSTRAINT_SCHEMA AND CONSTRAINTS.CONSTRAINT_NAME= CHILD.CONSTRAINT_NAME\n"
+      + "\tINNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PARENT ON CONSTRAINTS.UNIQUE_CONSTRAINT_CATALOG=PARENT.CONSTRAINT_CATALOG AND CONSTRAINTS.UNIQUE_CONSTRAINT_SCHEMA=PARENT.CONSTRAINT_SCHEMA AND CONSTRAINTS.UNIQUE_CONSTRAINT_NAME=PARENT.CONSTRAINT_NAME AND PARENT.ORDINAL_POSITION=CHILD.POSITION_IN_UNIQUE_CONSTRAINT\n"
+      + ") IMPORTED_KEYS\n"
+      + "WHERE UPPER(FKTABLE_CAT) LIKE @p1\n"
+      + "  AND UPPER(FKTABLE_SCHEM) LIKE @p2\n"
+      + "  AND UPPER(FKTABLE_NAME) LIKE @p3\n"
+      + "ORDER BY PKTABLE_CAT, PKTABLE_SCHEM, PKTABLE_NAME, KEY_SEQ");
+  protected static final ResultSetMetadata GET_FOREIGN_KEYS_METADATA = ResultSetMetadata.newBuilder()
+      .setRowType(StructType.newBuilder().addFields(
+          Field.newBuilder().setName("PKTABLE_CAT")
+              .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+          Field.newBuilder().setName("PKTABLE_SCHEM")
+              .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+          Field.newBuilder().setName("PKTABLE_NAME")
+              .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+          Field.newBuilder().setName("PKCOLUMN_NAME")
+              .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+          Field.newBuilder().setName("FKTABLE_CAT")
+              .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+          Field.newBuilder().setName("FKTABLE_SCHEM")
+              .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+          Field.newBuilder().setName("FKTABLE_NAME")
+              .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+          Field.newBuilder().setName("FKCOLUMN_NAME")
+              .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+          Field.newBuilder().setName("KEY_SEQ")
+              .setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build()).addFields(
+          Field.newBuilder().setName("UPDATE_RULE")
+              .setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build()).addFields(
+          Field.newBuilder().setName("DELETE_RULE")
+              .setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build()).addFields(
+          Field.newBuilder().setName("FK_NAME")
+              .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+          Field.newBuilder().setName("PK_NAME")
+              .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+          Field.newBuilder().setName("DEFERRABILITY")
+              .setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build()).build()).build();
+
   protected static ListValue createTableRow(String tableName) {
     return createTableOrViewRow(tableName, "TABLE");
   }
@@ -276,6 +343,25 @@ public class AbstractSchemaGenerationMockServerTest extends AbstractMockSpannerS
         .addValues(Value.newBuilder().setStringValue("1").build())
         .addValues(Value.newBuilder().setStringValue("9223372036854775807").build())
         .addValues(Value.newBuilder().setStringValue("1").build()).build();
+  }
+  
+  protected static ListValue createForeignKeyRow(String pkSchema, String pkTable, String pkColumn, String fkSchema, String fkTable, String fkColumn, int ordinalPosition, int deleteRule, String fkName) {
+    return ListValue.newBuilder()
+        .addValues(Value.newBuilder().setStringValue("").build()) // PKTABLE_CAT
+        .addValues(Value.newBuilder().setStringValue(pkSchema).build()) // PKTABLE_SCHEM
+        .addValues(Value.newBuilder().setStringValue(pkTable).build()) // PKTABLE_NAME
+        .addValues(Value.newBuilder().setStringValue(pkColumn).build()) // PKCOLUMN_NAME
+        .addValues(Value.newBuilder().setStringValue("").build()) // FKTABLE_CAT
+        .addValues(Value.newBuilder().setStringValue(fkSchema).build()) // FKTABLE_SCHEM
+        .addValues(Value.newBuilder().setStringValue(fkTable).build()) // FKTABLE_NAME
+        .addValues(Value.newBuilder().setStringValue(fkColumn).build()) // FKCOLUMN_NAME
+        .addValues(Value.newBuilder().setStringValue(String.valueOf(ordinalPosition)).build()) // KEY_SEQ
+        .addValues(Value.newBuilder().setStringValue("1").build()) // UPDATE_RULE
+        .addValues(Value.newBuilder().setStringValue(String.valueOf(deleteRule)).build()) // DELETE_RULE
+        .addValues(Value.newBuilder().setStringValue(fkName).build()) // FK_NAME
+        .addValues(Value.newBuilder().setStringValue("PRIMARY_KEY").build()) // PK_NAME
+        .addValues(Value.newBuilder().setStringValue(String.valueOf(DatabaseMetaData.importedKeyNotDeferrable)).build()) // DEFERRABILITY
+        .build();
   }
 
 }
