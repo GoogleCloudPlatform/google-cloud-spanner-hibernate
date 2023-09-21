@@ -37,6 +37,7 @@ import org.hibernate.id.enhanced.SequenceStructure;
  */
 public class BitReversedSequenceStructure extends SequenceStructure {
 
+  private final String contributor;
   private final QualifiedName qualifiedSequenceName;
   private final int initialValue;
   private final List<Range<Long>> excludedRanges;
@@ -46,6 +47,7 @@ public class BitReversedSequenceStructure extends SequenceStructure {
    */
   public BitReversedSequenceStructure(
       JdbcEnvironment jdbcEnvironment,
+      String contributor,
       QualifiedName qualifiedSequenceName,
       int initialValue,
       int incrementSize,
@@ -53,10 +55,12 @@ public class BitReversedSequenceStructure extends SequenceStructure {
       Class numberType) {
     super(
         jdbcEnvironment,
+        contributor,
         qualifiedSequenceName,
         initialValue,
         incrementSize,
         numberType);
+    this.contributor = contributor;
     this.qualifiedSequenceName = qualifiedSequenceName;
     this.initialValue = initialValue;
     this.excludedRanges = excludedRanges;
@@ -98,7 +102,18 @@ public class BitReversedSequenceStructure extends SequenceStructure {
       final Namespace namespace =
           database.locateNamespace(
               qualifiedSequenceName.getCatalogName(), qualifiedSequenceName.getSchemaName());
-      sequence = namespace.createSequence(qualifiedSequenceName.getObjectName(), initialValue, 1);
+      sequence =
+          namespace.createSequence(
+              qualifiedSequenceName.getObjectName(),
+              (physicalName) ->
+                  new Sequence(
+                      contributor,
+                      namespace.getPhysicalName().getCatalog(),
+                      namespace.getPhysicalName().getSchema(),
+                      physicalName,
+                      initialValue,
+                      1));
+
       database.addAuxiliaryDatabaseObject(
           new BitReversedSequenceAuxiliaryDatabaseObject(sequence, excludedRanges));
       Iterator<Sequence> iterator = namespace.getSequences().iterator();
@@ -138,7 +153,8 @@ public class BitReversedSequenceStructure extends SequenceStructure {
       return new String[]{
           context
               .getDialect()
-              .getCreateSequenceStrings(context.format(sequence.getName()))[0]
+              .getSequenceSupport()
+              .getCreateSequenceString(context.format(sequence.getName()))
           + " bit_reversed_positive"
           + buildSkipRangeOptions(excludeRanges)
           + buildStartCounterOption(sequence.getInitialValue())
@@ -149,6 +165,7 @@ public class BitReversedSequenceStructure extends SequenceStructure {
     public String[] sqlDropStrings(SqlStringGenerationContext context) {
       return context
           .getDialect()
+          .getSequenceSupport()
           .getDropSequenceStrings(context.format(sequence.getName()));
     }
 

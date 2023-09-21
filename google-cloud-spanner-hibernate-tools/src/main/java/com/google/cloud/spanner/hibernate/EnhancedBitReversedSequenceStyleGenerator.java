@@ -52,8 +52,11 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.BulkInsertionCapableIdentifierGenerator;
+import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.DatabaseStructure;
+import org.hibernate.id.enhanced.NoopOptimizer;
+import org.hibernate.id.enhanced.Optimizer;
 import org.hibernate.id.enhanced.SequenceStructure;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.internal.util.config.ConfigurationHelper;
@@ -119,7 +122,7 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
   private static final int MAX_INCREMENT_SIZE = 200;
   private static final Iterator<Long> EMPTY_ITERATOR = Collections.emptyIterator();
   private final Lock lock = new ReentrantLock();
-
+  private final Optimizer optimizer = new NoopOptimizer(Long.class, 1);
   private Dialect dialect;
   private QualifiedSequenceName sequenceName;
   private String select;
@@ -248,6 +251,11 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
   }
 
   @Override
+  public Optimizer getOptimizer() {
+    return optimizer;
+  }
+
+  @Override
   public void configure(Type type, Properties params, ServiceRegistry serviceRegistry)
       throws MappingException {
     JdbcEnvironment jdbcEnvironment = serviceRegistry.getService(JdbcEnvironment.class);
@@ -258,11 +266,18 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
     this.select = buildSelect(sequenceName, fetchSize);
     List<Range<Long>> excludeRanges = parseExcludedRanges(sequenceName.getObjectName().getText(),
         params);
-    this.databaseStructure = buildDatabaseStructure(type, sequenceName,
+    this.databaseStructure = buildDatabaseStructure(determineContributor(params), type,
+        sequenceName,
         initialValue, excludeRanges, jdbcEnvironment);
   }
 
+  private String determineContributor(Properties params) {
+    final String contributor = params.getProperty(IdentifierGenerator.CONTRIBUTOR_NAME);
+    return contributor == null ? "orm" : contributor;
+  }
+
   private SequenceStructure buildDatabaseStructure(
+      String contributor,
       Type type,
       QualifiedSequenceName sequenceName,
       int initialValue,
@@ -271,6 +286,7 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
     if (isPostgres()) {
       return new BitReversedSequenceStructure(
           jdbcEnvironment,
+          contributor,
           sequenceName,
           initialValue,
           1,
@@ -285,7 +301,7 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
           Identifier.toIdentifier(buildSkipRangeOptions(excludeRanges)),
           sequenceName.getSchemaName(), sequenceName.getObjectName());
     }
-    return new SequenceStructure(jdbcEnvironment, sequenceName, initialValue, 1,
+    return new SequenceStructure(jdbcEnvironment, contributor, sequenceName, initialValue, 1,
         type.getReturnedClass());
   }
 
@@ -311,7 +327,8 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
   @Override
   public String determineBulkInsertionIdentifierGenerationSelectFragment(
       SqlStringGenerationContext context) {
-    return context.getDialect().getSelectSequenceNextValString(getSequenceName());
+    return context.getDialect().getSequenceSupport()
+        .getSelectSequenceNextValString(getSequenceName());
   }
 
   @Override
