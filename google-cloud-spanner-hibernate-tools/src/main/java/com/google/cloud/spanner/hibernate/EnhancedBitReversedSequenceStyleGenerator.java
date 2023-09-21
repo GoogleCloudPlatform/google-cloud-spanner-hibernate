@@ -18,22 +18,19 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import static com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator.EXCLUDE_RANGES_PARAM;
 import static org.hibernate.id.enhanced.SequenceStyleGenerator.SEQUENCE_PARAM;
 
-import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
-import com.google.cloud.spanner.jdbc.JdbcSqlException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Range;
-import com.google.rpc.Code;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -41,7 +38,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.boot.model.naming.Identifier;
@@ -78,8 +74,7 @@ import org.hibernate.type.Type;
  * closed range. E.g. "[1,1000]" to skip all values between 1 and 1000 (inclusive).
  *
  * <p>It is recommended to use a separate sequence for each entity. Set the sequence name to use
- * for
- * a generator with the SequenceStyleGenerator.SEQUENCE_PARAM parameter (see example below).
+ * for a generator with the SequenceStyleGenerator.SEQUENCE_PARAM parameter (see example below).
  *
  * <p>Example usage:
  *
@@ -112,39 +107,50 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
    * generator.
    */
   public static final String EXCLUDE_RANGE_PARAM = "exclude_range";
+
+  /**
+   * Legacy parameter name.
+   */
+  private static final String EXCLUDE_RANGES_PARAM = "exclude_ranges";
+
   /**
    * The maximum allowed increment size is 200.
    */
   private static final int MAX_INCREMENT_SIZE = 200;
-  private static final Iterator<Long> EMPTY_ITERATOR = ImmutableList.<Long>of().iterator();
+  private static final Iterator<Long> EMPTY_ITERATOR = Collections.emptyIterator();
   private final Lock lock = new ReentrantLock();
 
+  private Dialect dialect;
   private QualifiedSequenceName sequenceName;
   private String select;
   private int fetchSize;
   private Iterator<Long> identifiers = EMPTY_ITERATOR;
   private DatabaseStructure databaseStructure;
 
-  private static String buildSelect(Dialect dialect, QualifiedSequenceName sequenceName,
-      int fetchSize) {
-    return "WITH t AS (\n" + IntStream.range(0, fetchSize).mapToObj(
-            ignore -> "\t" + dialect.getSequenceNextValString(sequenceName.render()) + " AS n")
-        .collect(Collectors.joining("\n\tUNION ALL\n")) + "\n)\n" + "SELECT n FROM t";
-  }
-
-  private static SequenceStructure buildDatabaseStructure(Type type,
-      QualifiedSequenceName sequenceName, int initialValue, List<Range<Long>> excludeRanges,
-      JdbcEnvironment jdbcEnvironment) {
-    if (!excludeRanges.isEmpty()) {
-      // Put the excluded range in the catalog name. We have no other way of getting that
-      // information into the sequence. The SpannerSequenceExporter then extracts this information
-      // and removes the bogus catalog name.
-      sequenceName = new QualifiedSequenceName(
-          Identifier.toIdentifier(buildSkipRangeOptions(excludeRanges)),
-          sequenceName.getSchemaName(), sequenceName.getObjectName());
+  private static QualifiedSequenceName determineSequenceName(
+      JdbcEnvironment jdbcEnvironment, Properties params) {
+    String sequenceName = params.getProperty(SEQUENCE_PARAM);
+    if (sequenceName == null) {
+      throw new MappingException("no sequence name specified");
     }
-    return new SequenceStructure(jdbcEnvironment, sequenceName, initialValue, 1,
-        type.getReturnedClass());
+    if (sequenceName.contains(".")) {
+      QualifiedName qualifiedName = QualifiedNameParser.INSTANCE.parse(sequenceName);
+      return new QualifiedSequenceName(
+          qualifiedName.getCatalogName(),
+          qualifiedName.getSchemaName(),
+          qualifiedName.getObjectName());
+    } else {
+      final Identifier catalog =
+          jdbcEnvironment
+              .getIdentifierHelper()
+              .toIdentifier(ConfigurationHelper.getString(CATALOG, params));
+      final Identifier schema =
+          jdbcEnvironment
+              .getIdentifierHelper()
+              .toIdentifier(ConfigurationHelper.getString(SCHEMA, params));
+      return new QualifiedSequenceName(
+          catalog, schema, jdbcEnvironment.getIdentifierHelper().toIdentifier(sequenceName));
+    }
   }
 
   private static String buildSkipRangeOptions(List<Range<Long>> excludeRanges) {
@@ -159,26 +165,6 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
   private static long getMaxSkipRange(List<Range<Long>> excludeRanges) {
     return excludeRanges.stream().map(Range::upperEndpoint).max(Long::compare)
         .orElse(Long.MAX_VALUE);
-  }
-
-  private static QualifiedSequenceName determineSequenceName(JdbcEnvironment jdbcEnvironment,
-      Properties params) {
-    String sequenceName = params.getProperty(SEQUENCE_PARAM);
-    if (sequenceName == null) {
-      throw new MappingException("no sequence name specified");
-    }
-    if (sequenceName.contains(".")) {
-      QualifiedName qualifiedName = QualifiedNameParser.INSTANCE.parse(sequenceName);
-      return new QualifiedSequenceName(qualifiedName.getCatalogName(),
-          qualifiedName.getSchemaName(), qualifiedName.getObjectName());
-    } else {
-      final Identifier catalog = jdbcEnvironment.getIdentifierHelper()
-          .toIdentifier(ConfigurationHelper.getString(CATALOG, params));
-      final Identifier schema = jdbcEnvironment.getIdentifierHelper()
-          .toIdentifier(ConfigurationHelper.getString(SCHEMA, params));
-      return new QualifiedSequenceName(catalog, schema,
-          jdbcEnvironment.getIdentifierHelper().toIdentifier(sequenceName));
-    }
   }
 
   private static int determineFetchSize(Properties params) {
@@ -219,7 +205,12 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
       return ImmutableList.of();
     }
     if (excludedRangesArray != null && excludedRangeArray != null) {
-      excludedRangesArray = ArrayUtils.addAll(excludedRangesArray, excludedRangeArray);
+      // Combine the two arrays.
+      String[] newArray = new String[excludedRangeArray.length + excludedRangesArray.length];
+      System.arraycopy(excludedRangeArray, 0, newArray, 0, excludedRangeArray.length);
+      System.arraycopy(excludedRangesArray, 0, newArray, excludedRangeArray.length,
+          excludedRangesArray.length);
+      excludedRangesArray = newArray;
     } else if (excludedRangeArray != null) {
       excludedRangesArray = excludedRangeArray;
     }
@@ -260,14 +251,56 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
   public void configure(Type type, Properties params, ServiceRegistry serviceRegistry)
       throws MappingException {
     JdbcEnvironment jdbcEnvironment = serviceRegistry.getService(JdbcEnvironment.class);
+    this.dialect = jdbcEnvironment.getDialect();
     this.sequenceName = determineSequenceName(jdbcEnvironment, params);
     this.fetchSize = determineFetchSize(params);
     int initialValue = determineInitialValue(params);
-    this.select = buildSelect(jdbcEnvironment.getDialect(), sequenceName, fetchSize);
+    this.select = buildSelect(sequenceName, fetchSize);
     List<Range<Long>> excludeRanges = parseExcludedRanges(sequenceName.getObjectName().getText(),
         params);
-    this.databaseStructure = buildDatabaseStructure(type, sequenceName, initialValue, excludeRanges,
-        jdbcEnvironment);
+    this.databaseStructure = buildDatabaseStructure(type, sequenceName,
+        initialValue, excludeRanges, jdbcEnvironment);
+  }
+
+  private SequenceStructure buildDatabaseStructure(
+      Type type,
+      QualifiedSequenceName sequenceName,
+      int initialValue,
+      List<Range<Long>> excludeRanges,
+      JdbcEnvironment jdbcEnvironment) {
+    if (isPostgres()) {
+      return new BitReversedSequenceStructure(
+          jdbcEnvironment,
+          sequenceName,
+          initialValue,
+          1,
+          excludeRanges,
+          type.getReturnedClass());
+    }
+    if (!excludeRanges.isEmpty()) {
+      // Put the excluded range in the catalog name. We have no other way of getting that
+      // information into the sequence. The SpannerSequenceExporter then extracts this information
+      // and removes the bogus catalog name.
+      sequenceName = new QualifiedSequenceName(
+          Identifier.toIdentifier(buildSkipRangeOptions(excludeRanges)),
+          sequenceName.getSchemaName(), sequenceName.getObjectName());
+    }
+    return new SequenceStructure(jdbcEnvironment, sequenceName, initialValue, 1,
+        type.getReturnedClass());
+  }
+
+  private String buildSelect(QualifiedSequenceName sequenceName,
+      int fetchSize) {
+    String selectNextVal = isPostgres()
+        ? "\tselect nextval('" + sequenceName + "') AS n"
+        : "\tselect get_next_sequence_value(sequence " + sequenceName + ") AS n";
+
+    return "WITH t AS (\n" + IntStream.range(0, fetchSize).mapToObj(ignore -> selectNextVal)
+        .collect(Collectors.joining("\n\tUNION ALL\n")) + "\n)\n" + "SELECT n FROM t";
+  }
+
+  private boolean isPostgres() {
+    return this.dialect.openQuote() == '"';
   }
 
   @Override
@@ -311,6 +344,9 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
 
   private Iterator<Long> fetchIdentifiers(SharedSessionContractImplementor session)
       throws HibernateException {
+    // Prefix all 'set ...' statements with 'spanner.' if the dialect is PostgreSQL.
+    // The safest way to determine that is by looking at the quote character for identifiers.
+    String extensionPrefix = dialect.openQuote() == '"' ? "spanner." : "";
     Connection connection = null;
     Boolean retryAbortsInternally = null;
     try {
@@ -318,51 +354,79 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
       // separate read/write transaction, which again means that it will not interfere with any
       // retries of the actual business transaction.
       connection = session.getJdbcConnectionAccess().obtainConnection();
-      if (connection.isWrapperFor(CloudSpannerJdbcConnection.class)) {
-        // Do not try to retry any aborted errors, as a sequence will return new values in all
-        // cases.
-        CloudSpannerJdbcConnection cloudSpannerJdbcConnection = connection.unwrap(
-            CloudSpannerJdbcConnection.class);
-        retryAbortsInternally = cloudSpannerJdbcConnection.isRetryAbortsInternally();
-        cloudSpannerJdbcConnection.setRetryAbortsInternally(false);
-      }
+      connection.setAutoCommit(false);
       try (Statement statement = connection.createStatement()) {
-        statement.execute("begin");
-        statement.execute("set transaction read write");
+        // TODO: Use 'set local spanner.retry_aborts_internally=false' when that has been
+        //       implemented.
+        retryAbortsInternally = isRetryAbortsInternally(statement);
+        connection.commit();
+        statement.execute(String.format("set %sretry_aborts_internally=false", extensionPrefix));
+        // statement.execute("begin transaction");
+        // statement.execute("set transaction read write");
         List<Long> identifiers = new ArrayList<>(this.fetchSize);
         try (ResultSet resultSet = statement.executeQuery(this.select)) {
           while (resultSet.next()) {
             identifiers.add(resultSet.getLong(1));
           }
         }
-        connection.createStatement().execute("commit");
+        connection.commit();
+        // statement.execute("commit");
         return identifiers.iterator();
       }
     } catch (SQLException sqlException) {
       if (connection != null) {
-        Connection finalConnection = connection;
-        ignoreSqlException(() -> finalConnection.createStatement().execute("rollback"));
+        // Connection finalConnection = connection;
+        // ignoreSqlException(() -> finalConnection.createStatement().execute("rollback"));
+        ignoreSqlException(connection::rollback);
       }
-      if (sqlException instanceof JdbcSqlException) {
-        JdbcSqlException jdbcSqlException = (JdbcSqlException) sqlException;
-        if (jdbcSqlException.getCode() == Code.ABORTED) {
-          return EMPTY_ITERATOR;
-        }
+      if (isAbortedError(sqlException)) {
+        // Return an empty iterator to force a retry.
+        return EMPTY_ITERATOR;
       }
-      throw session.getJdbcServices().getSqlExceptionHelper()
+      throw session
+          .getJdbcServices()
+          .getSqlExceptionHelper()
           .convert(sqlException, "could not get next sequence values", this.select);
     } finally {
       if (connection != null) {
         Connection finalConnection = connection;
         if (retryAbortsInternally != null) {
-          boolean finalRetryAbortsInternally = retryAbortsInternally;
-          ignoreSqlException(() -> finalConnection.unwrap(CloudSpannerJdbcConnection.class)
-              .setRetryAbortsInternally(finalRetryAbortsInternally));
+          Boolean finalRetryAbortsInternally = retryAbortsInternally;
+          ignoreSqlException(
+              () ->
+                  finalConnection
+                      .createStatement()
+                      .execute(
+                          String.format("set %sretry_aborts_internally=%s", extensionPrefix,
+                              finalRetryAbortsInternally)));
+          ignoreSqlException(connection::commit);
         }
         ignoreSqlException(
             () -> session.getJdbcConnectionAccess().releaseConnection(finalConnection));
       }
     }
+  }
+
+  private Boolean isRetryAbortsInternally(Statement statement) {
+    String prefix = dialect.openQuote() == '"' ? "spanner." : "variable ";
+    try (ResultSet resultSet = statement.executeQuery(
+        String.format("show %sretry_aborts_internally", prefix))) {
+      if (resultSet.next()) {
+        return resultSet.getBoolean(1);
+      }
+      return null;
+    } catch (Throwable ignore) {
+      return null;
+    }
+  }
+
+  private boolean isAbortedError(SQLException exception) {
+    // '40001' == serialization_failure
+    if ("40001".equals(exception.getSQLState())) {
+      return true;
+    }
+    // 10 == Aborted
+    return exception.getErrorCode() == 10;
   }
 
   private void ignoreSqlException(SqlRunnable runnable) {
