@@ -42,7 +42,7 @@ import com.google.spanner.v1.StructType;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.hibernate.SessionFactory;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -54,8 +54,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
   /**
    * Set up empty mocked results for schema queries.
    */
-  @BeforeClass
-  public static void setupSchemaQueryResults() {
+  @Before
+  public void setupSchemaQueryResults() {
     mockSpanner.putStatementResult(
         StatementResult.query(
             GET_TABLES_STATEMENT,
@@ -131,7 +131,86 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
           request.getStatements(++index));
     }
   }
+  
+  @Test
+  public void testDropEmptySchema() {
+    addDdlResponseToSpannerAdmin();
 
+    //noinspection EmptyTryBlock
+    try (SessionFactory ignore =
+        createTestHibernateConfig(
+            ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
+            ImmutableMap.of("hibernate.hbm2ddl.auto", "drop"))
+            .buildSessionFactory()) {
+      // do nothing, just generate the schema.
+    }
+
+    // Check the DDL statements that were generated.
+    List<UpdateDatabaseDdlRequest> requests =
+        mockDatabaseAdmin.getRequests().stream()
+            .filter(request -> request instanceof UpdateDatabaseDdlRequest)
+            .map(request -> (UpdateDatabaseDdlRequest) request)
+            .collect(Collectors.toList());
+    assertEquals(0, requests.size());
+  }
+
+  @Test
+  public void testDropExistingSchema() {
+    mockSpanner.putStatementResult(
+        StatementResult.query(GET_TABLES_STATEMENT, ResultSet.newBuilder()
+            .setMetadata(GET_TABLES_METADATA)
+            .addRows(createTableRow("Account"))
+            .addRows(createTableRow("Customer"))
+            .addRows(createTableRow("customerId"))
+            .addRows(createTableRow("Invoice"))
+            .addRows(createTableRow("invoiceId"))
+            .addRows(createTableRow("Singer"))
+            .addRows(createTableRow("singerId"))
+            .build()));
+    mockSpanner.putStatementResult(StatementResult.query(GET_FOREIGN_KEYS_STATEMENT.toBuilder()
+        .bind("p1").to("%")
+        .bind("p2").to("%")
+        .bind("p3").to("INVOICE")
+        .build(), ResultSet.newBuilder()
+        .setMetadata(GET_FOREIGN_KEYS_METADATA)
+        .addRows(createForeignKeyRow("", "Customer", "customerId",
+            "", "Invoice", "customer_customerId", 1, 1, "fk_invoice_customer"))
+        .build()));
+
+    addDdlResponseToSpannerAdmin();
+
+    //noinspection EmptyTryBlock
+    try (SessionFactory ignore =
+        createTestHibernateConfig(
+            ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
+            ImmutableMap.of("hibernate.hbm2ddl.auto", "drop"))
+            .buildSessionFactory()) {
+      // do nothing, just generate the schema.
+    }
+
+    // Check the DDL statements that were generated.
+    List<UpdateDatabaseDdlRequest> requests =
+        mockDatabaseAdmin.getRequests().stream()
+            .filter(request -> request instanceof UpdateDatabaseDdlRequest)
+            .map(request -> (UpdateDatabaseDdlRequest) request)
+            .collect(Collectors.toList());
+    assertEquals(1, requests.size());
+    UpdateDatabaseDdlRequest request = requests.get(0);
+    assertEquals(8, request.getStatementsCount());
+
+    int index = -1;
+
+    assertEquals("alter table Invoice drop constraint fk_invoice_customer",
+        request.getStatements(++index));
+    assertEquals("drop table Account", request.getStatements(++index));
+    assertEquals("drop table Customer", request.getStatements(++index));
+    assertEquals("drop table customerId", request.getStatements(++index));
+    assertEquals("drop table Invoice", request.getStatements(++index));
+    assertEquals("drop table invoiceId", request.getStatements(++index));
+    assertEquals("drop table Singer", request.getStatements(++index));
+    assertEquals("drop table singerId", request.getStatements(++index));
+  }
+  
   @Test
   public void testGenerateEmployeeSchema() {
     for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
