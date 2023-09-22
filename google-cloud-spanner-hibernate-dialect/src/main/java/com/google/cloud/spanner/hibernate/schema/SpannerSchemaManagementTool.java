@@ -25,14 +25,15 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.cloud.spanner.hibernate.SpannerTableExporter;
-import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.resource.transaction.spi.DdlTransactionIsolator;
@@ -53,6 +54,7 @@ import org.hibernate.tool.schema.spi.SchemaMigrator;
  * DDL statements.
  */
 public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
+
   /**
    * Custom implementation for {@link DdlTransactionIsolator} that will automatically create a proxy
    * for Connection and Statement. These proxies will again be used to override the default behavior
@@ -66,14 +68,28 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
    * cause an error to be returned for the migration.
    */
   static class SpannerDdlTransactionIsolator implements DdlTransactionIsolator {
+
     private static final AbstractStatementParser PARSER =
         AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL);
+
+    /**
+     * A set containing all connections that have been obtained by this
+     * {@link DdlTransactionIsolator}. We use a {@link Set}, because the connection is obtained from
+     * the {@link DdlTransactionIsolator} that is configured for this environment, and some
+     * implementations
+     * ({@link
+     * org.hibernate.resource.transaction.backend.jta.internal.DdlTransactionIsolatorJtaImpl})
+     * return the same connection each time, and we only want to release it once.
+     */
+    private final Set<Connection> obtainedConnections = new HashSet<>();
+    private final Method connectionCloseMethod;
     private final Method createStatementMethod;
     private final Method executeMethod;
     private final DdlTransactionIsolator delegate;
 
     SpannerDdlTransactionIsolator(DdlTransactionIsolator delegate) throws NoSuchMethodException {
       this.delegate = delegate;
+      this.connectionCloseMethod = Connection.class.getDeclaredMethod("close");
       this.createStatementMethod = Connection.class.getDeclaredMethod("createStatement");
       this.executeMethod = Statement.class.getDeclaredMethod("execute", String.class);
     }
@@ -91,12 +107,15 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
     @Override
     public Connection getIsolatedConnection() {
       Connection delegateConnection = this.delegate.getIsolatedConnection();
+      // Add the delegate connection to the set of obtained connections so we can release these
+      // when the DdlTransactionIsolator is released.
+      obtainedConnections.add(delegateConnection);
       // Create a proxy for the connection that will override the call to
       // Connection#createStatement().
       return (Connection)
           Proxy.newProxyInstance(
               delegateConnection.getClass().getClassLoader(),
-              new Class[] {Connection.class},
+              new Class[]{Connection.class},
               (proxy, method, args) -> {
                 // Only handle the Connection#createStatement() differently.
                 // All other methods are just passed through.
@@ -104,6 +123,10 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
                   // Create a proxy for the returned Statement that will override the behavior of
                   // Statement#execute(String).
                   return createProxyStatement(delegateConnection);
+                } else if (method.equals(connectionCloseMethod)) {
+                  // Ignore as the connection is released when this DdlTransactionIsolator is
+                  // released.
+                  return null;
                 }
                 try {
                   return method.invoke(delegateConnection, args);
@@ -114,16 +137,16 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
     }
 
     /**
-     * Creates a proxy for a {@link Statement} that will throw a {@link
-     * com.google.cloud.spanner.SpannerException} instead of a {@link SQLException} if a `START
-     * BATCH DDL` or `RUN BATCH` statement fails.
+     * Creates a proxy for a {@link Statement} that will throw a
+     * {@link com.google.cloud.spanner.SpannerException} instead of a {@link SQLException} if a
+     * `START BATCH DDL` or `RUN BATCH` statement fails.
      */
     private Statement createProxyStatement(Connection delegateConnection) throws SQLException {
       Statement delegateStatement = delegateConnection.createStatement();
       return (Statement)
           Proxy.newProxyInstance(
               delegateConnection.getClass().getClassLoader(),
-              new Class[] {Statement.class},
+              new Class[]{Statement.class},
               (proxy1, method1, args1) -> {
                 // Only handle the Statement#execute(String) method differently.
                 // All other methods are just passed through.
@@ -138,9 +161,9 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
                       PARSER.parse(com.google.cloud.spanner.Statement.of(sql));
                   if (statement.getType() == StatementType.CLIENT_SIDE
                       && (statement.getClientSideStatementType()
-                              == ClientSideStatementType.START_BATCH_DDL
-                          || statement.getClientSideStatementType()
-                              == ClientSideStatementType.RUN_BATCH)) {
+                      == ClientSideStatementType.START_BATCH_DDL
+                      || statement.getClientSideStatementType()
+                      == ClientSideStatementType.RUN_BATCH)) {
                     try {
                       // Try to execute the statement, and convert any SQLException to a
                       // SpannerException.
@@ -164,18 +187,6 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
 
     @Override
     public void release() {
-      try {
-        if (delegate.getIsolatedConnection() != null && delegate.getIsolatedConnection()
-            .isWrapperFor(
-                CloudSpannerJdbcConnection.class)) {
-          // Clear the current DDL batch (if any).
-          // TODO: Call RESET instead once available in the JDBC driver.
-          delegate.getIsolatedConnection().unwrap(CloudSpannerJdbcConnection.class)
-              .createStatement().execute("abort batch");
-        }
-      } catch (SQLException ignore) {
-        // ignore any errors.
-      }
       delegate.release();
     }
   }
@@ -205,6 +216,11 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
     }
   }
 
+  DdlTransactionIsolator getDdlTransactionIsolator(ExecutionOptions options) {
+    JdbcContext jdbcContext = this.resolveJdbcContext(options.getConfigurationValues());
+    return this.getDdlTransactionIsolator(jdbcContext);
+  }
+
   @Override
   public ExtractionTool getExtractionTool() {
     return SpannerExtractionTool.INSTANCE;
@@ -219,7 +235,8 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
 
     private static final SpannerExtractionTool INSTANCE = new SpannerExtractionTool();
 
-    private SpannerExtractionTool() {}
+    private SpannerExtractionTool() {
+    }
 
     @Override
     public ExtractionContext createExtractionContext(
@@ -250,11 +267,5 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
   SpannerForeignKeyExporter getForeignKeyExporter(ExecutionOptions options) {
     JdbcContext jdbcContext = this.resolveJdbcContext(options.getConfigurationValues());
     return (SpannerForeignKeyExporter) jdbcContext.getDialect().getForeignKeyExporter();
-  }
-
-  Connection getDatabaseMetadataConnection(ExecutionOptions options) {
-    JdbcContext jdbcContext = this.resolveJdbcContext(options.getConfigurationValues());
-    DdlTransactionIsolator ddlTransactionIsolator = this.getDdlTransactionIsolator(jdbcContext);
-    return ddlTransactionIsolator.getIsolatedConnection();
   }
 }
