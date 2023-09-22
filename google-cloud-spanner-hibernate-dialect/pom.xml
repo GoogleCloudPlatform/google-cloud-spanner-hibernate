@@ -5,7 +5,7 @@
   <parent>
     <artifactId>google-cloud-spanner-hibernate</artifactId>
     <groupId>com.google.cloud</groupId>
-    <version>1.8.1</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
+    <version>1.8.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
   </parent>
 
   <properties>
@@ -47,7 +47,7 @@
     <dependency>
       <groupId>com.google.api</groupId>
       <artifactId>gax-grpc</artifactId>
-      <version>2.33.0</version>
+      <version>2.34.0</version>
       <classifier>testlib</classifier>
       <scope>test</scope>
     </dependency>
