@@ -5,7 +5,7 @@
   <parent>
     <artifactId>google-cloud-spanner-hibernate-samples</artifactId>
     <groupId>com.google.cloud</groupId>
-    <version>1.8.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
+    <version>1.8.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -13,7 +13,7 @@
   <artifactId>spring-data-jpa-sample</artifactId>
 
   <properties>
-      <spring-boot-version>2.7.15</spring-boot-version>
+      <spring-boot-version>2.7.16</spring-boot-version>
   </properties>
 
   <dependencyManagement>

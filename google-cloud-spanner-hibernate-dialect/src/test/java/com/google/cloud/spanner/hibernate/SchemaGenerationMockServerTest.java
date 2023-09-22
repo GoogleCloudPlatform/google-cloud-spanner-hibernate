@@ -131,7 +131,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
           request.getStatements(++index));
     }
   }
-
+  
   @Test
   public void testDropEmptySchema() {
     addDdlResponseToSpannerAdmin();
@@ -210,7 +210,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     assertEquals("drop table Singer", request.getStatements(++index));
     assertEquals("drop table singerId", request.getStatements(++index));
   }
-
+  
   @Test
   public void testGenerateEmployeeSchema() {
     for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
