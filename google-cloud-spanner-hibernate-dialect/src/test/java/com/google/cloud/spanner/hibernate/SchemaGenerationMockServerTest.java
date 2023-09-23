@@ -30,11 +30,11 @@ import com.google.cloud.spanner.hibernate.entities.AutoIdEntity;
 import com.google.cloud.spanner.hibernate.entities.Child;
 import com.google.cloud.spanner.hibernate.entities.Customer;
 import com.google.cloud.spanner.hibernate.entities.Employee;
-import com.google.cloud.spanner.hibernate.entities.EnhancedSequenceEntity;
 import com.google.cloud.spanner.hibernate.entities.GrandParent;
 import com.google.cloud.spanner.hibernate.entities.Invoice;
 import com.google.cloud.spanner.hibernate.entities.LegacySequenceEntity;
 import com.google.cloud.spanner.hibernate.entities.Parent;
+import com.google.cloud.spanner.hibernate.entities.PooledBitReversedSequenceEntity;
 import com.google.cloud.spanner.hibernate.entities.PooledSequenceEntity;
 import com.google.cloud.spanner.hibernate.entities.SequenceEntity;
 import com.google.cloud.spanner.hibernate.entities.Singer;
@@ -400,7 +400,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
   public void testGenerateSequenceWithSequencesDisabled() {
     // Verify that we still get a table-backed sequence if we disable sequence support.
     SpannerDialect.disableSpannerSequences();
-    
+
     try {
       setupEmptySchemaQueryResults();
       addDdlResponseToSpannerAdmin();
@@ -467,7 +467,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
         + ")\n"
         + "SELECT n FROM t";
-    String insertSql = "insert into EnhancedSequenceEntity (name, id) values (@p1, @p2)";
+    String insertSql = "insert into PooledBitReversedSequenceEntity (name, id) values (@p1, @p2)";
     mockSpanner.putStatementResult(StatementResult.query(Statement.of(selectSequenceNextVals),
         ResultSet.newBuilder()
             .setMetadata(ResultSetMetadata.newBuilder()
@@ -490,16 +490,16 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         .bind("p1").to("test2")
         .bind("p2").to(Long.reverse(2L))
         .build(), 1L));
-    
+
     try (SessionFactory sessionFactory =
         createTestHibernateConfig(
-            ImmutableList.of(EnhancedSequenceEntity.class, LegacySequenceEntity.class),
+            ImmutableList.of(PooledBitReversedSequenceEntity.class, LegacySequenceEntity.class),
             ImmutableMap.of(Environment.HBM2DDL_AUTO, "create-only",
                 Environment.STATEMENT_BATCH_SIZE, "50"))
             .buildSessionFactory(); Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
-      assertEquals(Long.reverse(1L), session.save(new EnhancedSequenceEntity("test1")));
-      assertEquals(Long.reverse(2L), session.save(new EnhancedSequenceEntity("test2")));
+      assertEquals(Long.reverse(1L), session.save(new PooledBitReversedSequenceEntity("test1")));
+      assertEquals(Long.reverse(2L), session.save(new PooledBitReversedSequenceEntity("test2")));
       transaction.commit();
     }
 
@@ -533,19 +533,19 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     int index = -1;
 
     assertEquals(
-        "create sequence enhanced_sequence options(sequence_kind=\"bit_reversed_positive\", " 
+        "create sequence enhanced_sequence options(sequence_kind=\"bit_reversed_positive\", "
             + "start_with_counter=5000, skip_range_min=1, skip_range_max=1000)",
         request.getStatements(++index));
     assertEquals(
-        "create sequence legacy_entity_sequence " 
-            + "options(sequence_kind=\"bit_reversed_positive\", start_with_counter=5000, " 
+        "create sequence legacy_entity_sequence "
+            + "options(sequence_kind=\"bit_reversed_positive\", start_with_counter=5000, "
             + "skip_range_min=1, skip_range_max=20000)",
         request.getStatements(++index));
     assertEquals(
-        "create table EnhancedSequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
+        "create table LegacySequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
     assertEquals(
-        "create table LegacySequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
+        "create table PooledBitReversedSequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
   }
 
@@ -557,24 +557,28 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     mockSpanner.putStatementResult(
         StatementResult.query(GET_TABLES_STATEMENT, ResultSet.newBuilder()
             .setMetadata(GET_TABLES_METADATA)
-            .addRows(createTableRow("EnhancedSequenceEntity"))
+            .addRows(createTableRow("PooledBitReversedSequenceEntity"))
             .build()));
     mockSpanner.putStatementResult(
         StatementResult.query(GET_SEQUENCES_STATEMENT, ResultSet.newBuilder()
             .setMetadata(GET_SEQUENCES_METADATA)
             .addRows(createSequenceRow("enhanced_sequence"))
             .build()));
-    mockSpanner.putStatementResult(StatementResult.query(GET_COLUMNS_STATEMENT, ResultSet.newBuilder()
+    mockSpanner.putStatementResult(
+        StatementResult.query(GET_COLUMNS_STATEMENT, ResultSet.newBuilder()
             .setMetadata(GET_COLUMNS_METADATA)
-            .addRows(createColumnRow("EnhancedSequenceEntity", "id", Types.BIGINT, "INT64", 1))
-            .addRows(createColumnRow("EnhancedSequenceEntity", "name", Types.NVARCHAR, "STRING(MAX)", 2))
-        .build()));
-    mockSpanner.putStatementResult(StatementResult.query(GET_INDEXES_STATEMENT, ResultSet.newBuilder()
-        .setMetadata(
-            ResultSetMetadata.newBuilder()
-                .setRowType(StructType.newBuilder().build())
-                .build())
-        .build()));
+            .addRows(
+                createColumnRow("PooledBitReversedSequenceEntity", "id", Types.BIGINT, "INT64", 1))
+            .addRows(createColumnRow("PooledBitReversedSequenceEntity", "name", Types.NVARCHAR,
+                "STRING(MAX)", 2))
+            .build()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(GET_INDEXES_STATEMENT, ResultSet.newBuilder()
+            .setMetadata(
+                ResultSetMetadata.newBuilder()
+                    .setRowType(StructType.newBuilder().build())
+                    .build())
+            .build()));
 
     long sequenceBatchSize = 5L;
     String selectSequenceNextVals = "WITH t AS (\n"
@@ -589,7 +593,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
         + ")\n"
         + "SELECT n FROM t";
-    String insertSql = "insert into EnhancedSequenceEntity (name, id) values (@p1, @p2)";
+    String insertSql = "insert into PooledBitReversedSequenceEntity (name, id) values (@p1, @p2)";
     mockSpanner.putStatementResult(StatementResult.query(Statement.of(selectSequenceNextVals),
         ResultSet.newBuilder()
             .setMetadata(ResultSetMetadata.newBuilder()
@@ -615,13 +619,13 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
 
     try (SessionFactory sessionFactory =
         createTestHibernateConfig(
-            ImmutableList.of(EnhancedSequenceEntity.class),
+            ImmutableList.of(PooledBitReversedSequenceEntity.class),
             ImmutableMap.of(Environment.HBM2DDL_AUTO, "update",
                 Environment.STATEMENT_BATCH_SIZE, "50"))
             .buildSessionFactory(); Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
-      assertEquals(Long.reverse(1L), session.save(new EnhancedSequenceEntity("test1")));
-      assertEquals(Long.reverse(2L), session.save(new EnhancedSequenceEntity("test2")));
+      assertEquals(Long.reverse(1L), session.save(new PooledBitReversedSequenceEntity("test1")));
+      assertEquals(Long.reverse(2L), session.save(new PooledBitReversedSequenceEntity("test2")));
       transaction.commit();
     }
 

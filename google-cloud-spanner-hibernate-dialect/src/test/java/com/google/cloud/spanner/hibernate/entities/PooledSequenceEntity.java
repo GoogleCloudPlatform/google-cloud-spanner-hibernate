@@ -25,7 +25,9 @@ import javax.persistence.Id;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
-/** Test entity that uses a pooled sequence. Pooled sequences are not supported in Cloud Spanner. */
+/** Test entity that uses a pooled sequence. Pooled sequences are not supported in Cloud Spanner,
+ * unless they use the custom
+ * {@link com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator}. */
 @Entity
 public class PooledSequenceEntity {
   @Id

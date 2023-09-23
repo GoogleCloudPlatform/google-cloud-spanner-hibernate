@@ -48,7 +48,9 @@ import org.hibernate.type.Type;
 import org.jboss.logging.Logger;
 
 /**
- * Table backed ID generator that reverses the bits in the returned sequence value.
+ * <strong>DEPRECATED:</strong> Use {@link PooledBitReversedSequenceStyleGenerator} instead.
+ *
+ * <p>Table backed ID generator that reverses the bits in the returned sequence value.
  * 
  * <p>This generator uses a <strong>table to emulate a sequence</strong>. Cloud Spanner also
  * supports bit-reversed sequences that are stored and managed in the database. These are
@@ -86,7 +88,7 @@ import org.jboss.logging.Logger;
  * private Long customerId;
  * }</pre>
  *
- * @deprecated Use #{link {@link EnhancedBitReversedSequenceStyleGenerator}} 
+ * @deprecated Use #{link {@link PooledBitReversedSequenceStyleGenerator}}
  */
 @Deprecated
 public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {

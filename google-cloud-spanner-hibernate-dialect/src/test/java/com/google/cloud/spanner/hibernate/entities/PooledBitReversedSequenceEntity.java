@@ -30,12 +30,12 @@ import org.hibernate.annotations.Parameter;
  * Test entity for using a bit-reversed sequence that supports batching.
  */
 @Entity
-public class EnhancedSequenceEntity {
+public class PooledBitReversedSequenceEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "batch_bit_reversed_generator")
   @GenericGenerator(name = "batch_bit_reversed_generator",
-      strategy = "com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator",
+      strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
       parameters = {
           @Parameter(name = "sequence_name", value = "enhanced_sequence"),
           @Parameter(name = "increment_size", value = "5"),
@@ -46,10 +46,10 @@ public class EnhancedSequenceEntity {
   @Column
   private String name;
 
-  public EnhancedSequenceEntity() {
+  public PooledBitReversedSequenceEntity() {
   }
 
-  public EnhancedSequenceEntity(String name) {
+  public PooledBitReversedSequenceEntity(String name) {
     this.name = name;
   }
 

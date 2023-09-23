@@ -33,7 +33,8 @@ import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.id.enhanced.SequenceStructure;
 
 /**
- * This class generates a bit-reversed sequence for a Cloud Spanner database.
+ * This class generates a bit-reversed sequence for a Cloud Spanner database. It should be used in
+ * combination with the {@link PooledBitReversedSequenceStyleGenerator}.
  */
 public class BitReversedSequenceStructure extends SequenceStructure {
 

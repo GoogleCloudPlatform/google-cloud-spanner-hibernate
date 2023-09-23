@@ -36,7 +36,7 @@ public class LegacySequenceEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "legacy_sequence")
   @GenericGenerator(name = "legacy_sequence",
-      strategy = "com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator",
+      strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
       parameters = {
           @Parameter(name = "sequence_name", value = "legacy_entity_sequence"),
           @Parameter(name = "increment_size", value = "5"),

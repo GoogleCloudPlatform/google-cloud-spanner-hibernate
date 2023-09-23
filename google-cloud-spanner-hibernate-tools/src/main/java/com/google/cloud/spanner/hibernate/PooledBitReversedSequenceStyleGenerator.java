@@ -61,13 +61,14 @@ import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
 
 /**
- * ID generator that uses a bit-reversed sequence to generate values. These values are safe to use
- * as the primary key of a table in Cloud Spanner. This is the recommended strategy for
+ * Pooled ID generator that uses a bit-reversed sequence to generate values. These values are safe
+ * to use as the primary key of a table in Cloud Spanner. This is the recommended strategy for
  * auto-generated numeric primary keys in Cloud Spanner.
  *
  * <p>Using a bit-reversed sequence for ID generation is recommended above sequences that return a
  * monotonically increasing value for Cloud Spanner. This generator also supports both an increment
- * size larger than 1 and an initial value larger than 1. The increment value can not exceed 200.
+ * size larger than 1 and an initial value larger than 1. The increment value can not exceed 200
+ * for GoogleSQL-dialect databases and 60 for PostgreSQL-dialect databases.
  *
  * <p>Use the {@link #EXCLUDE_RANGE_PARAM} to exclude a range of values that should be skipped by
  * the generator if your entity table already contains data. The excluded values should be given as
@@ -83,23 +84,23 @@ import org.hibernate.type.Type;
  * @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customerId")
  * @GenericGenerator(
  *       name = "customerId",
- *       strategy = "com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator",
+ *       strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
  *       parameters = {
  *           @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "customerId"),
  *           @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "200"),
  *           @Parameter(name = SequenceStyleGenerator.INITIAL_PARAM, value = "50000"),
- *           @Parameter(name = EnhancedBitReversedSequenceStyleGenerator.EXCLUDE_RANGE_PARAM,
+ *           @Parameter(name = PooledBitReversedSequenceStyleGenerator.EXCLUDE_RANGE_PARAM,
  *                      value = "[1,1000]"),
  *       })
  * @Column(nullable = false)
  * private Long customerId;
  * }</pre>
  */
-public class EnhancedBitReversedSequenceStyleGenerator implements
+public class PooledBitReversedSequenceStyleGenerator implements
     BulkInsertionCapableIdentifierGenerator, PersistentIdentifierGenerator {
 
   /**
-   * The default increment (fetch) size for an {@link EnhancedBitReversedSequenceStyleGenerator}.
+   * The default increment (fetch) size for an {@link PooledBitReversedSequenceStyleGenerator}.
    */
   public static final int DEFAULT_INCREMENT_SIZE = 100;
   /**
@@ -114,9 +115,11 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
   private static final String EXCLUDE_RANGES_PARAM = "exclude_ranges";
 
   /**
-   * The maximum allowed increment size is 200.
+   * The maximum allowed increment size is 200 for GoogleSQL-dialect databases and 60 for
+   * PostgreSQL-dialect databases.
    */
-  private static final int MAX_INCREMENT_SIZE = 200;
+  private static final int GOOGLE_SQL_MAX_INCREMENT_SIZE = 200;
+  private static final int POSTGRES_MAX_INCREMENT_SIZE = 60;
   private static final Iterator<Long> EMPTY_ITERATOR = Collections.emptyIterator();
   private final Lock lock = new ReentrantLock();
 
@@ -165,23 +168,6 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
   private static long getMaxSkipRange(List<Range<Long>> excludeRanges) {
     return excludeRanges.stream().map(Range::upperEndpoint).max(Long::compare)
         .orElse(Long.MAX_VALUE);
-  }
-
-  private static int determineFetchSize(Properties params) {
-    int fetchSize;
-    if (ConfigurationHelper.getInteger("fetch_size", params) != null) {
-      fetchSize = ConfigurationHelper.getInt("fetch_size", params, DEFAULT_INCREMENT_SIZE);
-    } else {
-      fetchSize = ConfigurationHelper.getInt(SequenceStyleGenerator.INCREMENT_PARAM, params,
-          DEFAULT_INCREMENT_SIZE);
-    }
-    if (fetchSize <= 0) {
-      throw new MappingException("increment size must be positive");
-    }
-    if (fetchSize > MAX_INCREMENT_SIZE) {
-      throw new MappingException("increment size must be <= " + MAX_INCREMENT_SIZE);
-    }
-    return fetchSize;
   }
 
   private static int determineInitialValue(Properties params) {
@@ -260,6 +246,27 @@ public class EnhancedBitReversedSequenceStyleGenerator implements
         params);
     this.databaseStructure = buildDatabaseStructure(type, sequenceName,
         initialValue, excludeRanges, jdbcEnvironment);
+  }
+
+  private int determineFetchSize(Properties params) {
+    int fetchSize;
+    if (ConfigurationHelper.getInteger("fetch_size", params) != null) {
+      fetchSize = ConfigurationHelper.getInt("fetch_size", params, DEFAULT_INCREMENT_SIZE);
+    } else {
+      fetchSize = ConfigurationHelper.getInt(SequenceStyleGenerator.INCREMENT_PARAM, params,
+          DEFAULT_INCREMENT_SIZE);
+    }
+    if (fetchSize <= 0) {
+      throw new MappingException("increment size must be positive");
+    }
+    if (fetchSize > getMaxIncrementSize()) {
+      throw new MappingException("increment size must be <= " + getMaxIncrementSize());
+    }
+    return fetchSize;
+  }
+
+  private int getMaxIncrementSize() {
+    return isPostgres() ? POSTGRES_MAX_INCREMENT_SIZE : GOOGLE_SQL_MAX_INCREMENT_SIZE;
   }
 
   private SequenceStructure buildDatabaseStructure(

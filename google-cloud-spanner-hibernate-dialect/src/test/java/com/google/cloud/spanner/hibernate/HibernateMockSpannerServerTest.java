@@ -336,7 +336,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "batch_bit_reversed_generator")
     @GenericGenerator(name = "batch_bit_reversed_generator",
-        strategy = "com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator",
+        strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
         parameters = {
             @Parameter(name = "sequence_name", value = "enhanced_sequence"),
             @Parameter(name = "increment_size", value = "5"),

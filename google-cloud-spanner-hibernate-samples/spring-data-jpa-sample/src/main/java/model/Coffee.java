@@ -18,6 +18,7 @@
 
 package model;
 
+import com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -31,7 +32,7 @@ public class Coffee {
 
   /**
    * This entity uses a bit-reversed sequence to generate identifiers. See
-   * {@link com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator} for more
+   * {@link PooledBitReversedSequenceStyleGenerator} for more
    * information.
    */
   @Id
