@@ -83,7 +83,7 @@ public class SpannerExtractionContextTest {
   }
 
   @Test
-  public void testCleanupClosesConnection() throws SQLException {
+  public void testCleanupReleasesConnection() throws SQLException {
     DdlTransactionIsolator ddlTransactionIsolator = mock(DdlTransactionIsolator.class);
     JdbcContext jdbcContext = mock(JdbcContext.class);
     JdbcConnectionAccess jdbcConnectionAccess = mock(JdbcConnectionAccess.class);
@@ -104,7 +104,7 @@ public class SpannerExtractionContextTest {
     context.getJdbcConnection();
     context.cleanup();
 
-    verify(connection).close();
+    verify(jdbcConnectionAccess).releaseConnection(connection);
   }
 
   @Test
@@ -140,7 +140,7 @@ public class SpannerExtractionContextTest {
     when(ddlTransactionIsolator.getJdbcContext()).thenReturn(jdbcContext);
     when(jdbcContext.getJdbcConnectionAccess()).thenReturn(jdbcConnectionAccess);
     when(jdbcConnectionAccess.obtainConnection()).thenReturn(connection);
-    doThrow(new SQLException("test")).when(connection).close();
+    doThrow(new SQLException("test")).when(jdbcConnectionAccess).releaseConnection(connection);
     SpannerExtractionContext context =
         new SpannerExtractionContext(
             mock(ServiceRegistry.class),
@@ -152,6 +152,6 @@ public class SpannerExtractionContextTest {
     context.getJdbcConnection();
     // Cleanup should ignore any errors.
     context.cleanup();
-    verify(connection).close();
+    verify(jdbcConnectionAccess).releaseConnection(connection);
   }
 }
