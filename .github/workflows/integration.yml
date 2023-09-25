@@ -1,5 +1,5 @@
-# This workflow runs the integration tests in this project against the emulator.
-name: Integration Tests on Emulator
+# This workflow runs the integration tests in this project against a real Cloud Spanner instance.
+name: Integration Tests on Cloud Spanner
 
 on:
   push:
