@@ -351,7 +351,7 @@ public class SpannerDialect extends Dialect {
     //
     // The statement also includes a comment that instructs the Cloud Spanner JDBC driver to always
     // start a read/write transaction, even though the statement is a SELECT statement.
-    return "/* spanner.force_begin_transaction=true */ " 
+    return "/* spanner.force_read_write_transaction=true */ " 
         + "/* spanner.ignore_during_internal_retry=true */ " 
         + "select " + getSelectSequenceNextValString(sequenceName);
   }

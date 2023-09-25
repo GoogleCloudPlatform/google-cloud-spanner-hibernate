@@ -539,7 +539,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
   public void testBatchedSequenceEntity_CreateOnly() {
     addDdlResponseToSpannerAdmin();
     long sequenceBatchSize = 5L;
-    String selectSequenceNextVals = "/* spanner.force_begin_transaction=true */ "
+    String selectSequenceNextVals = "/* spanner.force_read_write_transaction=true */ "
         + "/* spanner.ignore_during_internal_retry=true */ "
         + "WITH t AS (\n"
         + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
@@ -667,7 +667,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             .build()));
 
     long sequenceBatchSize = 5L;
-    String selectSequenceNextVals = "/* spanner.force_begin_transaction=true */ "
+    String selectSequenceNextVals = "/* spanner.force_read_write_transaction=true */ "
         + "/* spanner.ignore_during_internal_retry=true */ "
         + "WITH t AS (\n"
         + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"

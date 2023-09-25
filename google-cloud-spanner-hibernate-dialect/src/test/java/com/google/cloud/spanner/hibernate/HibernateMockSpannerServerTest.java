@@ -278,7 +278,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
 
   @Test
   public void testHibernatePooledSequenceEntity_fetchesInBatches() {
-    String getSequenceValuesSql = "/* spanner.force_begin_transaction=true */ " 
+    String getSequenceValuesSql = "/* spanner.force_read_write_transaction=true */ " 
         + "/* spanner.ignore_during_internal_retry=true */ "
         + "WITH t AS (\n"
         + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
@@ -370,7 +370,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
     // support one range that can be skipped, not multiple, so the skipped range is the min/max
     // of all the skipped ranges.
 
-    String getSequenceValuesSql = "/* spanner.force_begin_transaction=true */ "
+    String getSequenceValuesSql = "/* spanner.force_read_write_transaction=true */ "
         + "/* spanner.ignore_during_internal_retry=true */ "
         + "WITH t AS (\n"
         + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
@@ -434,7 +434,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
 
   @Test
   public void testHibernatePooledSequenceEntity_abortedErrorRetriesSequence() {
-    String getSequenceValuesSql = "/* spanner.force_begin_transaction=true */ "
+    String getSequenceValuesSql = "/* spanner.force_read_write_transaction=true */ "
         + "/* spanner.ignore_during_internal_retry=true */ "
         + "WITH t AS (\n"
         + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
