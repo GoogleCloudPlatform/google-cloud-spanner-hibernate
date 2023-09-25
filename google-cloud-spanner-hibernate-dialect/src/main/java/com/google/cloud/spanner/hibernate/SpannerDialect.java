@@ -344,7 +344,16 @@ public class SpannerDialect extends Dialect {
 
   @Override
   public String getSequenceNextValString(String sequenceName) {
-    return "select " + getSelectSequenceNextValString(sequenceName);
+    // This statement includes a comment that is seen as a hint by the Cloud Spanner JDBC driver to
+    // ignore this SELECT statement if the transaction is aborted and retried. Selecting from a
+    // sequence always updates the sequence, regardless whether the transaction committed or not,
+    // and retrying it is not necessary, and would always return different values.
+    //
+    // The statement also includes a comment that instructs the Cloud Spanner JDBC driver to always
+    // start a read/write transaction, even though the statement is a SELECT statement.
+    return "/* spanner.force_begin_transaction=true */ " 
+        + "/* spanner.ignore_during_internal_retry=true */ " 
+        + "select " + getSelectSequenceNextValString(sequenceName);
   }
 
   @Override

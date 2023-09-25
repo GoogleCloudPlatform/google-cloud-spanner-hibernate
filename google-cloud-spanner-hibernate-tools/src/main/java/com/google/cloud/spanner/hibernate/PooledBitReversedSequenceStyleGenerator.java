@@ -302,8 +302,10 @@ public class PooledBitReversedSequenceStyleGenerator implements
         ? "\tselect nextval('" + sequenceName + "') AS n"
         : "\tselect get_next_sequence_value(sequence " + sequenceName + ") AS n";
 
-    return "WITH t AS (\n" + IntStream.range(0, fetchSize).mapToObj(ignore -> selectNextVal)
-        .collect(Collectors.joining("\n\tUNION ALL\n")) + "\n)\n" + "SELECT n FROM t";
+    return "/* spanner.force_begin_transaction=true */ " 
+        + "/* spanner.ignore_during_internal_retry=true */ " 
+        + "WITH t AS (\n" + IntStream.range(0, fetchSize).mapToObj(ignore -> selectNextVal)
+        .collect(Collectors.joining("\n\tUNION ALL\n")) + "\n)\nSELECT n FROM t";
   }
 
   private boolean isPostgres() {
