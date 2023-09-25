@@ -1,6 +1,18 @@
 # Changelog
 
 
+## [1.8.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.8.1...v1.8.2) (2023-09-22)
+
+
+### Bug Fixes
+
+* JDBC connection was leaked during schema creation ([#738](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/738)) ([427fe02](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/427fe02162c1f6b439a7b1f1deee8abc01b45384))
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#744](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/744)) ([ce0ac0c](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/ce0ac0cce9c9211b2ff8acbe32731960c109dfe5))
+
 ## [1.8.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.8.0...v1.8.1) (2023-09-18)
 
 
