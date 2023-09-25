@@ -77,7 +77,7 @@ public class SpannerExtractionContext extends ImprovedExtractionContextImpl {
     super.cleanup();
     if (extractionConnection != null) {
       try {
-        extractionConnection.close();
+        jdbcConnectionAccess.releaseConnection(extractionConnection);
       } catch (SQLException exception) {
         log.warn(
             "An exception was thrown while closing the JDBC connection "

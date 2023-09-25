@@ -159,7 +159,7 @@ public class GeneratedCreateTableStatementsTests {
         "START BATCH DDL",
         "RUN BATCH",
         "START BATCH DDL",
-        "create table Account (amount float64,id int64 not null,name string(255)) PRIMARY KEY (id)",
+        "create table Account (amount numeric,id int64 not null,name string(255)) PRIMARY KEY (id)",
         "RUN BATCH"
     );
   }

@@ -21,6 +21,7 @@ package com.google.cloud.spanner.hibernate.schema;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.hibernate.boot.Metadata;
+import org.hibernate.resource.transaction.spi.DdlTransactionIsolator;
 import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.internal.SchemaCreatorImpl;
 import org.hibernate.tool.schema.spi.ContributableMatcher;
@@ -55,7 +56,9 @@ public class SpannerSchemaCreator implements SchemaCreator {
     metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl(Action.CREATE));
     metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl(Action.CREATE));
 
-    try (Connection connection = tool.getDatabaseMetadataConnection(options)) {
+    DdlTransactionIsolator isolator = tool.getDdlTransactionIsolator(options);
+    try {
+      Connection connection = isolator.getIsolatedConnection();
       SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.CREATE);
       tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
@@ -63,6 +66,8 @@ public class SpannerSchemaCreator implements SchemaCreator {
           metadata, options, contributableInclusionFilter, sourceDescriptor, targetDescriptor);
     } catch (SQLException e) {
       throw new RuntimeException("Failed to update Spanner table schema.", e);
+    } finally {
+      isolator.release();
     }
   }
 }

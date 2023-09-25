@@ -21,6 +21,7 @@ package com.google.cloud.spanner.hibernate.schema;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.hibernate.boot.Metadata;
+import org.hibernate.resource.transaction.spi.DdlTransactionIsolator;
 import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.internal.SchemaDropperImpl;
 import org.hibernate.tool.schema.spi.ContributableMatcher;
@@ -56,7 +57,9 @@ public class SpannerSchemaDropper implements SchemaDropper {
     metadata.getDatabase().addAuxiliaryDatabaseObject(new StartBatchDdl(Action.DROP));
     metadata.getDatabase().addAuxiliaryDatabaseObject(new RunBatchDdl(Action.DROP));
 
-    try (Connection connection = tool.getDatabaseMetadataConnection(options)) {
+    DdlTransactionIsolator isolator = tool.getDdlTransactionIsolator(options);
+    try {
+      Connection connection = isolator.getIsolatedConnection();
       // Initialize exporters with drop table dependencies so tables are dropped in the right order.
       SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.DROP);
@@ -65,6 +68,8 @@ public class SpannerSchemaDropper implements SchemaDropper {
           metadata, options, contributableInclusionFilter, sourceDescriptor, targetDescriptor);
     } catch (SQLException e) {
       throw new RuntimeException("Failed to update Spanner table schema.", e);
+    } finally {
+      isolator.release();
     }
   }
 
@@ -75,7 +80,9 @@ public class SpannerSchemaDropper implements SchemaDropper {
       ContributableMatcher contributableInclusionFilter,
       SourceDescriptor sourceDescriptor) {
 
-    try (Connection connection = tool.getDatabaseMetadataConnection(options)) {
+    DdlTransactionIsolator isolator = tool.getDdlTransactionIsolator(options);
+    try {
+      Connection connection = isolator.getIsolatedConnection();
       // Initialize exporters with drop table dependencies so tables are dropped in the right order.
       SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.DROP);
@@ -84,6 +91,8 @@ public class SpannerSchemaDropper implements SchemaDropper {
           metadata, options, contributableInclusionFilter, sourceDescriptor);
     } catch (SQLException e) {
       throw new RuntimeException("Failed to update Spanner table schema.", e);
+    } finally {
+      isolator.release();
     }
   }
 }

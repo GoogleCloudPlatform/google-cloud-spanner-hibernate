@@ -19,6 +19,9 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import static org.hibernate.type.SqlTypes.DECIMAL;
+import static org.hibernate.type.SqlTypes.NUMERIC;
+
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
 import org.hibernate.HibernateException;
 import org.hibernate.dialect.unique.UniqueDelegate;
@@ -74,6 +77,15 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
         return new SpannerSqlAstTranslator<>(sessionFactory, statement);
       }
     };
+  }
+
+  // TODO: Remove when the override in the super class has been fixed.
+  @Override
+  protected String columnType(int sqlTypeCode) {
+    if (sqlTypeCode == DECIMAL || sqlTypeCode == NUMERIC) {
+      return "numeric";
+    }
+    return super.columnType(sqlTypeCode);
   }
 
   @Override

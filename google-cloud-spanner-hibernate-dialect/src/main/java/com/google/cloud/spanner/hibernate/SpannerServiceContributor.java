@@ -26,6 +26,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceContributor;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.hibernate.tool.schema.UniqueConstraintSchemaUpdateStrategy;
 import org.hibernate.tool.schema.spi.SchemaManagementTool;
 
 /**
@@ -65,7 +66,11 @@ public class SpannerServiceContributor implements ServiceContributor {
                 }
               })
           // The user agent JDBC connection property to identify the library.
-          .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN);
+          .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN)
+          // Adding this setting prevents Hibernate from dropping and re-creating (unique) indexes
+          // every time a session factory is created with hbm2dll=update. 
+          .applySetting("hibernate.schema_update.unique_constraint_strategy",
+                        UniqueConstraintSchemaUpdateStrategy.RECREATE_QUIETLY);
     }
   }
 }
