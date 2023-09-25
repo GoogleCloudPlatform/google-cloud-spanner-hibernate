@@ -18,9 +18,11 @@
 
 package com.google.cloud.spanner.hibernate.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory.JdbcAbortedDueToConcurrentModificationException;
@@ -128,6 +130,8 @@ public class BitReversedSequenceIT {
   /** Creates a test database and generates the schema from the entities. */
   @BeforeClass
   public static void setup() {
+    assumeFalse("bit-reversed sequences are not yet supported on the emulator", isUsingEmulator());
+    
     TEST_ENV.createDatabase(ImmutableList.of());
     // Generate the database schema from th entity model.
     try (SessionFactory ignore = TEST_ENV.createTestHibernateConfig(
