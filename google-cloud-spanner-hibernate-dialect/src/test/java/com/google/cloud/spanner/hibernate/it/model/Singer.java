@@ -25,6 +25,7 @@ import org.hibernate.annotations.Check;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 
+/** Singer entity definition. */
 @Entity
 @Check(constraints = "first_name is not null or last_name is not null")
 public class Singer extends AbstractBaseEntity {

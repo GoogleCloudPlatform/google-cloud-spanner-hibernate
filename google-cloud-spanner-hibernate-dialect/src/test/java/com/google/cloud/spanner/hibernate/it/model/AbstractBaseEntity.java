@@ -31,6 +31,7 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
+/** Abstract base class for all entities. */
 @MappedSuperclass
 public class AbstractBaseEntity {
 

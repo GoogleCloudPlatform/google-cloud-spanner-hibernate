@@ -23,6 +23,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 
+/** Album entity definition. */
 @Entity
 public class Album extends AbstractBaseEntity {
 

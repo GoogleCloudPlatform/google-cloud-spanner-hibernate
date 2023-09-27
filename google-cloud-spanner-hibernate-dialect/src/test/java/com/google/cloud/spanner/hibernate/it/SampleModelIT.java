@@ -38,6 +38,10 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+/**
+ * Integration test using the standard sample data model using all data types and all supported
+ * features of Cloud Spanner.
+ */
 @Category(IntegrationTest.class)
 @RunWith(JUnit4.class)
 public class SampleModelIT {
@@ -46,6 +50,7 @@ public class SampleModelIT {
 
   private static SessionFactory sessionFactory;
 
+  /** Creates the test database and session factory. */
   @BeforeClass
   public static void createDataDatabase() {
     TEST_ENV.createDatabase(ImmutableList.of());
@@ -60,6 +65,7 @@ public class SampleModelIT {
     }
   }
 
+  /** Drops the test database. */
   @AfterClass
   public static void cleanup() {
     if (sessionFactory != null) {
