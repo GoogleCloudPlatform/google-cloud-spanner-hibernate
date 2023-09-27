@@ -541,18 +541,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     long sequenceBatchSize = 5L;
     String selectSequenceNextVals = "/* spanner.force_read_write_transaction=true */ "
         + "/* spanner.ignore_during_internal_retry=true */ "
-        + "WITH t AS (\n"
-        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
-        + ")\n"
-        + "SELECT n FROM t";
+        + " select get_next_sequence_value(sequence enhanced_sequence) AS n " 
+        + "from unnest(generate_array(1, 5))";
     String insertSql = "insert into PooledBitReversedSequenceEntity (name, id) values (@p1, @p2)";
     mockSpanner.putStatementResult(StatementResult.query(Statement.of(selectSequenceNextVals),
         ResultSet.newBuilder()
@@ -669,18 +659,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     long sequenceBatchSize = 5L;
     String selectSequenceNextVals = "/* spanner.force_read_write_transaction=true */ "
         + "/* spanner.ignore_during_internal_retry=true */ "
-        + "WITH t AS (\n"
-        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
-        + ")\n"
-        + "SELECT n FROM t";
+        + " select get_next_sequence_value(sequence enhanced_sequence) AS n " 
+        + "from unnest(generate_array(1, 5))";
     String insertSql = "insert into PooledBitReversedSequenceEntity (name, id) values (@p1, @p2)";
     mockSpanner.putStatementResult(StatementResult.query(Statement.of(selectSequenceNextVals),
         ResultSet.newBuilder()

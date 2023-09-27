@@ -280,18 +280,8 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
   public void testHibernatePooledSequenceEntity_fetchesInBatches() {
     String getSequenceValuesSql = "/* spanner.force_read_write_transaction=true */ " 
         + "/* spanner.ignore_during_internal_retry=true */ "
-        + "WITH t AS (\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + ")\n"
-        + "SELECT n FROM t";
+        + " select get_next_sequence_value(sequence pooled_sequence) AS n "
+        + "from unnest(generate_array(1, 5))";
 
     long initialValue = 20000L;
     mockSpanner.putStatementResult(
@@ -372,18 +362,8 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
 
     String getSequenceValuesSql = "/* spanner.force_read_write_transaction=true */ "
         + "/* spanner.ignore_during_internal_retry=true */ "
-        + "WITH t AS (\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + ")\n"
-        + "SELECT n FROM t";
+        + " select get_next_sequence_value(sequence pooled_sequence) AS n "
+        + "from unnest(generate_array(1, 5))";
 
     long initialValue = 20000L;
     long expectedId = reverse(initialValue + 1L);
@@ -436,18 +416,8 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
   public void testHibernatePooledSequenceEntity_abortedErrorRetriesSequence() {
     String getSequenceValuesSql = "/* spanner.force_read_write_transaction=true */ "
         + "/* spanner.ignore_during_internal_retry=true */ "
-        + "WITH t AS (\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + "\tUNION ALL\n"
-        + "\tselect get_next_sequence_value(sequence pooled_sequence) AS n\n"
-        + ")\n"
-        + "SELECT n FROM t";
+        + " select get_next_sequence_value(sequence pooled_sequence) AS n " 
+        + "from unnest(generate_array(1, 5))";
 
     long initialValue = 20000L;
     // TODO: Update this once the bug in the mock server has been fixed.

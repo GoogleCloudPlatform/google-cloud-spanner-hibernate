@@ -115,10 +115,9 @@ public class PooledBitReversedSequenceStyleGenerator implements
   private static final String EXCLUDE_RANGES_PARAM = "exclude_ranges";
 
   /**
-   * The maximum allowed increment size is 200 for GoogleSQL-dialect databases and 60 for
-   * PostgreSQL-dialect databases.
+   * The maximum allowed increment size is 60 for PostgreSQL-dialect databases. This limitation will
+   * be lifted in the future.
    */
-  private static final int GOOGLE_SQL_MAX_INCREMENT_SIZE = 200;
   private static final int POSTGRES_MAX_INCREMENT_SIZE = 60;
   private static final Iterator<Long> EMPTY_ITERATOR = Collections.emptyIterator();
   private final Lock lock = new ReentrantLock();
@@ -266,7 +265,7 @@ public class PooledBitReversedSequenceStyleGenerator implements
   }
 
   private int getMaxIncrementSize() {
-    return isPostgres() ? POSTGRES_MAX_INCREMENT_SIZE : GOOGLE_SQL_MAX_INCREMENT_SIZE;
+    return isPostgres() ? POSTGRES_MAX_INCREMENT_SIZE : Integer.MAX_VALUE;
   }
 
   private SequenceStructure buildDatabaseStructure(
@@ -300,12 +299,17 @@ public class PooledBitReversedSequenceStyleGenerator implements
       int fetchSize) {
     String selectNextVal = isPostgres()
         ? "\tselect nextval('" + sequenceName + "') AS n"
-        : "\tselect get_next_sequence_value(sequence " + sequenceName + ") AS n";
+        : "select get_next_sequence_value(sequence " + sequenceName + ") AS n";
+    String hints = "/* spanner.force_read_write_transaction=true */ "
+        + "/* spanner.ignore_during_internal_retry=true */ ";
 
-    return "/* spanner.force_read_write_transaction=true */ " 
-        + "/* spanner.ignore_during_internal_retry=true */ " 
-        + "WITH t AS (\n" + IntStream.range(0, fetchSize).mapToObj(ignore -> selectNextVal)
-        .collect(Collectors.joining("\n\tUNION ALL\n")) + "\n)\nSELECT n FROM t";
+    if (isPostgres()) {
+      return hints
+          + "WITH t AS (\n" + IntStream.range(0, fetchSize).mapToObj(ignore -> selectNextVal)
+          .collect(Collectors.joining("\n\tUNION ALL\n")) + "\n)\nSELECT n FROM t";
+    }
+    return String.format("%s %s from unnest(generate_array(1, %d))",
+        hints, selectNextVal, fetchSize);
   }
 
   private boolean isPostgres() {
