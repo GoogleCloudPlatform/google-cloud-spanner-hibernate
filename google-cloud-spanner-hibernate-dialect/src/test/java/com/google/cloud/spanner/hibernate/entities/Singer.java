@@ -24,12 +24,14 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import org.hibernate.annotations.Check;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
 /** Test entity using a bit-reversed sequence generator for ID generation. */
 @Entity
+@Check(constraints = "first_name is not null or last_name is not null")
 public class Singer {
   
   @Id
