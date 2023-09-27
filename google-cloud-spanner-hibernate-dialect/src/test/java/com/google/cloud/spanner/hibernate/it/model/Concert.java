@@ -18,9 +18,7 @@
 
 package com.google.cloud.spanner.hibernate.it.model;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
+import java.time.OffsetDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -28,55 +26,51 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import org.hibernate.annotations.Check;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
-/**
- * Album entity definition.
- */
 @Entity
-public class Album extends AbstractBaseEntity {
+// NOTE: Hibernate 5 does not generate a DDL statement for this constraint.
+@Check(constraints = "endTime > startTime")
+public class Concert extends AbstractBaseEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "album_id_generator")
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "concert_id_generator")
   @GenericGenerator(
-      name = "album_id_generator",
+      name = "concert_id_generator",
       // TODO: Switch to PooledBitReversedSequenceStyleGenerator when that is available and the
       //       emulator supports it.
       strategy = "com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator",
       parameters = {
           // Use a separate name for each entity to ensure that it uses a separate table.
-          @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "album_id"),
+          @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "concert_id"),
           @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
       })
   private Long id;
 
-  @Column(nullable = false, length = 300)
-  private String title;
+  @Column(nullable = false)
+  private String name;
 
-  private BigDecimal marketingBudget;
+  @ManyToOne(optional = false, fetch = FetchType.LAZY)
+  private Venue venue;
 
-  private LocalDate releaseDate;
-
-  private byte[] coverPicture;
-
-  @ManyToOne(optional = false, fetch = FetchType.EAGER)
+  @ManyToOne(optional = false, fetch = FetchType.LAZY)
   private Singer singer;
 
-  /**
-   * The 'id' column in Track maps to Album. The corresponding property is called 'album'.
-   */
-  @OneToMany(mappedBy = "album")
-  private List<Track> tracks;
+  @Column(nullable = false)
+  private OffsetDateTime startTime;
 
-  protected Album() {
+  @Column(nullable = false)
+  private OffsetDateTime endTime;
+
+  protected Concert() {
   }
 
-  public Album(Singer singer, String title) {
+  public Concert(Venue venue, Singer singer) {
+    this.venue = venue;
     this.singer = singer;
-    this.title = title;
   }
 
   @Override
@@ -88,36 +82,20 @@ public class Album extends AbstractBaseEntity {
     this.id = id;
   }
 
-  public String getTitle() {
-    return title;
+  public String getName() {
+    return name;
   }
 
-  public void setTitle(String title) {
-    this.title = title;
+  public void setName(String name) {
+    this.name = name;
   }
 
-  public BigDecimal getMarketingBudget() {
-    return marketingBudget;
+  public Venue getVenue() {
+    return venue;
   }
 
-  public void setMarketingBudget(BigDecimal marketingBudget) {
-    this.marketingBudget = marketingBudget;
-  }
-
-  public LocalDate getReleaseDate() {
-    return releaseDate;
-  }
-
-  public void setReleaseDate(LocalDate releaseDate) {
-    this.releaseDate = releaseDate;
-  }
-
-  public byte[] getCoverPicture() {
-    return coverPicture;
-  }
-
-  public void setCoverPicture(byte[] coverPicture) {
-    this.coverPicture = coverPicture;
+  public void setVenue(Venue venue) {
+    this.venue = venue;
   }
 
   public Singer getSinger() {
@@ -128,11 +106,19 @@ public class Album extends AbstractBaseEntity {
     this.singer = singer;
   }
 
-  public List<Track> getTracks() {
-    return tracks;
+  public OffsetDateTime getStartTime() {
+    return startTime;
   }
 
-  public void setTracks(List<Track> tracks) {
-    this.tracks = tracks;
+  public void setStartTime(OffsetDateTime startTime) {
+    this.startTime = startTime;
+  }
+
+  public OffsetDateTime getEndTime() {
+    return endTime;
+  }
+
+  public void setEndTime(OffsetDateTime endTime) {
+    this.endTime = endTime;
   }
 }

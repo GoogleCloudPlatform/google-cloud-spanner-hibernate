@@ -18,16 +18,27 @@
 
 package com.google.cloud.spanner.hibernate.it;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.hibernate.it.model.Album;
+import com.google.cloud.spanner.hibernate.it.model.Concert;
 import com.google.cloud.spanner.hibernate.it.model.Singer;
+import com.google.cloud.spanner.hibernate.it.model.Track;
+import com.google.cloud.spanner.hibernate.it.model.Venue;
+import com.google.cloud.spanner.hibernate.it.model.Venue.VenueDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -55,12 +66,21 @@ public class SampleModelIT {
   public static void createDataDatabase() {
     TEST_ENV.createDatabase(ImmutableList.of());
     sessionFactory = TEST_ENV.createTestHibernateConfig(
-        ImmutableList.of(Singer.class, Album.class),
+        ImmutableList.of(Singer.class, Album.class, Track.class, Venue.class, Concert.class),
         ImmutableMap.of("hibernate.hbm2ddl.auto", "update")).buildSessionFactory();
     try (Session session = sessionFactory.openSession()) {
       final Transaction transaction = session.beginTransaction();
-      session.save(new Singer("Peter", "Allison"));
-      session.save(new Singer("Alice", "Peterson"));
+      Singer peter = new Singer("Peter", "Allison");
+      session.save(peter);
+      Singer alice = new Singer("Alice", "Peterson");
+      session.save(alice);
+
+      session.save(new Album(peter, "Album 1"));
+      session.save(new Album(peter, "Album 2"));
+
+      session.save(new Album(alice, "Album 1"));
+      session.save(new Album(alice, "Album 2"));
+
       transaction.commit();
     }
   }
@@ -86,6 +106,7 @@ public class SampleModelIT {
       assertEquals("Allison", singer.getLastName());
       assertEquals("Peter Allison", singer.getFullName());
       assertNull(singer.getBirthDate());
+      assertTrue(singer.isActive());
       assertNotNull(singer.getCreatedAt());
       assertNotNull(singer.getUpdatedAt());
     }
@@ -119,6 +140,101 @@ public class SampleModelIT {
       session.save(singer4);
       session.flush();
       assertNull(singer4.getFullName());
+
+      transaction.commit();
+    }
+  }
+
+  @Test
+  public void testSingerGetAlbums() {
+    try (Session session = sessionFactory.openSession()) {
+      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      assertNotNull(peter.getAlbums());
+      assertEquals(2, peter.getAlbums().size());
+    }
+  }
+
+  @Test
+  public void testSaveAlbum() {
+    try (Session session = sessionFactory.openSession()) {
+      Transaction transaction = session.beginTransaction();
+      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Album album = new Album(peter, "Album 3");
+      album.setMarketingBudget(new BigDecimal("990429.23"));
+      album.setReleaseDate(LocalDate.of(2023, 9, 27));
+      album.setCoverPicture(new byte[] {10, 20, 30, 1, 2, 3, 127, 127, 0, 0, -128, -100});
+      session.save(album);
+      transaction.commit();
+
+      // Reload the album from the database and verify that we read back the same values.
+      session.refresh(album);
+      assertEquals(peter, album.getSinger());
+      assertEquals("Album 3", album.getTitle());
+      assertEquals(new BigDecimal("990429.23"), album.getMarketingBudget());
+      assertEquals(LocalDate.of(2023, 9, 27), album.getReleaseDate());
+      assertArrayEquals(new byte[] {10, 20, 30, 1, 2, 3, 127, 127, 0, 0, -128, -100}, album.getCoverPicture());
+    }
+  }
+
+  @Test
+  public void testSaveTrack() {
+    try (Session session = sessionFactory.openSession()) {
+      Transaction transaction = session.beginTransaction();
+      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Album album = peter.getAlbums().get(0);
+      Track track = new Track(album, 1, "Track 1");
+      track.setSampleRate(3.14d);
+      session.save(track);
+      transaction.commit();
+
+      // Reload the album from the database and verify that we read back the same values.
+      session.refresh(track);
+      assertEquals(album, track.getAlbum());
+      assertEquals(peter, track.getAlbum().getSinger());
+      assertEquals(1L, track.getTrackId().getTrackNumber());
+      assertEquals("Track 1", track.getTitle());
+      assertEquals(3.14d, track.getSampleRate(), 0.0d);
+    }
+    // Test associations.
+    try (Session session = sessionFactory.openSession()) {
+      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Album album = peter.getAlbums().get(0);
+      assertNotNull(album.getTracks());
+      assertEquals(1, album.getTracks().size());
+    }
+  }
+
+  @Test
+  public void testSaveVenue() {
+    try (Session session = sessionFactory.openSession()) {
+      Transaction transaction = session.beginTransaction();
+      // TODO: Set VenueDescription fields and verify these in Hibernate 6.
+      Venue venue = new Venue("Venue 1", new VenueDescription());
+      session.save(venue);
+      transaction.commit();
+
+      session.refresh(venue);
+      assertEquals("Venue 1", venue.getName());
+    }
+  }
+
+  @Test
+  public void testSaveConcert() {
+    try (Session session = sessionFactory.openSession()) {
+      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Transaction transaction = session.beginTransaction();
+      Venue venue = new Venue("Venue 2", new VenueDescription());
+      session.save(venue);
+      Concert concert = new Concert(venue, peter);
+      concert.setName("Peter Live!");
+      concert.setStartTime(OffsetDateTime.of(LocalDate.of(2023, 9, 26), LocalTime.of(19, 30), ZoneOffset.of("+02:00")));
+      concert.setEndTime(OffsetDateTime.of(LocalDate.of(2023, 9, 27), LocalTime.of(2, 0), ZoneOffset.of("+02:00")));
+      session.save(concert);
+      transaction.commit();
+
+      session.refresh(concert);
+      assertEquals(Instant.from(OffsetDateTime.of(2023, 9, 26, 17, 30, 0, 0, ZoneOffset.UTC)), Instant.from(concert.getStartTime()));
+      assertEquals(Instant.from(OffsetDateTime.of(2023, 9, 27, 0, 0, 0, 0, ZoneOffset.UTC)), Instant.from(concert.getEndTime()));
     }
   }
 
