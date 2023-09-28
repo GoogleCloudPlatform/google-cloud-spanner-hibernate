@@ -22,6 +22,8 @@ import static com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleG
 import static com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator.parseExcludedRanges;
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -30,6 +32,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import org.hibernate.MappingException;
+import org.hibernate.boot.model.naming.Identifier;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.PostgreSQL10Dialect;
+import org.hibernate.engine.jdbc.env.spi.IdentifierHelper;
+import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.type.Type;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -121,6 +130,64 @@ public class PooledBitReversedSequenceStyleGeneratorTest {
                     "test_sequence",
                     asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "[-1000,-2000]"))))
             .getMessage());
+  }
+  
+  @Test
+  public void testBuildPostgresSelect() {
+    ServiceRegistry registry = mock(ServiceRegistry.class);
+    JdbcEnvironment environment = mock(JdbcEnvironment.class);
+    when(registry.getService(JdbcEnvironment.class)).thenReturn(environment);
+    Dialect dialect = new PostgreSQL10Dialect();
+    IdentifierHelper identifierHelper = mock(IdentifierHelper.class);
+    when(environment.getDialect()).thenReturn(dialect);
+    when(environment.getIdentifierHelper()).thenReturn(identifierHelper);
+    when(identifierHelper.toIdentifier("")).thenReturn(Identifier.toIdentifier(""));
+    when(identifierHelper.toIdentifier("public"))
+        .thenReturn(Identifier.toIdentifier("public"));
+    when(identifierHelper.toIdentifier("test_sequence"))
+        .thenReturn(Identifier.toIdentifier("test_sequence"));
+    
+    PooledBitReversedSequenceStyleGenerator generator
+        = new PooledBitReversedSequenceStyleGenerator();
+    generator.configure(mock(Type.class), asProperties(ImmutableMap.of(
+        "catalog", "",
+        "schema", "public",
+        "sequence_name", "test_sequence",
+        "increment_size", "5"
+    )), registry);
+    assertEquals("/* spanner.force_read_write_transaction=true */ " 
+        + "/* spanner.ignore_during_internal_retry=true */  select " 
+        + "nextval('test_sequence') as n, nextval('test_sequence') as n, " 
+        + "nextval('test_sequence') as n, nextval('test_sequence') as n, " 
+        + "nextval('test_sequence') as n", generator.getSelect());
+  }
+
+  @Test
+  public void testBuildGoogleSelect() {
+    ServiceRegistry registry = mock(ServiceRegistry.class);
+    JdbcEnvironment environment = mock(JdbcEnvironment.class);
+    when(registry.getService(JdbcEnvironment.class)).thenReturn(environment);
+    Dialect dialect = mock(Dialect.class);
+    IdentifierHelper identifierHelper = mock(IdentifierHelper.class);
+    when(environment.getDialect()).thenReturn(dialect);
+    when(environment.getIdentifierHelper()).thenReturn(identifierHelper);
+    when(identifierHelper.toIdentifier("")).thenReturn(Identifier.toIdentifier(""));
+    when(identifierHelper.toIdentifier("")).thenReturn(Identifier.toIdentifier(""));
+    when(identifierHelper.toIdentifier("test_sequence"))
+        .thenReturn(Identifier.toIdentifier("test_sequence"));
+
+    PooledBitReversedSequenceStyleGenerator generator =
+        new PooledBitReversedSequenceStyleGenerator();
+    generator.configure(mock(Type.class), asProperties(ImmutableMap.of(
+        "catalog", "",
+        "schema", "public",
+        "sequence_name", "test_sequence",
+        "increment_size", "5"
+    )), registry);
+    assertEquals("/* spanner.force_read_write_transaction=true */ " 
+        + "/* spanner.ignore_during_internal_retry=true */  " 
+        + "select get_next_sequence_value(sequence test_sequence) AS n " 
+        + "from unnest(generate_array(1, 5))", generator.getSelect());
   }
   
   static Properties asProperties(Map<String, String> map) {

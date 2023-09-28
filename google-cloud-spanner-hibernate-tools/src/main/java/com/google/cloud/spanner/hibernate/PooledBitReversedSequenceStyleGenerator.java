@@ -67,8 +67,8 @@ import org.hibernate.type.Type;
  *
  * <p>Using a bit-reversed sequence for ID generation is recommended above sequences that return a
  * monotonically increasing value for Cloud Spanner. This generator also supports both an increment
- * size larger than 1 and an initial value larger than 1. The increment value can not exceed 200
- * for GoogleSQL-dialect databases and 60 for PostgreSQL-dialect databases.
+ * size larger than 1 and an initial value larger than 1. The increment value can not exceed 200 for
+ * GoogleSQL-dialect databases and 60 for PostgreSQL-dialect databases.
  *
  * <p>Use the {@link #EXCLUDE_RANGE_PARAM} to exclude a range of values that should be skipped by
  * the generator if your entity table already contains data. The excluded values should be given as
@@ -102,7 +102,7 @@ public class PooledBitReversedSequenceStyleGenerator implements
   /**
    * The default increment (fetch) size for an {@link PooledBitReversedSequenceStyleGenerator}.
    */
-  public static final int DEFAULT_INCREMENT_SIZE = 100;
+  public static final int DEFAULT_INCREMENT_SIZE = 50;
   /**
    * Configuration property for defining a range that should be excluded by a bit-reversed sequence
    * generator.
@@ -115,10 +115,10 @@ public class PooledBitReversedSequenceStyleGenerator implements
   private static final String EXCLUDE_RANGES_PARAM = "exclude_ranges";
 
   /**
-   * The maximum allowed increment size is 60 for PostgreSQL-dialect databases. This limitation will
-   * be lifted in the future.
+   * The maximum allowed increment size is 1000 for PostgreSQL-dialect databases. This limitation
+   * will be lifted in the future.
    */
-  private static final int POSTGRES_MAX_INCREMENT_SIZE = 60;
+  private static final int POSTGRES_MAX_INCREMENT_SIZE = 1000;
   private static final Iterator<Long> EMPTY_ITERATOR = Collections.emptyIterator();
   private final Lock lock = new ReentrantLock();
 
@@ -295,21 +295,24 @@ public class PooledBitReversedSequenceStyleGenerator implements
         type.getReturnedClass());
   }
 
-  private String buildSelect(QualifiedSequenceName sequenceName,
-      int fetchSize) {
-    String selectNextVal = isPostgres()
-        ? "\tselect nextval('" + sequenceName + "') AS n"
-        : "select get_next_sequence_value(sequence " + sequenceName + ") AS n";
+  private String buildSelect(QualifiedSequenceName sequenceName, int fetchSize) {
     String hints = "/* spanner.force_read_write_transaction=true */ "
         + "/* spanner.ignore_during_internal_retry=true */ ";
 
     if (isPostgres()) {
-      return hints
-          + "WITH t AS (\n" + IntStream.range(0, fetchSize).mapToObj(ignore -> selectNextVal)
-          .collect(Collectors.joining("\n\tUNION ALL\n")) + "\n)\nSELECT n FROM t";
+      return String.format("%s select %s",
+          hints, IntStream.range(0, fetchSize).mapToObj(
+                  ignore -> "nextval('" + sequenceName.getSequenceName().getText() + "') as n")
+              .collect(Collectors.joining(", ")));
     }
-    return String.format("%s %s from unnest(generate_array(1, %d))",
-        hints, selectNextVal, fetchSize);
+    return String.format("%s select get_next_sequence_value(sequence %s) AS n "
+            + "from unnest(generate_array(1, %d))",
+        hints, sequenceName.getSequenceName().getText(), fetchSize);
+  }
+
+  @VisibleForTesting
+  String getSelect() {
+    return this.select;
   }
 
   private boolean isPostgres() {
@@ -374,22 +377,19 @@ public class PooledBitReversedSequenceStyleGenerator implements
         retryAbortsInternally = isRetryAbortsInternally(statement);
         connection.commit();
         statement.execute(String.format("set %sretry_aborts_internally=false", extensionPrefix));
-        // statement.execute("begin transaction");
-        // statement.execute("set transaction read write");
         List<Long> identifiers = new ArrayList<>(this.fetchSize);
         try (ResultSet resultSet = statement.executeQuery(this.select)) {
           while (resultSet.next()) {
-            identifiers.add(resultSet.getLong(1));
+            for (int col = 1; col <= resultSet.getMetaData().getColumnCount(); col++) {
+              identifiers.add(resultSet.getLong(col));
+            }
           }
         }
         connection.commit();
-        // statement.execute("commit");
         return identifiers.iterator();
       }
     } catch (SQLException sqlException) {
       if (connection != null) {
-        // Connection finalConnection = connection;
-        // ignoreSqlException(() -> finalConnection.createStatement().execute("rollback"));
         ignoreSqlException(connection::rollback);
       }
       if (isAbortedError(sqlException)) {
