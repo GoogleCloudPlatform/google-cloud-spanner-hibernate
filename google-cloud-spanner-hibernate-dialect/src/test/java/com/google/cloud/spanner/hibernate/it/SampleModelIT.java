@@ -31,6 +31,7 @@ import com.google.cloud.spanner.hibernate.it.model.Singer;
 import com.google.cloud.spanner.hibernate.it.model.Track;
 import com.google.cloud.spanner.hibernate.it.model.Venue;
 import com.google.cloud.spanner.hibernate.it.model.Venue.VenueDescription;
+import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
@@ -39,6 +40,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -99,7 +101,9 @@ public class SampleModelIT {
     TEST_ENV.cleanup();
   }
 
-  /** Clean up any data that the test might have added. */
+  /**
+   * Clean up any data that the test might have added.
+   */
   @After
   public void deleteTestData() {
     try (Session session = sessionFactory.openSession()) {
@@ -108,7 +112,10 @@ public class SampleModelIT {
           .setParameter("id", Long.reverse(50000)).executeUpdate();
       session.createQuery("delete from Venue where not id in (select venue.id from Concert)")
           .executeUpdate();
-      session.createQuery("delete from Album where not singer.id=:id")
+      session.createQuery("delete from Track where 1=1").executeUpdate();
+      session.createQuery("delete from Album "
+              + "where not singer.id=:id "
+              + "or not (title='Album 1' or title='Album 2')")
           .setParameter("id", Long.reverse(50000)).executeUpdate();
       session.createQuery("delete from Singer where not id=:id")
           .setParameter("id", Long.reverse(50000)).executeUpdate();
@@ -276,6 +283,106 @@ public class SampleModelIT {
       for (Album album : peter.getAlbums()) {
         assertEquals(peter, album.getSinger());
       }
+
+      Singer singer = new Singer("First", "Last");
+      // Adding albums in this way does not automatically save the albums as well, as we have not
+      // specified any cascade actions on the albums collection.
+      singer.setAlbums(new ArrayList<>(
+          ImmutableList.of(new Album(singer, "Title 1"), new Album(singer, "Title 2"))));
+      final Transaction transaction = session.beginTransaction();
+      session.save(singer);
+      transaction.commit();
+
+      // Verify that the albums of the singer were not saved.
+      session.clear();
+      singer = session.get(Singer.class, singer.getId());
+      assertNotNull(singer.getAlbums());
+      assertTrue(singer.getAlbums().isEmpty());
+
+      // Manually saving the albums as well does work.
+      Singer singer2 = new Singer("First", "Last");
+      singer2.setAlbums(new ArrayList<>(
+          ImmutableList.of(new Album(singer, "Title 1"), new Album(singer, "Title 2"))));
+      final Transaction transaction2 = session.beginTransaction();
+      session.save(singer2);
+      for (Album album : singer2.getAlbums()) {
+        session.save(album);
+      }
+      transaction2.commit();
+
+      singer2 = session.get(Singer.class, singer2.getId());
+      assertNotNull(singer2.getAlbums());
+      assertEquals(2, singer2.getAlbums().size());
+    }
+  }
+
+  @Test
+  public void testAlbumTracksAssociation() {
+    try (Session session = sessionFactory.openSession()) {
+      final Transaction transaction = session.beginTransaction();
+      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+
+      Album album = new Album(peter, "Album 3");
+      // We need to save the album before adding tracks to it, as the tracks must use the same id
+      // as the album (Track is INTERLEAVED IN PARENT Album).
+      session.save(album);
+      album.setTracks(ImmutableList.of(
+          new Track(album, 1L, "Track 1"),
+          new Track(album, 2L, "Track 2")
+      ));
+      for (Track track : album.getTracks()) {
+        session.save(track);
+      }
+      transaction.commit();
+
+      // Reload the album from the database.
+      session.clear();
+      Album album2 = session.get(Album.class, album.getId());
+      assertEquals(2, album2.getTracks().size());
+    }
+  }
+
+  @Test
+  public void testVenueConcertAssociation() {
+    try (Session session = sessionFactory.openSession()) {
+      // Do not use a transaction on the emulator. The reason for this is that the cascade-save that
+      // is triggered when saving a Venue with multiple Concerts requires two parallel transactions:
+      // 1. Our 'business' transaction.
+      // 2. One internal transaction that is started by Hibernate to generate ID values for the
+      //    concerts.
+      // The emulator does not support parallel transactions.
+      final Transaction transaction = EmulatorSpannerHelper.isUsingEmulator()
+          ? null
+          : session.beginTransaction();
+      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Venue venue = new Venue("Concert Hall", new VenueDescription());
+      venue.setConcerts(ImmutableList.of(
+          new Concert(venue, peter, "Concert 1",
+              OffsetDateTime.of(LocalDate.of(2023, 9, 29), LocalTime.of(20, 0),
+                  ZoneOffset.of("+02")),
+              OffsetDateTime.of(LocalDate.of(2023, 9, 30), LocalTime.of(1, 30),
+                  ZoneOffset.of("+02"))),
+          new Concert(venue, peter, "Concert 1",
+              OffsetDateTime.of(LocalDate.of(2023, 10, 3), LocalTime.of(15, 0),
+                  ZoneOffset.of("+02")),
+              OffsetDateTime.of(LocalDate.of(2023, 10, 3), LocalTime.of(20, 0),
+                  ZoneOffset.of("+02")))
+      ));
+      // This should also cascade-save all the concerts of the venue, as the association is defined
+      // with cascade = CascadeType.ALL.
+      session.save(venue);
+      if (transaction == null) {
+        // Create a transaction here if we are using the emulator. The fact that we 'saved' the
+        // venue outside of this transaction is not a problem for Hibernate. It will still include
+        // the save action in this transaction.
+        session.beginTransaction().commit();
+      } else {
+        transaction.commit();
+      }
+
+      session.clear();
+      Venue venue2 = session.get(Venue.class, venue.getId());
+      assertEquals(2, venue2.getConcerts().size());
     }
   }
 

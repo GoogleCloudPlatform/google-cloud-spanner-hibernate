@@ -20,10 +20,13 @@
 package com.google.cloud.spanner.hibernate.it.model;
 
 import java.io.Serializable;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -93,6 +96,9 @@ public class Venue extends AbstractBaseEntity {
   @Transient
   private VenueDescription description;
 
+  @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL)
+  private List<Concert> concerts;
+
   protected Venue() {
   }
 
@@ -123,5 +129,13 @@ public class Venue extends AbstractBaseEntity {
 
   public void setDescription(VenueDescription description) {
     this.description = description;
+  }
+
+  public List<Concert> getConcerts() {
+    return concerts;
+  }
+
+  public void setConcerts(List<Concert> concerts) {
+    this.concerts = concerts;
   }
 }

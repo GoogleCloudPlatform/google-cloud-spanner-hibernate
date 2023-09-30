@@ -31,7 +31,9 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
-/** Concert entity. */
+/**
+ * Concert entity.
+ */
 @Entity
 // NOTE: Hibernate 5 does not generate a DDL statement for this constraint.
 @Check(constraints = "endTime > startTime")
@@ -70,8 +72,17 @@ public class Concert extends AbstractBaseEntity {
   }
 
   public Concert(Venue venue, Singer singer) {
+    this(venue, singer, null, null, null);
+  }
+
+  /** Constructor. */
+  public Concert(Venue venue, Singer singer, String name, OffsetDateTime startTime,
+      OffsetDateTime endTime) {
     this.venue = venue;
     this.singer = singer;
+    this.name = name;
+    this.startTime = startTime;
+    this.endTime = endTime;
   }
 
   @Override
