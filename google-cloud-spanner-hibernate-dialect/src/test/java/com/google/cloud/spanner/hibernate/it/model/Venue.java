@@ -29,6 +29,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
+/** Venue entity. */
 @Entity
 public class Venue extends AbstractBaseEntity {
 

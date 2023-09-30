@@ -31,6 +31,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
+/** Concert entity. */
 @Entity
 // NOTE: Hibernate 5 does not generate a DDL statement for this constraint.
 @Check(constraints = "endTime > startTime")

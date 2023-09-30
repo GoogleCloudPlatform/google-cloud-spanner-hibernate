@@ -42,6 +42,7 @@ import java.time.ZoneOffset;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -61,7 +62,9 @@ public class SampleModelIT {
 
   private static SessionFactory sessionFactory;
 
-  /** Creates the test database and session factory. */
+  /**
+   * Creates the test database and session factory.
+   */
   @BeforeClass
   public static void createDataDatabase() {
     TEST_ENV.createDatabase(ImmutableList.of());
@@ -85,13 +88,33 @@ public class SampleModelIT {
     }
   }
 
-  /** Drops the test database. */
+  /**
+   * Drops the test database.
+   */
   @AfterClass
-  public static void cleanup() {
+  public static void dropTestDatabase() {
     if (sessionFactory != null) {
       sessionFactory.close();
     }
     TEST_ENV.cleanup();
+  }
+
+  /** Clean up any data that the test might have added. */
+  @After
+  public void deleteTestData() {
+    try (Session session = sessionFactory.openSession()) {
+      final Transaction transaction = session.beginTransaction();
+      session.createQuery("delete from Concert where not singer.id=:id")
+          .setParameter("id", Long.reverse(50000)).executeUpdate();
+      session.createQuery("delete from Venue where not id in (select venue.id from Concert)")
+          .executeUpdate();
+      session.createQuery("delete from Album where not singer.id=:id")
+          .setParameter("id", Long.reverse(50000)).executeUpdate();
+      session.createQuery("delete from Singer where not id=:id")
+          .setParameter("id", Long.reverse(50000)).executeUpdate();
+
+      transaction.commit();
+    }
   }
 
   @Test
@@ -115,7 +138,7 @@ public class SampleModelIT {
   @Test
   public void testSaveSinger() {
     try (Session session = sessionFactory.openSession()) {
-      Transaction transaction = session.beginTransaction();
+      final Transaction transaction = session.beginTransaction();
       Singer singer1 = new Singer("singer1", "singer1");
       singer1.setBirthDate(LocalDate.of(1998, 10, 12));
       assertNotNull(session.save(singer1));
@@ -157,12 +180,12 @@ public class SampleModelIT {
   @Test
   public void testSaveAlbum() {
     try (Session session = sessionFactory.openSession()) {
-      Transaction transaction = session.beginTransaction();
+      final Transaction transaction = session.beginTransaction();
       Singer peter = session.get(Singer.class, Long.reverse(50000L));
       Album album = new Album(peter, "Album 3");
       album.setMarketingBudget(new BigDecimal("990429.23"));
       album.setReleaseDate(LocalDate.of(2023, 9, 27));
-      album.setCoverPicture(new byte[] {10, 20, 30, 1, 2, 3, 127, 127, 0, 0, -128, -100});
+      album.setCoverPicture(new byte[]{10, 20, 30, 1, 2, 3, 127, 127, 0, 0, -128, -100});
       session.save(album);
       transaction.commit();
 
@@ -172,7 +195,8 @@ public class SampleModelIT {
       assertEquals("Album 3", album.getTitle());
       assertEquals(new BigDecimal("990429.23"), album.getMarketingBudget());
       assertEquals(LocalDate.of(2023, 9, 27), album.getReleaseDate());
-      assertArrayEquals(new byte[] {10, 20, 30, 1, 2, 3, 127, 127, 0, 0, -128, -100}, album.getCoverPicture());
+      assertArrayEquals(new byte[]{10, 20, 30, 1, 2, 3, 127, 127, 0, 0, -128, -100},
+          album.getCoverPicture());
     }
   }
 
@@ -209,6 +233,7 @@ public class SampleModelIT {
     try (Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
       // TODO: Set VenueDescription fields and verify these in Hibernate 6.
+      //       Hibernate 5 does not support JSON without additional plugins.
       Venue venue = new Venue("Venue 1", new VenueDescription());
       session.save(venue);
       transaction.commit();
@@ -222,19 +247,35 @@ public class SampleModelIT {
   public void testSaveConcert() {
     try (Session session = sessionFactory.openSession()) {
       Singer peter = session.get(Singer.class, Long.reverse(50000L));
-      Transaction transaction = session.beginTransaction();
+      final Transaction transaction = session.beginTransaction();
       Venue venue = new Venue("Venue 2", new VenueDescription());
       session.save(venue);
       Concert concert = new Concert(venue, peter);
       concert.setName("Peter Live!");
-      concert.setStartTime(OffsetDateTime.of(LocalDate.of(2023, 9, 26), LocalTime.of(19, 30), ZoneOffset.of("+02:00")));
-      concert.setEndTime(OffsetDateTime.of(LocalDate.of(2023, 9, 27), LocalTime.of(2, 0), ZoneOffset.of("+02:00")));
+      concert.setStartTime(OffsetDateTime.of(LocalDate.of(2023, 9, 26), LocalTime.of(19, 30),
+          ZoneOffset.of("+02:00")));
+      concert.setEndTime(OffsetDateTime.of(LocalDate.of(2023, 9, 27), LocalTime.of(2, 0),
+          ZoneOffset.of("+02:00")));
       session.save(concert);
       transaction.commit();
 
       session.refresh(concert);
-      assertEquals(Instant.from(OffsetDateTime.of(2023, 9, 26, 17, 30, 0, 0, ZoneOffset.UTC)), Instant.from(concert.getStartTime()));
-      assertEquals(Instant.from(OffsetDateTime.of(2023, 9, 27, 0, 0, 0, 0, ZoneOffset.UTC)), Instant.from(concert.getEndTime()));
+      assertEquals(Instant.from(OffsetDateTime.of(2023, 9, 26, 17, 30, 0, 0, ZoneOffset.UTC)),
+          Instant.from(concert.getStartTime()));
+      assertEquals(Instant.from(OffsetDateTime.of(2023, 9, 27, 0, 0, 0, 0, ZoneOffset.UTC)),
+          Instant.from(concert.getEndTime()));
+    }
+  }
+
+  @Test
+  public void testSingerAlbumAssociation() {
+    try (Session session = sessionFactory.openSession()) {
+      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      assertNotNull(peter.getAlbums());
+      assertEquals(2, peter.getAlbums().size());
+      for (Album album : peter.getAlbums()) {
+        assertEquals(peter, album.getSinger());
+      }
     }
   }
 

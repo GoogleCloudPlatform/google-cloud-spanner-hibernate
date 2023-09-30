@@ -87,6 +87,7 @@ public class Singer extends AbstractBaseEntity {
   protected Singer() {
   }
 
+  /** Constructor for a new active Singer. */
   public Singer(String firstName, String lastName) {
     this.firstName = firstName;
     this.lastName = lastName;
