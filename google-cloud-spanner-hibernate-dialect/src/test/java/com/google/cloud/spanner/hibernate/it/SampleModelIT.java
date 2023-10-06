@@ -339,6 +339,16 @@ public class SampleModelIT {
       session.clear();
       Album album2 = session.get(Album.class, album.getId());
       assertEquals(2, album2.getTracks().size());
+
+      // Verify that we can delete an album with tracks, as Cloud Spanner will cascade-delete the
+      // tracks of an album. Hibernate does not know about this.
+      Transaction deleteTransaction = session.beginTransaction();
+      session.delete(album2);
+      deleteTransaction.commit();
+
+      // The album should no longer be present in the database.
+      session.clear();
+      assertNull(session.get(Album.class, album.getId()));
     }
   }
 
@@ -383,6 +393,18 @@ public class SampleModelIT {
       session.clear();
       Venue venue2 = session.get(Venue.class, venue.getId());
       assertEquals(2, venue2.getConcerts().size());
+
+      // Verify that we can delete a venue with concerts, because we have set cascade=ALL on the
+      // association. Note that the cascade-delete is managed by Hibernate. It is not something that
+      // is done by the database, for example as a result of the foreign key constraint having a
+      // cascade-delete clause.
+      session.clear();
+      Transaction deleteTransaction = session.beginTransaction();
+      session.delete(venue2);
+      deleteTransaction.commit();
+
+      session.clear();
+      assertNull(session.get(Venue.class, venue.getId()));
     }
   }
 
