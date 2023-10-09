@@ -361,7 +361,6 @@ The Cloud Spanner Hibernate Dialect supports most of the standard Hibernate and 
 | Large DML Transactions | Each Spanner transaction may only have up to 40,000 operations which modify rows of a table.
 | Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
 | Mutations | Cloud Spanner supports both DML and mutations for modifying data. Hibernate does not support mutations, and mutations can therefore not be used with this Hibernate dialect.
-| Column default values | The dialect does not set default values based on the `@ColumnDefault` annotation, because Cloud Spanner does not support column defaults in the DDL.
 |===
 
 === Large DML Transactions Limits
@@ -401,9 +400,3 @@ It does not support table names with catalog and/or schema components because Cl
 Cloud Spanner supports both https://cloud.google.com/spanner/docs/dml-versus-mutations[DML and mutations for modifying data].
 Hibernate does not support mutations. You can therefore not use this Hibernate dialect to generate
 mutations for Cloud Spanner. The dialect will only generate DML statements.
-
-
-=== Column Default Values
-
-The dialect does not support the https://docs.jboss.org/hibernate/orm/5.4/javadocs/org/hibernate/annotations/ColumnDefault.html[`@ColumnDefault`] annotation
-because Cloud Spanner does not offer a way of setting a default value for a column during table creation through DDL statements.

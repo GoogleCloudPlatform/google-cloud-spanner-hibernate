@@ -28,6 +28,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import org.hibernate.annotations.Check;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.GenericGenerator;
@@ -79,6 +80,7 @@ public class Singer extends AbstractBaseEntity {
 
   private LocalDate birthDate;
 
+  @ColumnDefault("true")
   private boolean active;
 
   @OneToMany(mappedBy = "singer")

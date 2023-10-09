@@ -117,7 +117,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
           "create table customerId (next_val INT64) PRIMARY KEY ()",
           request.getStatements(++index));
       assertEquals(
-          "create table Invoice (invoiceId INT64 not null,number STRING(255),customer_customerId INT64) PRIMARY KEY (invoiceId)",
+          "create table Invoice (invoiceId INT64 not null,number STRING(255) default ('9999'),customer_customerId INT64) PRIMARY KEY (invoiceId)",
           request.getStatements(++index));
       assertEquals(
           "create table invoiceId (next_val INT64) PRIMARY KEY ()", request.getStatements(++index));
