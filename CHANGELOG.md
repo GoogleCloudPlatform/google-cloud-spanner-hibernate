@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [1.8.3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.8.2...v1.8.3) (2023-10-09)
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#750](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/750)) ([9341d25](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/9341d251737142f20e0da21199c135b11ed1539b))
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#756](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/756)) ([729b67c](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/729b67c3b90992478a8dfcb152967f4a3ee96950))
+
 ## [1.8.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.8.1...v1.8.2) (2023-09-22)
 
 
