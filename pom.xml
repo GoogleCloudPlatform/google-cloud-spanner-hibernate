@@ -6,14 +6,14 @@
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-hibernate</artifactId>
   <packaging>pom</packaging>
-  <version>1.8.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
+  <version>1.8.4-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <hibernate.version>6.3.1.Final</hibernate.version>
-    <spanner-jdbc-driver.version>2.13.1</spanner-jdbc-driver.version>
+    <spanner-jdbc-driver.version>2.13.4</spanner-jdbc-driver.version>
     <log4j.version>2.20.0</log4j.version>
 
     <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
