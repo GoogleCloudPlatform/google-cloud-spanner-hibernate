@@ -171,10 +171,13 @@ public class SpannerTableStatements {
       typeString = col.getSqlType(metadata);
     }
 
-    return col.getQuotedName()
-        + " "
-        + typeString
+    String result = col.getQuotedName() + " " + typeString
         + (col.isNullable() ? this.spannerDialect.getNullColumnString() : " not null");
+    if (col.getDefaultValue() != null) {
+      result = result + " default (" + col.getDefaultValue() + ")";
+    }
+    
+    return result;
   }
 
   private static String getInterleavedClause(Table table, Metadata metadata) {

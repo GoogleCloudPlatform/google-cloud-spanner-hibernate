@@ -27,6 +27,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -53,6 +54,7 @@ public class Invoice {
   @Column(nullable = false)
   private Long invoiceId;
 
+  @ColumnDefault("'9999'")
   private String number;
 
   @ManyToOne
