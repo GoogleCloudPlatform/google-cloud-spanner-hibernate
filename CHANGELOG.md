@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [1.9.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.8.3...v1.9.0) (2023-10-09)
+
+
+### Features
+
+* support ColumnDefault annotation ([#763](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/763)) ([a7e74de](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/a7e74dec901705cd3efe3462e0a93b6c6a30fe98))
+
+
+### Documentation
+
+* add locking limitation ([#765](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/765)) ([a33308f](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/a33308ff9d891bbac881de0e686a4494a3dfb59b))
+* update limitation section on mutations ([#762](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/762)) ([28c6392](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/28c63921b29f38fc75f10409a357ac38b9f59734))
+
 ## [1.8.3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.8.2...v1.8.3) (2023-10-09)
 
 
