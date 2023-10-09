@@ -361,6 +361,7 @@ The Cloud Spanner Hibernate Dialect supports most of the standard Hibernate and 
 | Large DML Transactions | Each Spanner transaction may only have up to 40,000 operations which modify rows of a table.
 | Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
 | Mutations | Cloud Spanner supports both DML and mutations for modifying data. Hibernate does not support mutations, and mutations can therefore not be used with this Hibernate dialect.
+| Locking | Cloud Spanner does not support explicit lock clauses. Setting the lock mode of a query is therefore not supported.
 |===
 
 === Large DML Transactions Limits
@@ -400,3 +401,13 @@ It does not support table names with catalog and/or schema components because Cl
 Cloud Spanner supports both https://cloud.google.com/spanner/docs/dml-versus-mutations[DML and mutations for modifying data].
 Hibernate does not support mutations. You can therefore not use this Hibernate dialect to generate
 mutations for Cloud Spanner. The dialect will only generate DML statements.
+
+
+=== Locking
+
+Cloud Spanner does not support explicit locking clauses like `SELECT ... FOR UPDATE`. Setting an explicit lock level in
+Hibernate is therefore not supported. The following is for example not supported:
+
+```java
+entityManager.find(MyEntity.class, studentId, LockModeType.PESSIMISTIC_WRITE);
+```
