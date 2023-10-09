@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
 import org.hibernate.bytecode.enhance.spi.EnhancementContext;
+import org.hibernate.bytecode.spi.ClassTransformer;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Environment;
 import org.hibernate.dialect.Dialect;
@@ -177,6 +178,11 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 
     @Override
     public void pushClassTransformer(EnhancementContext enhancementContext) {
+    }
+
+    @Override
+    public ClassTransformer getClassTransformer() {
+      return null;
     }
   }
 

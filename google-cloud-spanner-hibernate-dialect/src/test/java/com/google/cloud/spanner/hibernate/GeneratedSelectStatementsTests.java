@@ -94,7 +94,7 @@ public class GeneratedSelectStatementsTests {
           .setFirstResult(8).setMaxResults(15);
       q.setLockMode(LockModeType.PESSIMISTIC_READ);
       q.list();
-    }, "select s1_0.id,s1_0.id1,s1_0.id2 from SubTestEntity s1_0 limit ? offset ?");
+    }, "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 limit ? offset ?");
   }
 
   @Test
@@ -137,7 +137,7 @@ public class GeneratedSelectStatementsTests {
         .get(0);
 
     assertThat(statement.getSQL()).isEqualTo(
-        "select s1_0.id,s1_0.id1,s1_0.id2 from SubTestEntity s1_0 limit ? offset ?");
+        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 limit ? offset ?");
     assertThat(statement.getParameter(1)).isEqualTo(15);
     assertThat(statement.getParameter(2)).isEqualTo(8);
   }
@@ -146,11 +146,11 @@ public class GeneratedSelectStatementsTests {
   public void deleteDmlTest() {
     testUpdateStatementTranslation(
         "delete TestEntity where boolVal = true",
-        ImmutableList.of("delete from `TestEntity_stringList` "
-                + "where exists (select 1 from `test_table` t1_0 "
-                + "where (t1_0.`ID1`=`TestEntity_stringList`.`TestEntity_ID1` "
-                + "and t1_0.id2=`TestEntity_stringList`.`TestEntity_id2`) "
-                + "and (t1_0.`boolColumn`=true))",
+        ImmutableList.of("delete from `TestEntity_stringList` where exists " 
+                + "(select 1 from `test_table` te1_0 where " 
+                + "(te1_0.`ID1`=`TestEntity_stringList`.`TestEntity_ID1` " 
+                + "and te1_0.id2=`TestEntity_stringList`.`TestEntity_id2`) " 
+                + "and (te1_0.`boolColumn`=true))",
             "delete from `test_table` where `boolColumn`=true"));
   }
 
@@ -158,8 +158,8 @@ public class GeneratedSelectStatementsTests {
   public void selectJoinTest() {
     testReadStatementTranslation(
         "select s from SubTestEntity s inner join s.testEntity",
-        "select s1_0.id,s1_0.id1,s1_0.id2 from SubTestEntity s1_0 "
-            + "join `test_table` t1_0 on t1_0.`ID1`=s1_0.id1 and t1_0.id2=s1_0.id2");
+        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 " 
+            + "join `test_table` te1_0 on te1_0.`ID1`=ste1_0.id1 and te1_0.id2=ste1_0.id2");
   }
 
   private void openSessionAndDo(Consumer<Session> func) {

@@ -147,7 +147,7 @@ public class SpannerTableExporter implements Exporter<Table> {
    * with @Column(unique = true).
    */
   private static void initializeUniqueConstraints(Table table) {
-    Iterator<Column> colIterator = table.getColumnIterator();
+    Iterator<Column> colIterator = table.getColumns().iterator();
     while (colIterator.hasNext()) {
       Column col = colIterator.next();
       if (col.isUnique()) {
