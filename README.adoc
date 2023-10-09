@@ -358,27 +358,28 @@ The Cloud Spanner Hibernate Dialect supports most of the standard Hibernate and 
 [options="header"]
 |===
 | Unsupported Feature | Description
-| Large DML Transactions | Each Spanner transaction may only have up to 20,000 operations which modify rows of a table.
+| Large DML Transactions | Each Spanner transaction may only have up to 40,000 operations which modify rows of a table.
 | Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
+| Mutations | Cloud Spanner supports both DML and mutations for modifying data. Hibernate does not support mutations, and mutations can therefore not be used with this Hibernate dialect.
 | Column default values | The dialect does not set default values based on the `@ColumnDefault` annotation, because Cloud Spanner does not support column defaults in the DDL.
 |===
 
 === Large DML Transactions Limits
 
-Cloud Spanner has a mutation limit on each transaction - each Spanner transaction https://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data[may only have up to 20,000 operations which modify rows of a table].
+Cloud Spanner has a mutation limit on each transaction - each Spanner transaction https://cloud.google.com/spanner/quotas#limits_for_creating_reading_updating_and_deleting_data[may only have up to 40,000 operations which modify rows of a table].
 
 NOTE: Deleting a row counts as one operation and inserting/updating a single row will https://cloud.google.com/spanner/quotas#note2[count as a number of operations equal to the number of affected columns].
 For example if one inserts a row that contains 5 columns, it counts as 5 modify operations for the insert.
 
 Consequently, users must take care to avoid encountering these constraints.
 
-1. We recommend being careful with the use of `CASCADE_TYPE.ALL` in Entity annotations because, depending on the application, it might trigger a large number of entities to be deleted in a single transaction and bring you over the 20,000 limit.
-2. Also, when persisting a collection of entities, be mindful of the 20,000 mutations per transaction constraint.
+1. We recommend being careful with the use of `CASCADE_TYPE.ALL` in Entity annotations because, depending on the application, it might trigger a large number of entities to be deleted in a single transaction and bring you over the 40,000 limit.
+2. Also, when persisting a collection of entities, be mindful of the 40,000 mutations per transaction constraint.
 
 === Catalog/Schema Table Names
 
 The Cloud Spanner Dialect only supports `@Table` with the `name` attribute.
-It does not support table names with catalog and schema components because Spanner table names may not contain punctuation:
+It does not support table names with catalog and/or schema components because Cloud Spanner does not support named catalogs and schemas:
 
 [source, java]
 ----
@@ -387,13 +388,20 @@ It does not support table names with catalog and schema components because Spann
   name = "book"
 )
 
-// Not supported: `public.store.book` is not a valid Cloud Spanner table name reference.
+// Not supported.
 @Table(
   catalog = "public",
   schema = "store",
   name = "book"
 )
 ----
+
+=== Mutations
+
+Cloud Spanner supports both https://cloud.google.com/spanner/docs/dml-versus-mutations[DML and mutations for modifying data].
+Hibernate does not support mutations. You can therefore not use this Hibernate dialect to generate
+mutations for Cloud Spanner. The dialect will only generate DML statements.
+
 
 === Column Default Values
 
