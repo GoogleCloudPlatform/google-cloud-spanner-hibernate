@@ -42,7 +42,7 @@ public class Coffee {
   )
   @GenericGenerator(
       name = "coffee_id_generator",
-      strategy = "com.google.cloud.spanner.hibernate.EnhancedBitReversedSequenceStyleGenerator",
+      strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
       parameters = {
           @Parameter(name = "sequence_name", value = "coffee_id"),
           @Parameter(name = "increment_size", value = "200")

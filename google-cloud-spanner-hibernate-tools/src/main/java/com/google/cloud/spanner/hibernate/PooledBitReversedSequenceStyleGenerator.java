@@ -181,7 +181,7 @@ public class PooledBitReversedSequenceStyleGenerator implements
   @VisibleForTesting
   static List<Range<Long>> parseExcludedRanges(String sequenceName, Properties params) {
     // Accept both 'excluded_range' and 'excluded_ranges' params to accommodate anyone moving from
-    // the original BitReversedSequenceStyleGenerator to EnhancedBitReversedSequenceStyleGenerator.
+    // the original BitReversedSequenceStyleGenerator to PooledBitReversedSequenceStyleGenerator.
     String[] excludedRangesArray =
         ConfigurationHelper.toStringArray(EXCLUDE_RANGES_PARAM, " ", params);
     String[] excludedRangeArray =
