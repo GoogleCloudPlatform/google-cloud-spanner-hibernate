@@ -211,7 +211,6 @@ The dialect supports all of the standard entity relationships:
 These can be used via `@JoinTable` or `@JoinColumn`.
 
 The Cloud Spanner Hibernate dialect will generate the correct foreign key DDL statements during schema generation for entities using these annotations.
-However, Cloud Spanner currently does not support cascading deletes on foreign keys, therefore database-side cascading deletes are not supported via the `@OnDelete(action = OnDeleteAction.CASCADE)`.
 
 The dialect also supports unique column constraints applied through `@Column(unique = true)` or `@UniqueConstraint`.
 In these cases, the dialect will create a unique index to enforce uniqueness on the specified columns.
