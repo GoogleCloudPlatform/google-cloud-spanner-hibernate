@@ -1,6 +1,17 @@
 # Changelog
 
 
+## [2.0.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.9.1...v2.0.0) (2023-10-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* add support for bit-reversed sequences (server-side) ([#718](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/718))
+
+### Features
+
+* add support for bit-reversed sequences (server-side) ([#718](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/718)) ([efa9a2b](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/efa9a2be3f43702ebb4ebc8ff02de6d1bf315c6e))
+
 ## [1.9.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.9.0...v1.9.1) (2023-10-25)
 
 
