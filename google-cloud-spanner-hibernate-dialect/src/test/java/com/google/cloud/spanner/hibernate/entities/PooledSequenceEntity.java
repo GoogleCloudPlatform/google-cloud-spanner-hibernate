@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,49 +16,43 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package model;
+package com.google.cloud.spanner.hibernate.entities;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
+/** Test entity that uses a pooled sequence. Pooled sequences are not supported in Cloud Spanner,
+ * unless they use the custom
+ * {@link com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator}. */
 @Entity
-public class Customer {
-
+public class PooledSequenceEntity {
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  @Type(type = "uuid-char")
-  private UUID id;
+  @GeneratedValue(generator = "sequence-generator")
+  @GenericGenerator(
+      name = "sequence-generator",
+      strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+      parameters = {
+          @Parameter(name = "sequence_name", value = "pooled_sequence"),
+          @Parameter(name = "initial_value", value = "1"),
+          @Parameter(name = "increment_size", value = "1000")
+      }
+  )
+  private long id;
 
+  @Column
   private String name;
 
-  private String email;
+  protected PooledSequenceEntity() {}
 
-  @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer")
-  private List<Coffee> coffees = new ArrayList<>();
-
-  // Default constructor for Spring Data JPA.
-  protected Customer() {
-
-  }
-
-  public Customer(String name, String email) {
-    this.name = name;
-    this.email = email;
-  }
-
-  public UUID getId() {
+  public long getId() {
     return id;
   }
 
-  public void setId(UUID id) {
+  public void setId(long id) {
     this.id = id;
   }
 
@@ -68,21 +62,5 @@ public class Customer {
 
   public void setName(String name) {
     this.name = name;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public List<Coffee> getCoffees() {
-    return coffees;
-  }
-
-  public void setCoffees(List<Coffee> coffees) {
-    this.coffees = coffees;
   }
 }

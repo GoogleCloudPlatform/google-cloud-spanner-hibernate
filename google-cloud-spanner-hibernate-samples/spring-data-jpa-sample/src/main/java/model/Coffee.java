@@ -18,21 +18,37 @@
 
 package model;
 
-import java.util.UUID;
+import com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 @Entity
 public class Coffee {
 
+  /**
+   * This entity uses a bit-reversed sequence to generate identifiers. See
+   * {@link PooledBitReversedSequenceStyleGenerator} for more
+   * information.
+   */
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  @Type(type = "uuid-char")
-  private UUID id;
+  @GeneratedValue(
+      strategy = GenerationType.SEQUENCE,
+      generator = "coffee_id_generator"
+  )
+  @GenericGenerator(
+      name = "coffee_id_generator",
+      strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
+      parameters = {
+          @Parameter(name = "sequence_name", value = "coffee_id"),
+          @Parameter(name = "increment_size", value = "200")
+      }
+  )
+  private Long id;
 
   private String size;
 
@@ -41,7 +57,6 @@ public class Coffee {
 
   // Empty default constructor for Spring Data JPA.
   public Coffee() {
-
   }
 
   public Coffee(Customer customer, String size) {
@@ -49,11 +64,11 @@ public class Coffee {
     this.size = size;
   }
 
-  public UUID getId() {
+  public Long getId() {
     return id;
   }
 
-  public void setId(UUID id) {
+  public void setId(Long id) {
     this.id = id;
   }
 

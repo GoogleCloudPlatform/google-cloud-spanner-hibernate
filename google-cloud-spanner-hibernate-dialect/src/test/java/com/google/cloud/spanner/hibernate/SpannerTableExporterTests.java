@@ -101,6 +101,36 @@ public class SpannerTableExporterTests {
 
   @Test
   public void generateDeleteStringsWithIndices() throws IOException, SQLException {
+    SpannerDialect.disableSpannerSequences();
+    try {
+      this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
+          .setTables("Employee", "hibernate_sequence")
+          .setIndices("name_index")
+          .build());
+
+      Metadata employeeMetadata =
+          new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
+      String testFileName = UUID.randomUUID().toString();
+      new SchemaExport().setOutputFile(testFileName)
+          .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), employeeMetadata);
+      File scriptFile = new File(testFileName);
+      scriptFile.deleteOnExit();
+      List<String> statements = Files.readAllLines(scriptFile.toPath());
+
+      assertThat(statements).containsExactly(
+          "START BATCH DDL;",
+          "drop index name_index;",
+          "drop table Employee;",
+          "drop table hibernate_sequence;",
+          "RUN BATCH;");
+    } finally {
+      SpannerDialect.enableSpannerSequences();
+    }
+  }
+
+  @Test
+  public void generateDeleteStringsWithIndices_withSequencesEnabled()
+      throws IOException, SQLException {
     this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
         .setTables("Employee", "hibernate_sequence")
         .setIndices("name_index")
@@ -119,12 +149,45 @@ public class SpannerTableExporterTests {
         "START BATCH DDL;",
         "drop index name_index;",
         "drop table Employee;",
-        "drop table hibernate_sequence;",
+        "drop sequence hibernate_sequence;",
         "RUN BATCH;");
   }
 
   @Test
   public void omitCreatingPreexistingTables() throws IOException, SQLException {
+    SpannerDialect.disableSpannerSequences();
+    try {
+      this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
+          .setTables("Employee")
+          .build());
+
+      Metadata employeeMetadata =
+          new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
+      String testFileName = UUID.randomUUID().toString();
+      new SchemaExport().setOutputFile(testFileName)
+          .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), employeeMetadata);
+      File scriptFile = new File(testFileName);
+      scriptFile.deleteOnExit();
+      List<String> statements = Files.readAllLines(scriptFile.toPath());
+
+      assertThat(statements).containsExactly(
+          // This omits creating the Employee table since it is declared to exist in metadata.
+          "START BATCH DDL;",
+          "create table hibernate_sequence (next_val INT64) PRIMARY KEY ();",
+          "create index name_index on Employee (name);",
+          "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
+              + "foreign key (manager_id) references Employee (id);",
+          "RUN BATCH;",
+          "INSERT INTO hibernate_sequence (next_val) VALUES(1);"
+      );
+    } finally {
+      SpannerDialect.enableSpannerSequences();
+    }
+  }
+
+  @Test
+  public void omitCreatingPreexistingTables_withSequencesEnabled()
+      throws IOException, SQLException {
     this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
         .setTables("Employee")
         .build());
@@ -141,15 +204,13 @@ public class SpannerTableExporterTests {
     assertThat(statements).containsExactly(
         // This omits creating the Employee table since it is declared to exist in metadata.
         "START BATCH DDL;",
-        "create table hibernate_sequence (next_val INT64) PRIMARY KEY ();",
+        "create sequence hibernate_sequence options(sequence_kind=\"bit_reversed_positive\");",
         "create index name_index on Employee (name);",
         "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
             + "foreign key (manager_id) references Employee (id);",
-        "RUN BATCH;",
-        "INSERT INTO hibernate_sequence (next_val) VALUES(1);"
+        "RUN BATCH;"
     );
   }
-
 
   @Test
   public void generateCreateStringsTest() throws IOException {

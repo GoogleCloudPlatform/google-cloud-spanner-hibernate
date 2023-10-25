@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,49 +16,48 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package model;
+package com.google.cloud.spanner.hibernate.entities;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
+/**
+ * Test entity for using a bit-reversed sequence that supports batching.
+ */
 @Entity
-public class Customer {
+public class PooledBitReversedSequenceEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  @Type(type = "uuid-char")
-  private UUID id;
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "batch_bit_reversed_generator")
+  @GenericGenerator(name = "batch_bit_reversed_generator",
+      strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
+      parameters = {
+          @Parameter(name = "sequence_name", value = "enhanced_sequence"),
+          @Parameter(name = "increment_size", value = "5"),
+          @Parameter(name = "initial_value", value = "5000"),
+          @Parameter(name = "exclude_range", value = "[1,1000]")})
+  private long id;
 
+  @Column
   private String name;
 
-  private String email;
-
-  @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer")
-  private List<Coffee> coffees = new ArrayList<>();
-
-  // Default constructor for Spring Data JPA.
-  protected Customer() {
-
+  public PooledBitReversedSequenceEntity() {
   }
 
-  public Customer(String name, String email) {
+  public PooledBitReversedSequenceEntity(String name) {
     this.name = name;
-    this.email = email;
   }
 
-  public UUID getId() {
+  public long getId() {
     return id;
   }
 
-  public void setId(UUID id) {
+  public void setId(long id) {
     this.id = id;
   }
 
@@ -70,19 +69,4 @@ public class Customer {
     this.name = name;
   }
 
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public List<Coffee> getCoffees() {
-    return coffees;
-  }
-
-  public void setCoffees(List<Coffee> coffees) {
-    this.coffees = coffees;
-  }
 }

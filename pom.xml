@@ -304,12 +304,14 @@
         <module>google-cloud-spanner-hibernate-samples</module>
         <module>google-cloud-spanner-hibernate-testing</module>
         <module>google-cloud-spanner-hibernate-dialect</module>
+        <module>google-cloud-spanner-hibernate-tools</module>
       </modules>
     </profile>
     <profile>
       <id>release</id>
       <modules>
         <module>google-cloud-spanner-hibernate-dialect</module>
+        <module>google-cloud-spanner-hibernate-tools</module>
       </modules>
       <build>
         <plugins>

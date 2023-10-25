@@ -60,6 +60,7 @@ public class SpannerExtractionContext extends ImprovedExtractionContextImpl {
     try {
       if (extractionConnection == null) {
         extractionConnection = jdbcConnectionAccess.obtainConnection();
+        extractionConnection.setAutoCommit(true);
       }
     } catch (SQLException exception) {
       log.warn(
@@ -77,6 +78,9 @@ public class SpannerExtractionContext extends ImprovedExtractionContextImpl {
     super.cleanup();
     if (extractionConnection != null) {
       try {
+        if (extractionConnection.getAutoCommit()) {
+          extractionConnection.setAutoCommit(false);
+        }
         jdbcConnectionAccess.releaseConnection(extractionConnection);
       } catch (SQLException exception) {
         log.warn(
