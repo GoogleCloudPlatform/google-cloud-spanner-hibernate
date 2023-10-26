@@ -48,7 +48,13 @@ import org.hibernate.type.Type;
 import org.jboss.logging.Logger;
 
 /**
- * Sequence or table backed ID generator that reverses the bits in the returned sequence value.
+ * <strong>DEPRECATED:</strong> Use {@link PooledBitReversedSequenceStyleGenerator} instead.
+ *
+ * <p>Table backed ID generator that reverses the bits in the returned sequence value.
+ * 
+ * <p>This generator uses a <strong>table to emulate a sequence</strong>. Cloud Spanner also
+ * supports bit-reversed sequences that are stored and managed in the database. These are
+ * recommended above this table backed solution.
  *
  * <p>Using a bit-reversed sequence for ID generation is recommended above sequences that return a
  * monotonically increasing value for Cloud Spanner. This generator also supports both an increment
@@ -81,7 +87,10 @@ import org.jboss.logging.Logger;
  * @Column(nullable = false)
  * private Long customerId;
  * }</pre>
+ *
+ * @deprecated Use #{link {@link PooledBitReversedSequenceStyleGenerator}}
  */
+@Deprecated
 public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
   private static final Logger log = Logger.getLogger(BitReversedSequenceStyleGenerator.class);
 
@@ -209,13 +218,11 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
   @Override
   public void configure(Type type, Properties params, ServiceRegistry serviceRegistry)
       throws MappingException {
+    // Force the use of a table-backed sequence for this generator, as Cloud Spanner does not
+    // support regular sequences (only bit-reversed sequences).
+    params.put(FORCE_TBL_PARAM, true);
     super.configure(type, params, serviceRegistry);
     configureExcludedRanges(this.sequenceName.getObjectName().getText(), params);
-  }
-
-  @VisibleForTesting
-  void configureExcludedRanges(String sequenceName, Properties params) throws MappingException {
-    this.excludeRanges = parseExcludedRanges(sequenceName, params);
   }
 
   @VisibleForTesting
@@ -256,6 +263,11 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
       }
     }
     return builder.build();
+  }
+
+  @VisibleForTesting
+  void configureExcludedRanges(String sequenceName, Properties params) throws MappingException {
+    this.excludeRanges = parseExcludedRanges(sequenceName, params);
   }
 
   @VisibleForTesting static final int MAX_ATTEMPTS = 100;

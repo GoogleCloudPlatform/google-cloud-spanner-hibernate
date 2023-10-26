@@ -16,7 +16,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-
 package com.google.cloud.spanner.hibernate;
 
 import static org.hibernate.type.SqlTypes.DECIMAL;
@@ -24,6 +23,7 @@ import static org.hibernate.type.SqlTypes.NUMERIC;
 
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
 import org.hibernate.HibernateException;
+import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Constraint;
@@ -40,6 +40,7 @@ import org.hibernate.sql.ast.SqlAstTranslatorFactory;
 import org.hibernate.sql.ast.spi.StandardSqlAstTranslatorFactory;
 import org.hibernate.sql.ast.tree.Statement;
 import org.hibernate.sql.exec.spi.JdbcOperation;
+import org.hibernate.tool.schema.internal.StandardSequenceExporter;
 import org.hibernate.tool.schema.internal.StandardUniqueKeyExporter;
 import org.hibernate.tool.schema.spi.Exporter;
 
@@ -57,6 +58,30 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
       throw new HibernateException("Multi-table inserts are not supported for Cloud Spanner");
     }
   }
+  
+  /**
+   * Property name that can be used to disable sequence support in the Cloud Spanner dialect. You
+   * can use this temporarily if you have an existing database that already uses table-backed
+   * emulated sequences without an explicit table generator. The long-term solution is to either
+   * migrate to using actual sequences, or configuring your entities with an explicit
+   * {@link org.hibernate.id.enhanced.TableGenerator}.
+   */
+  public static String SPANNER_DISABLE_SEQUENCES_PROPERTY = "hibernate.spanner.disable_sequences";
+
+  /**
+   * Disables support for sequences for the {@link SpannerDialect}.
+   */
+  public static void disableSpannerSequences() {
+    System.setProperty(SPANNER_DISABLE_SEQUENCES_PROPERTY, "true");
+  }
+
+  /**
+   * Enables support for sequences for the {@link SpannerDialect}. Sequences are enabled by default,
+   * and you only need to call this method if you have previously disabled them.
+   */
+  public static void enableSpannerSequences() {
+    System.setProperty(SPANNER_DISABLE_SEQUENCES_PROPERTY, "false");
+  }
 
   private final SpannerTableExporter spannerTableExporter = new SpannerTableExporter(this);
 
@@ -65,6 +90,8 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
 
   private final StandardUniqueKeyExporter spannerUniqueKeyExporter =
       new StandardUniqueKeyExporter(this);
+  private final SpannerSequenceSupport sequenceSupport = new SpannerSequenceSupport();
+  private final StandardSequenceExporter sequenceExporter = new SpannerSequenceExporter(this);
 
   private final SpannerUniqueDelegate spannerUniqueDelegate = new SpannerUniqueDelegate(this);
 
@@ -96,6 +123,47 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   @Override
   public Exporter<ForeignKey> getForeignKeyExporter() {
     return this.spannerForeignKeyExporter;
+  }
+
+  @Override
+  public Exporter<Sequence> getSequenceExporter() {
+    return this.sequenceExporter;
+  }
+  
+  @Override
+  public SpannerSequenceSupport getSequenceSupport() {
+    return this.sequenceSupport;
+  }
+
+  @Override
+  public String getQuerySequencesString() {
+    return "select seq.CATALOG as sequence_catalog, " 
+        + "seq.SCHEMA as sequence_schema, " 
+        + "seq.NAME as sequence_name,\n"
+        + "       coalesce(kind.OPTION_VALUE, 'bit_reversed_positive') as KIND,\n"
+        + "       coalesce(safe_cast(initial.OPTION_VALUE AS INT64),\n"
+        + "           case coalesce(kind.OPTION_VALUE, 'bit_reversed_positive')\n"
+        + "               when 'bit_reversed_positive' then 1\n"
+        + "               when 'bit_reversed_signed' then -pow(2, 63)\n"
+        + "               else 1\n"
+        + "           end\n"
+        + "       ) as start_value, 1 as minimum_value, " + Long.MAX_VALUE + " as maximum_value,\n" 
+        + "       1 as increment,\n"
+        + "       safe_cast(skip_range_min.OPTION_VALUE as int64) as skip_range_min,\n"
+        + "       safe_cast(skip_range_max.OPTION_VALUE as int64) as skip_range_max,\n"
+        + "from INFORMATION_SCHEMA.SEQUENCES seq\n"
+        + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS kind\n"
+        + "    on seq.CATALOG=kind.CATALOG and seq.SCHEMA=kind.SCHEMA and " 
+        + "seq.NAME=kind.NAME and kind.OPTION_NAME='sequence_kind'\n"
+        + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS initial\n"
+        + "    on seq.CATALOG=initial.CATALOG and seq.SCHEMA=initial.SCHEMA " 
+        + "and seq.NAME=initial.NAME and initial.OPTION_NAME='start_with_counter'\n"
+        + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_min\n"
+        + "    on seq.CATALOG=skip_range_min.CATALOG and seq.SCHEMA=skip_range_min.SCHEMA " 
+        + "and seq.NAME=skip_range_min.NAME and skip_range_min.OPTION_NAME='skip_range_min'\n"
+        + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_max\n"
+        + "    on seq.CATALOG=skip_range_max.CATALOG and seq.SCHEMA=skip_range_max.SCHEMA " 
+        + "and seq.NAME=skip_range_max.NAME and skip_range_max.OPTION_NAME='skip_range_max'";
   }
 
   @Override

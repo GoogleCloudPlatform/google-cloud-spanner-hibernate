@@ -27,6 +27,9 @@ jobs:
         with:
           java-version: 11
 
+      - name: Install dependencies
+        run: mvn install -DskipTests
+
       - name: Run Integration Tests
         working-directory: google-cloud-spanner-hibernate-dialect
         run: mvn integration-test

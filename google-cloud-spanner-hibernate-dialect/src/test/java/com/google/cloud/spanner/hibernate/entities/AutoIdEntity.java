@@ -16,16 +16,38 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package com.google.cloud.spanner.sample;
+package com.google.cloud.spanner.hibernate.entities;
 
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 
-@SpringBootApplication
-public class SampleApplication implements CommandLineRunner {
+/** Test entity that uses an automatically selected ID generator. */
+@Entity
+public class AutoIdEntity {
+  @Id
+  @GeneratedValue
+  private long id;
 
-  @Override
-  public void run(String... args) throws Exception {
-    
+  @Column
+  private String name;
+
+  protected AutoIdEntity() {}
+
+  public long getId() {
+    return id;
+  }
+
+  public void setId(long id) {
+    this.id = id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 }

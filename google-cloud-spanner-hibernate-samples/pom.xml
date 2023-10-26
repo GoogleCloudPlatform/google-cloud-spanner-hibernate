@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>google-cloud-spanner-hibernate</artifactId>
 		<groupId>com.google.cloud</groupId>
-		<version>1.9.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
+		<version>2.0.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
@@ -38,6 +38,11 @@
 				<configuration>
 					<skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>3.3.0</version>
 			</plugin>
 		</plugins>
 	</build>

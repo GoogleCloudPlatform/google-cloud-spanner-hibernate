@@ -6,18 +6,18 @@
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-hibernate</artifactId>
   <packaging>pom</packaging>
-  <version>1.9.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
+  <version>2.0.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <hibernate.version>6.3.1.Final</hibernate.version>
-    <spanner-jdbc-driver.version>2.14.1</spanner-jdbc-driver.version>
-    <log4j.version>2.21.0</log4j.version>
+    <spanner-jdbc-driver.version>2.14.2</spanner-jdbc-driver.version>
+    <log4j.version>2.21.1</log4j.version>
 
-    <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
-    <maven-failsafe-plugin.version>3.1.2</maven-failsafe-plugin.version>
+    <maven-surefire-plugin.version>3.2.1</maven-surefire-plugin.version>
+    <maven-failsafe-plugin.version>3.2.1</maven-failsafe-plugin.version>
   </properties>
 
   <name>Google Cloud Spanner Dialect for Hibernate ORM Parent</name>
@@ -245,7 +245,7 @@
 
       <plugin>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.3.1</version>
         <configuration>
           <consoleOutput>false</consoleOutput>
           <failOnViolation>true</failOnViolation>
@@ -309,12 +309,14 @@
         <module>google-cloud-spanner-hibernate-samples</module>
         <module>google-cloud-spanner-hibernate-testing</module>
         <module>google-cloud-spanner-hibernate-dialect</module>
+        <module>google-cloud-spanner-hibernate-tools</module>
       </modules>
     </profile>
     <profile>
       <id>release</id>
       <modules>
         <module>google-cloud-spanner-hibernate-dialect</module>
+        <module>google-cloud-spanner-hibernate-tools</module>
       </modules>
       <build>
         <plugins>

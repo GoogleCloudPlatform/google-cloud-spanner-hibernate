@@ -19,7 +19,6 @@
 package com.google.cloud.spanner.hibernate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 import com.google.cloud.spanner.hibernate.entities.Customer;
 import com.google.cloud.spanner.hibernate.entities.Employee;
@@ -28,15 +27,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
 import com.mockrunner.mock.jdbc.MockConnection;
-import com.mockrunner.mock.jdbc.MockDriver;
 import com.mockrunner.mock.jdbc.MockResultSet;
 import com.mockrunner.mock.jdbc.MockResultSetMetaData;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import org.hibernate.Session;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -50,45 +45,17 @@ public class GeneratedUpdateTableStatementsTests {
 
   private StandardServiceRegistry registry;
 
-  private JDBCMockObjectFactory jdbcMockObjectFactory;
-
   private MockConnection defaultConnection;
-  private MockConnection ddlBatchMockConnection;
-  private MockConnection extractorMockConnection;
 
   /** Set up the metadata for Hibernate to generate schema statements. */
   @Before
-  public void setup() {
-    this.jdbcMockObjectFactory =
-        new JDBCMockObjectFactory() {
-          @Override
-          public MockDriver createMockDriver() {
-            return new MockDriver() {
-              final List<Connection> connections = new ArrayList<>();
-              int index = 0;
+  public void setup() throws SQLException {
+    JDBCMockObjectFactory jdbcMockObjectFactory = new JDBCMockObjectFactory();
+    jdbcMockObjectFactory.registerMockDriver();
 
-              @Override
-              public void setupConnection(Connection connection) {
-                connections.add(connection);
-              }
-
-              @Override
-              public Connection connect(String url, Properties info) {
-                Connection connection = connections.get(Math.min(index, connections.size() - 1));
-                index++;
-                return connection;
-              }
-            };
-          }
-        };
-    this.jdbcMockObjectFactory.registerMockDriver();
-
-    defaultConnection = this.jdbcMockObjectFactory.getMockConnection();
-    ddlBatchMockConnection = this.jdbcMockObjectFactory.createMockConnection();
-    extractorMockConnection = this.jdbcMockObjectFactory.createMockConnection();
-
-    this.jdbcMockObjectFactory.getMockDriver().setupConnection(ddlBatchMockConnection);
-    this.jdbcMockObjectFactory.getMockDriver().setupConnection(extractorMockConnection);
+    this.defaultConnection = jdbcMockObjectFactory.getMockConnection();
+    this.defaultConnection.setMetaData(MockJdbcUtils.metaDataBuilder().build());
+    jdbcMockObjectFactory.getMockDriver().setupConnection(this.defaultConnection);
 
     this.registry =
         new StandardServiceRegistryBuilder()
@@ -104,40 +71,62 @@ public class GeneratedUpdateTableStatementsTests {
 
   @Test
   public void testUpdateStatements_createTables() throws SQLException {
+    SpannerDialect.disableSpannerSequences();
+    setupTestTables("Hello");
+    
+    try {
+      List<String> sqlStrings =
+          defaultConnection.getStatementResultSetHandler().getExecutedStatements();
+      assertThat(sqlStrings)
+          .containsExactly(
+              "START BATCH DDL",
+              "create table Employee (id INT64 not null,name STRING(255),manager_id INT64) "
+                  + "PRIMARY KEY (id)",
+              "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+              "create index name_index on Employee (name)",
+              "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
+                  + "foreign key (manager_id) references Employee (id)",
+              "RUN BATCH",
+              "INSERT INTO hibernate_sequence (next_val) VALUES(1)");
+    } finally {
+      SpannerDialect.enableSpannerSequences();
+    }
+  }
+
+  @Test
+  public void testUpdateStatements_createTables_withSequencesEnabled() throws SQLException {
     setupTestTables("Hello");
 
     List<String> sqlStrings =
-        ddlBatchMockConnection.getStatementResultSetHandler().getExecutedStatements();
+        defaultConnection.getStatementResultSetHandler().getExecutedStatements();
     assertThat(sqlStrings)
         .containsExactly(
             "START BATCH DDL",
             "create table Employee (id int64 not null,name string(255),manager_id int64) "
                 + "PRIMARY KEY (id)",
-            "create table Employee_SEQ (next_val int64) PRIMARY KEY ()",
             "create index name_index on Employee (name)",
+            "create sequence hibernate_sequence options(sequence_kind=\"bit_reversed_positive\")",
             "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
                 + "foreign key (manager_id) references Employee (id)",
-            "RUN BATCH",
-            "insert into Employee_SEQ values ( 1 )");
+            "RUN BATCH");
   }
 
   @Test
   public void testUpdateStatements_alterTables() throws SQLException {
     setupTestTables(ImmutableMap.of("Employee", ImmutableList.of("id", "name", "manager_id")));
     List<String> sqlStrings =
-        ddlBatchMockConnection.getStatementResultSetHandler().getExecutedStatements();
+        defaultConnection.getStatementResultSetHandler().getExecutedStatements();
     // The "alter table Employee ADD COLUMN" statements are no longer included in the generated
     // schema when updating an existing table. This schema change was introduced from Hibernate
     // 5.5.2 onwards.
     assertThat(sqlStrings)
         .containsExactly(
             "START BATCH DDL",
-            "create table Employee_SEQ (next_val int64) PRIMARY KEY ()",
             "create index name_index on Employee (name)",
+            "create sequence hibernate_sequence options(sequence_kind=\"bit_reversed_positive\")",
             "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
                 + "foreign key (manager_id) references Employee (id)",
-            "RUN BATCH",
-            "insert into Employee_SEQ values ( 1 )");
+            "RUN BATCH");
   }
 
   @Test
@@ -150,24 +139,17 @@ public class GeneratedUpdateTableStatementsTests {
             "invoiceId", ImmutableList.of("next_val")));
 
     List<String> sqlStrings =
-        ddlBatchMockConnection.getStatementResultSetHandler().getExecutedStatements();
+        defaultConnection.getStatementResultSetHandler().getExecutedStatements();
     assertThat(sqlStrings).containsExactly("START BATCH DDL", "RUN BATCH");
-    assertEquals(
-        ImmutableList.of(),
-        ddlBatchMockConnection.getPreparedStatementResultSetHandler().getExecutedStatements());
-
-    assertEquals(
-        ImmutableList.of(),
-        extractorMockConnection.getStatementResultSetHandler().getExecutedStatements());
-    assertEquals(
-        ImmutableList.of("select * from `Customer` where 1=0"),
-        extractorMockConnection.getPreparedStatementResultSetHandler().getExecutedStatements());
+    sqlStrings = defaultConnection.getPreparedStatementResultSetHandler().getExecutedStatements();
+    assertThat(sqlStrings).containsExactly(
+        new SpannerDialect().getQuerySequencesString(),
+        "select * from `Customer` where 1=0");
   }
 
   /** Sets up which pre-existing tables that Hibernate sees. */
   private void setupTestTables(String... tables) throws SQLException {
     defaultConnection.setMetaData(MockJdbcUtils.metaDataBuilder().setTables(tables).build());
-    extractorMockConnection.setMetaData(MockJdbcUtils.metaDataBuilder().setTables(tables).build());
 
     Metadata metadata =
         new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
@@ -179,8 +161,6 @@ public class GeneratedUpdateTableStatementsTests {
 
   private void setupTestTables(Map<String, List<String>> tablesAndColumns) throws SQLException {
     defaultConnection.setMetaData(
-        MockJdbcUtils.metaDataBuilder().setTables(tablesAndColumns).build());
-    extractorMockConnection.setMetaData(
         MockJdbcUtils.metaDataBuilder().setTables(tablesAndColumns).build());
 
     Metadata metadata =
@@ -199,12 +179,6 @@ public class GeneratedUpdateTableStatementsTests {
             .setImportedKeys(
                 "Customer", "customerId", "Invoice", "customer_customerId", "fk_invoice_customer")
             .build());
-    extractorMockConnection.setMetaData(
-        MockJdbcUtils.metaDataBuilder()
-            .setTables(tables)
-            .setImportedKeys(
-                "Customer", "customerId", "Invoice", "customer_customerId", "fk_invoice_customer")
-            .build());
     MockResultSetMetaData mockResultSetMetaData = new MockResultSetMetaData();
     mockResultSetMetaData.setColumnCount(2);
     mockResultSetMetaData.setColumnName(1, "customerId");
@@ -213,7 +187,7 @@ public class GeneratedUpdateTableStatementsTests {
     mockResultSetMetaData.setColumnTypeName(2, "STRING");
     MockResultSet resultSet = new MockResultSet("invoice_columns");
     resultSet.setResultSetMetaData(mockResultSetMetaData);
-    extractorMockConnection
+    defaultConnection
         .getPreparedStatementResultSetHandler()
         .prepareResultSet("select * from `Customer` where 1=0", resultSet);
 
