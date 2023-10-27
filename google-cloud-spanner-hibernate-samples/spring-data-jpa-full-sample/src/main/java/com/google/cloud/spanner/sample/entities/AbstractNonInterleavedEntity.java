@@ -16,40 +16,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package com.google.cloud.spanner.hibernate.entities;
+package com.google.cloud.spanner.sample.entities;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
+import jakarta.persistence.MappedSuperclass;
+import java.sql.Types;
+import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
 
 /**
- * A test entity that uses features in Hibernate that are unsupported in Spanner.
- *
- * @author Daniel Zou
- * @author Chengyuan Zhao
+ * Base entity class for all non-interleaved entities. This entity defines a UUID as the primary key
+ * column.
  */
-@Entity
-@Table(indexes = {
-    @Index(columnList = "name", name = "name_index")
-})
-public class Employee {
+@MappedSuperclass
+public abstract class AbstractNonInterleavedEntity extends AbstractEntity {
 
+  /**
+   * Use a UUID as primary key.
+   */
   @Id
-  @GeneratedValue(generator = "employee_generator")
-  @SequenceGenerator(
-      name = "employee_generator",
-      sequenceName = "Employee_Sequence",
-      allocationSize = 1
-  )
-  public Long id;
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  @JdbcTypeCode(Types.CHAR)
+  private UUID id;
 
-  @ManyToOne(cascade = {CascadeType.ALL})
-  public Employee manager;
+  public UUID getId() {
+    return id;
+  }
 
-  public String name;
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
 }

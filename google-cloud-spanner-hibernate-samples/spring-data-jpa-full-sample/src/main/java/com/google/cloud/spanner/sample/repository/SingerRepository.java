@@ -16,27 +16,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package com.google.cloud.spanner.hibernate.entities;
+package com.google.cloud.spanner.sample.repository;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import com.google.cloud.spanner.sample.entities.Singer;
+import java.util.stream.Stream;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-/**
- * The parent Interleaved entity in the interleaved test cases.
- */
-@Entity
-public class GrandParent {
+public interface SingerRepository extends JpaRepository<Singer, String> {
 
-  @Id
-  @GeneratedValue(generator = "GrandParent_Generator")
-  @SequenceGenerator(
-      name = "GrandParent_Generator",
-      sequenceName = "GrandParent_Sequence",
-      allocationSize = 1
-  )
-  public long grandParentId;
-
-  public String name;
+  /**
+   * Get all singers that have a last name that starts with the given prefix.
+   */
+  @Query("SELECT s FROM Singer s WHERE starts_with(s.lastName, :lastName)=true")
+  Stream<Singer> searchByLastNameStartsWith(@Param("lastName") String lastName);
 }

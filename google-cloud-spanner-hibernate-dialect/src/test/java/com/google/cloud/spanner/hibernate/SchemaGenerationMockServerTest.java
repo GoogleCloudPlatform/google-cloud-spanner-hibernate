@@ -249,8 +249,6 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     assertEquals(7, request.getStatementsCount());
 
     int index = -1;
-    assertEquals("alter table Invoice drop constraint fk_invoice_customer",
-        request.getStatements(++index));
     assertEquals("drop table Account", request.getStatements(++index));
     assertEquals("drop table Customer", request.getStatements(++index));
     assertEquals("drop table customerId", request.getStatements(++index));
@@ -295,7 +293,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
               "create table Employee (id int64 not null,name string(255),manager_id int64) PRIMARY KEY (id)",
               request.getStatements(++index));
           assertEquals(
-              "create table Employee_SEQ (next_val int64) PRIMARY KEY ()",
+              "create table Employee_Sequence (next_val int64) PRIMARY KEY ()",
               request.getStatements(++index));
           assertEquals("create index name_index on Employee (name)", request.getStatements(++index));
           assertEquals(
@@ -306,7 +304,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
               "create table Employee (id int64 not null,manager_id int64,name string(255)) PRIMARY KEY (id)",
               request.getStatements(++index));
           assertEquals(
-              "create table Employee_SEQ (next_val int64) PRIMARY KEY ()",
+              "create table Employee_Sequence (next_val int64) PRIMARY KEY ()",
               request.getStatements(++index));
           assertEquals("create index name_index on Employee (name)", request.getStatements(++index));
           assertEquals(
@@ -402,18 +400,19 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         int index = -1;
 
         assertEquals(
-            "create table GrandParent (grandParentId INT64 not null,name STRING(255)) PRIMARY KEY (grandParentId)",
+            "create table GrandParent (grandParentId int64 not null,name string(255)) PRIMARY KEY (grandParentId)",
             request.getStatements(++index));
         assertEquals(
-            "create table Parent (grandParentId INT64 not null,parentId INT64 not null,name STRING(255)) "
+            "create table Parent (grandParentId int64 not null,parentId int64 not null,name string(255)) "
                 + "PRIMARY KEY (grandParentId,parentId), INTERLEAVE IN PARENT GrandParent",
             request.getStatements(++index));
         assertEquals(
-            "create table Child (childId INT64 not null,grandParentId INT64 not null,parentId INT64 not null,name STRING(255)) "
+            "create table Child (childId int64 not null,grandParentId int64 not null,"
+                + "parentId int64 not null,name string(255)) "
                 + "PRIMARY KEY (grandParentId,parentId,childId), INTERLEAVE IN PARENT Parent",
             request.getStatements(++index));
         assertEquals(
-            "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+            "create table GrandParent_Sequence (next_val int64) PRIMARY KEY ()",
             request.getStatements(++index));
       }
     } finally {
@@ -448,20 +447,51 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
 
       int index = -1;
 
-      assertEquals(
-          "create table GrandParent (grandParentId int64 not null,name string(255)) PRIMARY KEY (grandParentId)",
-          request.getStatements(++index));
-      assertEquals(
-          "create table Parent (grandParentId int64 not null,parentId int64 not null,name string(255)) "
-              + "PRIMARY KEY (grandParentId,parentId), INTERLEAVE IN PARENT GrandParent",
-          request.getStatements(++index));
-      assertEquals(
-          "create table Child (childId int64 not null,grandParentId int64 not null,parentId int64 not null,name string(255)) "
-              + "PRIMARY KEY (grandParentId,parentId,childId), INTERLEAVE IN PARENT Parent",
-          request.getStatements(++index));
-      assertEquals(
-          "create table GrandParent_SEQ (next_val int64) PRIMARY KEY ()",
-          request.getStatements(++index));
+      if (hbm2Ddl.equals("update")) {
+        assertEquals("create table `TestEntity_stringList` ("
+                + "`TestEntity_ID1` int64 not null,"
+                + "`TestEntity_id2` string(255) not null,"
+                + "stringList string(255)) "
+                + "PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList)",
+            request.getStatements(++index));
+        assertEquals(
+            "create table SubTestEntity (id string(255) not null,id1 int64,id2 string(255)) PRIMARY KEY (id)",
+            request.getStatements(++index));
+        assertEquals(
+            "create table `test_table` ("
+                + "`ID1` int64 not null,"
+                + "id2 string(255) not null,"
+                + "`boolColumn` bool,"
+                + "longVal int64 not null,"
+                + "stringVal string(255)) PRIMARY KEY (`ID1`,id2)",
+            request.getStatements(++index));
+        assertEquals(
+            "alter table `TestEntity_stringList` add constraint FK2is6fwy3079dmfhjot09x5och "
+                + "foreign key (`TestEntity_ID1`, `TestEntity_id2`) references `test_table` (`ID1`, id2)",
+            request.getStatements(++index));
+      } else {
+        assertEquals("create table `TestEntity_stringList` ("
+                + "`TestEntity_ID1` int64 not null,"
+                + "`TestEntity_id2` string(255) not null,"
+                + "stringList string(255)) "
+                + "PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList)",
+            request.getStatements(++index));
+        assertEquals(
+            "create table SubTestEntity (id1 int64,id string(255) not null,id2 string(255)) PRIMARY KEY (id)",
+            request.getStatements(++index));
+        assertEquals(
+            "create table `test_table` ("
+                + "`boolColumn` bool,"
+                + "`ID1` int64 not null,"
+                + "longVal int64 not null,"
+                + "id2 string(255) not null,"
+                + "stringVal string(255)) PRIMARY KEY (`ID1`,id2)",
+            request.getStatements(++index));
+        assertEquals(
+            "alter table `TestEntity_stringList` add constraint FK2is6fwy3079dmfhjot09x5och "
+                + "foreign key (`TestEntity_ID1`, `TestEntity_id2`) references `test_table` (`ID1`, id2)",
+            request.getStatements(++index));
+      }
     }
   }
 
@@ -486,31 +516,34 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             .collect(Collectors.toList());
     assertEquals(1, requests.size());
     UpdateDatabaseDdlRequest request = requests.get(0);
-    assertEquals(6, request.getStatementsCount());
+    int expectedStatementCount = 6;
+    assertEquals(expectedStatementCount, request.getStatementsCount());
 
     int index = -1;
 
     assertEquals(
-        "create table AutoIdEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
+        "create table AutoIdEntity (id int64 not null,name string(255)) PRIMARY KEY (id)",
+        request.getStatements(++index));
+    // This sequence is generated by the entity that has a no-arg @GeneratedValue annotation.
+    // Hibernate 6 by default uses a pooled sequence with increment size 50 for this, and as Cloud
+    // Spanner does not support pooled sequences, it falls back to a table.
+    assertEquals(
+        "create table AutoIdEntity_SEQ (next_val int64) PRIMARY KEY ()",
         request.getStatements(++index));
     // The PooledSequenceEntity uses a pooled sequence. These are not supported by Cloud Spanner.
     // Hibernate therefore creates a table instead.
-    assertEquals(
-        "create table pooled_sequence (next_val INT64) PRIMARY KEY ()",
+    assertEquals("create table pooled_sequence (next_val int64) PRIMARY KEY ()",
         request.getStatements(++index));
     assertEquals(
-        "create table PooledSequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
+        "create table PooledSequenceEntity (id int64 not null,name string(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
     assertEquals(
-        "create table SequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
-        request.getStatements(++index));
-    // This sequence is generated by the entity that has a no-arg @GeneratedValue annotation.
-    assertEquals(
-        "create sequence hibernate_sequence options(sequence_kind=\"bit_reversed_positive\")",
+        "create table SequenceEntity (id int64 not null,name string(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
     assertEquals(
         "create sequence test_sequence options(sequence_kind=\"bit_reversed_positive\")",
         request.getStatements(++index));
+    assertEquals(expectedStatementCount, ++index);
   }
 
   @Test
@@ -546,57 +579,29 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
 
         if ("update".equals(hbm2Ddl)) {
           assertEquals(
-              "create table `TestEntity_stringList` ("
-                  + "`TestEntity_ID1` int64 not null,"
-                  + "`TestEntity_id2` string(255) not null,"
-                  + "stringList string(255)) "
-                  + "PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList)",
+              "create table AutoIdEntity (id int64 not null,name string(255)) PRIMARY KEY (id)",
               request.getStatements(++index));
           assertEquals(
-              "create table SubTestEntity (id string(255) not null,id1 int64,id2 string(255)) PRIMARY KEY (id)",
+              "create table AutoIdEntity_SEQ (next_val int64) PRIMARY KEY ()",
               request.getStatements(++index));
           assertEquals(
-              "create table `test_table` "
-                  + "(`ID1` int64 not null,"
-                  + "id2 string(255) not null,"
-                  + "`boolColumn` bool,"
-                  + "longVal int64 not null,"
-                  + "stringVal string(255)) PRIMARY KEY (`ID1`,id2)",
+              "create table SequenceEntity (id int64 not null,name string(255)) PRIMARY KEY (id)",
               request.getStatements(++index));
           assertEquals(
-              "alter table `TestEntity_stringList` add constraint FK2is6fwy3079dmfhjot09x5och "
-                  + "foreign key (`TestEntity_ID1`, `TestEntity_id2`) references `test_table` (`ID1`, id2)",
-              request.getStatements(++index));
-          assertEquals(
-              "alter table SubTestEntity add constraint FK45l9js1jvci3yy21exuclnku0 "
-                  + "foreign key (id1, id2) references `test_table` (`ID1`, id2)",
+              "create table test_sequence (next_val int64) PRIMARY KEY ()",
               request.getStatements(++index));
         } else {
           assertEquals(
-              "create table `TestEntity_stringList` ("
-                  + "`TestEntity_ID1` int64 not null,"
-                  + "`TestEntity_id2` string(255) not null,"
-                  + "stringList string(255)) "
-                  + "PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList)",
+              "create table AutoIdEntity (id int64 not null,name string(255)) PRIMARY KEY (id)",
               request.getStatements(++index));
           assertEquals(
-              "create table SubTestEntity (id1 int64,id string(255) not null,id2 string(255)) PRIMARY KEY (id)",
+              "create table AutoIdEntity_SEQ (next_val int64) PRIMARY KEY ()",
               request.getStatements(++index));
           assertEquals(
-              "create table `test_table` ("
-                  + "`boolColumn` bool,"
-                  + "`ID1` int64 not null,"
-                  + "longVal int64 not null,"
-                  + "id2 string(255) not null"
-                  + ",stringVal string(255)) PRIMARY KEY (`ID1`,id2)",
+              "create table SequenceEntity (id int64 not null,name string(255)) PRIMARY KEY (id)",
               request.getStatements(++index));
           assertEquals(
-              "alter table `TestEntity_stringList` add constraint FK2is6fwy3079dmfhjot09x5och "
-                  + "foreign key (`TestEntity_ID1`, `TestEntity_id2`) references `test_table` (`ID1`, id2)",
-              request.getStatements(++index));
-          assertEquals(
-              "alter table SubTestEntity add constraint FK45l9js1jvci3yy21exuclnku0 "
-                  + "foreign key (id1, id2) references `test_table` (`ID1`, id2)",
+              "create table test_sequence (next_val int64) PRIMARY KEY ()",
               request.getStatements(++index));
         }
       }
@@ -613,7 +618,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         + "/* spanner.ignore_during_internal_retry=true */ "
         + " select get_next_sequence_value(sequence enhanced_sequence) AS n " 
         + "from unnest(generate_array(1, 5))";
-    String insertSql = "insert into PooledBitReversedSequenceEntity (name, id) values (@p1, @p2)";
+    String insertSql = "insert into PooledBitReversedSequenceEntity (name,id) values (@p1,@p2)";
     mockSpanner.putStatementResult(StatementResult.query(Statement.of(selectSequenceNextVals),
         ResultSet.newBuilder()
             .setMetadata(ResultSetMetadata.newBuilder()
@@ -688,10 +693,10 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             + "skip_range_min=1, skip_range_max=20000)",
         request.getStatements(++index));
     assertEquals(
-        "create table LegacySequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
+        "create table LegacySequenceEntity (id int64 not null,name string(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
     assertEquals(
-        "create table PooledBitReversedSequenceEntity (id INT64 not null,name STRING(255)) PRIMARY KEY (id)",
+        "create table PooledBitReversedSequenceEntity (id int64 not null,name string(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
   }
 
@@ -731,7 +736,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         + "/* spanner.ignore_during_internal_retry=true */ "
         + " select get_next_sequence_value(sequence enhanced_sequence) AS n " 
         + "from unnest(generate_array(1, 5))";
-    String insertSql = "insert into PooledBitReversedSequenceEntity (name, id) values (@p1, @p2)";
+    String insertSql = "insert into PooledBitReversedSequenceEntity (name,id) values (@p1,@p2)";
     mockSpanner.putStatementResult(StatementResult.query(Statement.of(selectSequenceNextVals),
         ResultSet.newBuilder()
             .setMetadata(ResultSetMetadata.newBuilder()

@@ -18,6 +18,9 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import static com.google.cloud.spanner.hibernate.AbstractSchemaGenerationMockServerTest.GET_SEQUENCES_METADATA;
+import static com.google.cloud.spanner.hibernate.AbstractSchemaGenerationMockServerTest.GET_SEQUENCES_STATEMENT;
+import static com.google.cloud.spanner.hibernate.AbstractSchemaGenerationMockServerTest.createSequenceRow;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -45,6 +48,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -212,10 +216,15 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
 
   @Test
   public void testNonPooledBitReversedSequence() {
-    String getNextSequenceValueSql = "select get_next_sequence_value(sequence hibernate_sequence)";
+    mockSpanner.putStatementResult(
+        StatementResult.query(GET_SEQUENCES_STATEMENT, ResultSet.newBuilder()
+            .setMetadata(GET_SEQUENCES_METADATA)
+            .addRows(createSequenceRow("test-entity_SEQ"))
+            .build()));
+    String getNextSequenceValueSql = "select get_next_sequence_value(sequence `test-entity-seq`)";
 
     long initialValue = 1L;
-    String insertSql = "insert into test-entity (name, id) values (@p1, @p2)";
+    String insertSql = "insert into `test-entity` (name,id) values (@p1,@p2)";
     for (int i = 0; i < 10; i++) {
       mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
           .bind("p1").to((String) null)
@@ -278,7 +287,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
 
   @Test
   public void testHibernatePooledSequenceEntity_fetchesInBatches() {
-    String getSequenceValuesSql = "/* spanner.force_read_write_transaction=true */ " 
+    String getSequenceValuesSql = "/* spanner.force_read_write_transaction=true */ "
         + "/* spanner.ignore_during_internal_retry=true */ "
         + " select get_next_sequence_value(sequence pooled_sequence) AS n "
         + "from unnest(generate_array(1, 5))";
@@ -289,7 +298,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
             Statement.of(getSequenceValuesSql),
             createBitReversedSequenceResultSet(20000L, 20005L)));
 
-    String insertSql = "insert into test-entity (name, id) values (@p1, @p2)";
+    String insertSql = "insert into `test-entity` (name,id) values (@p1,@p2)";
     for (int i = 0; i < 10; i++) {
       mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
           .bind("p1").to((String) null)
@@ -372,7 +381,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
             Statement.of(getSequenceValuesSql),
             createBitReversedSequenceResultSet(20001L, 20005L)));
 
-    String insertSql = "insert into test-entity (name, id) values (@p1, @p2)";
+    String insertSql = "insert into `test-entity` (name,id) values (@p1,@p2)";
     mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
         .bind("p1").to((String) null)
         .bind("p2").to(expectedId)
@@ -416,7 +425,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
   public void testHibernatePooledSequenceEntity_abortedErrorRetriesSequence() {
     String getSequenceValuesSql = "/* spanner.force_read_write_transaction=true */ "
         + "/* spanner.ignore_during_internal_retry=true */ "
-        + " select get_next_sequence_value(sequence pooled_sequence) AS n " 
+        + " select get_next_sequence_value(sequence pooled_sequence) AS n "
         + "from unnest(generate_array(1, 5))";
 
     long initialValue = 20000L;
@@ -431,7 +440,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
     mockSpanner.setCommitExecutionTime(SimulatedExecutionTime.ofException(
         mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
 
-    String insertSql = "insert into test-entity (name, id) values (@p1, @p2)";
+    String insertSql = "insert into `test-entity` (name,id) values (@p1,@p2)";
     mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
         .bind("p1").to((String) null)
         .bind("p2").to(expectedId)
@@ -484,7 +493,11 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
   static class NonPooledSequenceEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "test-entity-generator")
+    @SequenceGenerator(
+        name = "test-entity-generator",
+        allocationSize = 1,
+        sequenceName = "test-entity-seq")
     private long id;
 
     @Column

@@ -104,7 +104,7 @@ public class SpannerTableExporterTests {
     SpannerDialect.disableSpannerSequences();
     try {
       this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
-          .setTables("Employee", "hibernate_sequence")
+          .setTables("Employee", "Employee_SEQ")
           .setIndices("name_index")
           .build());
 
@@ -121,7 +121,6 @@ public class SpannerTableExporterTests {
           "START BATCH DDL;",
           "drop index name_index;",
           "drop table Employee;",
-          "drop table hibernate_sequence;",
           "RUN BATCH;");
     } finally {
       SpannerDialect.enableSpannerSequences();
@@ -132,7 +131,7 @@ public class SpannerTableExporterTests {
   public void generateDeleteStringsWithIndices_withSequencesEnabled()
       throws IOException, SQLException {
     this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
-        .setTables("Employee")
+        .setTables("Employee", "Employee_SEQ")
         .setIndices("name_index")
         .build());
 
@@ -149,7 +148,7 @@ public class SpannerTableExporterTests {
         "START BATCH DDL;",
         "drop index name_index;",
         "drop table Employee;",
-        "drop sequence hibernate_sequence;",
+        "drop sequence Employee_Sequence;",
         "RUN BATCH;");
   }
 
@@ -173,12 +172,12 @@ public class SpannerTableExporterTests {
       assertThat(statements).containsExactly(
           // This omits creating the Employee table since it is declared to exist in metadata.
           "START BATCH DDL;",
-          "create table hibernate_sequence (next_val INT64) PRIMARY KEY ();",
+          "create table Employee_Sequence (next_val int64) PRIMARY KEY ();",
           "create index name_index on Employee (name);",
           "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
               + "foreign key (manager_id) references Employee (id);",
           "RUN BATCH;",
-          "INSERT INTO hibernate_sequence (next_val) VALUES(1);"
+          "insert into Employee_Sequence values ( 1 );"
       );
     } finally {
       SpannerDialect.enableSpannerSequences();
@@ -204,7 +203,7 @@ public class SpannerTableExporterTests {
     assertThat(statements).containsExactly(
         // This omits creating the Employee table since it is declared to exist in metadata.
         "START BATCH DDL;",
-        "create sequence hibernate_sequence options(sequence_kind=\"bit_reversed_positive\");",
+        "create sequence Employee_Sequence options(sequence_kind=\"bit_reversed_positive\");",
         "create index name_index on Employee (name);",
         "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
             + "foreign key (manager_id) references Employee (id);",
