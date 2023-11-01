@@ -1,6 +1,17 @@
 # Changelog
 
 
+## [3.0.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v2.0.0...v3.0.0) (2023-11-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* update to Hibernate 6.x ([#687](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/687))
+
+### Features
+
+* update to Hibernate 6.x ([#687](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/687)) ([e2882fc](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/e2882fcf5a367355c4040a9526288254ed0c624d))
+
 ## [2.0.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v1.9.1...v2.0.0) (2023-10-25)
 
 
