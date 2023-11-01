@@ -60,7 +60,9 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         ResultSetMetadata.newBuilder().setRowType(StructType.newBuilder().build()).build()).build();
   }
 
-  /** Adds the expected query results to the mock server. */
+  /**
+   * Adds the expected query results to the mock server.
+   */
   @BeforeClass
   public static void setupQueryResults() {
     // Add a DDL response to the server.
@@ -71,6 +73,29 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         StatementResult.detectDialectResult(Dialect.GOOGLE_STANDARD_SQL));
 
     // Setup empty results for the metadata queries that check whether the schema has been created.
+    mockSpanner.putStatementResult(StatementResult.query(Statement.of(
+            "select seq.CATALOG as sequence_catalog, seq.SCHEMA as sequence_schema, seq.NAME as sequence_name,\n"
+                + "       coalesce(kind.OPTION_VALUE, 'bit_reversed_positive') as KIND,\n"
+                + "       coalesce(safe_cast(initial.OPTION_VALUE AS INT64),\n"
+                + "           case coalesce(kind.OPTION_VALUE, 'bit_reversed_positive')\n"
+                + "               when 'bit_reversed_positive' then 1\n"
+                + "               when 'bit_reversed_signed' then -pow(2, 63)\n"
+                + "               else 1\n"
+                + "           end\n"
+                + "       ) as start_value, 1 as minimum_value, 9223372036854775807 as maximum_value,\n"
+                + "       1 as increment,\n"
+                + "       safe_cast(skip_range_min.OPTION_VALUE as int64) as skip_range_min,\n"
+                + "       safe_cast(skip_range_max.OPTION_VALUE as int64) as skip_range_max,\n"
+                + "from INFORMATION_SCHEMA.SEQUENCES seq\n"
+                + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS kind\n"
+                + "    on seq.CATALOG=kind.CATALOG and seq.SCHEMA=kind.SCHEMA and seq.NAME=kind.NAME and kind.OPTION_NAME='sequence_kind'\n"
+                + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS initial\n"
+                + "    on seq.CATALOG=initial.CATALOG and seq.SCHEMA=initial.SCHEMA and seq.NAME=initial.NAME and initial.OPTION_NAME='start_with_counter'\n"
+                + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_min\n"
+                + "    on seq.CATALOG=skip_range_min.CATALOG and seq.SCHEMA=skip_range_min.SCHEMA and seq.NAME=skip_range_min.NAME and skip_range_min.OPTION_NAME='skip_range_min'\n"
+                + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_max\n"
+                + "    on seq.CATALOG=skip_range_max.CATALOG and seq.SCHEMA=skip_range_max.SCHEMA and seq.NAME=skip_range_max.NAME and skip_range_max.OPTION_NAME='skip_range_max'"),
+        empty()));
     mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(
                 "SELECT TABLE_CATALOG AS TABLE_CAT, TABLE_SCHEMA AS TABLE_SCHEM, TABLE_NAME,\n"
                     + "       CASE WHEN TABLE_TYPE = 'BASE TABLE' THEN 'TABLE' ELSE TABLE_TYPE END AS TABLE_TYPE,\n"
@@ -168,12 +193,19 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putPartialStatementResult(StatementResult.update(Statement.of(
             "insert into album (cover_picture,created_at,marketing_budget,release_date,singer_id,title,updated_at,id) values (@p1,@p2,@p3,@p4,@p5,@p6,@p7,@p8)"),
         1L));
+    mockSpanner.putPartialStatementResult(StatementResult.update(Statement.of(
+            "insert into track (created_at,sample_rate,title,updated_at,id,track_number) values (@p1,@p2,@p3,@p4,@p5,@p6)"),
+        1L));
+    mockSpanner.putPartialStatementResult(StatementResult.update(Statement.of(
+            "insert into venue (created_at,description,name,updated_at,id) values (@p1,@p2,@p3,@p4,@p5)"),
+        1L));
+    mockSpanner.putPartialStatementResult(StatementResult.update(Statement.of(
+            "insert into concert (created_at,end_time,name,singer_id,start_time,updated_at,venue_id,id) values (@p1,@p2,@p3,@p4,@p5,@p6,@p7,@p8)"),
+        1L));
 
     // Add results for selecting singers.
     UUID singerId = UUID.randomUUID();
-    mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(
-            "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.updated_at from singer s1_0 limit @p1 offset @p2")
-        .bind("p1").to(20L).bind("p2").to(0L).build(), ResultSet.newBuilder().setMetadata(
+    ResultSet singerResultSet = ResultSet.newBuilder().setMetadata(
         ResultSetMetadata.newBuilder().setRowType(StructType.newBuilder().addFields(
                 Field.newBuilder().setName("id")
                     .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
@@ -197,10 +229,21 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         .addValues(Value.newBuilder().setStringValue("Peter Anderson").build())
         .addValues(Value.newBuilder().setStringValue("Anderson").build()).addValues(
             Value.newBuilder().setStringValue(OffsetDateTime.now(ZoneId.of("UTC")).toString())
-                .build()).build()).build()));
+                .build()).build()).build();
     mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(
-            "select a1_0.id,a1_0.cover_picture,a1_0.created_at,a1_0.marketing_budget,a1_0.release_date,a1_0.singer_id,a1_0.title,a1_0.updated_at from album a1_0 limit @p1 offset @p2")
-        .bind("p1").to(30L).bind("p2").to(0L).build(), ResultSet.newBuilder().setMetadata(
+            "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.updated_at from singer s1_0 limit @p1 offset @p2")
+        .bind("p1").to(20L).bind("p2").to(0L).build(), singerResultSet));
+    mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(
+                "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.updated_at from singer s1_0 where s1_0.id=@p1")
+            .bind("p1").to(singerId.toString())
+            .build(),
+        singerResultSet));
+    mockSpanner.putPartialStatementResult(StatementResult.query(Statement.of(
+            "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.updated_at from singer s1_0 where starts_with(s1_0.last_name,@p1)=true"),
+        singerResultSet));
+
+    // Add result for selecting albums.
+    ResultSet albumResultSet = ResultSet.newBuilder().setMetadata(
         ResultSetMetadata.newBuilder().setRowType(StructType.newBuilder().addFields(
                 Field.newBuilder().setName("id")
                     .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
@@ -229,7 +272,108 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         .addValues(Value.newBuilder().setStringValue(singerId.toString()).build())
         .addValues(Value.newBuilder().setStringValue("Hot Potato").build()).addValues(
             Value.newBuilder().setStringValue(OffsetDateTime.now(ZoneId.of("UTC")).toString())
+                .build()).build()).build();
+    mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(
+            "select a1_0.id,a1_0.cover_picture,a1_0.created_at,a1_0.marketing_budget,a1_0.release_date,a1_0.singer_id,a1_0.title,a1_0.updated_at from album a1_0 limit @p1 offset @p2")
+        .bind("p1").to(30L).bind("p2").to(0L).build(), albumResultSet));
+    mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(
+            "select a1_0.singer_id,a1_0.id,a1_0.cover_picture,a1_0.created_at,a1_0.marketing_budget,a1_0.release_date,a1_0.title,a1_0.updated_at from album a1_0 where a1_0.singer_id=@p1")
+        .bind("p1").to(singerId.toString())
+        .build(), ResultSet.newBuilder().setMetadata(
+        ResultSetMetadata.newBuilder().setRowType(StructType.newBuilder().addFields(
+                Field.newBuilder().setName("singer_id")
+                    .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+                Field.newBuilder().setName("id")
+                    .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+                Field.newBuilder().setName("cover_picture")
+                    .setType(Type.newBuilder().setCode(TypeCode.BYTES).build()).build()).addFields(
+                Field.newBuilder().setName("created_at")
+                    .setType(Type.newBuilder().setCode(TypeCode.TIMESTAMP).build()).build()).addFields(
+                Field.newBuilder().setName("marketing_budget")
+                    .setType(Type.newBuilder().setCode(TypeCode.NUMERIC).build()).build()).addFields(
+                Field.newBuilder().setName("release_date")
+                    .setType(Type.newBuilder().setCode(TypeCode.DATE).build()).build()).addFields(
+                Field.newBuilder().setName("title")
+                    .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+                Field.newBuilder().setName("updated_at")
+                    .setType(Type.newBuilder().setCode(TypeCode.TIMESTAMP).build()).build()).build())
+            .build()).addRows(ListValue.newBuilder()
+        .addValues(Value.newBuilder().setStringValue(singerId.toString()).build())
+        .addValues(Value.newBuilder().setStringValue(UUID.randomUUID().toString()).build())
+        .addValues(Value.newBuilder()
+            .setStringValue(Base64.getEncoder().encodeToString(new byte[]{1, 2, 3})).build())
+        .addValues(
+            Value.newBuilder().setStringValue(OffsetDateTime.now(ZoneId.of("UTC")).toString())
+                .build()).addValues(Value.newBuilder().setStringValue("999.99").build())
+        .addValues(Value.newBuilder().setStringValue("2019-01-08").build())
+        .addValues(Value.newBuilder().setStringValue("Hot Potato").build()).addValues(
+            Value.newBuilder().setStringValue(OffsetDateTime.now(ZoneId.of("UTC")).toString())
                 .build()).build()).build()));
+    // Add results for selecting tracks.
+    mockSpanner.putPartialStatementResult(StatementResult.query(Statement.of(
+            "select t1_0.id,t1_0.track_number,t1_0.created_at,t1_0.sample_rate,t1_0.title,t1_0.updated_at from track t1_0 where t1_0.id=@p1"),
+        empty()));
+
+    // Add results for selecting venues.
+    mockSpanner.putStatementResult(StatementResult.query(Statement.of(
+            "select v1_0.id,v1_0.created_at,v1_0.description,v1_0.name,v1_0.updated_at from venue v1_0"),
+        ResultSet.newBuilder()
+            .setMetadata(ResultSetMetadata.newBuilder()
+                .setRowType(StructType.newBuilder().addFields(
+                        Field.newBuilder().setName("id")
+                            .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build())
+                    .addFields(
+                        Field.newBuilder().setName("created_at")
+                            .setType(Type.newBuilder().setCode(TypeCode.TIMESTAMP).build()).build())
+                    .addFields(
+                        Field.newBuilder().setName("description")
+                            .setType(Type.newBuilder().setCode(TypeCode.JSON).build()).build())
+                    .addFields(
+                        Field.newBuilder().setName("name")
+                            .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build())
+                    .addFields(
+                        Field.newBuilder().setName("updated_at")
+                            .setType(Type.newBuilder().setCode(TypeCode.TIMESTAMP).build()).build())
+                    .build())
+                .build())
+            .addRows(ListValue.newBuilder()
+                .addValues(Value.newBuilder().setStringValue(UUID.randomUUID().toString()).build())
+                .addValues(
+                    Value.newBuilder()
+                        .setStringValue(OffsetDateTime.now(ZoneId.of("UTC")).toString())
+                        .build())
+                .addValues(
+                    Value.newBuilder().setStringValue("{\"type\": \"stadium\", \"capacity\": 100}")
+                        .build())
+                .addValues(Value.newBuilder().setStringValue("Stadium").build())
+                .addValues(
+                    Value.newBuilder()
+                        .setStringValue(OffsetDateTime.now(ZoneId.of("UTC")).toString())
+                        .build())
+                .build())
+            .build()));
+    // Add results for selecting concerts.
+    mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(
+            "select c1_0.singer_id,c1_0.id,c1_0.created_at,c1_0.end_time,c1_0.name,c1_0.start_time,c1_0.updated_at,c1_0.venue_id from concert c1_0 where c1_0.singer_id=@p1")
+        .bind("p1").to(singerId.toString())
+        .build(), empty()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(Statement.of("select current_timestamp"), ResultSet.newBuilder()
+            .setMetadata(ResultSetMetadata.newBuilder()
+                .setRowType(StructType.newBuilder()
+                    .addFields(
+                        Field.newBuilder().setName("current_timestamp")
+                            .setType(Type.newBuilder().setCode(TypeCode.TIMESTAMP).build()).build())
+                    .build())
+                .build())
+            .addRows(ListValue.newBuilder()
+                .addValues(
+                    Value.newBuilder()
+                        .setStringValue(OffsetDateTime.now(ZoneId.of("UTC")).toString())
+                        .build())
+                .build())
+            .build()));
+
   }
 
   @Test
@@ -239,10 +383,10 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     System.setProperty("spanner.connectionProperties", ";usePlainText=true");
     SpringApplication.run(SampleApplication.class).close();
 
-    assertEquals(34, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+    assertEquals(30, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
         .filter(request -> !request.getSql().equals("SELECT 1")).count());
-    assertEquals(3, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
-    assertEquals(5, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(6, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    assertEquals(9, mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 
   private static void addDdlResponseToSpannerAdmin() {

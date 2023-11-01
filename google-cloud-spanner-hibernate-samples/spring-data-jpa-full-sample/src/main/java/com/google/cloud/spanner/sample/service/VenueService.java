@@ -45,13 +45,17 @@ public class VenueService {
     this.randomDataService = randomDataService;
   }
 
-  /** Deletes all Venue records in the database. */
+  /**
+   * Deletes all Venue records in the database.
+   */
   @Transactional
   public void deleteAllVenues() {
     repository.deleteAll();
   }
 
-  /** Generates the specified number of random Venue records. */
+  /**
+   * Generates the specified number of random Venue records.
+   */
   @Transactional
   public List<Venue> generateRandomVenues(int count) {
     Random random = new Random();

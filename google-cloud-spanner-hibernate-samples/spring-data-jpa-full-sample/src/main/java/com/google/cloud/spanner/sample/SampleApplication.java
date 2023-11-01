@@ -58,6 +58,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication
 public class SampleApplication implements CommandLineRunner {
+
   private static final Logger log = LoggerFactory.getLogger(SampleApplication.class);
 
   private final SingerService singerService;
@@ -75,7 +76,9 @@ public class SampleApplication implements CommandLineRunner {
 
   private final ConcertRepository concertRepository;
 
-  /** Constructor with auto-injected dependencies. */
+  /**
+   * Constructor with auto-injected dependencies.
+   */
   public SampleApplication(
       SingerService singerService,
       AlbumService albumService,

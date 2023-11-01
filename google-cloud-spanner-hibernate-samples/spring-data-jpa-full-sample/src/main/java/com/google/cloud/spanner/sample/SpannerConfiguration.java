@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "spanner")
 public class SpannerConfiguration {
+
   private String project;
   private String instance;
   private String database;

@@ -53,7 +53,9 @@ public class TrackService {
     this.albumRepository = albumRepository;
   }
 
-  /** Generates the specified number of random Track records. */
+  /**
+   * Generates the specified number of random Track records.
+   */
   @Transactional
   public void generateRandomTracks(int numAlbums, int numTracksPerAlbum) {
     Random random = new Random();
