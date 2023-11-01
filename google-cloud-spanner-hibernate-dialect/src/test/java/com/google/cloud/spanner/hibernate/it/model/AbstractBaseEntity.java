@@ -18,10 +18,10 @@
 
 package com.google.cloud.spanner.hibernate.it.model;
 
+import jakarta.persistence.MappedSuperclass;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
-import javax.persistence.MappedSuperclass;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
-import com.google.cloud.spanner.hibernate.SpannerDialect.DoNothingLockingStrategy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.hibernate.LockOptions;
@@ -118,7 +117,7 @@ public class SpannerDialectTests {
 
   @Test
   public void getAddColumnStringTest() {
-    assertThat(this.spannerDialect.getAddColumnString()).isEqualTo("ADD COLUMN");
+    assertThat(this.spannerDialect.getAddColumnString()).isEqualTo("add column");
   }
 
   @Test
@@ -205,12 +204,6 @@ public class SpannerDialectTests {
   }
 
   @Test
-  public void getLockingStrategyTest() {
-    assertThat(this.spannerDialect.getLockingStrategy(null, null))
-        .isInstanceOf(DoNothingLockingStrategy.class);
-  }
-
-  @Test
   public void getForUpdateStringLockOptionsTest() {
     assertThat(this.spannerDialect.getForUpdateString((LockOptions) null)).isEqualTo("");
   }
@@ -252,11 +245,6 @@ public class SpannerDialectTests {
   @Test
   public void isLockTimeoutParameterizedTest() {
     assertThat(this.spannerDialect.isLockTimeoutParameterized()).isFalse();
-  }
-
-  @Test
-  public void forUpdateOfColumnsTest() {
-    assertThat(this.spannerDialect.forUpdateOfColumns()).isFalse();
   }
 
   @Test

@@ -96,18 +96,19 @@ public class GeneratedCreateTableStatementsTests {
           "START BATCH DDL",
           "RUN BATCH",
           "START BATCH DDL",
-          "create table GrandParent (grandParentId INT64 not null,name STRING(255)) "
+          "create table GrandParent (grandParentId int64 not null,name string(255)) "
               + "PRIMARY KEY (grandParentId)",
-          "create table Parent (grandParentId INT64 not null,"
-              + "parentId INT64 not null,name STRING(255)) PRIMARY KEY (grandParentId,parentId), "
+          "create table Parent ("
+              + "grandParentId int64 not null,parentId int64 not null,name string(255)) "
+              + "PRIMARY KEY (grandParentId,parentId), "
               + "INTERLEAVE IN PARENT GrandParent",
-          "create table Child (childId INT64 not null,grandParentId INT64 not null,"
-              + "parentId INT64 not null,name STRING(255)) "
+          "create table Child (childId int64 not null,grandParentId int64 not null,"
+              + "parentId int64 not null,name string(255)) "
               + "PRIMARY KEY (grandParentId,parentId,childId), "
               + "INTERLEAVE IN PARENT Parent",
-          "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+          "create table GrandParent_Sequence (next_val int64) PRIMARY KEY ()",
           "RUN BATCH",
-          "INSERT INTO hibernate_sequence (next_val) VALUES(1)"
+          "insert into GrandParent_Sequence values ( 1 )"
       );
     } finally {
       SpannerDialect.enableSpannerSequences();
@@ -132,17 +133,17 @@ public class GeneratedCreateTableStatementsTests {
 
     assertThat(sqlStrings).containsExactly(
         "START BATCH DDL",
-        "drop sequence hibernate_sequence",
+        "drop sequence GrandParent_Sequence",
         "RUN BATCH",
         "START BATCH DDL",
-        "create sequence hibernate_sequence options(sequence_kind=\"bit_reversed_positive\")",
-        "create table GrandParent (grandParentId INT64 not null,name STRING(255)) "
+        "create sequence GrandParent_Sequence options(sequence_kind=\"bit_reversed_positive\")",
+        "create table GrandParent (grandParentId int64 not null,name string(255)) "
             + "PRIMARY KEY (grandParentId)",
-        "create table Parent (grandParentId INT64 not null,"
-            + "parentId INT64 not null,name STRING(255)) PRIMARY KEY (grandParentId,parentId), "
+        "create table Parent (grandParentId int64 not null,parentId int64 not null,"
+            + "name string(255)) PRIMARY KEY (grandParentId,parentId), "
             + "INTERLEAVE IN PARENT GrandParent",
-        "create table Child (childId INT64 not null,grandParentId INT64 not null,"
-            + "parentId INT64 not null,name STRING(255)) "
+        "create table Child (childId int64 not null,grandParentId int64 not null,"
+            + "parentId int64 not null,name string(255)) "
             + "PRIMARY KEY (grandParentId,parentId,childId), "
             + "INTERLEAVE IN PARENT Parent",
         "RUN BATCH"
@@ -169,14 +170,14 @@ public class GeneratedCreateTableStatementsTests {
           "START BATCH DDL",
           "RUN BATCH",
           "START BATCH DDL",
-          "create table Employee "
-              + "(id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
-          "create table hibernate_sequence (next_val INT64) PRIMARY KEY ()",
+          "create table Employee (id int64 not null,manager_id int64,name string(255)) "
+              + "PRIMARY KEY (id)",
+          "create table Employee_Sequence (next_val int64) PRIMARY KEY ()",
           "create index name_index on Employee (name)",
           "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
               + "foreign key (manager_id) references Employee (id)",
           "RUN BATCH",
-          "INSERT INTO hibernate_sequence (next_val) VALUES(1)"
+          "insert into Employee_Sequence values ( 1 )"
       );
     } finally {
       SpannerDialect.enableSpannerSequences();
@@ -199,12 +200,12 @@ public class GeneratedCreateTableStatementsTests {
 
     assertThat(sqlStrings).containsExactly(
         "START BATCH DDL",
-        "drop sequence hibernate_sequence",
+        "drop sequence Employee_Sequence",
         "RUN BATCH",
         "START BATCH DDL",
-        "create sequence hibernate_sequence options(sequence_kind=\"bit_reversed_positive\")",
-        "create table Employee "
-            + "(id INT64 not null,name STRING(255),manager_id INT64) PRIMARY KEY (id)",
+        "create sequence Employee_Sequence options(sequence_kind=\"bit_reversed_positive\")",
+        "create table Employee (id int64 not null,manager_id int64,name string(255)) "
+            + "PRIMARY KEY (id)",
         "create index name_index on Employee (name)",
         "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
             + "foreign key (manager_id) references Employee (id)",
@@ -230,7 +231,7 @@ public class GeneratedCreateTableStatementsTests {
         "START BATCH DDL",
         "RUN BATCH",
         "START BATCH DDL",
-        "create table Account (id INT64 not null,amount NUMERIC,name STRING(255)) PRIMARY KEY (id)",
+        "create table Account (amount numeric,id int64 not null,name string(255)) PRIMARY KEY (id)",
         "RUN BATCH"
     );
   }
@@ -253,9 +254,9 @@ public class GeneratedCreateTableStatementsTests {
         "START BATCH DDL",
         "RUN BATCH",
         "START BATCH DDL",
-        "create table Customer "
-            + "(customerId INT64 not null,name STRING(255)) PRIMARY KEY (customerId)",
-        "create table customerId (next_val INT64) PRIMARY KEY ()",
+        "create table Customer (customerId int64 not null,name string(255)) "
+            + "PRIMARY KEY (customerId)",
+        "create table customerId (next_val int64) PRIMARY KEY ()",
         "RUN BATCH",
         "insert into customerId (next_val) values ( 50000 )"
     );
@@ -271,7 +272,7 @@ public class GeneratedCreateTableStatementsTests {
               .buildMetadata();
 
       this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
-          .setTables("Employee", "hibernate_sequence")
+          .setTables("Employee", "Employee_Sequence")
           .setIndices("name_index")
           .build());
 
@@ -286,7 +287,7 @@ public class GeneratedCreateTableStatementsTests {
           "START BATCH DDL",
           "drop index name_index",
           "drop table Employee",
-          "drop table hibernate_sequence",
+          "drop table Employee_Sequence",
           "RUN BATCH"
       );
     } finally {
@@ -302,7 +303,7 @@ public class GeneratedCreateTableStatementsTests {
             .buildMetadata();
 
     this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
-        .setTables("Employee", "hibernate_sequence")
+        .setTables("Employee")
         .setIndices("name_index")
         .build());
 
@@ -317,7 +318,7 @@ public class GeneratedCreateTableStatementsTests {
         "START BATCH DDL",
         "drop index name_index",
         "drop table Employee",
-        "drop sequence hibernate_sequence",
+        "drop sequence Employee_Sequence",
         "RUN BATCH"
     );
   }
@@ -340,7 +341,7 @@ public class GeneratedCreateTableStatementsTests {
         "START BATCH DDL",
         "RUN BATCH",
         "START BATCH DDL",
-        "create table Airplane (id STRING(255) not null,modelName STRING(255)) PRIMARY KEY (id)",
+        "create table Airplane (id string(36) not null,modelName string(255)) PRIMARY KEY (id)",
         "create unique index UK_gc568wb30sampsuirwne5jqgh on Airplane (modelName)",
         "RUN BATCH"
     );
@@ -368,10 +369,10 @@ public class GeneratedCreateTableStatementsTests {
         "START BATCH DDL",
         "RUN BATCH",
         "START BATCH DDL",
-        "create table Airplane (id STRING(255) not null,modelName STRING(255)) PRIMARY KEY (id)",
-        "create table Airport (id STRING(255) not null) PRIMARY KEY (id)",
-        "create table Airport_Airplane (Airport_id STRING(255) not null,"
-            + "airplanes_id STRING(255) not null) PRIMARY KEY (Airport_id,airplanes_id)",
+        "create table Airplane (id string(36) not null,modelName string(255)) PRIMARY KEY (id)",
+        "create table Airport (id string(36) not null) PRIMARY KEY (id)",
+        "create table Airport_Airplane (Airport_id string(36) not null,"
+            + "airplanes_id string(36) not null) PRIMARY KEY (Airport_id,airplanes_id)",
         "create unique index UK_gc568wb30sampsuirwne5jqgh on Airplane (modelName)",
         "create unique index UK_em0lqvwoqdwt29x0b0r010be on Airport_Airplane (airplanes_id)",
         "alter table Airport_Airplane add constraint FKkn0enwaxbwk7csf52x0eps73d "

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,14 +24,15 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.resource.transaction.spi.DdlTransactionIsolator;
 import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.internal.SchemaCreatorImpl;
+import org.hibernate.tool.schema.spi.ContributableMatcher;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
 import org.hibernate.tool.schema.spi.SchemaCreator;
 import org.hibernate.tool.schema.spi.SourceDescriptor;
 import org.hibernate.tool.schema.spi.TargetDescriptor;
 
 /**
- * A modified version of the {@link SchemaCreatorImpl} which batches DDL statements
- * to optimize performance.
+ * A modified version of the {@link SchemaCreatorImpl} which batches DDL statements to optimize
+ * performance.
  */
 public class SpannerSchemaCreator implements SchemaCreator {
 
@@ -47,6 +48,7 @@ public class SpannerSchemaCreator implements SchemaCreator {
   public void doCreation(
       Metadata metadata,
       ExecutionOptions options,
+      ContributableMatcher contributableInclusionFilter,
       SourceDescriptor sourceDescriptor,
       TargetDescriptor targetDescriptor) {
 
@@ -60,7 +62,8 @@ public class SpannerSchemaCreator implements SchemaCreator {
       SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.CREATE);
       tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
-      schemaCreator.doCreation(metadata, options, sourceDescriptor, targetDescriptor);
+      schemaCreator.doCreation(
+          metadata, options, contributableInclusionFilter, sourceDescriptor, targetDescriptor);
     } catch (SQLException e) {
       throw new RuntimeException("Failed to update Spanner table schema.", e);
     } finally {

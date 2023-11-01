@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Range;
-import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
 import org.hibernate.HibernateException;
@@ -38,6 +37,7 @@ import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.id.IdentifierGenerationException;
+import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.id.enhanced.DatabaseStructure;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.id.enhanced.TableStructure;
@@ -103,6 +103,7 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
 
     public SpannerSequenceTableStructure(
         JdbcEnvironment jdbcEnvironment,
+        String contributor,
         QualifiedName qualifiedTableName,
         Identifier valueColumnNameIdentifier,
         int initialValue,
@@ -110,6 +111,7 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
         Class numberType) {
       super(
           jdbcEnvironment,
+          contributor,
           qualifiedTableName,
           valueColumnNameIdentifier,
           initialValue,
@@ -191,13 +193,26 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
       int incrementSize) {
     this.sequenceName = sequenceName;
     final Identifier valueColumnName = determineValueColumnName(params, jdbcEnvironment);
+    final String contributor = determineContributor(params);
     return new SpannerSequenceTableStructure(
         jdbcEnvironment,
+        contributor,
         sequenceName,
         valueColumnName,
         initialValue,
         incrementSize,
         type.getReturnedClass());
+  }
+
+  private String determineContributor(Properties params) {
+    final String contributor = params.getProperty(IdentifierGenerator.CONTRIBUTOR_NAME);
+
+    return contributor == null ? "orm" : contributor;
+  }
+
+  @Override
+  public boolean supportsBulkInsertionIdentifierGeneration() {
+    return false;
   }
 
   @Override
@@ -262,9 +277,9 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
    * before it is returned to the application.
    */
   @Override
-  public Serializable generate(SharedSessionContractImplementor session, Object object)
+  public Object generate(SharedSessionContractImplementor session, Object object)
       throws HibernateException {
-    Serializable id;
+    Object id;
     // Loop to skip excluded ranges.
     while (true) {
       int attempts = 0;
@@ -315,8 +330,7 @@ public class BitReversedSequenceStyleGenerator extends SequenceStyleGenerator {
   }
 
   @VisibleForTesting
-  protected Serializable generateBaseValue(
-      SharedSessionContractImplementor session, Object object) {
+  protected Object generateBaseValue(SharedSessionContractImplementor session, Object object) {
     return super.generate(session, object);
   }
 }

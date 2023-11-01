@@ -52,8 +52,11 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.BulkInsertionCapableIdentifierGenerator;
+import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.DatabaseStructure;
+import org.hibernate.id.enhanced.NoopOptimizer;
+import org.hibernate.id.enhanced.Optimizer;
 import org.hibernate.id.enhanced.SequenceStructure;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.internal.util.config.ConfigurationHelper;
@@ -121,6 +124,7 @@ public class PooledBitReversedSequenceStyleGenerator implements
   private static final int POSTGRES_MAX_INCREMENT_SIZE = 1000;
   private static final Iterator<Long> EMPTY_ITERATOR = Collections.emptyIterator();
   private final Lock lock = new ReentrantLock();
+  private final Optimizer optimizer = new NoopOptimizer(Long.class, 1);
 
   private Dialect dialect;
   private QualifiedSequenceName sequenceName;
@@ -231,6 +235,11 @@ public class PooledBitReversedSequenceStyleGenerator implements
     }
     return builder.build();
   }
+  
+  @Override
+  public Optimizer getOptimizer() {
+    return optimizer;
+  }
 
   @Override
   public void configure(Type type, Properties params, ServiceRegistry serviceRegistry)
@@ -243,10 +252,15 @@ public class PooledBitReversedSequenceStyleGenerator implements
     this.select = buildSelect(sequenceName, fetchSize);
     List<Range<Long>> excludeRanges = parseExcludedRanges(sequenceName.getObjectName().getText(),
         params);
-    this.databaseStructure = buildDatabaseStructure(type, sequenceName,
-        initialValue, excludeRanges, jdbcEnvironment);
+    this.databaseStructure = buildDatabaseStructure(determineContributor(params), type,
+        sequenceName, initialValue, excludeRanges, jdbcEnvironment);
   }
-
+  
+  private String determineContributor(Properties params) {
+    final String contributor = params.getProperty(IdentifierGenerator.CONTRIBUTOR_NAME);
+    return contributor == null ? "orm" : contributor;
+  }
+  
   private int determineFetchSize(Properties params) {
     int fetchSize;
     if (ConfigurationHelper.getInteger("fetch_size", params) != null) {
@@ -269,6 +283,7 @@ public class PooledBitReversedSequenceStyleGenerator implements
   }
 
   private SequenceStructure buildDatabaseStructure(
+      String contributor,
       Type type,
       QualifiedSequenceName sequenceName,
       int initialValue,
@@ -277,6 +292,7 @@ public class PooledBitReversedSequenceStyleGenerator implements
     if (isPostgres()) {
       return new BitReversedSequenceStructure(
           jdbcEnvironment,
+          contributor,
           sequenceName,
           initialValue,
           1,
@@ -291,7 +307,7 @@ public class PooledBitReversedSequenceStyleGenerator implements
           Identifier.toIdentifier(buildSkipRangeOptions(excludeRanges)),
           sequenceName.getSchemaName(), sequenceName.getObjectName());
     }
-    return new SequenceStructure(jdbcEnvironment, sequenceName, initialValue, 1,
+    return new SequenceStructure(jdbcEnvironment, contributor, sequenceName, initialValue, 1,
         type.getReturnedClass());
   }
 
@@ -327,7 +343,8 @@ public class PooledBitReversedSequenceStyleGenerator implements
   @Override
   public String determineBulkInsertionIdentifierGenerationSelectFragment(
       SqlStringGenerationContext context) {
-    return context.getDialect().getSelectSequenceNextValString(getSequenceName());
+    return context.getDialect().getSequenceSupport()
+        .getSelectSequenceNextValString(getSequenceName());
   }
 
   @Override

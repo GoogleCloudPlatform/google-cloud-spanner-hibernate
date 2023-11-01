@@ -6,24 +6,22 @@
  */
 package org.hibernate.jpa.test;
 
+import com.google.cloud.spanner.hibernate.SpannerDialect;
+import jakarta.persistence.SharedCacheMode;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Consumer;
-import javax.persistence.Entity;
-import javax.persistence.SharedCacheMode;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Interceptor;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.annotations.Subselect;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl;
 import org.hibernate.boot.registry.BootstrapServiceRegistry;
 import org.hibernate.boot.registry.BootstrapServiceRegistryBuilder;
@@ -41,8 +39,6 @@ import org.hibernate.internal.util.StringHelper;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.jdbc.Work;
-import org.hibernate.metamodel.internal.MetamodelImpl;
-import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.resource.transaction.spi.TransactionCoordinator;
 
 import org.hibernate.testing.AfterClassOnce;
@@ -71,7 +67,7 @@ import static org.junit.Assert.fail;
 public abstract class BaseCoreFunctionalTestCase extends BaseUnitTestCase {
   public static final String VALIDATE_DATA_CLEANUP = "hibernate.test.validateDataCleanup";
 
-  public static final Dialect DIALECT = Dialect.getDialect();
+  public static final Dialect DIALECT = new SpannerDialect();
 
   private Configuration configuration;
   private StandardServiceRegistryImpl serviceRegistry;
@@ -169,7 +165,8 @@ public abstract class BaseCoreFunctionalTestCase extends BaseUnitTestCase {
   protected Configuration constructConfiguration() {
     Configuration configuration = new Configuration();
     configuration.setProperty( AvailableSettings.CACHE_REGION_FACTORY, CachingRegionFactory.class.getName() );
-    configuration.setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
+    // TODO: Figure out what the equivalent of this in Hibernate 6 is.
+    // configuration.setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
     if ( createSchema() ) {
       configuration.setProperty( Environment.HBM2DDL_AUTO, "create-drop" );
       final String secondSchemaName = createSecondSchema();
@@ -192,10 +189,7 @@ public abstract class BaseCoreFunctionalTestCase extends BaseUnitTestCase {
     String[] mappings = getMappings();
     if ( mappings != null ) {
       for ( String mapping : mappings ) {
-        configuration.addResource(
-            getBaseForMappings() + mapping,
-            getClass().getClassLoader()
-        );
+        configuration.addResource(getBaseForMappings() + mapping);
       }
     }
     Class<?>[] annotatedClasses = getAnnotatedClasses();

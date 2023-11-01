@@ -18,14 +18,14 @@
 
 package com.google.cloud.spanner.hibernate.it.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import java.time.OffsetDateTime;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import org.hibernate.annotations.Check;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -75,7 +75,9 @@ public class Concert extends AbstractBaseEntity {
     this(venue, singer, null, null, null);
   }
 
-  /** Constructor. */
+  /**
+   * Constructor.
+   */
   public Concert(Venue venue, Singer singer, String name, OffsetDateTime startTime,
       OffsetDateTime endTime) {
     this.venue = venue;

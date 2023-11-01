@@ -34,7 +34,7 @@ import java.util.Properties;
 import org.hibernate.MappingException;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.PostgreSQL10Dialect;
+import org.hibernate.dialect.PostgreSQLDialect;
 import org.hibernate.engine.jdbc.env.spi.IdentifierHelper;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.service.ServiceRegistry;
@@ -137,7 +137,7 @@ public class PooledBitReversedSequenceStyleGeneratorTest {
     ServiceRegistry registry = mock(ServiceRegistry.class);
     JdbcEnvironment environment = mock(JdbcEnvironment.class);
     when(registry.getService(JdbcEnvironment.class)).thenReturn(environment);
-    Dialect dialect = new PostgreSQL10Dialect();
+    Dialect dialect = new PostgreSQLDialect();
     IdentifierHelper identifierHelper = mock(IdentifierHelper.class);
     when(environment.getDialect()).thenReturn(dialect);
     when(environment.getIdentifierHelper()).thenReturn(identifierHelper);

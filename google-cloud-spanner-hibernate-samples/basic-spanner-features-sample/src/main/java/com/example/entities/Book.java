@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,12 +18,13 @@
 
 package com.example.entities;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import java.sql.Types;
 import java.util.UUID;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 
 /**
  * Simple Hibernate Entity used by the sample application.
@@ -33,7 +34,7 @@ public class Book {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  @Type(type = "uuid-char")
+  @JdbcTypeCode(Types.CHAR)
   private UUID id;
 
   private String title;

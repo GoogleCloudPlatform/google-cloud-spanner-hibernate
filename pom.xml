@@ -12,7 +12,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <hibernate.version>5.6.15.Final</hibernate.version>
+    <hibernate.version>6.3.1.Final</hibernate.version>
     <spanner-jdbc-driver.version>2.14.2</spanner-jdbc-driver.version>
     <log4j.version>2.21.1</log4j.version>
 
@@ -94,18 +94,23 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.hibernate</groupId>
+        <groupId>org.hibernate.orm</groupId>
         <artifactId>hibernate-core</artifactId>
         <version>${hibernate.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.hibernate</groupId>
+        <groupId>org.hibernate.orm</groupId>
         <artifactId>hibernate-jcache</artifactId>
         <version>${hibernate.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.hibernate</groupId>
+        <groupId>org.hibernate.orm</groupId>
         <artifactId>hibernate-testing</artifactId>
+        <version>${hibernate.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hibernate.orm</groupId>
+        <artifactId>hibernate-ant</artifactId>
         <version>${hibernate.version}</version>
       </dependency>
       <dependency>

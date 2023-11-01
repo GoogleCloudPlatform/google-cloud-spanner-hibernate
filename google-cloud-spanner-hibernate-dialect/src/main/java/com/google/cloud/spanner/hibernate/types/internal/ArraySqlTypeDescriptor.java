@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,40 +27,35 @@ import java.util.List;
 import org.hibernate.type.descriptor.ValueBinder;
 import org.hibernate.type.descriptor.ValueExtractor;
 import org.hibernate.type.descriptor.WrapperOptions;
-import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
-import org.hibernate.type.descriptor.sql.BasicBinder;
-import org.hibernate.type.descriptor.sql.BasicExtractor;
-import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
+import org.hibernate.type.descriptor.java.JavaType;
+import org.hibernate.type.descriptor.jdbc.BasicBinder;
+import org.hibernate.type.descriptor.jdbc.BasicExtractor;
+import org.hibernate.type.descriptor.jdbc.JdbcType;
 
-/**
- * A custom Hibernate type to map Java List types to Spanner array columns.
- */
-public class ArraySqlTypeDescriptor implements SqlTypeDescriptor {
+/** A custom Hibernate type to map Java List types to Spanner array columns. */
+public class ArraySqlTypeDescriptor implements JdbcType {
 
   public static final ArraySqlTypeDescriptor INSTANCE = new ArraySqlTypeDescriptor();
 
   @Override
-  public int getSqlType() {
+  public int getJdbcTypeCode() {
     return Types.ARRAY;
   }
 
   @Override
-  public boolean canBeRemapped() {
-    return true;
-  }
-
-  @Override
-  public <X> ValueBinder<X> getBinder(JavaTypeDescriptor<X> javaTypeDescriptor) {
+  public <X> ValueBinder<X> getBinder(JavaType<X> javaTypeDescriptor) {
     return new BasicBinder<X>(javaTypeDescriptor, this) {
       @Override
       protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options)
           throws SQLException {
         ArrayJavaTypeDescriptor arrayJavaTypeDescriptor =
             (ArrayJavaTypeDescriptor) javaTypeDescriptor;
-        st.setArray(index, st.getConnection().createArrayOf(
-            arrayJavaTypeDescriptor.getSpannerTypeCode().toString(),
-            arrayJavaTypeDescriptor.unwrap((List<?>) value, Object[].class, options)
-        ));
+        st.setArray(
+            index,
+            st.getConnection()
+                .createArrayOf(
+                    arrayJavaTypeDescriptor.getSpannerTypeCode().toString(),
+                    arrayJavaTypeDescriptor.unwrap((List<?>) value, Object[].class, options)));
       }
 
       @Override
@@ -71,22 +66,22 @@ public class ArraySqlTypeDescriptor implements SqlTypeDescriptor {
   }
 
   @Override
-  public <X> ValueExtractor<X> getExtractor(final JavaTypeDescriptor<X> javaTypeDescriptor) {
+  public <X> ValueExtractor<X> getExtractor(final JavaType<X> javaTypeDescriptor) {
     return new BasicExtractor<X>(javaTypeDescriptor, this) {
       @Override
-      protected X doExtract(ResultSet rs, String name, WrapperOptions options) throws SQLException {
-        return javaTypeDescriptor.wrap(rs.getArray(name), options);
+      protected X doExtract(ResultSet rs, int index, WrapperOptions options) throws SQLException {
+        return javaTypeDescriptor.wrap(rs.getArray(index), options);
       }
 
       @Override
-      protected X doExtract(
-          CallableStatement statement, int index, WrapperOptions options) throws SQLException {
+      protected X doExtract(CallableStatement statement, int index, WrapperOptions options)
+          throws SQLException {
         return javaTypeDescriptor.wrap(statement.getArray(index), options);
       }
 
       @Override
-      protected X doExtract(
-          CallableStatement statement, String name, WrapperOptions options) throws SQLException {
+      protected X doExtract(CallableStatement statement, String name, WrapperOptions options)
+          throws SQLException {
         return javaTypeDescriptor.wrap(statement.getArray(name), options);
       }
     };

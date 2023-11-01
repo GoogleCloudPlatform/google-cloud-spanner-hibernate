@@ -21,7 +21,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
-    <quarkus.platform.version>1.13.7.Final</quarkus.platform.version>
+    <quarkus.platform.version>3.2.3.Final</quarkus.platform.version>
     <surefire-plugin.version>3.2.1</surefire-plugin.version>
   </properties>
 
@@ -56,6 +56,12 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-hibernate-orm-panache</artifactId>
+    </dependency>
+
+    <!-- Hibernate -->
+    <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-core</artifactId>
     </dependency>
 
     <!-- Spanner Dialect -->

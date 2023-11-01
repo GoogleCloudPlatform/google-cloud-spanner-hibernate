@@ -14,9 +14,10 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <groupId>org.hibernate.orm</groupId>
       <artifactId>hibernate-core</artifactId>
-      <scope>provided</scope>
+      <version>${hibernate.version}</version>
+<!--      <scope>provided</scope>-->
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>

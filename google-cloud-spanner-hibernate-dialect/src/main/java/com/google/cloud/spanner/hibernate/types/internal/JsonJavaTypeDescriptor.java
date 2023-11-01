@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,13 +21,11 @@ package com.google.cloud.spanner.hibernate.types.internal;
 import com.google.gson.Gson;
 import java.util.Properties;
 import org.hibernate.type.descriptor.WrapperOptions;
-import org.hibernate.type.descriptor.java.AbstractTypeDescriptor;
+import org.hibernate.type.descriptor.java.AbstractClassJavaType;
 import org.hibernate.usertype.DynamicParameterizedType;
 
-/**
- * A {@link AbstractTypeDescriptor} for Spanner JSON columns.
- */
-public class JsonJavaTypeDescriptor extends AbstractTypeDescriptor<Object>
+/** A {@link AbstractClassJavaType} for Spanner JSON columns. */
+public class JsonJavaTypeDescriptor extends AbstractClassJavaType<Object>
     implements DynamicParameterizedType {
 
   private static final Gson gson = new Gson();
@@ -40,11 +38,11 @@ public class JsonJavaTypeDescriptor extends AbstractTypeDescriptor<Object>
   }
 
   @Override
-  public Object fromString(String input) {
+  public Object fromString(CharSequence input) {
     if (String.class.isAssignableFrom(propertyType)) {
       return input;
     }
-    return gson.fromJson(input, propertyType);
+    return gson.fromJson(input.toString(), propertyType);
   }
 
   @Override

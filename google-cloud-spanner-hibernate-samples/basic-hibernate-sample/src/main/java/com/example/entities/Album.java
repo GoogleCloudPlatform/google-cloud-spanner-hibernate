@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,17 +20,18 @@ package com.example.entities;
 
 import com.example.entities.Album.AlbumId;
 import com.google.cloud.spanner.hibernate.Interleaved;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * Sample Hibernate entity.
@@ -42,13 +43,13 @@ public class Album {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  @Type(type = "uuid-char")
+  @JdbcTypeCode(SqlTypes.CHAR)
   private UUID albumId;
 
   @Id
   @ManyToOne
   @JoinColumn(name = "singerId")
-  @Type(type = "uuid-char")
+  @JdbcTypeCode(SqlTypes.CHAR)
   private Singer singer;
 
   private String title;
@@ -95,7 +96,7 @@ public class Album {
     // of the parent interleaved entity and be named identically. In this case: singerId.
     Singer singer;
 
-    @Type(type = "uuid-char")
+    @JdbcTypeCode(SqlTypes.CHAR)
     UUID albumId;
 
     public AlbumId(Singer singer, UUID albumId) {

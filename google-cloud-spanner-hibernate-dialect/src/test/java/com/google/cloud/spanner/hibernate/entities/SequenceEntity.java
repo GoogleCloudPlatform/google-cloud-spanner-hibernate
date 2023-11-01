@@ -18,12 +18,13 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
 /** Test entity that uses a simple bit-reversed sequence. This entity does not support batching. */
 @Entity
@@ -32,7 +33,7 @@ public class SequenceEntity {
   @GeneratedValue(generator = "sequence-generator")
   @GenericGenerator(
       name = "sequence-generator",
-      strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+      type = SequenceStyleGenerator.class,
       parameters = {
           @Parameter(name = "sequence_name", value = "test_sequence"),
           @Parameter(name = "initial_value", value = "1"),

@@ -44,10 +44,10 @@ public class SpannerSequenceExporter extends StandardSequenceExporter {
     if (catalog != null && !"".equals(catalog.getText())) {
       // Catalogs are not supported in Cloud Spanner, so we (mis-)use this field to store additional
       // options for the sequence.
-      sequence = new Sequence(null, sequence.getName().getSchemaName(),
+      sequence = new Sequence("", null, sequence.getName().getSchemaName(),
           sequence.getName().getObjectName(), sequence.getInitialValue(),
           sequence.getIncrementSize());
-      return new String[]{dialect.getCreateSequenceString(
+      return new String[]{dialect.getSequenceSupport().getCreateSequenceString(
           getFormattedSequenceName(sequence.getName(), metadata, context),
           sequence.getInitialValue(), catalog.getText())};
     }

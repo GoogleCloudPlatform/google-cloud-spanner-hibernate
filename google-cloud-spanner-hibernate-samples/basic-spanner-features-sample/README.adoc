@@ -1,6 +1,6 @@
 = Cloud Spanner Features Example
 
-This sample application demonstrates using https://hibernate.org/orm/releases/5.4/[Hibernate 5.4] with https://cloud.google.com/spanner/[Google Cloud Spanner].
+This sample application demonstrates using https://hibernate.org/[Hibernate] with https://cloud.google.com/spanner/[Google Cloud Spanner].
 
 It provides examples of how to access the Spanner JDBC Driver to perform stale reads, read-only transactions, and other Spanner-specific operations from Hibernate.
 

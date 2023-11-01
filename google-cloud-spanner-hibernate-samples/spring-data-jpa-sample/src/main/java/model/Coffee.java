@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +19,11 @@
 package model;
 
 import com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
@@ -42,7 +42,7 @@ public class Coffee {
   )
   @GenericGenerator(
       name = "coffee_id_generator",
-      strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
+      type = PooledBitReversedSequenceStyleGenerator.class,
       parameters = {
           @Parameter(name = "sequence_name", value = "coffee_id"),
           @Parameter(name = "increment_size", value = "200")

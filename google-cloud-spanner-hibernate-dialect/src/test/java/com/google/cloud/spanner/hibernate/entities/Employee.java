@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,13 +18,14 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 
 /**
  * A test entity that uses features in Hibernate that are unsupported in Spanner.
@@ -39,7 +40,12 @@ import javax.persistence.Table;
 public class Employee {
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(generator = "employee_generator")
+  @SequenceGenerator(
+      name = "employee_generator",
+      sequenceName = "Employee_Sequence",
+      allocationSize = 1
+  )
   public Long id;
 
   @ManyToOne(cascade = {CascadeType.ALL})

@@ -20,8 +20,13 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <groupId>org.hibernate.orm</groupId>
       <artifactId>hibernate-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging</artifactId>
+      <version>3.5.3.Final</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
@@ -32,6 +37,8 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner-jdbc</artifactId>
+      <!-- Provided scope allows the user to provide the specific JDBC version they want. -->
+      <scope>provided</scope>
     </dependency>
 
     <!-- Used for reflection utilities -->
@@ -42,6 +49,11 @@
     </dependency>
     
     <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-ant</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>

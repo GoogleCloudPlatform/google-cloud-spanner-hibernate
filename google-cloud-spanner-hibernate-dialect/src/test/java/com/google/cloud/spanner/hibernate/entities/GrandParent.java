@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,9 +18,10 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 
 /**
  * The parent Interleaved entity in the interleaved test cases.
@@ -29,7 +30,12 @@ import javax.persistence.Id;
 public class GrandParent {
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(generator = "GrandParent_Generator")
+  @SequenceGenerator(
+      name = "GrandParent_Generator",
+      sequenceName = "GrandParent_Sequence",
+      allocationSize = 1
+  )
   public long grandParentId;
 
   public String name;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -87,13 +87,13 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
     }
 
     @Override
-    public void prepare() {
-      delegate.prepare();
-    }
-
-    @Override
     public Connection getIsolatedConnection() {
-      Connection delegateConnection = this.delegate.getIsolatedConnection();
+      return this.getIsolatedConnection(true);
+    }
+    
+    @Override
+    public Connection getIsolatedConnection(boolean autocommit) {
+      Connection delegateConnection = this.delegate.getIsolatedConnection(autocommit);
       // Create a proxy for the connection that will override the call to
       // Connection#createStatement().
       return (Connection)
@@ -118,6 +118,7 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
                   throw e.getTargetException();
                 }
               });
+      
     }
 
     /**

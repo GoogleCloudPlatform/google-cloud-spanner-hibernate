@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Google LLC
+ * Copyright 2019-2023 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,37 +27,27 @@ import java.sql.SQLException;
 import org.hibernate.type.descriptor.ValueBinder;
 import org.hibernate.type.descriptor.ValueExtractor;
 import org.hibernate.type.descriptor.WrapperOptions;
-import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
-import org.hibernate.type.descriptor.sql.BasicBinder;
-import org.hibernate.type.descriptor.sql.BasicExtractor;
-import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
+import org.hibernate.type.descriptor.java.JavaType;
+import org.hibernate.type.descriptor.jdbc.BasicBinder;
+import org.hibernate.type.descriptor.jdbc.BasicExtractor;
+import org.hibernate.type.descriptor.jdbc.JdbcType;
 
-/**
- * A {@link SqlTypeDescriptor} for Spanner JSON columns.
- */
-public class JsonSqlTypeDescriptor implements SqlTypeDescriptor {
+/** A {@link JdbcType} for Spanner JSON columns. */
+public class JsonSqlTypeDescriptor implements JdbcType {
 
   @Override
-  public int getSqlType() {
+  public int getJdbcTypeCode() {
     return JsonType.VENDOR_TYPE_NUMBER;
   }
 
   @Override
-  public boolean canBeRemapped() {
-    return false;
-  }
-
-  @Override
-  public <X> ValueBinder<X> getBinder(JavaTypeDescriptor<X> javaTypeDescriptor) {
+  public <X> ValueBinder<X> getBinder(JavaType<X> javaTypeDescriptor) {
     return new BasicBinder<X>(javaTypeDescriptor, this) {
       @Override
       protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options)
           throws SQLException {
-        JsonJavaTypeDescriptor typeDescriptor =
-            (JsonJavaTypeDescriptor) javaTypeDescriptor;
-        st.setObject(
-            index,
-            Value.json(typeDescriptor.unwrap(value, String.class, options)));
+        JsonJavaTypeDescriptor typeDescriptor = (JsonJavaTypeDescriptor) javaTypeDescriptor;
+        st.setObject(index, Value.json(typeDescriptor.unwrap(value, String.class, options)));
       }
 
       @Override
@@ -68,22 +58,23 @@ public class JsonSqlTypeDescriptor implements SqlTypeDescriptor {
   }
 
   @Override
-  public <X> ValueExtractor<X> getExtractor(JavaTypeDescriptor<X> javaTypeDescriptor) {
+  public <X> ValueExtractor<X> getExtractor(JavaType<X> javaTypeDescriptor) {
     return new BasicExtractor<X>(javaTypeDescriptor, this) {
       @Override
-      protected X doExtract(ResultSet rs, String name, WrapperOptions options) throws SQLException {
-        return javaTypeDescriptor.wrap(rs.getString(name), options);
+      protected X doExtract(ResultSet rs, int paramIndex, WrapperOptions options)
+          throws SQLException {
+        return javaTypeDescriptor.wrap(rs.getString(paramIndex), options);
       }
 
       @Override
-      protected X doExtract(
-          CallableStatement statement, int index, WrapperOptions options) throws SQLException {
+      protected X doExtract(CallableStatement statement, int index, WrapperOptions options)
+          throws SQLException {
         return javaTypeDescriptor.wrap(statement.getString(index), options);
       }
 
       @Override
-      protected X doExtract(
-          CallableStatement statement, String name, WrapperOptions options) throws SQLException {
+      protected X doExtract(CallableStatement statement, String name, WrapperOptions options)
+          throws SQLException {
         return javaTypeDescriptor.wrap(statement.getString(name), options);
       }
     };
