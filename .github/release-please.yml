@@ -3,3 +3,8 @@ releaseType: java-yoshi
 bumpMinorPreMajor: true
 handleGHRelease: true
 extraFiles: ["README.adoc"]
+branches:
+  - releaseType: java-backport
+    bumpMinorPreMajor: true
+    handleGHRelease: true
+    branch: 2.0.x
