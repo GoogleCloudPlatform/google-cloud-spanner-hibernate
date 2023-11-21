@@ -20,6 +20,7 @@ set -eo pipefail
 dir=$(dirname "$0")
 
 ls -lha /usr/lib/jvm
+export JAVA_HOME=/usr/lib/jvm/openjdk-11
 
 pushd $dir/../
 ./mvnw install -B -V -DskipITs
