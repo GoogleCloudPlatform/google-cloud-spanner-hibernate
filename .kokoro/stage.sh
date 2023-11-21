@@ -20,6 +20,7 @@ set -eo pipefail
 dir=$(dirname "$0")
 
 source $dir/common.sh
+source $dir/install_jdk17.sh
 
 pushd $dir/../
 
@@ -29,13 +30,13 @@ setup_environment_secrets
 create_settings_xml_file $MAVEN_SETTINGS_FILE
 
 # install and run unit tests
-./mvnw install -B -V -DskipITs
+mvn install -B -V -DskipITs
 
 # change to release version
-./mvnw versions:set -DremoveSnapshot
+mvn versions:set -DremoveSnapshot
 
 # stage release
-./mvnw clean deploy -B \
+mvn clean deploy -B \
   -DskipTests=true \
   --settings ${MAVEN_SETTINGS_FILE} \
   -DperformRelease=true \
@@ -47,7 +48,7 @@ create_settings_xml_file $MAVEN_SETTINGS_FILE
 # promote release
 if [[ -n "${AUTORELEASE_PR}" ]]
 then
-  ./mvnw nexus-staging:release -B \
+  mvn nexus-staging:release -B \
     -DperformRelease=true \
     --settings=settings.xml \
     -P release

@@ -19,8 +19,10 @@ set -eo pipefail
 
 dir=$(dirname "$0")
 
+source $dir/install_jdk17.sh
+
 pushd $dir/../
-./mvnw install -B -V -DskipITs
+mvn install -B -V -DskipITs
 popd
 
 source $dir/release_snapshot.sh

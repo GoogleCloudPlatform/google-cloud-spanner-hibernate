@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2019-2020 Google LLC
+# Copyright 2019-2023 Google LLC
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,26 +17,16 @@
 
 set -eo pipefail
 
-# STAGING_REPOSITORY_ID must be set
-if [ -z "${STAGING_REPOSITORY_ID}" ]; then
-  echo "Missing STAGING_REPOSITORY_ID environment variable"
-  exit 1
-fi
+sudo apt install -y openjdk-17-jdk openjdk-17-jre
 
-dir=$(dirname "$0")
+wget https://mirrors.estointernet.in/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+tar -xvf apache-maven-3.6.3-bin.tar.gz
+mv apache-maven-3.6.3 /opt/
 
-source $dir/common.sh
-source $dir/install_jdk17.sh
+export M2_HOME='/opt/apache-maven-3.6.3'
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export PATH="$M2_HOME/bin:$JAVA_HOME/bin:$PATH"
 
-pushd $dir/../
+java -version
+mvn -version
 
-MAVEN_SETTINGS_FILE=$(realpath .)/settings.xml
-
-setup_environment_secrets
-create_settings_xml_file $MAVEN_SETTINGS_FILE
-
-mvn nexus-staging:drop -B \
-  --settings=settings.xml \
-  -DstagingRepositoryId=${STAGING_REPOSITORY_ID}
-
-popd
