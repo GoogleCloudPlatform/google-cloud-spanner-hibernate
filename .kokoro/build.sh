@@ -19,7 +19,7 @@ set -eo pipefail
 
 dir=$(dirname "$0")
 
-source $dir/common.sh
+source $dir/install_jdk17.sh
 
 pushd $dir/../
 mvn install -B -V -DskipITs
