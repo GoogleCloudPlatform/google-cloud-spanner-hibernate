@@ -17,6 +17,19 @@
 
 set -eo pipefail
 
+sudo apt install -y openjdk-17-jdk openjdk-17-jre
+
+wget https://mirrors.estointernet.in/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+tar -xvf apache-maven-3.6.3-bin.tar.gz
+mv apache-maven-3.6.3 /opt/
+
+export M2_HOME='/opt/apache-maven-3.6.3'
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export PATH="$M2_HOME/bin:$JAVA_HOME/bin:$PATH"
+
+java -version
+mvn -version
+
 # Get secrets from keystore and set and environment variables
 setup_environment_secrets() {
   export GPG_PASSPHRASE=$(cat ${KOKORO_KEYSTORE_DIR}/70247_maven-gpg-passphrase)
