@@ -19,6 +19,10 @@ set -eo pipefail
 
 dir=$(dirname "$0")
 
+if [ -n "${JAVA17_HOME}" ]; then
+  setJava "${JAVA17_HOME}"
+fi
+
 pushd $dir/../
 ./mvnw install -B -V -DskipITs
 popd
