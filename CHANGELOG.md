@@ -1,6 +1,17 @@
 # Changelog
 
 
+## [3.0.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.0.0...v3.0.1) (2023-11-21)
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#816](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/816)) ([e0871e4](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/e0871e4dfe6ff880f6dd21026da7e26ea4ce1bd8))
+* bump org.apache.maven.plugins:maven-failsafe-plugin ([#811](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/811)) ([37f011d](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/37f011d0b0fab22a4bf5c33988c95e33a6e02e8b))
+* bump org.apache.maven.plugins:maven-javadoc-plugin ([#812](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/812)) ([eb6dcf0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/eb6dcf099f1fdd0592fa97aa402ffeac5a3ee658))
+* bump org.apache.maven.plugins:maven-surefire-plugin ([#810](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/810)) ([739660b](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/739660b51496b35698c890984d0993af638b5383))
+* bump org.codehaus.mojo:exec-maven-plugin ([#822](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/822)) ([0df2cc4](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/0df2cc407c74456bdceb0f46bc00e9e2154037db))
+
 ## [3.0.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v2.0.0...v3.0.0) (2023-11-01)
 
 
