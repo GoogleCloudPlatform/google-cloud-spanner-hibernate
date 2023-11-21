@@ -21,7 +21,7 @@ dir=$(dirname "$0")
 
 sudo apt install -y openjdk-17-jdk openjdk-17-jre
 ls -lha /usr/lib/jvm
-java --version
+java -version
 
 pushd $dir/../
 ./mvnw install -B -V -DskipITs
