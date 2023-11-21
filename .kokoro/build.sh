@@ -19,8 +19,9 @@ set -eo pipefail
 
 dir=$(dirname "$0")
 
+apt install openjdk-17-jdk openjdk-17-jre
 ls -lha /usr/lib/jvm
-# export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+java --version
 
 pushd $dir/../
 ./mvnw install -B -V -DskipITs
