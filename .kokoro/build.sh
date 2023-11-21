@@ -19,10 +19,6 @@ set -eo pipefail
 
 dir=$(dirname "$0")
 
-if [ -n "${JAVA11_HOME}" ]; then
-  setJava "${JAVA11_HOME}"
-fi
-
 pushd $dir/../
 ./mvnw install -B -V -DskipITs
 popd
