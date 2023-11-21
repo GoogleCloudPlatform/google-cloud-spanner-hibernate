@@ -26,6 +26,7 @@ fi
 dir=$(dirname "$0")
 
 source $dir/common.sh
+source $dir/install_jdk17.sh
 
 pushd $dir/../
 
@@ -34,7 +35,7 @@ MAVEN_SETTINGS_FILE=$(realpath .)/settings.xml
 setup_environment_secrets
 create_settings_xml_file $MAVEN_SETTINGS_FILE
 
-./mvnw nexus-staging:drop -B \
+mvn nexus-staging:drop -B \
   --settings=settings.xml \
   -DstagingRepositoryId=${STAGING_REPOSITORY_ID}
 
