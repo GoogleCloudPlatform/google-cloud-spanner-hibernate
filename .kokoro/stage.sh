@@ -46,12 +46,12 @@ mvn clean deploy -B \
   -P release
 
 # promote release
-if [[ -n "${AUTORELEASE_PR}" ]]
-then
+# if [[ -n "${AUTORELEASE_PR}" ]]
+# then
   mvn nexus-staging:release -B \
     -DperformRelease=true \
     --settings=settings.xml \
     -P release
-fi
+#fi
 
 popd
