@@ -19,8 +19,8 @@ set -eo pipefail
 
 dir=$(dirname "$0")
 
-if [ -n "${JAVA17_HOME}" ]; then
-  setJava "${JAVA17_HOME}"
+if [ -n "${JAVA11_HOME}" ]; then
+  setJava "${JAVA11_HOME}"
 fi
 
 pushd $dir/../
