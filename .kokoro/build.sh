@@ -20,8 +20,16 @@ set -eo pipefail
 dir=$(dirname "$0")
 
 sudo apt install -y openjdk-17-jdk openjdk-17-jre
+
+echo $JAVA_HOME
+echo $PATH
+
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export PATH="/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH"
+
 ls -lha /usr/lib/jvm
 java -version
+mvn -version
 
 pushd $dir/../
 ./mvnw install -B -V -DskipITs
