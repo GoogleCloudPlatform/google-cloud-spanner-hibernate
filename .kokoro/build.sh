@@ -19,6 +19,8 @@ set -eo pipefail
 
 dir=$(dirname "$0")
 
+ls -lha /usr/lib/jvm
+
 pushd $dir/../
 ./mvnw install -B -V -DskipITs
 popd
