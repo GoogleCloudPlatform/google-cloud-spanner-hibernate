@@ -19,7 +19,7 @@ set -eo pipefail
 
 dir=$(dirname "$0")
 
-sudo apt install openjdk-17-jdk openjdk-17-jre
+sudo apt install -y openjdk-17-jdk openjdk-17-jre
 ls -lha /usr/lib/jvm
 java --version
 
