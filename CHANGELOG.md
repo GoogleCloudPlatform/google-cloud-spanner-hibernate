@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [3.0.3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.0.1...v3.0.3) (2023-11-22)
+
+
+### Dependencies
+
+* bump org.apache.commons:commons-lang3 ([#832](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/832)) ([4cab7cb](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/4cab7cbd521562b26cdbe26e4e1ae77467f1f462))
+* requires Hibernate 6.3 ([9d8157b](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/9d8157b50e36f06ea3fa4fb14f2774aa5b4da4b3))
+
+
+### Miscellaneous Chores
+
+* release 3.0.3 ([#836](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/836)) ([3824cd9](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/3824cd902c32a7cf10a8c74a7eb3926b331eb9c7))
+
 ## [3.0.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.0.0...v3.0.1) (2023-11-21)
 
 
