@@ -45,6 +45,8 @@ mvn clean deploy -B \
   -Dgpg.homedir=${GPG_HOMEDIR} \
   -P release
 
+# Add additional Maven options to work around https://issues.sonatype.org/browse/OSSRH-66257
+export MAVEN_OPTS="--add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
 # promote release
 if [[ -n "${AUTORELEASE_PR}" ]]
 then
