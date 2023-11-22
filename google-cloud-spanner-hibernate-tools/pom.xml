@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-hibernate</artifactId>
-    <version>3.0.3</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
+    <version>3.0.4-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
   </parent>
 
   <artifactId>google-cloud-spanner-hibernate-tools</artifactId>
