@@ -22,7 +22,7 @@
 
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
     <quarkus.platform.version>3.2.3.Final</quarkus.platform.version>
-    <surefire-plugin.version>3.2.2</surefire-plugin.version>
+    <surefire-plugin.version>3.2.3</surefire-plugin.version>
   </properties>
 
   <dependencyManagement>
