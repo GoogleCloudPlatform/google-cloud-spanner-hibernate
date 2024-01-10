@@ -23,6 +23,7 @@ import com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator.Repl
 import com.google.cloud.spanner.hibernate.Interleaved;
 import com.google.cloud.spanner.hibernate.SpannerDialect;
 import com.google.cloud.spanner.hibernate.types.SpannerArrayListType;
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import java.sql.Types;
 import java.text.MessageFormat;
@@ -68,7 +69,7 @@ public class SpannerTableStatements {
     if (existingTableIndices != null) {
       for (String indexName : getTableIndices(table)) {
         if (existingTableIndices.contains(indexName)) {
-          dropStrings.add("drop index " + indexName);
+          dropStrings.add("drop index " + getQualifiedIndexName(table, indexName));
         }
       }
     }
@@ -78,6 +79,13 @@ public class SpannerTableStatements {
           table.getQualifiedTableName().quote().getObjectName().toString()));
     }
     return dropStrings;
+  }
+
+  private String getQualifiedIndexName(Table table, String index) {
+    if (Strings.isNullOrEmpty(table.getSchema())) {
+      return index;
+    }
+    return table.getSchema() + "." + index;
   }
 
   private Set<String> getTableIndices(Table table) {
