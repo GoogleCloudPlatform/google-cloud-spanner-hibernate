@@ -21,6 +21,8 @@ package com.google.cloud.spanner.hibernate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.hibernate.entities.Account;
@@ -38,8 +40,12 @@ import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.model.naming.Identifier;
+import org.hibernate.boot.model.relational.Namespace;
+import org.hibernate.boot.model.relational.Namespace.Name;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.mapping.Table;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -270,10 +276,14 @@ public class GeneratedCreateTableStatementsTests {
           new MetadataSources(this.registry)
               .addAnnotatedClass(Employee.class)
               .buildMetadata();
+      Namespace namespace = mock(Namespace.class);
+      when(namespace.getPhysicalName()).thenReturn(
+          new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
+      Table table = new Table("orm", namespace, Identifier.toIdentifier("Employee"), false);
 
       this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
           .setTables("Employee", "Employee_Sequence")
-          .setIndices("name_index")
+          .setIndices(table, "name_index")
           .build());
 
       Session session = metadata.buildSessionFactory().openSession();
@@ -286,8 +296,8 @@ public class GeneratedCreateTableStatementsTests {
       assertThat(sqlStrings).startsWith(
           "START BATCH DDL",
           "drop index name_index",
-          "drop table Employee",
-          "drop table Employee_Sequence",
+          "drop table `Employee`",
+          "drop table `Employee_Sequence`",
           "RUN BATCH"
       );
     } finally {
@@ -301,10 +311,14 @@ public class GeneratedCreateTableStatementsTests {
         new MetadataSources(this.registry)
             .addAnnotatedClass(Employee.class)
             .buildMetadata();
+    Namespace namespace = mock(Namespace.class);
+    when(namespace.getPhysicalName()).thenReturn(
+        new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
+    Table table = new Table("orm", namespace, Identifier.toIdentifier("Employee"), false);
 
     this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
         .setTables("Employee")
-        .setIndices("name_index")
+        .setIndices(table, "name_index")
         .build());
 
     Session session = metadata.buildSessionFactory().openSession();
@@ -317,7 +331,7 @@ public class GeneratedCreateTableStatementsTests {
     assertThat(sqlStrings).startsWith(
         "START BATCH DDL",
         "drop index name_index",
-        "drop table Employee",
+        "drop table `Employee`",
         "drop sequence Employee_Sequence",
         "RUN BATCH"
     );

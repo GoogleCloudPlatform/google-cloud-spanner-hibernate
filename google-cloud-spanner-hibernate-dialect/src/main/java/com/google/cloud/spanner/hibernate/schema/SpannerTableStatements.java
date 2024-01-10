@@ -64,14 +64,18 @@ public class SpannerTableStatements {
   public List<String> dropTable(Table table) {
     ArrayList<String> dropStrings = new ArrayList<>();
 
-    for (String indexName : getTableIndices(table)) {
-      if (spannerDatabaseInfo.getAllIndices().contains(indexName)) {
-        dropStrings.add("drop index " + indexName);
+    Set<String> existingTableIndices = spannerDatabaseInfo.getAllIndices().get(table);
+    if (existingTableIndices != null) {
+      for (String indexName : getTableIndices(table)) {
+        if (existingTableIndices.contains(indexName)) {
+          dropStrings.add("drop index " + indexName);
+        }
       }
     }
 
-    if (spannerDatabaseInfo.getAllTables().contains(table.getName())) {
-      dropStrings.add(this.spannerDialect.getDropTableString(table.getQuotedName()));
+    if (spannerDatabaseInfo.getAllTables().contains(table)) {
+      dropStrings.add(this.spannerDialect.getDropTableString(
+          table.getQualifiedTableName().quote().getObjectName().toString()));
     }
     return dropStrings;
   }
@@ -82,7 +86,7 @@ public class SpannerTableStatements {
 
   /** Generates the statements needed to create a table. */
   public List<String> createTable(Table table, Metadata metadata) {
-    if (spannerDatabaseInfo.getAllTables().contains(table.getName())) {
+    if (spannerDatabaseInfo.getAllTables().contains(table)) {
       return Collections.emptyList();
     }
 
@@ -133,7 +137,7 @@ public class SpannerTableStatements {
     String createTableString =
         MessageFormat.format(
             CREATE_TABLE_TEMPLATE,
-            table.getQuotedName(),
+            table.getQualifiedTableName(),
             allColumnNames,
             primaryKeyColNames,
             getInterleavedClause(table, metadata));
@@ -184,7 +188,7 @@ public class SpannerTableStatements {
     Interleaved interleaved = SchemaUtils.getInterleaveAnnotation(table, metadata);
     if (interleaved != null) {
       Table parentTable = SchemaUtils.getTable(interleaved.parentEntity(), metadata);
-      String interleaveClause = ", INTERLEAVE IN PARENT " + parentTable.getQuotedName();
+      String interleaveClause = ", INTERLEAVE IN PARENT " + parentTable.getQualifiedTableName();
       if (interleaved.cascadeDelete()) {
         interleaveClause += " ON DELETE CASCADE";
       }

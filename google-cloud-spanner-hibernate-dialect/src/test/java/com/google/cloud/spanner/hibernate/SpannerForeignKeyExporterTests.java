@@ -26,7 +26,11 @@ import static org.mockito.Mockito.when;
 import com.google.cloud.spanner.hibernate.schema.SpannerDatabaseInfo;
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
 import java.util.Collections;
+import java.util.Set;
 import org.hibernate.boot.Metadata;
+import org.hibernate.boot.model.naming.Identifier;
+import org.hibernate.boot.model.relational.Namespace;
+import org.hibernate.boot.model.relational.Namespace.Name;
 import org.hibernate.boot.model.relational.QualifiedTableName;
 import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.mapping.ForeignKey;
@@ -53,9 +57,14 @@ public class SpannerForeignKeyExporterTests {
    */
   @Before
   public void setup() {
+    Namespace namespace = mock(Namespace.class);
+    when(namespace.getPhysicalName()).thenReturn(
+        new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
     this.spannerDatabaseInfo = mock(SpannerDatabaseInfo.class);
-    when(spannerDatabaseInfo.getAllTables()).thenReturn(Collections.singleton("address"));
-    when(spannerDatabaseInfo.getImportedForeignKeys("address"))
+    Table table = new Table("orm", namespace, Identifier.toIdentifier("address"), false);
+    Set<Table> tables = Collections.singleton(table);
+    when(spannerDatabaseInfo.getAllTables()).thenReturn(tables);
+    when(spannerDatabaseInfo.getImportedForeignKeys(table))
         .thenReturn(Collections.singleton("address_fk"));
 
     this.metadata = mock(Metadata.class);
@@ -90,9 +99,11 @@ public class SpannerForeignKeyExporterTests {
   private static ForeignKey foreignKey(String tableName, String foreignKeyName) {
     ForeignKey foreignKey = new ForeignKey();
     foreignKey.setName(foreignKeyName);
-
-    Table table = new Table();
-    table.setName(tableName);
+    
+    Namespace namespace = mock(Namespace.class);
+    when(namespace.getPhysicalName()).thenReturn(
+        new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
+    Table table = new Table("orm", namespace, Identifier.toIdentifier(tableName), false);
     foreignKey.setTable(table);
     foreignKey.setReferencedTable(table);
 

@@ -61,7 +61,8 @@ public class SpannerSchemaDropper implements SchemaDropper {
     try {
       Connection connection = isolator.getIsolatedConnection();
       // Initialize exporters with drop table dependencies so tables are dropped in the right order.
-      SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
+      SpannerDatabaseInfo spannerDatabaseInfo =
+          new SpannerDatabaseInfo(metadata.getDatabase(), connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.DROP);
       tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
       schemaDropper.doDrop(
@@ -84,7 +85,8 @@ public class SpannerSchemaDropper implements SchemaDropper {
     try {
       Connection connection = isolator.getIsolatedConnection();
       // Initialize exporters with drop table dependencies so tables are dropped in the right order.
-      SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
+      SpannerDatabaseInfo spannerDatabaseInfo =
+          new SpannerDatabaseInfo(metadata.getDatabase(), connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.DROP);
       tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
       return schemaDropper.buildDelayedAction(

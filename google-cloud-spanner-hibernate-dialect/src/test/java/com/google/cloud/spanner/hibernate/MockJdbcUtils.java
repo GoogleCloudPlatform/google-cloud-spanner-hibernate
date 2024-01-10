@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.hibernate.mapping.Table;
 
 /**
  * Helper class to building mock objects for the mock JDBC driver.
@@ -105,11 +106,13 @@ public class MockJdbcUtils {
   /**
    * Constructs a {@link MockResultSet} containing database metadata about indices for testing.
    */
-  private static ResultSet createIndexMetadataResultSet(String... indexNames) {
-    MockResultSet mockResultSet = initResultSet("INDEX_NAME");
+  private static ResultSet createIndexMetadataResultSet(Table table, String... indexNames) {
+    MockResultSet mockResultSet = initResultSet(
+        "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "INDEX_NAME");
 
     for (int i = 0; i < indexNames.length; i++) {
-      String[] row = new String[]{indexNames[i]};
+      String[] row =
+          new String[]{table.getCatalog(), table.getSchema(), table.getName(), indexNames[i]};
       mockResultSet.addRow(row);
     }
 
@@ -181,8 +184,8 @@ public class MockJdbcUtils {
     /**
      * Sets which indices are present in the Spanner database.
      */
-    public MockDatabaseMetaDataBuilder setIndices(String... indices) {
-      this.indexInfo = createIndexMetadataResultSet(indices);
+    public MockDatabaseMetaDataBuilder setIndices(Table table, String... indices) {
+      this.indexInfo = createIndexMetadataResultSet(table, indices);
       return this;
     }
 

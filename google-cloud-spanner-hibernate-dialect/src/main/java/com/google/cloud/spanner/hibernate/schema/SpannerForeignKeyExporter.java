@@ -22,6 +22,7 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.mapping.ForeignKey;
+import org.hibernate.mapping.Table;
 import org.hibernate.tool.schema.internal.StandardForeignKeyExporter;
 
 /**
@@ -55,7 +56,7 @@ public class SpannerForeignKeyExporter extends StandardForeignKeyExporter {
   }
 
   private boolean foreignKeyExists(ForeignKey foreignKey) {
-    String table = foreignKey.getTable().getName();
+    Table table = foreignKey.getTable();
     return spannerDatabaseInfo.getAllTables().contains(table)
         && spannerDatabaseInfo.getImportedForeignKeys(table).contains(foreignKey.getName());
   }
