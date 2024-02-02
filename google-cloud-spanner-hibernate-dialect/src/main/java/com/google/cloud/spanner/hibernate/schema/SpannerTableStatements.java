@@ -22,6 +22,7 @@ import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator.ReplaceInitCommand;
 import com.google.cloud.spanner.hibernate.Interleaved;
 import com.google.cloud.spanner.hibernate.SpannerDialect;
+import com.google.cloud.spanner.hibernate.types.AbstractSpannerArrayType;
 import com.google.cloud.spanner.hibernate.types.SpannerArrayListType;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
@@ -37,6 +38,7 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
+import org.hibernate.type.CustomType;
 
 /** Generates the SQL statements for creating and dropping tables in Spanner. */
 public class SpannerTableStatements {
@@ -171,12 +173,32 @@ public class SpannerTableStatements {
   private String buildColumnTypeString(Column col, Metadata metadata) {
     String typeString;
     if (col.getValue() != null && col.getSqlTypeCode(metadata) == Types.ARRAY) {
-      Code typeCode = ((SpannerArrayListType) (col.getValue().getType())).getSpannerSqlType();
+      Code typeCode = Code.UNRECOGNIZED;
+      if (col.getValue().getType() instanceof SpannerArrayListType) {
+        typeCode = ((SpannerArrayListType) (col.getValue().getType())).getSpannerSqlType();
+      } else {
+        if (col.getValue().getType() instanceof CustomType) {
+          CustomType<?> customType = (CustomType<?>) col.getValue().getType();
+          if (customType.getUserType() instanceof AbstractSpannerArrayType) {
+            typeCode =
+                ((AbstractSpannerArrayType<?, ?>) customType.getUserType()).getSpannerTypeCode();
+          }
+        }
+      }
+      if (typeCode == Code.UNRECOGNIZED) {
+        throw new IllegalArgumentException("Column " + col.getName()
+            + " has type 'ARRAY', but the mapped Hibernate type is not a subclass of "
+            + AbstractSpannerArrayType.class.getName());
+      }
 
       String arrayType = typeCode.toString();
       if (typeCode == Code.STRING || typeCode == Code.BYTES) {
         // If String or Bytes, must specify size in parentheses.
-        arrayType += "(" + col.getLength() + ")";
+        if (col.getLength() == null) {
+          arrayType += "(MAX)";
+        } else {
+          arrayType += "(" + col.getLength() + ")";
+        }
       }
       typeString = String.format("ARRAY<%s>", arrayType);
     } else {

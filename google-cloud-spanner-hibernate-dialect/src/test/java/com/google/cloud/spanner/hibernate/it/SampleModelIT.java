@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.hibernate.it.model.Album;
+import com.google.cloud.spanner.hibernate.it.model.AllTypes;
 import com.google.cloud.spanner.hibernate.it.model.Concert;
 import com.google.cloud.spanner.hibernate.it.model.Singer;
 import com.google.cloud.spanner.hibernate.it.model.Track;
@@ -35,12 +36,14 @@ import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -71,7 +74,8 @@ public class SampleModelIT {
   public static void createDataDatabase() {
     TEST_ENV.createDatabase(ImmutableList.of());
     sessionFactory = TEST_ENV.createTestHibernateConfig(
-        ImmutableList.of(Singer.class, Album.class, Track.class, Venue.class, Concert.class),
+        ImmutableList.of(
+            Singer.class, Album.class, Track.class, Venue.class, Concert.class, AllTypes.class),
         ImmutableMap.of("hibernate.hbm2ddl.auto", "update")).buildSessionFactory();
     try (Session session = sessionFactory.openSession()) {
       final Transaction transaction = session.beginTransaction();
@@ -405,6 +409,67 @@ public class SampleModelIT {
 
       session.clear();
       assertNull(session.get(Venue.class, venue.getId()));
+    }
+  }
+
+  @Test
+  public void testAllTypes() {
+    try (Session session = sessionFactory.openSession()) {
+      final Transaction transaction = session.beginTransaction();
+      AllTypes saved = new AllTypes();
+      saved.setId(1L);
+      saved.setColBool(true);
+      saved.setColBytes("test".getBytes(StandardCharsets.UTF_8));
+      saved.setColDate(LocalDate.of(2024, 2, 2));
+      saved.setColFloat64(3.14d);
+      saved.setColInt64(100L);
+      saved.setColJson("{\"key\":\"value\"}");
+      saved.setColNumeric(new BigDecimal("6.626"));
+      saved.setColString("test");
+      saved.setColTimestamp(Instant.ofEpochMilli(1000L));
+      saved.setColBoolArray(Arrays.asList(Boolean.TRUE, null, Boolean.FALSE));
+      saved.setColBytesArray(
+          Arrays.asList("test1".getBytes(StandardCharsets.UTF_8), null, "test2".getBytes(
+              StandardCharsets.UTF_8)));
+      saved.setColDateArray(
+          Arrays.asList(LocalDate.of(2000, 1, 1), null, LocalDate.of(1970, 1, 1)));
+      saved.setColFloat64Array(Arrays.asList(3.14d, null, 6.626d));
+      saved.setColInt64Array(Arrays.asList(1L, null, 2L));
+      saved.setColJsonArray(Arrays.asList("{\"key\":\"value1\"}", null, "{\"key\":\"value2\"}"));
+      saved.setColNumericArray(Arrays.asList(BigDecimal.ZERO, null, BigDecimal.TEN));
+      saved.setColStringArray(Arrays.asList("test1", null, "test2"));
+      saved.setColTimestampArray(
+          Arrays.asList(Instant.ofEpochMilli(349078), null, Instant.ofEpochMilli(239587215)));
+
+      session.persist(saved);
+      transaction.commit();
+      session.clear();
+
+      // Verify that we can read it back and that the values are correct.
+      AllTypes fetched = session.get(AllTypes.class, 1L);
+
+      assertEquals(saved.getId(), fetched.getId());
+      assertEquals(saved.getColBool(), fetched.getColBool());
+      assertArrayEquals(saved.getColBytes(), fetched.getColBytes());
+      assertEquals(saved.getColDate(), fetched.getColDate());
+      assertEquals(saved.getColFloat64(), fetched.getColFloat64());
+      assertEquals(saved.getColInt64(), fetched.getColInt64());
+      assertEquals(saved.getColJson(), fetched.getColJson());
+      assertEquals(saved.getColNumeric(), fetched.getColNumeric());
+      assertEquals(saved.getColString(), fetched.getColString());
+      assertEquals(saved.getColTimestamp(), fetched.getColTimestamp());
+
+      assertEquals(saved.getColBoolArray(), fetched.getColBoolArray());
+      for (int i = 0; i < saved.getColBytesArray().size(); i++) {
+        assertArrayEquals(saved.getColBytesArray().get(i), fetched.getColBytesArray().get(i));
+      }
+      assertEquals(saved.getColDateArray(), fetched.getColDateArray());
+      assertEquals(saved.getColFloat64Array(), fetched.getColFloat64Array());
+      assertEquals(saved.getColInt64Array(), fetched.getColInt64Array());
+      assertEquals(saved.getColJsonArray(), fetched.getColJsonArray());
+      assertEquals(saved.getColNumericArray(), fetched.getColNumericArray());
+      assertEquals(saved.getColStringArray(), fetched.getColStringArray());
+      assertEquals(saved.getColTimestampArray(), fetched.getColTimestampArray());
     }
   }
 

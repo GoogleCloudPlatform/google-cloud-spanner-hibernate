@@ -95,6 +95,7 @@ public class SingerService {
       Singer singer = new Singer();
       singer.setFirstName(randomDataService.getRandomFirstName());
       singer.setLastName(randomDataService.getRandomLastName());
+      singer.setNickNames(randomDataService.getRandomNickNames());
       singers.add(singer);
     }
     return repository.saveAll(singers);
