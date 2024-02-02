@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import com.google.common.base.Strings;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.dialect.Dialect;
@@ -52,6 +53,9 @@ public class SpannerUniqueDelegate extends DefaultUniqueDelegate {
   public String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata,
       SqlStringGenerationContext context) {
     StringBuilder buf = new StringBuilder("DROP INDEX ");
+    if (!Strings.isNullOrEmpty(uniqueKey.getTable().getSchema())) {
+      buf.append(dialect.quote(uniqueKey.getTable().getSchema())).append('.');
+    }
     buf.append(dialect.quote(uniqueKey.getName()));
     return buf.toString();
   }

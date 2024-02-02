@@ -249,13 +249,13 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     assertEquals(7, request.getStatementsCount());
 
     int index = -1;
-    assertEquals("drop table Account", request.getStatements(++index));
-    assertEquals("drop table Customer", request.getStatements(++index));
-    assertEquals("drop table customerId", request.getStatements(++index));
-    assertEquals("drop table Invoice", request.getStatements(++index));
-    assertEquals("drop table invoiceId", request.getStatements(++index));
-    assertEquals("drop table Singer", request.getStatements(++index));
-    assertEquals("drop table singerId", request.getStatements(++index));
+    assertEquals("drop table `Account`", request.getStatements(++index));
+    assertEquals("drop table `Customer`", request.getStatements(++index));
+    assertEquals("drop table `customerId`", request.getStatements(++index));
+    assertEquals("drop table `Invoice`", request.getStatements(++index));
+    assertEquals("drop table `invoiceId`", request.getStatements(++index));
+    assertEquals("drop table `Singer`", request.getStatements(++index));
+    assertEquals("drop table `singerId`", request.getStatements(++index));
   }
   
   @Test

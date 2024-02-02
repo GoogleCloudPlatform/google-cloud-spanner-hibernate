@@ -21,6 +21,8 @@ package com.google.cloud.spanner.hibernate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.cloud.spanner.hibernate.entities.Employee;
 import com.google.cloud.spanner.hibernate.entities.TestEntity;
@@ -37,8 +39,12 @@ import java.util.UUID;
 import org.hibernate.AnnotationException;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.model.naming.Identifier;
+import org.hibernate.boot.model.relational.Namespace;
+import org.hibernate.boot.model.relational.Namespace.Name;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.mapping.Table;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 import org.junit.Before;
@@ -82,7 +88,7 @@ public class SpannerTableExporterTests {
   public void generateDropStringsTest() throws IOException, SQLException {
 
     this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
-        .setTables("test_table", "TestEntity_stringList")
+        .setTables("test_table", "`TestEntity_stringList`")
         .build());
 
     String testFileName = UUID.randomUUID().toString();
@@ -103,9 +109,13 @@ public class SpannerTableExporterTests {
   public void generateDeleteStringsWithIndices() throws IOException, SQLException {
     SpannerDialect.disableSpannerSequences();
     try {
+      Namespace namespace = mock(Namespace.class);
+      when(namespace.getPhysicalName()).thenReturn(
+          new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
+      Table table = new Table("orm", namespace, Identifier.toIdentifier("Employee"), false);
       this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
           .setTables("Employee", "Employee_SEQ")
-          .setIndices("name_index")
+          .setIndices(table, "name_index")
           .build());
 
       Metadata employeeMetadata =
@@ -120,7 +130,7 @@ public class SpannerTableExporterTests {
       assertThat(statements).containsExactly(
           "START BATCH DDL;",
           "drop index name_index;",
-          "drop table Employee;",
+          "drop table `Employee`;",
           "RUN BATCH;");
     } finally {
       SpannerDialect.enableSpannerSequences();
@@ -130,9 +140,13 @@ public class SpannerTableExporterTests {
   @Test
   public void generateDeleteStringsWithIndices_withSequencesEnabled()
       throws IOException, SQLException {
+    Namespace namespace = mock(Namespace.class);
+    when(namespace.getPhysicalName()).thenReturn(
+        new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
+    Table table = new Table("orm", namespace, Identifier.toIdentifier("Employee"), false);
     this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
         .setTables("Employee", "Employee_SEQ")
-        .setIndices("name_index")
+        .setIndices(table, "name_index")
         .build());
 
     Metadata employeeMetadata =
@@ -147,7 +161,7 @@ public class SpannerTableExporterTests {
     assertThat(statements).containsExactly(
         "START BATCH DDL;",
         "drop index name_index;",
-        "drop table Employee;",
+        "drop table `Employee`;",
         "drop sequence Employee_Sequence;",
         "RUN BATCH;");
   }

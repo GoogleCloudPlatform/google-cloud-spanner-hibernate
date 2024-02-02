@@ -59,7 +59,8 @@ public class SpannerSchemaCreator implements SchemaCreator {
     DdlTransactionIsolator isolator = tool.getDdlTransactionIsolator(options);
     try {
       Connection connection = isolator.getIsolatedConnection();
-      SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
+      SpannerDatabaseInfo spannerDatabaseInfo =
+          new SpannerDatabaseInfo(metadata.getDatabase(), connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.CREATE);
       tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
       schemaCreator.doCreation(

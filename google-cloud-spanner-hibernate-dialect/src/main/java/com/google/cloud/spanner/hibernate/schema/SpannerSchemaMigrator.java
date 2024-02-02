@@ -58,7 +58,8 @@ public class SpannerSchemaMigrator implements SchemaMigrator {
     DdlTransactionIsolator isolator = tool.getDdlTransactionIsolator(options);
     try {
       Connection connection = isolator.getIsolatedConnection();
-      SpannerDatabaseInfo spannerDatabaseInfo = new SpannerDatabaseInfo(connection.getMetaData());
+      SpannerDatabaseInfo spannerDatabaseInfo =
+          new SpannerDatabaseInfo(metadata.getDatabase(), connection.getMetaData());
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.UPDATE);
       tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
       schemaMigrator.doMigration(metadata, options, contributableInclusionFilter, targetDescriptor);
