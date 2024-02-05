@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.sample.service;
 
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import org.springframework.stereotype.Service;
@@ -74,6 +75,30 @@ public class RandomDataService {
           "Smith",
           "Thomas",
           "Wang");
+  
+  private static final List<String> NICK_NAMES =
+      ImmutableList.of(
+          "Sparky",
+              "Ace",
+              "Maverick",
+              "Zip",
+              "Doc",
+              "Raven",
+              "Cricket",
+              "Glitch",
+              "Shadow",
+              "Rusty",
+              "Jinx",
+              "Flash",
+              "Chip",
+              "Domino",
+              "Zephyr",
+              "Scout",
+              "Orbit",
+              "Nova",
+              "Echo",
+              "Skipper"
+      );
 
   private static final List<String> NOUNS =
       ImmutableList.of(
@@ -210,6 +235,16 @@ public class RandomDataService {
    */
   public String getRandomLastName() {
     return LAST_NAMES.get(random.nextInt(LAST_NAMES.size()));
+  }
+  
+  /** Returns a random list of nicknames. */
+  public List<String> getRandomNickNames() {
+    int num = random.nextInt(5) + 1;
+    List<String> result = new ArrayList<>(num);
+    for (int i = 0; i < num; i++) {
+      result.add(NICK_NAMES.get(random.nextInt(NICK_NAMES.size())));
+    }
+    return result;
   }
 
   /**

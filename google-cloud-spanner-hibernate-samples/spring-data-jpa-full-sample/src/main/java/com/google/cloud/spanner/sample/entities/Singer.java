@@ -18,11 +18,13 @@
 
 package com.google.cloud.spanner.sample.entities;
 
+import com.google.cloud.spanner.hibernate.types.SpannerStringArray;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import java.util.List;
+import org.hibernate.annotations.Type;
 
 @Entity
 public class Singer extends AbstractNonInterleavedEntity {
@@ -43,6 +45,10 @@ public class Singer extends AbstractNonInterleavedEntity {
       insertable = false,
       updatable = false)
   private String fullName;
+
+  @Column(columnDefinition = "ARRAY<STRING(MAX)>")
+  @Type(SpannerStringArray.class)
+  private List<String> nickNames;
 
   private boolean active;
 
@@ -76,6 +82,14 @@ public class Singer extends AbstractNonInterleavedEntity {
 
   public void setFullName(String fullName) {
     this.fullName = fullName;
+  }
+
+  public List<String> getNickNames() {
+    return nickNames;
+  }
+
+  public void setNickNames(List<String> nickNames) {
+    this.nickNames = nickNames;
   }
 
   public boolean isActive() {

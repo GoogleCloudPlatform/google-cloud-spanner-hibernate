@@ -39,16 +39,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Sample application using Spring Boot Data JPA with PGAdapter and a Cloud Spanner PostgreSQL
- * database.
+ * Sample application using Spring Boot Data JPA with PGAdapter and a Cloud Spanner database.
  *
  * <p>This sample shows how to do the following:
  *
  * <ol>
- *   <li>Start PGAdapter in-process together with the main application
- *   <li>Configure and use Spring Boot Data JPA with PGAdapter
- *   <li>Configure and use Liquibase with PGAdapter to create the schema of the database
- *   <li>Use UUID primary key values
  *   <li>Use auto-generated sequential primary key values without the risk of creating hotspots
  *   <li>Use interleaved tables with Spring Boot Data JPA
  *   <li>How to map all supported data types to the corresponding Java types

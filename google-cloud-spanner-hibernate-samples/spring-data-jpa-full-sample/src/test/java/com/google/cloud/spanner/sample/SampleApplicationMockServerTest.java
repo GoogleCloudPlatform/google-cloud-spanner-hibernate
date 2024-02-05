@@ -183,12 +183,12 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
             "select a1_0.id,a1_0.cover_picture,a1_0.created_at,a1_0.marketing_budget,a1_0.release_date,a1_0.singer_id,a1_0.title,a1_0.updated_at from album a1_0"),
         empty()));
     mockSpanner.putStatementResult(StatementResult.query(Statement.of(
-            "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.updated_at from singer s1_0"),
+            "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0"),
         empty()));
 
     // Add results for the insert statements.
     mockSpanner.putPartialStatementResult(StatementResult.update(Statement.of(
-            "insert into singer (active,created_at,first_name,last_name,updated_at,id) values (@p1,@p2,@p3,@p4,@p5,@p6)"),
+            "insert into singer (active,created_at,first_name,last_name,nick_names,updated_at,id) values (@p1,@p2,@p3,@p4,@p5,@p6,@p7)"),
         1L));
     mockSpanner.putPartialStatementResult(StatementResult.update(Statement.of(
             "insert into album (cover_picture,created_at,marketing_budget,release_date,singer_id,title,updated_at,id) values (@p1,@p2,@p3,@p4,@p5,@p6,@p7,@p8)"),
@@ -219,6 +219,9 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                     .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
                 Field.newBuilder().setName("last_name")
                     .setType(Type.newBuilder().setCode(TypeCode.STRING).build()).build()).addFields(
+                Field.newBuilder().setName("nick_names")
+                    .setType(Type.newBuilder().setCode(TypeCode.ARRAY).setArrayElementType(
+                        Type.newBuilder().setCode(TypeCode.STRING).build()).build()).build()).addFields(
                 Field.newBuilder().setName("updated_at")
                     .setType(Type.newBuilder().setCode(TypeCode.TIMESTAMP).build()).build()).build())
             .build()).addRows(ListValue.newBuilder()
@@ -227,19 +230,24 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
             Value.newBuilder().setStringValue(OffsetDateTime.now(ZoneId.of("UTC")).toString())
                 .build()).addValues(Value.newBuilder().setStringValue("Peter").build())
         .addValues(Value.newBuilder().setStringValue("Peter Anderson").build())
-        .addValues(Value.newBuilder().setStringValue("Anderson").build()).addValues(
+        .addValues(Value.newBuilder().setStringValue("Anderson").build())
+        .addValues(Value.newBuilder().setListValue(ListValue.newBuilder()
+                .addValues(Value.newBuilder().setStringValue("chip").build())
+                .addValues(Value.newBuilder().setStringValue("ash").build())
+            .build()).build())
+        .addValues(
             Value.newBuilder().setStringValue(OffsetDateTime.now(ZoneId.of("UTC")).toString())
                 .build()).build()).build();
     mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(
-            "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.updated_at from singer s1_0 limit @p1 offset @p2")
+            "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0 limit @p1 offset @p2")
         .bind("p1").to(20L).bind("p2").to(0L).build(), singerResultSet));
     mockSpanner.putStatementResult(StatementResult.query(Statement.newBuilder(
-                "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.updated_at from singer s1_0 where s1_0.id=@p1")
+                "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0 where s1_0.id=@p1")
             .bind("p1").to(singerId.toString())
             .build(),
         singerResultSet));
     mockSpanner.putPartialStatementResult(StatementResult.query(Statement.of(
-            "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.updated_at from singer s1_0 where starts_with(s1_0.last_name,@p1)=true"),
+            "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0 where starts_with(s1_0.last_name,@p1)=true"),
         singerResultSet));
 
     // Add result for selecting albums.
