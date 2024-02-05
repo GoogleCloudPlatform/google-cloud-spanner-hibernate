@@ -1,6 +1,31 @@
 # Changelog
 
 
+## [3.1.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.0.3...v3.1.0) (2024-02-05)
+
+
+### Features
+
+* add standard ARRAY types ([#910](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/910)) ([f3d8646](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/f3d86465e576d52f9d324f06faea61ccfe6bd1ff)), closes [#890](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/890)
+* prepare for named schemas ([#889](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/889)) ([595a7a4](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/595a7a498cf61be6de3f57a041aa0a83dc6eae32))
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#867](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/867)) ([193cd3b](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/193cd3b9d102c6c0f806bbfd890ff3f36ece062f))
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#883](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/883)) ([236d9a0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/236d9a07fec40b813f24f2c0d914c6ddbf7a3d77))
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#902](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/902)) ([2ce928c](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/2ce928c7143811567d06b8e08f76e9cef1c39f45))
+* bump org.apache.maven.plugins:maven-failsafe-plugin ([#857](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/857)) ([6e68c66](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/6e68c66eeb8c6527fc68aec07d46ea4349dc3cda))
+* bump org.apache.maven.plugins:maven-failsafe-plugin ([#885](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/885)) ([943fb0a](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/943fb0a6b277bea817776c235e4240bf18dd744e))
+* bump org.apache.maven.plugins:maven-javadoc-plugin ([#845](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/845)) ([c1cf2e2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/c1cf2e2eff46ff4cdbfa3240dbfb797470e0147d))
+* bump org.apache.maven.plugins:maven-surefire-plugin ([#858](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/858)) ([1328637](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/1328637e9c95f271773369110e742cc986849587))
+* bump org.apache.maven.plugins:maven-surefire-plugin ([#884](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/884)) ([ba4b562](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/ba4b562e79d5fe14505bef4c6c9feeea6d3f8fd4))
+
+
+### Documentation
+
+* Update README.adoc to reflect updated mutation limits ([#901](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/901)) ([d545ef0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/d545ef01b5eb2e70f10687e862f2c2bfdaab6984))
+
 ## [3.0.3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.0.1...v3.0.3) (2023-11-22)
 
 
