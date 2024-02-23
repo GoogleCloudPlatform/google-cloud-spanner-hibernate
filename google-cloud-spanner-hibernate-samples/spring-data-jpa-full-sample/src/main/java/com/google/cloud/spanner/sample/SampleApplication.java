@@ -97,6 +97,8 @@ public class SampleApplication implements CommandLineRunner {
 
   @Override
   public void run(String... args) {
+//    singerService.getActiveSingers();
+
     // First clear the current tables.
     log.info("Deleting all existing data");
     concertService.deleteAllConcerts();

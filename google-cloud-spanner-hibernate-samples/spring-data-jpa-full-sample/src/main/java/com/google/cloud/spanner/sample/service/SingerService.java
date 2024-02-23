@@ -50,6 +50,10 @@ public class SingerService {
     this.repository = repository;
   }
 
+  public List<Singer> getActiveSingers() {
+    return repository.findByActive(true);
+  }
+
   /**
    * Prints all singers whose last name start with the given prefix. Also prints the related albums
    * and tracks.

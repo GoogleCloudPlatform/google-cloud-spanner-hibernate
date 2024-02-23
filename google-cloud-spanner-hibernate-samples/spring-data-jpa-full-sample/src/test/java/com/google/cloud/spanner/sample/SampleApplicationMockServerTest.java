@@ -249,6 +249,11 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putPartialStatementResult(StatementResult.query(Statement.of(
             "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0 where starts_with(s1_0.last_name,@p1)=true"),
         singerResultSet));
+    mockSpanner.putStatementResult(StatementResult.query(Statement
+            .newBuilder("select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer@{FORCE_INDEX=idx_singer_active} s1_0 where s1_0.active=@p1")
+                .bind("p1").to(true)
+            .build(),
+        singerResultSet));
 
     // Add result for selecting albums.
     ResultSet albumResultSet = ResultSet.newBuilder().setMetadata(
