@@ -130,8 +130,6 @@ public class BitReversedSequenceIT {
   /** Creates a test database and generates the schema from the entities. */
   @BeforeClass
   public static void setup() {
-    assumeFalse("bit-reversed sequences are not yet supported on the emulator", isUsingEmulator());
-    
     TEST_ENV.createDatabase(ImmutableList.of());
     // Generate the database schema from th entity model.
     try (SessionFactory ignore = TEST_ENV.createTestHibernateConfig(
@@ -162,7 +160,7 @@ public class BitReversedSequenceIT {
     final int numRows = 300;
     try (SessionFactory factory = TEST_ENV.createTestHibernateConfig(
         ImmutableList.of(entityClass),
-        ImmutableMap.of(Environment.STATEMENT_BATCH_SIZE, "50")).buildSessionFactory();
+        ImmutableMap.of(Environment.STATEMENT_BATCH_SIZE, "50", Environment.SHOW_SQL, "true")).buildSessionFactory();
         Session session = factory.openSession()) {
       Transaction transaction = null;
       while (true) {

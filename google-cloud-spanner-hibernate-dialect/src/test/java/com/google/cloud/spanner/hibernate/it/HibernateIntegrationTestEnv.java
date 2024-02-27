@@ -213,10 +213,12 @@ public class HibernateIntegrationTestEnv {
    * Drops all the databases that were created by this test env.
    */
   public void cleanup() {
-    try {
-      database.drop();
-    } catch (Exception e) {
-      logger.log(Level.WARNING, "Failed to drop test database " + database.getId(), e);
+    if (database != null) {
+      try {
+        database.drop();
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "Failed to drop test database " + database.getId(), e);
+      }
     }
     if (spanner != null) {
       spanner.close();
