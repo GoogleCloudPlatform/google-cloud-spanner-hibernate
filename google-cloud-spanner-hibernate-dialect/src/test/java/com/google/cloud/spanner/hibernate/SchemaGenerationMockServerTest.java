@@ -125,8 +125,6 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
       assertEquals(1, requests.size());
       UpdateDatabaseDdlRequest request = requests.get(0);
       assertEquals(8, request.getStatementsCount());
-      
-      assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
 
       int index = -1;
 
@@ -138,7 +136,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             "create table Customer (customerId int64 not null,name string(255)) PRIMARY KEY (customerId)",
             request.getStatements(++index));
         assertEquals(
-            "create table Customer_SEQ (next_val int64) PRIMARY KEY ()",
+            "create table customerId (next_val int64) PRIMARY KEY ()",
             request.getStatements(++index));
         assertEquals(
             "create table Invoice (invoiceId int64 not null,number string(255) default ('9999'),customer_customerId int64) PRIMARY KEY (invoiceId)",
@@ -163,7 +161,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             "create table Customer (customerId int64 not null,name string(255)) PRIMARY KEY (customerId)",
             request.getStatements(++index));
         assertEquals(
-            "create table Customer_SEQ (next_val int64) PRIMARY KEY ()",
+            "create table customerId (next_val int64) PRIMARY KEY ()",
             request.getStatements(++index));
         assertEquals(
             "create table Invoice (customer_customerId int64,invoiceId int64 not null,number string(255) default ('9999')) PRIMARY KEY (invoiceId)",

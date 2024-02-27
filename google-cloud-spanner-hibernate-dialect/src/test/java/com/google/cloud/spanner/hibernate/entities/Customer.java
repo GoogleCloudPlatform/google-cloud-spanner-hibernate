@@ -47,16 +47,15 @@ public class Customer {
    * </ol>
    */
   @Id
-  @GeneratedValue
-//  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customerId")
-//  @GenericGenerator(
-//      name = "customerId",
-//      type = BitReversedSequenceStyleGenerator.class,
-//      parameters = {
-//        @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
-//        @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "customerId"),
-//        @Parameter(name = SequenceStyleGenerator.INITIAL_PARAM, value = "50000")
-//      })
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customerId")
+  @GenericGenerator(
+      name = "customerId",
+      type = BitReversedSequenceStyleGenerator.class,
+      parameters = {
+        @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
+        @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "customerId"),
+        @Parameter(name = SequenceStyleGenerator.INITIAL_PARAM, value = "50000")
+      })
   @Column(nullable = false)
   private Long customerId;
 

@@ -18,13 +18,12 @@
 
 package com.google.cloud.spanner.hibernate.it;
 
-import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.IntegrationTest;
+import com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator;
 import com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory.JdbcAbortedDueToConcurrentModificationException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -102,7 +101,7 @@ public class BitReversedSequenceIT {
     @GeneratedValue(strategy = GenerationType.SEQUENCE,
                     generator = "pooled_sequence_entity_generator")
     @GenericGenerator(name = "pooled_sequence_entity_generator",
-        strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
+        type = PooledBitReversedSequenceStyleGenerator.class,
         parameters = {
             @Parameter(name = "sequence_name", value = "pooled_sequence"),
             @Parameter(name = "increment_size", value = "200"),
@@ -132,6 +131,7 @@ public class BitReversedSequenceIT {
   public static void setup() {
     TEST_ENV.createDatabase(ImmutableList.of());
     // Generate the database schema from th entity model.
+    //noinspection EmptyTryBlock
     try (SessionFactory ignore = TEST_ENV.createTestHibernateConfig(
         ImmutableList.of(DefaultSequenceEntity.class, PooledSequenceEntity.class),
         ImmutableMap.of(Environment.HBM2DDL_AUTO, "create-only")).buildSessionFactory()) {
@@ -147,6 +147,17 @@ public class BitReversedSequenceIT {
   
   @Test
   public void testDefaultSequenceEntity() throws Exception {
+    try (SessionFactory factory = TEST_ENV.createTestHibernateConfig(
+        ImmutableList.of(DefaultSequenceEntity.class),
+        ImmutableMap.of()).buildSessionFactory();
+        Session session = factory.openSession()) {
+      Transaction transaction = session.beginTransaction();
+      session.doWork(
+          connection -> connection
+              .createStatement()
+              .execute("insert into default_sequence_entity_SEQ (next_val) values (1)"));
+      transaction.commit();
+    }
     testSequenceEntity(DefaultSequenceEntity.class);
   }
 
@@ -160,14 +171,16 @@ public class BitReversedSequenceIT {
     final int numRows = 300;
     try (SessionFactory factory = TEST_ENV.createTestHibernateConfig(
         ImmutableList.of(entityClass),
-        ImmutableMap.of(Environment.STATEMENT_BATCH_SIZE, "50", Environment.SHOW_SQL, "true")).buildSessionFactory();
+        ImmutableMap.of(Environment.STATEMENT_BATCH_SIZE, "50")).buildSessionFactory();
         Session session = factory.openSession()) {
       Transaction transaction = null;
       while (true) {
         try {
           transaction = session.beginTransaction();
           for (int i = 0; i < numRows; i++) {
-            assertTrue((long) session.save(SequenceEntity.create(entityClass, "test " + i)) > 0L);
+            SequenceEntity entity = SequenceEntity.create(entityClass, "test " + i);
+            session.persist(entity);
+            assertTrue("ID should be positive: " + entity.getId(), entity.getId() > 0L);
           }
           transaction.commit();
           break;
