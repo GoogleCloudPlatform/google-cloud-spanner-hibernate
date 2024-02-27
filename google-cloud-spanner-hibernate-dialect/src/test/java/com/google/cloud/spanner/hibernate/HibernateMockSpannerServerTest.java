@@ -22,12 +22,15 @@ import static com.google.cloud.spanner.hibernate.AbstractSchemaGenerationMockSer
 import static com.google.cloud.spanner.hibernate.AbstractSchemaGenerationMockServerTest.GET_SEQUENCES_STATEMENT;
 import static com.google.cloud.spanner.hibernate.AbstractSchemaGenerationMockServerTest.createSequenceRow;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.hibernate.entities.Singer;
+import com.google.cloud.spanner.hibernate.hints.Hints;
+import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint.ReplaceMode;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -53,7 +56,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import org.hibernate.Session;
@@ -476,9 +478,10 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
 
   @Test
   public void testQueryHint() {
+    String expectedSql = "select s1_0.id from Singer @{FORCE_INDEX=idx_singer_active} s1_0";
     mockSpanner.putStatementResult(
         StatementResult.query(
-            Statement.of("select s1_0.id from Singer s1_0"),
+            Statement.of(expectedSql),
             com.google.spanner.v1.ResultSet.newBuilder()
                 .setMetadata(
                     ResultSetMetadata.newBuilder()
@@ -504,9 +507,13 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
       CriteriaQuery<Singer> cr = cb.createQuery(Singer.class);
       Root<Singer> root = cr.from(Singer.class);
       cr.select(root);
+      Query<Singer> query = session.createQuery(cr)
+          .addQueryHint(
+              Hints.forceIndexFrom("Singer", "idx_singer_active", ReplaceMode.ALL).toComment());
 
-      Query<Singer> query = session.createQuery(cr).addQueryHint("foo");
-      List<Singer> results = query.getResultList();
+      assertNotNull(query.getResultList());
+      assertEquals(1, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+          .filter(request -> request.getSql().equals(expectedSql)).count());
     }
   }
 

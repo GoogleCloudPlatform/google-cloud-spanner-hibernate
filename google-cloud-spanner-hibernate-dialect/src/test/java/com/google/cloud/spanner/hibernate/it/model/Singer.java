@@ -24,7 +24,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.List;
 import org.hibernate.annotations.Check;
@@ -41,6 +43,7 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
 @Entity
 // NOTE: Hibernate 5 does not generate a DDL statement for this constraint.
 @Check(constraints = "first_name is not null or last_name is not null")
+@Table(indexes = {@Index(name = "idx_singer_active", columnList = "active")})
 public class Singer extends AbstractBaseEntity {
 
   @Id

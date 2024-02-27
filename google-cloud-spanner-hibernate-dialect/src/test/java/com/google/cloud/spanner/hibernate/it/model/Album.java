@@ -24,8 +24,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -37,6 +39,7 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
  * Album entity definition.
  */
 @Entity
+@Table(indexes = {@Index(name = "idx_album_title", columnList = "title")})
 public class Album extends AbstractBaseEntity {
 
   @Id

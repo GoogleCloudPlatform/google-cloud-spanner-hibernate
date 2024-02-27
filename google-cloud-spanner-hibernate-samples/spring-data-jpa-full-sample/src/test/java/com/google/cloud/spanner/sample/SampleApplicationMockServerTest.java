@@ -250,7 +250,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
             "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0 where starts_with(s1_0.last_name,@p1)=true"),
         singerResultSet));
     mockSpanner.putStatementResult(StatementResult.query(Statement
-            .newBuilder("select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer@{FORCE_INDEX=idx_singer_active} s1_0 where s1_0.active=@p1")
+            .newBuilder("select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer @{FORCE_INDEX=idx_singer_active} s1_0 where s1_0.active=@p1")
                 .bind("p1").to(true)
             .build(),
         singerResultSet));
@@ -396,7 +396,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     System.setProperty("spanner.connectionProperties", ";usePlainText=true");
     SpringApplication.run(SampleApplication.class).close();
 
-    assertEquals(30, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+    assertEquals(31, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
         .filter(request -> !request.getSql().equals("SELECT 1")).count());
     assertEquals(6, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
     assertEquals(9, mockSpanner.countRequestsOfType(CommitRequest.class));

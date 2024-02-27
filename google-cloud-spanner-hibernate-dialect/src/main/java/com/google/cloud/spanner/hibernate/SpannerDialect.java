@@ -21,9 +21,9 @@ package com.google.cloud.spanner.hibernate;
 import static org.hibernate.type.SqlTypes.DECIMAL;
 import static org.hibernate.type.SqlTypes.NUMERIC;
 
+import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint;
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
 import com.google.common.base.Strings;
-import java.util.List;
 import org.hibernate.HibernateException;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.unique.UniqueDelegate;
@@ -224,28 +224,47 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
     return NoOpSqmMultiTableInsertStrategy.INSTANCE;
   }
 
-  /**
-   * Modify the SQL, adding hints or comments, if necessary
-   */
   @Override
   public String addSqlHintOrComment(
       String sql,
       QueryOptions queryOptions,
       boolean commentsEnabled) {
-    if (!Strings.isNullOrEmpty(queryOptions.getComment())
-        && queryOptions.getComment().contains("{")
-        && queryOptions.getComment().contains("}")
-        && queryOptions.getComment().contains(SpannerReplaceQueryPartsHint.PREFIX)) {
-      try {
-        SpannerReplaceQueryPartsHint hint = SpannerReplaceQueryPartsHint.fromComment(queryOptions.getComment());
-        if (hint != null) {
-          return hint.replace(sql);
-        }
-      } catch (Throwable ignore) {
-        // Just ignore and continue with the query normally.
-      }
+    if (hasCommentHint(queryOptions)) {
+      sql = applyHint(sql, queryOptions.getComment());
+    }
+    if (queryOptions.getDatabaseHints() != null && !queryOptions.getDatabaseHints().isEmpty()) {
+      sql = applyQueryHints(sql, queryOptions);
     }
     return super.addSqlHintOrComment(sql, queryOptions, commentsEnabled);
+  }
+
+  private String applyHint(String sql, String hint) {
+    try {
+      return ReplaceQueryPartsHint.fromComment(hint).replace(sql);
+    } catch (Throwable ignore) {
+      // Just ignore and continue with the query normally.
+    }
+    return sql;
+  }
+
+  private String applyQueryHints(String sql, QueryOptions queryOptions) {
+    for (String hint : queryOptions.getDatabaseHints()) {
+      if (stringCouldContainReplacementHint(hint)) {
+        sql = applyHint(sql, hint);
+      }
+    }
+    return sql;
+  }
+
+  private boolean hasCommentHint(QueryOptions queryOptions) {
+    return stringCouldContainReplacementHint(queryOptions.getComment());
+  }
+
+  private boolean stringCouldContainReplacementHint(String hint) {
+    return !Strings.isNullOrEmpty(hint)
+        && hint.contains("{")
+        && hint.contains("}")
+        && hint.contains(ReplaceQueryPartsHint.SPANNER_REPLACEMENTS_FIELD_NAME);
   }
 
 }
