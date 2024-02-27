@@ -26,10 +26,14 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 17
+      - name: Auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.JSON_SERVICE_ACCOUNT_CREDENTIALS }}
 
       - name: Install dependencies
         run: mvn install -DskipTests
 
       - name: Run Integration Tests
         working-directory: google-cloud-spanner-hibernate-dialect
-        run: mvn integration-test
+        run: mvn -B verify

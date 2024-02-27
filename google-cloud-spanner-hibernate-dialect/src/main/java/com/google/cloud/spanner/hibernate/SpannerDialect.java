@@ -24,6 +24,8 @@ import static org.hibernate.type.SqlTypes.NUMERIC;
 import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint;
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
 import com.google.common.base.Strings;
+import java.sql.Connection;
+import java.sql.SQLException;
 import org.hibernate.HibernateException;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.unique.UniqueDelegate;
@@ -43,6 +45,11 @@ import org.hibernate.sql.ast.SqlAstTranslatorFactory;
 import org.hibernate.sql.ast.spi.StandardSqlAstTranslatorFactory;
 import org.hibernate.sql.ast.tree.Statement;
 import org.hibernate.sql.exec.spi.JdbcOperation;
+import org.hibernate.tool.schema.extract.internal.SequenceInformationExtractorLegacyImpl;
+import org.hibernate.tool.schema.extract.internal.SequenceInformationExtractorNoOpImpl;
+import org.hibernate.tool.schema.extract.spi.ExtractionContext;
+import org.hibernate.tool.schema.extract.spi.SequenceInformation;
+import org.hibernate.tool.schema.extract.spi.SequenceInformationExtractor;
 import org.hibernate.tool.schema.internal.StandardSequenceExporter;
 import org.hibernate.tool.schema.internal.StandardUniqueKeyExporter;
 import org.hibernate.tool.schema.spi.Exporter;
@@ -167,6 +174,35 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
         + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_max\n"
         + "    on seq.CATALOG=skip_range_max.CATALOG and seq.SCHEMA=skip_range_max.SCHEMA " 
         + "and seq.NAME=skip_range_max.NAME and skip_range_max.OPTION_NAME='skip_range_max'";
+  }
+
+  private static final class SpannerSequenceInformationExtractor extends
+      SequenceInformationExtractorLegacyImpl {
+
+    private static final SpannerSequenceInformationExtractor INSTANCE =
+        new SpannerSequenceInformationExtractor();
+
+    @Override
+    public Iterable<SequenceInformation> extractMetadata(
+        ExtractionContext extractionContext) throws SQLException {
+      // Queries on INFORMATION_SCHEMA should use single-use read-only transactions.
+      // In JDBC, the easiest way to achieve that is to use auto-commit.
+      Connection connection = extractionContext.getJdbcConnection();
+      boolean autoCommit = connection.getAutoCommit();
+      try {
+        connection.setAutoCommit(true);
+        return super.extractMetadata(extractionContext);
+      } finally {
+        connection.setAutoCommit(autoCommit);
+      }
+    }
+  }
+
+  @Override
+  public SequenceInformationExtractor getSequenceInformationExtractor() {
+    return getQuerySequencesString() == null
+        ? SequenceInformationExtractorNoOpImpl.INSTANCE
+        : SpannerSequenceInformationExtractor.INSTANCE;
   }
 
   @Override

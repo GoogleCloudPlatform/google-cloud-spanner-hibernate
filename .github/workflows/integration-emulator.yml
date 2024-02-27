@@ -39,6 +39,6 @@ jobs:
 
       - name: Run Integration Tests on Emulator
         working-directory: google-cloud-spanner-hibernate-dialect
-        run: mvn integration-test
+        run: mvn -B verify
         env:
           SPANNER_EMULATOR_HOST: localhost:9010
