@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.hibernate.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -29,6 +30,7 @@ import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.hibernate.hints.Hints;
 import com.google.cloud.spanner.hibernate.hints.Hints.HashJoinBuildSide;
 import com.google.cloud.spanner.hibernate.hints.Hints.HashJoinExecution;
+import com.google.cloud.spanner.hibernate.hints.Hints.JoinMethod;
 import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint.ReplaceMode;
 import com.google.cloud.spanner.hibernate.it.model.Album;
 import com.google.cloud.spanner.hibernate.it.model.AllTypes;
@@ -37,7 +39,6 @@ import com.google.cloud.spanner.hibernate.it.model.Singer;
 import com.google.cloud.spanner.hibernate.it.model.Track;
 import com.google.cloud.spanner.hibernate.it.model.Venue;
 import com.google.cloud.spanner.hibernate.it.model.Venue.VenueDescription;
-import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -387,7 +388,7 @@ public class SampleModelIT {
       // 2. One internal transaction that is started by Hibernate to generate ID values for the
       //    concerts.
       // The emulator does not support parallel transactions.
-      final Transaction transaction = EmulatorSpannerHelper.isUsingEmulator()
+      final Transaction transaction = isUsingEmulator()
           ? null
           : session.beginTransaction();
       Singer peter = session.get(Singer.class, Long.reverse(50000L));
@@ -518,12 +519,29 @@ public class SampleModelIT {
       assertTrue(exception.getMessage(), exception.getMessage()
           .contains("does not have a secondary index called idx_does_not_exist"));
 
+      Query<Singer> joinMethodQuery = session.createQuery(cr).addQueryHint(
+          Hints.joinMethod("Album", JoinMethod.MERGE_JOIN, ReplaceMode.ALL)
+              .toQueryHint());
+      assertEquals(2, joinMethodQuery.getResultList().size());
+
       // Verify that adding combined hints works.
-      if (!EmulatorSpannerHelper.isUsingEmulator()) {
-        Query<Singer> hashJoinExecutionQuery = session.createQuery(cr).addQueryHint(
-            Hints.hashJoinExecution("Album", HashJoinExecution.ONE_PASS, ReplaceMode.ALL)
-                .toQueryHint());
-        assertEquals(2, hashJoinExecutionQuery.getResultList().size());
+      Query<Singer> hashJoinExecutionQuery = session.createQuery(cr).addQueryHint(
+          Hints.hashJoinExecution("Album", HashJoinExecution.ONE_PASS, ReplaceMode.ALL)
+              .toQueryHint());
+      assertEquals(2, hashJoinExecutionQuery.getResultList().size());
+
+      if (!isUsingEmulator()) {
+        Query<Singer> forceStreamableQuery = session.createQuery(cr).addQueryHint(
+            Hints.forceStreamable(true).toQueryHint());
+        assertEquals(2, forceStreamableQuery.getResultList().size());
+
+        Query<Singer> optimizerVersionQuery = session.createQuery(cr).addQueryHint(
+            Hints.optimizerVersion("1").toQueryHint());
+        assertEquals(2, optimizerVersionQuery.getResultList().size());
+
+        Query<Singer> allowDistributedMergeQuery = session.createQuery(cr).addQueryHint(
+            Hints.allowDistributedMerge(true).toQueryHint());
+        assertEquals(2, allowDistributedMergeQuery.getResultList().size());
 
         Query<Singer> hashJoinBuildSideQuery = session.createQuery(cr).addQueryHint(
             Hints.hashJoinBuildSide("Album", HashJoinBuildSide.BUILD_RIGHT, ReplaceMode.ALL)

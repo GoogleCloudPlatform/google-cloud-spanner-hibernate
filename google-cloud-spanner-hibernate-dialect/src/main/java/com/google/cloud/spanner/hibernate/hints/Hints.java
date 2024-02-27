@@ -200,7 +200,7 @@ public class Hints {
   public static ReplaceQueryPartsHint forceStreamable(boolean value) {
     return ReplaceQueryPartsHint.of(
         "(?i)(^|\\s)(select)",
-        "$1$2@{FORCE_STREAMABLE=" + value + "}",
+        "$1$2 @{FORCE_STREAMABLE=" + value + "}",
         ReplaceMode.FIRST);
   }
 
@@ -368,8 +368,8 @@ public class Hints {
   }
 
   /**
-   * Creates a hint that replaces occurrences of <code>join table</code> with <code>join
-   * table@{FORCE_JOIN_ORDER=value}</code>.
+   * Creates a hint that replaces occurrences of <code>join table</code> with
+   * <code>join@{FORCE_JOIN_ORDER=value} table</code>.
    *
    * @param table the table name to annotate with the FORCE_JOIN_ORDER hint.
    * @param value the hint value.
@@ -379,12 +379,14 @@ public class Hints {
   public static ReplaceQueryPartsHint forceJoinOrder(
       String table, boolean value, ReplaceMode replaceMode) {
     return ReplaceQueryPartsHint.of(
-        join(table), join(table) + "@{FORCE_JOIN_ORDER=" + value + "} ", replaceMode);
+        join(table),
+        " join@{FORCE_JOIN_ORDER=" + value + "} " + table + " ",
+        replaceMode);
   }
 
   /**
-   * Creates a hint that replaces occurrences of <code>join table</code> with <code>join
-   * table@{JOIN_METHOD=value}</code>.
+   * Creates a hint that replaces occurrences of <code>join table</code> with
+   * <code>join@{JOIN_METHOD=value} table</code>.
    *
    * @param table the table name to annotate with the JOIN_METHOD hint.
    * @param value the hint value.
@@ -394,14 +396,18 @@ public class Hints {
   public static ReplaceQueryPartsHint joinMethod(
       String table, JoinMethod value, ReplaceMode replaceMode) {
     return ReplaceQueryPartsHint.of(
-        join(table), join(table) + "@{JOIN_METHOD=" + value.name() + "} ", replaceMode);
+        join(table),
+        " join@{JOIN_METHOD=" + value.name() + "} " + table + " ",
+        replaceMode);
   }
 
   /**
-   * Creates a hint that replaces occurrences of <code>join table</code> with <code>join
-   * table@{JOIN_METHOD=HASH_JOIN
+   * Creates a hint that replaces occurrences of <code>join table</code> with
+   * <code>
+   * join@{JOIN_METHOD=HASH_JOIN
    *     [, HASH_JOIN_BUILD_SIDE=buildSide]
    *     [, HASH_JOIN_EXECUTION=execution]}
+   * table
    * </code>.
    *
    * @param table the table name to annotate with the HASH_JOIN_BUILD_SIDE hint.
@@ -415,20 +421,20 @@ public class Hints {
       @Nullable HashJoinBuildSide hashJoinBuildSide,
       @Nullable HashJoinExecution hashJoinExecution,
       ReplaceMode replaceMode) {
-    String replacement = join(table) + "@{JOIN_METHOD=HASH_JOIN";
+    String replacement = " join@{JOIN_METHOD=HASH_JOIN";
     if (hashJoinBuildSide != null) {
       replacement += ", HASH_JOIN_BUILD_SIDE=" + hashJoinBuildSide.name();
     }
     if (hashJoinExecution != null) {
       replacement += ", HASH_JOIN_EXECUTION=" + hashJoinExecution.name();
     }
-    replacement += "} ";
+    replacement += "} " + table + " ";
     return ReplaceQueryPartsHint.of(join(table), replacement, replaceMode);
   }
 
   /**
-   * Creates a hint that replaces occurrences of <code>join table</code> with <code>join
-   * table@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_BUILD_SIDE=value}</code>.
+   * Creates a hint that replaces occurrences of <code>join table</code> with
+   * <code>join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_BUILD_SIDE=value} table</code>.
    *
    * <p><strong>This hint also automatically adds JOIN_METHOD=HASH_JOIN.</strong>
    *
@@ -441,15 +447,14 @@ public class Hints {
       String table, HashJoinBuildSide value, ReplaceMode replaceMode) {
     return ReplaceQueryPartsHint.of(
         join(table),
-        join(table)
-            + "@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_BUILD_SIDE="
-            + value.name() + "} ",
+        " join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_BUILD_SIDE="
+            + value.name() + "} " + table + " ",
         replaceMode);
   }
 
   /**
-   * Creates a hint that replaces occurrences of <code>join table</code> with <code>join
-   * table@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_EXECUTION=value}</code>.
+   * Creates a hint that replaces occurrences of <code>join table</code> with
+   * <code>join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_EXECUTION=value} table</code>.
    *
    * <p><strong>This hint also automatically adds JOIN_METHOD=HASH_JOIN.</strong>
    *
@@ -462,25 +467,17 @@ public class Hints {
       String table, HashJoinExecution value, ReplaceMode replaceMode) {
     return ReplaceQueryPartsHint.of(
         join(table),
-        join(table)
-            + "@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_EXECUTION="
+        " join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_EXECUTION="
             + value.name()
-            + "} ",
+            + "} " + table + " ",
         replaceMode);
   }
 
   /**
-   * Creates a hint that replaces occurrences of <code>join table</code> with <code>join
-   * table@{BATCH_MODE=value}</code>.
+   * Creates a hint that replaces occurrences of <code>join table</code> with
+   * <code>join@{JOIN_METHOD=APPLY_JOIN, BATCH_MODE=value} table</code>.
    *
-   * <p>This hint can only be used in combination with JOIN_METHOD=APPLY_JOIN.
-   *
-   * <p>Usage:
-   *
-   * <pre>{@code
-   * Hints.joinMethod("albums", JoinMethod.APPLY_JOIN, ReplaceMode.FIRST).combine(
-   *     Hints.batchMode("albums", true, ReplaceMode.FIRST));
-   * }</pre>
+   * <p><strong>This hint also automatically adds JOIN_METHOD=APPLY_JOIN.</strong>
    *
    * @param table the table name to annotate with the BATCH_MODE hint.
    * @param value the hint value.
@@ -490,7 +487,9 @@ public class Hints {
   public static ReplaceQueryPartsHint batchMode(
       String table, boolean value, ReplaceMode replaceMode) {
     return ReplaceQueryPartsHint.of(
-        join(table), join(table) + "@{BATCH_MODE=" + value + "} ", replaceMode);
+        join(table),
+        " join@{JOIN_METHOD=APPLY_JOIN, BATCH_MODE=" + value + "} " + table + " ",
+        replaceMode);
   }
 
   /** Returns a ' from table ' string. */

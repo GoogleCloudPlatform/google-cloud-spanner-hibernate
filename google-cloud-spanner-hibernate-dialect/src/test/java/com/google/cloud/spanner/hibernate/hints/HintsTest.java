@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import com.google.cloud.spanner.hibernate.hints.Hints.HashJoinBuildSide;
 import com.google.cloud.spanner.hibernate.hints.Hints.HashJoinExecution;
 import com.google.cloud.spanner.hibernate.hints.Hints.IndexStrategy;
-import com.google.cloud.spanner.hibernate.hints.Hints.JoinMethod;
 import com.google.cloud.spanner.hibernate.hints.Hints.LockScannedRanges;
 import com.google.cloud.spanner.hibernate.hints.Hints.ScanMethod;
 import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint.ReplaceMode;
@@ -151,7 +150,7 @@ public class HintsTest {
         + "  \"spanner_replacements\": [\n"
         + "    {\n"
         + "      \"regex\": \" join singers \",\n"
-        + "      \"replacement\": \" join singers @{FORCE_JOIN_ORDER=true} \",\n"
+        + "      \"replacement\": \" join@{FORCE_JOIN_ORDER=true} singers \",\n"
         + "      \"replace_mode\": \"ALL\"\n"
         + "    }\n"
         + "  ]\n"
@@ -232,12 +231,12 @@ public class HintsTest {
 
   @Test
   public void testForceStreamable() {
-    assertEquals("select@{FORCE_STREAMABLE=true} * from singers",
+    assertEquals("select @{FORCE_STREAMABLE=true} * from singers",
         Hints.forceStreamable(true).replace("select * from singers"));
-    assertEquals("SELECT@{FORCE_STREAMABLE=false} * from singers",
+    assertEquals("SELECT @{FORCE_STREAMABLE=false} * from singers",
         Hints.forceStreamable(false).replace("SELECT * from singers"));
     assertEquals("insert into singers (id, value) "
-            + "SELECT@{FORCE_STREAMABLE=true} * from singers",
+            + "SELECT @{FORCE_STREAMABLE=true} * from singers",
         Hints.forceStreamable(true)
             .replace("insert into singers (id, value) SELECT * from singers"));
   }
@@ -257,7 +256,7 @@ public class HintsTest {
   @Test
   public void testHashJoinBuildSide() {
     assertEquals("select * from singers "
-            + "inner join albums @{JOIN_METHOD=HASH_JOIN, HASH_JOIN_BUILD_SIDE=BUILD_RIGHT} "
+            + "inner join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_BUILD_SIDE=BUILD_RIGHT} albums "
             + "on albums.singer=singers.id",
         Hints.hashJoinBuildSide("albums", HashJoinBuildSide.BUILD_RIGHT, ReplaceMode.FIRST)
             .replace("select * from singers inner join albums on albums.singer=singers.id"));
@@ -266,16 +265,16 @@ public class HintsTest {
   @Test
   public void testHashJoinExecution() {
     assertEquals("select * from singers "
-            + "inner join albums @{JOIN_METHOD=HASH_JOIN, HASH_JOIN_EXECUTION=ONE_PASS} "
+            + "inner join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_EXECUTION=ONE_PASS} albums "
             + "on albums.singer=singers.id",
         Hints.hashJoinExecution("albums", HashJoinExecution.ONE_PASS, ReplaceMode.FIRST)
             .replace("select * from singers inner join albums on albums.singer=singers.id"));
     assertEquals("select * from singers "
-            + "inner join albums @{"
+            + "inner join@{"
             + "JOIN_METHOD=HASH_JOIN, "
             + "HASH_JOIN_BUILD_SIDE=BUILD_LEFT, "
             + "HASH_JOIN_EXECUTION=ONE_PASS} "
-            + "on albums.singer=singers.id",
+            + "albums on albums.singer=singers.id",
         Hints.hashJoin(
             "albums",
                 HashJoinBuildSide.BUILD_LEFT,
@@ -287,11 +286,9 @@ public class HintsTest {
   @Test
   public void testBatchMode() {
     assertEquals("select * from singers "
-            + "inner join albums @{BATCH_MODE=true} @{JOIN_METHOD=APPLY_JOIN} "
+            + "inner join@{JOIN_METHOD=APPLY_JOIN, BATCH_MODE=true} albums "
             + "on albums.singer=singers.id",
-        Hints.joinMethod("albums", JoinMethod.APPLY_JOIN, ReplaceMode.FIRST)
-            .combine(
-                Hints.batchMode("albums", true, ReplaceMode.FIRST))
+        Hints.batchMode("albums", true, ReplaceMode.FIRST)
             .replace("select * from singers inner join albums on albums.singer=singers.id"));
   }
 
