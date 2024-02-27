@@ -228,7 +228,7 @@
             <additionalClasspathElement>${basedir}/target/classes</additionalClasspathElement>
           </additionalClasspathElements>
           <includes>
-            <include>**/IT*.java</include>
+            <include>**/*IT.java</include>
             <include>**/*IntegrationTest.java</include>
           </includes>
         </configuration>
