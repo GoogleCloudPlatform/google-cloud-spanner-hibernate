@@ -531,9 +531,10 @@ public class SampleModelIT {
       assertEquals(2, hashJoinExecutionQuery.getResultList().size());
 
       if (!isUsingEmulator()) {
-        Query<Singer> forceStreamableQuery = session.createQuery(cr).addQueryHint(
-            Hints.forceStreamable(true).toQueryHint());
-        assertEquals(2, forceStreamableQuery.getResultList().size());
+        // TODO: Enable when the FORCE_STREAMABLE hint is supported.
+        // Query<Singer> forceStreamableQuery = session.createQuery(cr).addQueryHint(
+        //     Hints.forceStreamable(true).toQueryHint());
+        // assertEquals(2, forceStreamableQuery.getResultList().size());
 
         Query<Singer> optimizerVersionQuery = session.createQuery(cr).addQueryHint(
             Hints.optimizerVersion("1").toQueryHint());
