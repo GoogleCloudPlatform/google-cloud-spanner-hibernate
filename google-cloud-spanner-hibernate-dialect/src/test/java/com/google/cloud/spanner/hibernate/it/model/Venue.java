@@ -20,17 +20,19 @@
 package com.google.cloud.spanner.hibernate.it.model;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Transient;
 import java.io.Serializable;
 import java.util.List;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
+import org.hibernate.type.SqlTypes;
 
 /**
  * Venue entity.
@@ -94,8 +96,8 @@ public class Venue extends AbstractBaseEntity {
    * This field maps to a JSON column in the database. The value is automatically
    * serialized/deserialized to a {@link VenueDescription} instance.
    */
-  // TODO: Make this non-transient when we support Hibernate 6.
-  @Transient
+  @Column(columnDefinition = "json")
+  @JdbcTypeCode(SqlTypes.JSON)
   private VenueDescription description;
 
   @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL)

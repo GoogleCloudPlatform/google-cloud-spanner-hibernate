@@ -54,6 +54,13 @@
       <artifactId>hibernate-ant</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Jackson is needed for testing JSON. -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.15.2</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>

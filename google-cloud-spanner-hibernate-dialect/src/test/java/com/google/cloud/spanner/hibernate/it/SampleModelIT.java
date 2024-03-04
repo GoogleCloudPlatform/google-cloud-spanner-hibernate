@@ -242,15 +242,20 @@ public class SampleModelIT {
   @Test
   public void testSaveVenue() {
     try (Session session = sessionFactory.openSession()) {
-      Transaction transaction = session.beginTransaction();
-      // TODO: Set VenueDescription fields and verify these in Hibernate 6.
-      //       Hibernate 5 does not support JSON without additional plugins.
-      Venue venue = new Venue("Venue 1", new VenueDescription());
-      session.save(venue);
+      final Transaction transaction = session.beginTransaction();
+      VenueDescription description = new VenueDescription();
+      description.setCapacity(100);
+      description.setLocation("some-location");
+      description.setType("Arena");
+      Venue venue = new Venue("Venue 1", description);
+      session.persist(venue);
       transaction.commit();
 
       session.refresh(venue);
       assertEquals("Venue 1", venue.getName());
+      assertEquals(100, venue.getDescription().getCapacity());
+      assertEquals("some-location", venue.getDescription().getLocation());
+      assertEquals("Arena", venue.getDescription().getType());
     }
   }
 
