@@ -184,8 +184,7 @@ public class ReplaceQueryPartsHint {
   }
 
   /**
-   * Creates a hint that will replace all occurrences of the keys in the given map with the
-   * corresponding values in the map.
+   * Creates a hint that will apply all the replacements in the given list.
    */
   public ReplaceQueryPartsHint(List<Replacement> replacements) {
     this.replacements = ImmutableList.copyOf(Preconditions.checkNotNull(replacements));
