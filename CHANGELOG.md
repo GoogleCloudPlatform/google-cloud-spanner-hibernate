@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [3.1.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.1.0...v3.1.1) (2024-03-06)
+
+
+### Bug Fixes
+
+* Hibernate would insert JSON as STRING ([#944](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/944)) ([1d8b855](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/1d8b8550acfed940f8909d5685abe395bec0a38a))
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#929](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/929)) ([c33f7e4](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/c33f7e41d17ba8f657511f61bcfa841970706bbb))
+* bump org.codehaus.mojo:exec-maven-plugin ([#930](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/930)) ([9d7aed7](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/9d7aed7bd7cb468664f87e2f3d852cbdd5e92315))
+
 ## [3.1.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.0.3...v3.1.0) (2024-02-05)
 
 
