@@ -23,10 +23,14 @@ import static org.hibernate.type.SqlTypes.NUMERIC;
 
 import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint;
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
+import com.google.cloud.spanner.jdbc.JsonType;
 import com.google.common.base.Strings;
+import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import org.hibernate.HibernateException;
+import org.hibernate.boot.model.TypeContributions;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -40,6 +44,7 @@ import org.hibernate.query.spi.QueryOptions;
 import org.hibernate.query.sqm.internal.DomainParameterXref;
 import org.hibernate.query.sqm.mutation.spi.SqmMultiTableInsertStrategy;
 import org.hibernate.query.sqm.tree.insert.SqmInsertStatement;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.sql.ast.SqlAstTranslator;
 import org.hibernate.sql.ast.SqlAstTranslatorFactory;
 import org.hibernate.sql.ast.spi.StandardSqlAstTranslatorFactory;
@@ -53,6 +58,13 @@ import org.hibernate.tool.schema.extract.spi.SequenceInformationExtractor;
 import org.hibernate.tool.schema.internal.StandardSequenceExporter;
 import org.hibernate.tool.schema.internal.StandardUniqueKeyExporter;
 import org.hibernate.tool.schema.spi.Exporter;
+import org.hibernate.type.SqlTypes;
+import org.hibernate.type.descriptor.ValueBinder;
+import org.hibernate.type.descriptor.WrapperOptions;
+import org.hibernate.type.descriptor.java.JavaType;
+import org.hibernate.type.descriptor.jdbc.BasicBinder;
+import org.hibernate.type.descriptor.jdbc.JsonAsStringJdbcType;
+import org.hibernate.type.descriptor.jdbc.spi.JdbcTypeRegistry;
 
 /** Hibernate 6.x dialect for Cloud Spanner. */
 public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
@@ -66,6 +78,33 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
         DomainParameterXref domainParameterXref,
         DomainQueryExecutionContext context) {
       throw new HibernateException("Multi-table inserts are not supported for Cloud Spanner");
+    }
+  }
+
+  private static class SpannerJsonJdbcType extends JsonAsStringJdbcType {
+    private SpannerJsonJdbcType() {
+      super(SqlTypes.LONG32VARCHAR, null);
+    }
+
+    @Override
+    public <X> ValueBinder<X> getBinder(JavaType<X> javaType) {
+      return new BasicBinder<X>(javaType, this) {
+        @Override
+        protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options)
+            throws SQLException {
+          final String json = ((SpannerJsonJdbcType) getJdbcType()).toString(
+              value, getJavaType(), options);
+          st.setObject(index, json, JsonType.VENDOR_TYPE_NUMBER);
+        }
+
+        @Override
+        protected void doBind(CallableStatement st, X value, String name, WrapperOptions options)
+            throws SQLException {
+          final String json = ((SpannerJsonJdbcType) getJdbcType()).toString(
+              value, getJavaType(), options);
+          st.setObject(name, json, JsonType.VENDOR_TYPE_NUMBER);
+        }
+      };
     }
   }
   
@@ -123,6 +162,15 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
       return "numeric";
     }
     return super.columnType(sqlTypeCode);
+  }
+
+  @Override
+  protected void registerColumnTypes(
+      TypeContributions typeContributions, ServiceRegistry serviceRegistry) {
+    super.registerColumnTypes(typeContributions, serviceRegistry);
+    JdbcTypeRegistry jdbcTypeRegistry =
+        typeContributions.getTypeConfiguration().getJdbcTypeRegistry();
+    jdbcTypeRegistry.addDescriptorIfAbsent(new SpannerJsonJdbcType());
   }
 
   @Override
