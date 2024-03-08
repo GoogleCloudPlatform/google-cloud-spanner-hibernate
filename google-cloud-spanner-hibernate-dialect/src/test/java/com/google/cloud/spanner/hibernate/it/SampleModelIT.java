@@ -260,6 +260,20 @@ public class SampleModelIT {
   }
 
   @Test
+  public void testSaveVenueWithNullDescription() {
+    try (Session session = sessionFactory.openSession()) {
+      final Transaction transaction = session.beginTransaction();
+      Venue venue = new Venue("Venue 2", /* description = */ null);
+      session.persist(venue);
+      transaction.commit();
+
+      session.refresh(venue);
+      assertEquals("Venue 2", venue.getName());
+      assertNull(venue.getDescription());
+    }
+  }
+
+  @Test
   public void testSaveConcert() {
     try (Session session = sessionFactory.openSession()) {
       Singer peter = session.get(Singer.class, Long.reverse(50000L));
