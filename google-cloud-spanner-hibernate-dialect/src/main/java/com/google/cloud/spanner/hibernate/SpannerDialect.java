@@ -101,6 +101,18 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
               value, getJavaType(), options);
           st.setObject(name, json, JsonType.VENDOR_TYPE_NUMBER);
         }
+
+        @Override
+        protected void doBindNull(PreparedStatement st, int index, WrapperOptions options)
+            throws SQLException {
+          st.setNull(index, JsonType.VENDOR_TYPE_NUMBER);
+        }
+
+        @Override
+        protected void doBindNull(CallableStatement st, String name, WrapperOptions options)
+            throws SQLException {
+          st.setNull(name, JsonType.VENDOR_TYPE_NUMBER);
+        }
       };
     }
   }
