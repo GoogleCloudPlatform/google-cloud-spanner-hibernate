@@ -65,9 +65,12 @@ import org.hibernate.type.descriptor.java.JavaType;
 import org.hibernate.type.descriptor.jdbc.BasicBinder;
 import org.hibernate.type.descriptor.jdbc.JsonAsStringJdbcType;
 import org.hibernate.type.descriptor.jdbc.spi.JdbcTypeRegistry;
+import org.jboss.logging.Logger;
 
 /** Hibernate 6.x dialect for Cloud Spanner. */
 public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
+  private static final Logger LOG = Logger.getLogger(SpannerDialect.class.getName());
+
   private static class NoOpSqmMultiTableInsertStrategy implements SqmMultiTableInsertStrategy {
     private static final NoOpSqmMultiTableInsertStrategy INSTANCE =
         new NoOpSqmMultiTableInsertStrategy();
@@ -322,16 +325,19 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
     return super.addSqlHintOrComment(sql, queryOptions, commentsEnabled);
   }
 
-  private String applyHint(String sql, String hint) {
+  private static String applyHint(String sql, String hint) {
     try {
       return ReplaceQueryPartsHint.fromComment(hint).replace(sql);
-    } catch (Throwable ignore) {
-      // Just ignore and continue with the query normally.
+    } catch (Throwable hintParseError) {
+      // Just log and continue with the query normally.
+      // The reason that we ignore 'invalid' hints is that we don't know whether it actually is a
+      // hint, or just happened to be a comment that looked at least a bit like a hint.
+      LOG.warnf("Potential invalid hint found: %s", hint);
     }
     return sql;
   }
 
-  private String applyQueryHints(String sql, QueryOptions queryOptions) {
+  private static String applyQueryHints(String sql, QueryOptions queryOptions) {
     for (String hint : queryOptions.getDatabaseHints()) {
       if (stringCouldContainReplacementHint(hint)) {
         sql = applyHint(sql, hint);
@@ -340,11 +346,11 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
     return sql;
   }
 
-  private boolean hasCommentHint(QueryOptions queryOptions) {
+  private static boolean hasCommentHint(QueryOptions queryOptions) {
     return stringCouldContainReplacementHint(queryOptions.getComment());
   }
 
-  private boolean stringCouldContainReplacementHint(String hint) {
+  private static boolean stringCouldContainReplacementHint(String hint) {
     return !Strings.isNullOrEmpty(hint)
         && hint.contains("{")
         && hint.contains("}")

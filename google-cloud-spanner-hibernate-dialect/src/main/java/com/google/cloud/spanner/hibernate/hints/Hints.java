@@ -113,6 +113,16 @@ public class Hints {
     ONE_PASS,
   }
 
+  private static final String SELECT_OR_DML = "(?i)(?:^|\\s)(select|insert|update|delete)";
+
+  /**
+   * Creates a hint that will prepend '@{hint=value}' to the first occurrence of regex.
+   */
+  private static ReplaceQueryPartsHint statementHint(String hint, Object value) {
+    return ReplaceQueryPartsHint.of(
+        SELECT_OR_DML, String.format("@{%s=%s}$1", hint, value), ReplaceMode.FIRST);
+  }
+
   /**
    * Creates a hint that adds @{USE_ADDITIONAL_PARALLELISM=value} to the statement.
    *
@@ -120,10 +130,7 @@ public class Hints {
    * @return a hint that can be added as a comment or query hint to a Hibernate statement
    */
   public static ReplaceQueryPartsHint useAdditionalParallelism(boolean value) {
-    return ReplaceQueryPartsHint.of(
-        "(?i)(?:^|\\s)(select|insert|update|delete)",
-        "@{USE_ADDITIONAL_PARALLELISM=" + value + "}$1",
-        ReplaceMode.FIRST);
+    return statementHint("USE_ADDITIONAL_PARALLELISM", value);
   }
 
   /**
@@ -133,10 +140,7 @@ public class Hints {
    * @return a hint that can be added as a comment or query hint to a Hibernate statement
    */
   public static ReplaceQueryPartsHint optimizerVersion(String version) {
-    return ReplaceQueryPartsHint.of(
-        "(?i)(?:^|\\s)(select|insert|update|delete)",
-        "@{OPTIMIZER_VERSION=" + version + "}$1",
-        ReplaceMode.FIRST);
+    return statementHint("OPTIMIZER_VERSION", version);
   }
 
   /**
@@ -146,10 +150,7 @@ public class Hints {
    * @return a hint that can be added as a comment or query hint to a Hibernate statement
    */
   public static ReplaceQueryPartsHint optimizerStatisticsPackage(String value) {
-    return ReplaceQueryPartsHint.of(
-        "(?i)(?:^|\\s)(select|insert|update|delete)",
-        "@{OPTIMIZER_STATISTICS_PACKAGE=" + value + "}$1",
-        ReplaceMode.FIRST);
+    return statementHint("OPTIMIZER_STATISTICS_PACKAGE", value);
   }
 
   /**
@@ -159,10 +160,7 @@ public class Hints {
    * @return a hint that can be added as a comment or query hint to a Hibernate statement
    */
   public static ReplaceQueryPartsHint allowDistributedMerge(boolean value) {
-    return ReplaceQueryPartsHint.of(
-        "(?i)(?:^|\\s)(select|insert|update|delete)",
-        "@{ALLOW_DISTRIBUTED_MERGE=" + value + "}$1",
-        ReplaceMode.FIRST);
+    return statementHint("ALLOW_DISTRIBUTED_MERGE", value);
   }
 
   /**
@@ -172,10 +170,7 @@ public class Hints {
    * @return a hint that can be added as a comment or query hint to a Hibernate statement
    */
   public static ReplaceQueryPartsHint lockScannedRanges(LockScannedRanges value) {
-    return ReplaceQueryPartsHint.of(
-        "(?i)(?:^|\\s)(select|insert|update|delete)",
-        "@{LOCK_SCANNED_RANGES=" + value + "}$1",
-        ReplaceMode.FIRST);
+    return statementHint("LOCK_SCANNED_RANGES", value);
   }
 
   /**
@@ -185,10 +180,7 @@ public class Hints {
    * @return a hint that can be added as a comment or query hint to a Hibernate statement
    */
   public static ReplaceQueryPartsHint scanMethod(ScanMethod value) {
-    return ReplaceQueryPartsHint.of(
-        "(?i)(?:^|\\s)(select|insert|update|delete)",
-        "@{SCAN_METHOD=" + value + "}$1",
-        ReplaceMode.FIRST);
+    return statementHint("SCAN_METHOD", value);
   }
 
   /**
