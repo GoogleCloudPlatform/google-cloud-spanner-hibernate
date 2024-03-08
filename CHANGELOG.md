@@ -1,6 +1,18 @@
 # Changelog
 
 
+## [3.1.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.1.1...v3.1.2) (2024-03-08)
+
+
+### Bug Fixes
+
+* JSON nulls were inserted as STRINGs and rejected ([#952](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/952)) ([c7c23a1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/c7c23a176dbe55a314b2977620e47cc159f76b30))
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#949](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/949)) ([05211ba](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/05211ba8acbfb069006462ee5a4cd4814ab87f67))
+
 ## [3.1.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.1.0...v3.1.1) (2024-03-06)
 
 
