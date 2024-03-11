@@ -21,8 +21,10 @@ package com.google.cloud.spanner.hibernate;
 import static org.hibernate.type.SqlTypes.DECIMAL;
 import static org.hibernate.type.SqlTypes.NUMERIC;
 
+import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint;
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
 import com.google.cloud.spanner.jdbc.JsonType;
+import com.google.common.base.Strings;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,6 +40,7 @@ import org.hibernate.mapping.Table;
 import org.hibernate.metamodel.mapping.EntityMappingType;
 import org.hibernate.metamodel.spi.RuntimeModelCreationContext;
 import org.hibernate.query.spi.DomainQueryExecutionContext;
+import org.hibernate.query.spi.QueryOptions;
 import org.hibernate.query.sqm.internal.DomainParameterXref;
 import org.hibernate.query.sqm.mutation.spi.SqmMultiTableInsertStrategy;
 import org.hibernate.query.sqm.tree.insert.SqmInsertStatement;
@@ -62,9 +65,12 @@ import org.hibernate.type.descriptor.java.JavaType;
 import org.hibernate.type.descriptor.jdbc.BasicBinder;
 import org.hibernate.type.descriptor.jdbc.JsonAsStringJdbcType;
 import org.hibernate.type.descriptor.jdbc.spi.JdbcTypeRegistry;
+import org.jboss.logging.Logger;
 
 /** Hibernate 6.x dialect for Cloud Spanner. */
 public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
+  private static final Logger LOG = Logger.getLogger(SpannerDialect.class.getName());
+
   private static class NoOpSqmMultiTableInsertStrategy implements SqmMultiTableInsertStrategy {
     private static final NoOpSqmMultiTableInsertStrategy INSTANCE =
         new NoOpSqmMultiTableInsertStrategy();
@@ -316,4 +322,51 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
       EntityMappingType entityDescriptor, RuntimeModelCreationContext runtimeModelCreationContext) {
     return NoOpSqmMultiTableInsertStrategy.INSTANCE;
   }
+
+  @Override
+  public String addSqlHintOrComment(
+      String sql,
+      QueryOptions queryOptions,
+      boolean commentsEnabled) {
+    if (hasCommentHint(queryOptions)) {
+      sql = applyHint(sql, queryOptions.getComment());
+    }
+    if (queryOptions.getDatabaseHints() != null && !queryOptions.getDatabaseHints().isEmpty()) {
+      sql = applyQueryHints(sql, queryOptions);
+    }
+    return super.addSqlHintOrComment(sql, queryOptions, commentsEnabled);
+  }
+
+  private static String applyHint(String sql, String hint) {
+    try {
+      return ReplaceQueryPartsHint.fromComment(hint).replace(sql);
+    } catch (Throwable hintParseError) {
+      // Just log and continue with the query normally.
+      // The reason that we ignore 'invalid' hints is that we don't know whether it actually is a
+      // hint, or just happened to be a comment that looked at least a bit like a hint.
+      LOG.warnf("Potential invalid hint found: %s", hint);
+    }
+    return sql;
+  }
+
+  private static String applyQueryHints(String sql, QueryOptions queryOptions) {
+    for (String hint : queryOptions.getDatabaseHints()) {
+      if (stringCouldContainReplacementHint(hint)) {
+        sql = applyHint(sql, hint);
+      }
+    }
+    return sql;
+  }
+
+  private static boolean hasCommentHint(QueryOptions queryOptions) {
+    return stringCouldContainReplacementHint(queryOptions.getComment());
+  }
+
+  private static boolean stringCouldContainReplacementHint(String hint) {
+    return !Strings.isNullOrEmpty(hint)
+        && hint.contains("{")
+        && hint.contains("}")
+        && hint.contains(ReplaceQueryPartsHint.SPANNER_REPLACEMENTS_FIELD_NAME);
+  }
+
 }

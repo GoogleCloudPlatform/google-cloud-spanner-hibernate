@@ -21,6 +21,7 @@ package com.google.cloud.spanner.sample;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.SpannerPool;
 import com.google.cloud.spanner.sample.entities.Concert;
+import com.google.cloud.spanner.sample.entities.Singer;
 import com.google.cloud.spanner.sample.repository.ConcertRepository;
 import com.google.cloud.spanner.sample.service.AlbumService;
 import com.google.cloud.spanner.sample.service.ConcertService;
@@ -119,6 +120,10 @@ public class SampleApplication implements CommandLineRunner {
     printData();
     // Show how to do a stale read.
     staleRead();
+
+    // Select all active singers. This query uses a FORCE_INDEX query hint.
+    List<Singer> activeSingers = singerService.getActiveSingers();
+    log.info("Found {} active singers", activeSingers.size());
   }
 
   void printData() {

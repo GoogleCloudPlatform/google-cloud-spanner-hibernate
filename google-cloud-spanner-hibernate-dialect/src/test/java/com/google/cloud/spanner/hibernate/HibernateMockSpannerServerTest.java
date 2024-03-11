@@ -22,12 +22,15 @@ import static com.google.cloud.spanner.hibernate.AbstractSchemaGenerationMockSer
 import static com.google.cloud.spanner.hibernate.AbstractSchemaGenerationMockServerTest.GET_SEQUENCES_STATEMENT;
 import static com.google.cloud.spanner.hibernate.AbstractSchemaGenerationMockServerTest.createSequenceRow;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.hibernate.entities.Singer;
+import com.google.cloud.spanner.hibernate.hints.Hints;
+import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint.ReplaceMode;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -50,6 +53,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import org.hibernate.Session;
@@ -57,6 +63,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.hibernate.query.Query;
 import org.junit.Test;
 
 /**
@@ -467,6 +474,47 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
     // We should only have one insert statement.
     assertEquals(1, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
         .filter(request -> request.getSql().equals(insertSql)).count());
+  }
+
+  @Test
+  public void testQueryHint() {
+    String expectedSql = "select s1_0.id from Singer @{FORCE_INDEX=idx_singer_active} s1_0";
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.of(expectedSql),
+            com.google.spanner.v1.ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("id")
+                                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
+                                        .build())
+                                .build())
+                        .build())
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(Value.newBuilder().setStringValue("1").build())
+                        .build())
+                .build()));
+
+    try (SessionFactory sessionFactory =
+        createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
+        Session session = sessionFactory.openSession()) {
+      CriteriaBuilder cb = session.getCriteriaBuilder();
+      CriteriaQuery<Singer> cr = cb.createQuery(Singer.class);
+      Root<Singer> root = cr.from(Singer.class);
+      cr.select(root);
+      Query<Singer> query = session.createQuery(cr)
+          .addQueryHint(
+              Hints.forceIndexFrom("Singer", "idx_singer_active", ReplaceMode.ALL).toComment());
+
+      assertNotNull(query.getResultList());
+      assertEquals(1, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+          .filter(request -> request.getSql().equals(expectedSql)).count());
+    }
   }
 
   @Table(name = "test-entity")

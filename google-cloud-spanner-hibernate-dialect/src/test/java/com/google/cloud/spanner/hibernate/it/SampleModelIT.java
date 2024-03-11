@@ -18,13 +18,20 @@
 
 package com.google.cloud.spanner.hibernate.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.IntegrationTest;
+import com.google.cloud.spanner.hibernate.hints.Hints;
+import com.google.cloud.spanner.hibernate.hints.Hints.HashJoinBuildSide;
+import com.google.cloud.spanner.hibernate.hints.Hints.HashJoinExecution;
+import com.google.cloud.spanner.hibernate.hints.Hints.JoinMethod;
+import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint.ReplaceMode;
 import com.google.cloud.spanner.hibernate.it.model.Album;
 import com.google.cloud.spanner.hibernate.it.model.AllTypes;
 import com.google.cloud.spanner.hibernate.it.model.Concert;
@@ -32,9 +39,12 @@ import com.google.cloud.spanner.hibernate.it.model.Singer;
 import com.google.cloud.spanner.hibernate.it.model.Track;
 import com.google.cloud.spanner.hibernate.it.model.Venue;
 import com.google.cloud.spanner.hibernate.it.model.Venue.VenueDescription;
-import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -44,9 +54,11 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -80,15 +92,15 @@ public class SampleModelIT {
     try (Session session = sessionFactory.openSession()) {
       final Transaction transaction = session.beginTransaction();
       Singer peter = new Singer("Peter", "Allison");
-      session.save(peter);
+      session.persist(peter);
       Singer alice = new Singer("Alice", "Peterson");
-      session.save(alice);
+      session.persist(alice);
 
-      session.save(new Album(peter, "Album 1"));
-      session.save(new Album(peter, "Album 2"));
+      session.persist(new Album(peter, "Album 1"));
+      session.persist(new Album(peter, "Album 2"));
 
-      session.save(new Album(alice, "Album 1"));
-      session.save(new Album(alice, "Album 2"));
+      session.persist(new Album(alice, "Album 1"));
+      session.persist(new Album(alice, "Album 2"));
 
       transaction.commit();
     }
@@ -112,17 +124,28 @@ public class SampleModelIT {
   public void deleteTestData() {
     try (Session session = sessionFactory.openSession()) {
       final Transaction transaction = session.beginTransaction();
-      session.createQuery("delete from Concert where not singer.id=:id")
-          .setParameter("id", Long.reverse(50000)).executeUpdate();
-      session.createQuery("delete from Venue where not id in (select venue.id from Concert)")
+      session.createMutationQuery("delete from Concert "
+              + "where not singer.id=:id1 "
+              + "  and not singer.id=:id2")
+          .setParameter("id1", Long.reverse(50000))
+          .setParameter("id2", Long.reverse(50001))
           .executeUpdate();
-      session.createQuery("delete from Track where 1=1").executeUpdate();
-      session.createQuery("delete from Album "
-              + "where not singer.id=:id "
+      session.createMutationQuery("delete from Venue "
+              + "where not id in (select venue.id from Concert)")
+          .executeUpdate();
+      session.createMutationQuery("delete from Track where 1=1").executeUpdate();
+      session.createMutationQuery("delete from Album "
+              + "where not (singer.id=:id1 or singer.id=:id2) "
               + "or not (title='Album 1' or title='Album 2')")
-          .setParameter("id", Long.reverse(50000)).executeUpdate();
-      session.createQuery("delete from Singer where not id=:id")
-          .setParameter("id", Long.reverse(50000)).executeUpdate();
+          .setParameter("id1", Long.reverse(50000))
+          .setParameter("id2", Long.reverse(50001))
+          .executeUpdate();
+      session.createMutationQuery("delete from Singer "
+              + "where not id=:id1 "
+              + "  and not id=:id2")
+          .setParameter("id1", Long.reverse(50000))
+          .setParameter("id2", Long.reverse(50001))
+          .executeUpdate();
 
       transaction.commit();
     }
@@ -384,7 +407,7 @@ public class SampleModelIT {
       // 2. One internal transaction that is started by Hibernate to generate ID values for the
       //    concerts.
       // The emulator does not support parallel transactions.
-      final Transaction transaction = EmulatorSpannerHelper.isUsingEmulator()
+      final Transaction transaction = isUsingEmulator()
           ? null
           : session.beginTransaction();
       Singer peter = session.get(Singer.class, Long.reverse(50000L));
@@ -492,4 +515,68 @@ public class SampleModelIT {
     }
   }
 
+  @Test
+  public void testHints() {
+    try (Session session = sessionFactory.openSession()) {
+      CriteriaBuilder cb = session.getCriteriaBuilder();
+      CriteriaQuery<Singer> cr = cb.createQuery(Singer.class);
+      Root<Singer> root = cr.from(Singer.class);
+      root.join("albums", JoinType.LEFT);
+      cr.select(root);
+      Query<Singer> query = session.createQuery(cr)
+          .addQueryHint(
+              Hints.forceIndexFrom("Singer", "idx_singer_active", ReplaceMode.ALL).toQueryHint())
+          .addQueryHint(
+              Hints.forceIndexJoin("Album", "idx_album_title", ReplaceMode.ALL).toQueryHint());
+      assertEquals(2, query.getResultList().size());
+
+      // Verify that adding a hint for a non-existing index fails.
+      Query<Singer> invalidQuery = session.createQuery(cr).addQueryHint(
+          Hints.forceIndexFrom("Singer", "idx_does_not_exist", ReplaceMode.ALL).toQueryHint());
+      HibernateException exception = assertThrows(HibernateException.class,
+          invalidQuery::getResultList);
+      assertTrue(exception.getMessage(), exception.getMessage()
+          .contains("does not have a secondary index called idx_does_not_exist"));
+
+      Query<Singer> joinMethodQuery = session.createQuery(cr).addQueryHint(
+          Hints.joinMethod("Album", JoinMethod.MERGE_JOIN, ReplaceMode.ALL)
+              .toQueryHint());
+      assertEquals(2, joinMethodQuery.getResultList().size());
+
+      // Verify that adding combined hints works.
+      Query<Singer> hashJoinExecutionQuery = session.createQuery(cr).addQueryHint(
+          Hints.hashJoinExecution("Album", HashJoinExecution.ONE_PASS, ReplaceMode.ALL)
+              .toQueryHint());
+      assertEquals(2, hashJoinExecutionQuery.getResultList().size());
+
+      if (!isUsingEmulator()) {
+        // TODO: Enable when the FORCE_STREAMABLE hint is supported.
+        // Query<Singer> forceStreamableQuery = session.createQuery(cr).addQueryHint(
+        //     Hints.forceStreamable(true).toQueryHint());
+        // assertEquals(2, forceStreamableQuery.getResultList().size());
+
+        Query<Singer> optimizerVersionQuery = session.createQuery(cr).addQueryHint(
+            Hints.optimizerVersion("1").toQueryHint());
+        assertEquals(2, optimizerVersionQuery.getResultList().size());
+
+        Query<Singer> allowDistributedMergeQuery = session.createQuery(cr).addQueryHint(
+            Hints.allowDistributedMerge(true).toQueryHint());
+        assertEquals(2, allowDistributedMergeQuery.getResultList().size());
+
+        Query<Singer> hashJoinBuildSideQuery = session.createQuery(cr).addQueryHint(
+            Hints.hashJoinBuildSide("Album", HashJoinBuildSide.BUILD_RIGHT, ReplaceMode.ALL)
+                .toQueryHint());
+        assertEquals(2, hashJoinBuildSideQuery.getResultList().size());
+
+        Query<Singer> hashJoinQuery = session.createQuery(cr).addQueryHint(
+            Hints.hashJoin(
+                "Album",
+                    HashJoinBuildSide.BUILD_RIGHT,
+                    HashJoinExecution.ONE_PASS,
+                    ReplaceMode.ALL)
+                .toQueryHint());
+        assertEquals(2, hashJoinQuery.getResultList().size());
+      }
+    }
+  }
 }

@@ -23,6 +23,8 @@ import com.google.cloud.spanner.sample.entities.Concert;
 import com.google.cloud.spanner.sample.entities.Singer;
 import com.google.cloud.spanner.sample.entities.Track;
 import com.google.cloud.spanner.sample.repository.SingerRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +44,19 @@ public class SingerService {
 
   private final SingerRepository repository;
 
+  @PersistenceContext
+  private EntityManager entityManager;
+
   /**
    * Constructor with auto-injected dependencies.
    */
   public SingerService(RandomDataService randomDataService, SingerRepository repository) {
     this.randomDataService = randomDataService;
     this.repository = repository;
+  }
+
+  public List<Singer> getActiveSingers() {
+    return repository.findByActive(true);
   }
 
   /**
