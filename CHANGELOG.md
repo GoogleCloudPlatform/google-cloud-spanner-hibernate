@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [3.2.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.1.2...v3.2.0) (2024-03-11)
+
+
+### Features
+
+* query hints ([#940](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/940)) ([151cd64](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/151cd6432fc40be6356b3188a8c2950197d29df7))
+
 ## [3.1.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.1.1...v3.1.2) (2024-03-08)
 
 
