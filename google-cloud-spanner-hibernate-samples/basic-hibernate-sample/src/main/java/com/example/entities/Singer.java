@@ -18,15 +18,16 @@
 
 package com.example.entities;
 
+import com.google.cloud.spanner.hibernate.types.SpannerStringArray;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Transient;
 import java.util.List;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
 /**
@@ -45,10 +46,7 @@ public class Singer {
   @OneToMany(mappedBy = "singer")
   List<Album> albums;
 
-  // TODO: User types (and therefore also array types) have changed majorly between Hibernate 5 and
-  //       Hibernate 6, and therefore needs to be re-implemented. Commenting out for now.
-  // @Type(type = "spanner-array")
-  @Transient
+  @Type(SpannerStringArray.class)
   private List<String> nickNames;
 
   /**
