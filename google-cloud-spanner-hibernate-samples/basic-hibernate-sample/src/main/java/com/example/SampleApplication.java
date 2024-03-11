@@ -90,14 +90,13 @@ public class SampleApplication {
     person.addPayment(payment1);
     person.addPayment(payment2);
 
-    session.save(person);
+    session.persist(person);
     session.getTransaction().commit();
 
     List<Person> personsInTable =
         session.createQuery("from Person", Person.class).list();
 
-    System.out.println(
-        String.format("There are %d persons saved in the table:", personsInTable.size()));
+    System.out.printf("There are %d persons saved in the table:%n", personsInTable.size());
 
     for (Person personInTable : personsInTable) {
       System.out.println(personInTable);
@@ -117,14 +116,15 @@ public class SampleApplication {
     Album album = new Album(singer, "Album name");
     singer.addAlbum(album);
 
-    session.save(singer);
-    session.save(album);
+    session.persist(singer);
+    session.persist(album);
     session.getTransaction().commit();
+    // Clear the session to ensure that we really read from the database.
+    session.clear();
 
     List<Singer> singers =
         session.createQuery("from Singer", Singer.class).list();
-    System.out.println(
-        String.format("There are %d singers saved in the table:", singers.size()));
+    System.out.printf("There are %d singers saved in the table:%n", singers.size());
 
     for (Singer singerInTable : singers) {
       System.out.println(singerInTable);
