@@ -239,9 +239,6 @@ public class Singer {
 
 A working example of this feature can be found in the https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample[Hibernate Basic Sample].
 
-JSON can be used...
-
-
 ==== Auto-generate Schema for Faster Development
 
 It is often useful to generate the schema for your database, such as during the early stages of development.
