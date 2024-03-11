@@ -16,14 +16,16 @@ First, add the Maven dependencies for the Cloud Spanner Hibernate Dialect and th
 
 Maven coordinates for the dialect:
 
+// {x-version-update-start:google-cloud-spanner-hibernate-dialect:released}
 [source,xml]
 ----
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
-  <version>3.0.3</version>
+  <version>3.2.0</version>
 </dependency>
 ----
+// {x-version-update-start:google-cloud-spanner-hibernate-dialect:released}
 
 Maven coordinates for the official https://cloud.google.com/spanner/docs/open-source-jdbc[open source Cloud Spanner JDBC Driver].
 
@@ -32,7 +34,7 @@ Maven coordinates for the official https://cloud.google.com/spanner/docs/open-so
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-jdbc</artifactId>
-  <version>2.14.4</version>
+  <version>2.16.0</version>
 </dependency>
 ----
 
@@ -206,40 +208,38 @@ shows how to use the above hint.
 
 ==== Custom Spanner Column Types
 
-This project offers the following https://docs.jboss.org/hibernate/orm/4.3/manual/en-US/html/ch06.html#types-custom[custom Hibernate type mappings] for specific Spanner column types:
+This project offers the following Hibernate type mappings for specific Spanner column types:
 
 [options="header"]
 |===
-| Spanner Data Type | Hibernate Type
-| https://cloud.google.com/spanner/docs/data-types#array_type[ARRAY]
-| `com.google.cloud.spanner.hibernate.types.SpannerArrayListType`
-| https://cloud.google.com/spanner/docs/data-types#json_type[JSON]
-| `com.google.cloud.spanner.hibernate.types.SpannerJsonType`
+| Spanner Data Type  | Hibernate Type
+| `ARRAY<BOOL>`      | `com.google.cloud.spanner.hibernate.types.SpannerBoolArray`
+| `ARRAY<BYTES>`     | `com.google.cloud.spanner.hibernate.types.SpannerBytesArray`
+| `ARRAY<DATE>`      | `com.google.cloud.spanner.hibernate.types.SpannerDateArray`
+| `ARRAY<FLOAT64>`   | `com.google.cloud.spanner.hibernate.types.SpannerFloat64Array`
+| `ARRAY<INT64>`     | `com.google.cloud.spanner.hibernate.types.SpannerInt64Array`
+| `ARRAY<JSON>`      | `com.google.cloud.spanner.hibernate.types.SpannerJsonArray`
+| `ARRAY<NUMERIC>`   | `com.google.cloud.spanner.hibernate.types.SpannerNumericArray`
+| `ARRAY<STRING>`    | `com.google.cloud.spanner.hibernate.types.SpannerStringArray`
+| `ARRAY<TIMESTAMP>` | `com.google.cloud.spanner.hibernate.types.SpannerTimestampArray`
 |===
 
-You can use these type mappings through the Hibernate `@TypeDefs` system:
+You can use these type mappings through the Hibernate `@Type` annotation:
 
 [source, java]
 ----
-// Use the @TypeDefs annotation to declare custom types you would like to use.
-@TypeDefs({
-  @TypeDef(
-    name = "spanner-array",
-    typeClass = SpannerArrayListType.class
-  )
-})
 @Entity
 public class Singer {
 
   // Specify the custom type with the @Type annotation.
-  @Type(type = "spanner-array")
+  @Type(SpannerStringArray.class)
   private List<String> nickNames;
 
   ...
 }
 ----
 
-A working example of this feature can be found in the The https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample[Hibernate Basic Sample].
+A working example of this feature can be found in the https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample[Hibernate Basic Sample].
 
 ==== JSON Data Type
 

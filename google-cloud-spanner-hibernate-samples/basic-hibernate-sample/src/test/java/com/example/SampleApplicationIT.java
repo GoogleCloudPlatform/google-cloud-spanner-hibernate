@@ -19,11 +19,13 @@
 package com.example;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import com.example.entities.Album;
 import com.example.entities.Payment;
 import com.example.entities.Person;
 import com.example.entities.Singer;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.hibernate.Session;
@@ -99,6 +101,7 @@ public class SampleApplicationIT {
     Singer singer = savedSingers.get(0);
     assertThat(singer.getName()).isEqualTo("Singer1");
     assertThat(singer.getAlbums()).hasSize(1);
+    assertEquals(ImmutableList.of("nick_name1", "nickname_2"), singer.getNickNames());
 
     Album album = singer.getAlbums().get(0);
     assertThat(album.getTitle()).isEqualTo("Album name");
