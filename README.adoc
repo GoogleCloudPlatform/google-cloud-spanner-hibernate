@@ -241,6 +241,60 @@ public class Singer {
 
 A working example of this feature can be found in the https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/basic-hibernate-sample[Hibernate Basic Sample].
 
+==== JSON Data Type
+
+JSON data type can be used by adding a `@JdbcTypeCode(SqlTypes.JSON)` annotation to a field. The
+type of the field should be a `Serializable` POJO.
+
+[source, java]
+----
+  /**
+   * {@link VenueDescription} is a POJO that is used for the JSON field 'description' of the
+   * {@link Venue} entity. It is automatically serialized and deserialized when an instance of the
+   * entity is loaded or persisted.
+   */
+  public static class VenueDescription implements Serializable {
+
+    private int capacity;
+    private String type;
+    private String location;
+
+    public int getCapacity() {
+      return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+      this.capacity = capacity;
+    }
+
+    public String getType() {
+      return type;
+    }
+
+    public void setType(String type) {
+      this.type = type;
+    }
+
+    public String getLocation() {
+      return location;
+    }
+
+    public void setLocation(String location) {
+      this.location = location;
+    }
+  }
+
+  /**
+   * This field maps to a JSON column in the database. The value is automatically
+   * serialized/deserialized to a {@link VenueDescription} instance.
+   */
+  @JdbcTypeCode(SqlTypes.JSON)
+  private VenueDescription description;
+----
+
+See https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/-/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample[Spring Data JPA Full Sample]
+for a full working sample. The JSON field is in the `Venue` entity.
+
 ==== Auto-generate Schema for Faster Development
 
 It is often useful to generate the schema for your database, such as during the early stages of development.

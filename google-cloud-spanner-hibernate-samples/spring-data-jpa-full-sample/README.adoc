@@ -1,0 +1,32 @@
+= Cloud Spanner Spring Data JPA with Hibernate Sample
+
+This sample application demonstrates using https://spring.io/projects/spring-data-jpa[Spring Data JPA] with https://hibernate.org/[Hibernate] and https://cloud.google.com/spanner/[Google Cloud Spanner].
+
+== Running on the Emulator
+This sample by default runs on the Spanner emulator:
+
+1. Start the Spanner emulator with either `gcloud emulators spanner start` or `docker run -p 9010:9010 -p 9020:9020 gcr.io/cloud-spanner-emulator/emulator`.
+   See https://cloud.google.com/spanner/docs/emulator#install for more information on installing and running the emulator.
+2. Open a terminal instance inside this directory and run `mvn spring-boot:run` to run the sample application.
+
+
+== Setup & Configuration for Running on real Spanner
+1. Create a Google Cloud Platform Project
+2. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account] with Cloud Spanner permission.
+Furnish a new JSON key and then set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
++
+Alternatively, have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized and logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials].
+
+3. Enable the https://console.cloud.google.com/apis/api/spanner.googleapis.com/overview[Cloud Spanner API].
+
+4. In the http://console.cloud.google.com/spanner[Spanner Cloud Console UI], create a Cloud Spanner instance and
+database and insert those details into the `spanner.project`, `spanner.instance` and `spanner.database` defined
+in the file `src/main/resources/application.properties`. Also set `spanner.emulator=false` in the same file.
+These settings configure the connection URL which specifies the database that your application will connect to.
+
+5. Open a terminal instance inside this directory and run `mvn spring-boot:run` to run the sample application.
++
+In the `application.properties` file, you'll see that the application is running with `spring.jpa.hibernate.ddl-auto=update` which allows Hibernate to create tables for you if they do not exist.
+On the very first time you run the app, Hibernate will automatically create the schema and missing tables based on the `@Entity` definitions.
++
+You can view the data that was populated in your Cloud Spanner database by navigating to your database in the http://console.cloud.google.com/spanner[Spanner Console] view.
