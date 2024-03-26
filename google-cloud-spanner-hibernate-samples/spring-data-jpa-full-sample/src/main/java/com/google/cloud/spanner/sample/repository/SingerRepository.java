@@ -40,7 +40,7 @@ public interface SingerRepository extends JpaRepository<Singer, String> {
   // Hints.forceIndexFrom("singer", "idx_singer_active", ReplaceMode.ALL).toComment()
   // manually and then copy-paste the value to the annotation.
   @QueryHints(@QueryHint(name = AvailableHints.HINT_COMMENT, value = "{\n"
-      + "  \"spanner_replacementss\": [\n"
+      + "  \"spanner_replacements\": [\n"
       + "    {\n"
       + "      \"regex\": \" from singer \",\n"
       + "      \"replacement\": \" from singer @{FORCE_INDEX=idx_singer_active} \",\n"
