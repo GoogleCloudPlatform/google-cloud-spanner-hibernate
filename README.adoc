@@ -206,6 +206,67 @@ List<Singer> findByActive(boolean active);
 This https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/-/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample[working sample application]
 shows how to use the above hint.
 
+==== Transaction Tags
+
+Spanner supports adding
+https://cloud.google.com/spanner/docs/introspection/troubleshooting-with-tags[transaction tags]
+for troubleshooting queries and transactions. You can add transaction tags to your Hibernate or
+Spring Data JPA application by adding the
+`com.google.cloud.spanner.hibernate.TransactionTagInterceptor` to your Hibernate configuration, and
+then adding the `com.google.cloud.spanner.hibernate.TransactionTag` annotation to the method that
+starts the transaction.
+
+Example for adding the `TransactionTagInterceptor`:
+
+[source,java]
+----
+package com.google.cloud.spanner.sample;
+
+import com.google.cloud.spanner.hibernate.TransactionTagInterceptor;
+import com.google.common.collect.ImmutableSet;
+import java.util.Map;
+import org.hibernate.cfg.AvailableSettings;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
+import org.springframework.stereotype.Component;
+
+/** This component adds the TransactionTagInterceptor to the Hibernate configuration. */
+@Component
+public class TaggingHibernatePropertiesCustomizer implements HibernatePropertiesCustomizer {
+  @Override
+  public void customize(Map<String, Object> hibernateProperties) {
+    hibernateProperties.put(AvailableSettings.INTERCEPTOR, new TransactionTagInterceptor(
+        ImmutableSet.of(MyApplication.class.getPackageName()), false));
+  }
+}
+----
+
+Then add the `@TransactionTag` to the methods that should be tagged:
+
+[source,java]
+----
+@Service
+public class VenueService {
+
+  private final VenueRepository repository;
+
+  public VenueService(VenueRepository repository) {
+    this.repository = repository;
+  }
+
+  /**
+   * Deletes all Venue records in the database.
+   */
+  @Transactional
+  @TransactionTag("delete_all_venues")
+  public void deleteAllVenues() {
+    repository.deleteAll();
+  }
+}
+----
+
+This https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/-/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample[working sample application]
+shows how to use transaction tags.
+
 ==== Custom Spanner Column Types
 
 This project offers the following Hibernate type mappings for specific Spanner column types:
