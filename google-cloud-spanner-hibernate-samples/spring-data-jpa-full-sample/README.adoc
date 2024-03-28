@@ -30,3 +30,22 @@ In the `application.properties` file, you'll see that the application is running
 On the very first time you run the app, Hibernate will automatically create the schema and missing tables based on the `@Entity` definitions.
 +
 You can view the data that was populated in your Cloud Spanner database by navigating to your database in the http://console.cloud.google.com/spanner[Spanner Console] view.
+
+== Important Features
+This sample application showcases how to use the following features:
+
+1. How to use the emulator for local development. See the
+   link:src/main/resources/application.properties[application.properties] file for an example of how
+   this is set up.
+
+2. Use auto-generated UUIDs as primary keys. See the
+   link:src/main/java/com/google/cloud/spanner/sample/entities/AbstractNonInterleavedEntity.java[AbstractNonInterleavedEntity.java]
+   entity for an example.
+
+3. Use a bit-reversed sequence to generate a numerical primary key value. See the
+   link:src/main/java/com/google/cloud/spanner/sample/entities/TicketSale.java[TicketSale.java]
+   entity for an example.
+
+4. Execute read-only transactions. See link:src/main/java/com/google/cloud/spanner/sample/service/SingerService.java[SingerService.java] for an example.
+
+5. Execute a stale read. See link:src/main/java/com/google/cloud/spanner/sample/service/StaleReadService.java[StaleReadService.java] for an example.

@@ -21,6 +21,6 @@ package com.google.cloud.spanner.sample.repository;
 import com.google.cloud.spanner.sample.entities.Venue;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface VenueRepository extends JpaRepository<Venue, Long> {
+public interface VenueRepository extends JpaRepository<Venue, String> {
 
 }

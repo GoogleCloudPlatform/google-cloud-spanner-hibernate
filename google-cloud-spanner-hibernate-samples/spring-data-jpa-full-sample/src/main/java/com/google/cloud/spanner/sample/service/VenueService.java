@@ -66,11 +66,15 @@ public class VenueService {
     for (int i = 0; i < count; i++) {
       Venue venue = new Venue();
       venue.setName(randomDataService.getRandomVenueName());
-      VenueDescription description = new VenueDescription();
-      description.setCapacity(random.nextInt(100_000));
-      description.setType(randomDataService.getRandomVenueType());
-      description.setLocation(randomDataService.getRandomVenueLocation());
-      venue.setDescription(description);
+      if (random.nextBoolean()) {
+        VenueDescription description = new VenueDescription();
+        description.setCapacity(random.nextInt(100_000));
+        description.setType(randomDataService.getRandomVenueType());
+        description.setLocation(randomDataService.getRandomVenueLocation());
+        venue.setDescription(description);
+      } else {
+        venue.setDescription(null);
+      }
       venues.add(venue);
     }
     return repository.saveAll(venues);

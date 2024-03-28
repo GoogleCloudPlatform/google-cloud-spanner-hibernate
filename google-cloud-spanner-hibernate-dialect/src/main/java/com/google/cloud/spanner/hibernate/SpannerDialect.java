@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import static org.hibernate.type.SqlTypes.DECIMAL;
+import static org.hibernate.type.SqlTypes.JSON;
 import static org.hibernate.type.SqlTypes.NUMERIC;
 
 import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint;
@@ -65,6 +66,8 @@ import org.hibernate.type.descriptor.java.JavaType;
 import org.hibernate.type.descriptor.jdbc.BasicBinder;
 import org.hibernate.type.descriptor.jdbc.JsonAsStringJdbcType;
 import org.hibernate.type.descriptor.jdbc.spi.JdbcTypeRegistry;
+import org.hibernate.type.descriptor.sql.internal.DdlTypeImpl;
+import org.hibernate.type.descriptor.sql.spi.DdlTypeRegistry;
 import org.jboss.logging.Logger;
 
 /** Hibernate 6.x dialect for Cloud Spanner. */
@@ -86,7 +89,7 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
 
   private static class SpannerJsonJdbcType extends JsonAsStringJdbcType {
     private SpannerJsonJdbcType() {
-      super(SqlTypes.LONG32VARCHAR, null);
+      super(JSON, null);
     }
 
     @Override
@@ -176,6 +179,9 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
     if (sqlTypeCode == DECIMAL || sqlTypeCode == NUMERIC) {
       return "numeric";
     }
+    if (sqlTypeCode == JSON) {
+      return "json";
+    }
     return super.columnType(sqlTypeCode);
   }
 
@@ -186,6 +192,14 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
     JdbcTypeRegistry jdbcTypeRegistry =
         typeContributions.getTypeConfiguration().getJdbcTypeRegistry();
     jdbcTypeRegistry.addDescriptorIfAbsent(new SpannerJsonJdbcType());
+    final DdlTypeRegistry ddlTypeRegistry =
+        typeContributions.getTypeConfiguration().getDdlTypeRegistry();
+    ddlTypeRegistry.addDescriptor(
+        new DdlTypeImpl(
+          SqlTypes.JSON,
+          columnType(SqlTypes.JSON),
+          castType(SqlTypes.JSON),
+          this));
   }
 
   @Override
