@@ -12,6 +12,9 @@ Please see the following sections for important details about dialect difference
 
 == Quick Set-Up
 
+See the link:google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample/[Spring Data JPA Sample Application]
+for a working sample application.
+
 First, add the Maven dependencies for the Cloud Spanner Hibernate Dialect and the Cloud Spanner JDBC driver.
 
 Maven coordinates for the dialect:
