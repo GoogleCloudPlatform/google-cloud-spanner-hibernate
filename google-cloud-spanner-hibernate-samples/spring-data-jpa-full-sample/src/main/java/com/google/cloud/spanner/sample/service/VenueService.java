@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.sample.service;
 
+import com.google.cloud.spanner.hibernate.TransactionTag;
 import com.google.cloud.spanner.sample.entities.Venue;
 import com.google.cloud.spanner.sample.entities.Venue.VenueDescription;
 import com.google.cloud.spanner.sample.repository.VenueRepository;
@@ -57,6 +58,7 @@ public class VenueService {
    * Generates the specified number of random Venue records.
    */
   @Transactional
+  @TransactionTag("generate_random_venues")
   public List<Venue> generateRandomVenues(int count) {
     Random random = new Random();
 
