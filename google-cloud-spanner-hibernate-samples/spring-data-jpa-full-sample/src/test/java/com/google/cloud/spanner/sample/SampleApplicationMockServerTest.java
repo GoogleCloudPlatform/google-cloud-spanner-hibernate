@@ -24,6 +24,7 @@ import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractMockServerTest;
+import com.google.common.base.Strings;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
@@ -396,12 +397,33 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     System.setProperty("spanner.emulator", "false");
     System.setProperty("spanner.host", "//localhost:" + getPort());
     System.setProperty("spanner.connectionProperties", ";usePlainText=true");
+    // Enable automatic tagging of transactions that do not already have a tag.
+    System.setProperty("spanner.auto_tag_transactions", "true");
     SpringApplication.run(SampleApplication.class).close();
 
     assertEquals(35, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
         .filter(request -> !request.getSql().equals("SELECT 1")).count());
     assertEquals(6, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
     assertEquals(11, mockSpanner.countRequestsOfType(CommitRequest.class));
+
+    // Verify that we receive a transaction tag for the generateRandomVenues() method.
+    assertEquals(1, mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
+        .filter(request -> request.getRequestOptions().getTransactionTag().equals("generate_random_venues")).count());
+    assertEquals(1, mockSpanner.getRequestsOfType(CommitRequest.class).stream()
+        .filter(request -> request.getRequestOptions().getTransactionTag().equals("generate_random_venues")).count());
+    // Also verify that we get the auto-generated transaction tags.
+    assertEquals(6, mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
+        .filter(request ->
+            !Strings.isNullOrEmpty(request.getRequestOptions().getTransactionTag())).count());
+    assertEquals(1, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+        .filter(request -> request.getRequestOptions().getTransactionTag()
+            .equals("service_SingerService_deleteAllSingers")).count());
+    assertEquals(1, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+        .filter(request -> request.getRequestOptions().getTransactionTag()
+            .equals("service_AlbumService_deleteAllAlbums")).count());
+    assertEquals(1, mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
+        .filter(request -> request.getRequestOptions().getTransactionTag()
+            .equals("service_SingerService_generateRandomSingers")).count());
   }
 
   private static void addDdlResponseToSpannerAdmin() {
