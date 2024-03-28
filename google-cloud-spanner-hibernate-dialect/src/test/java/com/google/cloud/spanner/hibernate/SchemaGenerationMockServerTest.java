@@ -50,6 +50,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
@@ -669,7 +670,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     assertEquals(2, insertRequest.getStatementsCount());
     assertEquals(insertSql, insertRequest.getStatements(0).getSql());
     assertEquals(insertSql, insertRequest.getStatements(1).getSql());
-    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(RollbackRequest.class));
 
     // Check the DDL statements that were generated.
     List<UpdateDatabaseDdlRequest> requests =
@@ -789,7 +791,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     assertEquals(2, insertRequest.getStatementsCount());
     assertEquals(insertSql, insertRequest.getStatements(0).getSql());
     assertEquals(insertSql, insertRequest.getStatements(1).getSql());
-    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(RollbackRequest.class));
 
     // Check that there were no DDL statements generated as the data model is up-to-date.
     List<UpdateDatabaseDdlRequest> requests =

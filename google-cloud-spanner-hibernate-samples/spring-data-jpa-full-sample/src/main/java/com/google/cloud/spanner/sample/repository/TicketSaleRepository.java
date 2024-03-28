@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Google LLC
+ * Copyright 2019-2024 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,9 +18,9 @@
 
 package com.google.cloud.spanner.sample.repository;
 
-import com.google.cloud.spanner.sample.entities.Concert;
+import com.google.cloud.spanner.sample.entities.TicketSale;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ConcertRepository extends JpaRepository<Concert, String> {
+public interface TicketSaleRepository extends JpaRepository<TicketSale, Long> {
 
 }

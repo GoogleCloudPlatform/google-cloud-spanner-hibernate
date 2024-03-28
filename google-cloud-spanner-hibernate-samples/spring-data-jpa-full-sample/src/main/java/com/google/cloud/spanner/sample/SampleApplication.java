@@ -27,6 +27,7 @@ import com.google.cloud.spanner.sample.service.AlbumService;
 import com.google.cloud.spanner.sample.service.ConcertService;
 import com.google.cloud.spanner.sample.service.SingerService;
 import com.google.cloud.spanner.sample.service.StaleReadService;
+import com.google.cloud.spanner.sample.service.TicketSaleService;
 import com.google.cloud.spanner.sample.service.TrackService;
 import com.google.cloud.spanner.sample.service.VenueService;
 import jakarta.annotation.PreDestroy;
@@ -62,6 +63,7 @@ public class SampleApplication implements CommandLineRunner {
   private final TrackService trackService;
   private final VenueService venueService;
   private final ConcertService concertService;
+  private final TicketSaleService ticketSaleService;
   /**
    * The {@link StaleReadService} is a generic service that can be used to execute workloads using
    * stale reads. Stale reads can perform better than strong reads. See <a
@@ -81,6 +83,7 @@ public class SampleApplication implements CommandLineRunner {
       TrackService trackService,
       VenueService venueService,
       ConcertService concertService,
+      TicketSaleService ticketSaleService,
       StaleReadService staleReadService,
       ConcertRepository concertRepository) {
     this.singerService = singerService;
@@ -88,6 +91,7 @@ public class SampleApplication implements CommandLineRunner {
     this.trackService = trackService;
     this.venueService = venueService;
     this.concertService = concertService;
+    this.ticketSaleService = ticketSaleService;
     this.staleReadService = staleReadService;
     this.concertRepository = concertRepository;
   }
@@ -100,6 +104,7 @@ public class SampleApplication implements CommandLineRunner {
   public void run(String... args) {
     // First clear the current tables.
     log.info("Deleting all existing data");
+    ticketSaleService.deleteAllTicketSales();
     concertService.deleteAllConcerts();
     albumService.deleteAllAlbums();
     singerService.deleteAllSingers();
@@ -115,6 +120,8 @@ public class SampleApplication implements CommandLineRunner {
     log.info("Created 20 venues");
     concertService.generateRandomConcerts(50);
     log.info("Created 50 concerts");
+    ticketSaleService.generateRandomTicketSales(250);
+    log.info("Created 250 ticket sales");
 
     // Print some of the randomly inserted data.
     printData();
