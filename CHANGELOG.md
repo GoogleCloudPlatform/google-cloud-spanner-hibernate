@@ -1,6 +1,34 @@
 # Changelog
 
 
+## [3.3.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.2.0...v3.3.0) (2024-03-28)
+
+
+### Features
+
+* support bit-reversed sequences on the emulator ([#984](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/984)) ([2e56037](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/2e56037628797aacd002b50e80cf47c1ad1162f9))
+* transaction tagging ([#977](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/977)) ([da41b42](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/da41b42247cba1949637fa308a2555f7b04b1eae))
+
+
+### Bug Fixes
+
+* JSON column DDL was generated as STRING ([#982](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/982)) ([aae5838](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/aae5838945c90390dd4d1ee2d69bc28ff406a616))
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#974](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/974)) ([8b06135](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/8b0613515263976c2a285f6d50479f79e7e4b0e7))
+* bump org.apache.maven.plugins:maven-gpg-plugin ([#970](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/970)) ([3cd6430](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/3cd643078e229fe0a19c7987e42d8d872a919db8))
+* bump org.apache.maven.plugins:maven-gpg-plugin ([#979](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/979)) ([da7fda2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/da7fda247dfc97487188b28311c44bd4eadbc647))
+
+
+### Documentation
+
+* add a direct reference to the sample application ([#985](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/985)) ([72763ef](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/72763ef5c4a55e98f7f2c84f0e75445c1e0c12f4))
+* add documentation for using JSON ([#964](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/964)) ([dad0474](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/dad04748ee9ffa5302e2af7c82e53bed75dbdd2c))
+* update array documentation ([#963](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/963)) ([6c487e0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/6c487e0260f9e348803d9658ada7ee274f3badfd))
+* update README dependency versions ([#962](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/962)) ([986ec98](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/986ec98a98ef1bfb1dd5feaec796ac08b6a1ac92))
+
 ## [3.2.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.1.2...v3.2.0) (2024-03-11)
 
 
