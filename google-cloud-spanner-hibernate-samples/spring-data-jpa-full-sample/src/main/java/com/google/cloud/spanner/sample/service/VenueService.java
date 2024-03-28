@@ -56,6 +56,12 @@ public class VenueService {
 
   /**
    * Generates the specified number of random Venue records.
+   *
+   * <p>The {@link TransactionTag} annotation adds a transaction tag to the read/write transaction
+   * and all the statements that are executed in this transaction. This tag only works if you also
+   * add a {@link com.google.cloud.spanner.hibernate.TransactionTagInterceptor} to your Hibernate
+   * configuration. See {@link com.google.cloud.spanner.sample.TaggingHibernatePropertiesCustomizer}
+   * for how this is done in this sample application.
    */
   @Transactional
   @TransactionTag("generate_random_venues")
