@@ -177,6 +177,8 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         .to("%").bind("p2").to("%").bind("p3").to("%").bind("p4").to("%").build(), empty()));
 
     // Add results for the initial queries that are used to delete all data.
+    mockSpanner.putStatementResults(StatementResult.query(Statement.of("select ts1_0.id,ts1_0.concert_id,ts1_0.created_at,ts1_0.customer_name,ts1_0.price,ts1_0.seats,ts1_0.updated_at from ticket_sale ts1_0"),
+        empty()));
     mockSpanner.putStatementResult(StatementResult.query(Statement.of(
             "select c1_0.id,c1_0.created_at,c1_0.end_time,c1_0.name,c1_0.singer_id,c1_0.start_time,c1_0.updated_at,c1_0.venue_id from concert c1_0"),
         empty()));
@@ -399,10 +401,10 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     System.setProperty("spanner.auto_tag_transactions", "true");
     SpringApplication.run(SampleApplication.class).close();
 
-    assertEquals(31, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+    assertEquals(35, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
         .filter(request -> !request.getSql().equals("SELECT 1")).count());
     assertEquals(6, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
-    assertEquals(9, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(11, mockSpanner.countRequestsOfType(CommitRequest.class));
 
     // Verify that we receive a transaction tag for the generateRandomVenues() method.
     assertEquals(1, mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()

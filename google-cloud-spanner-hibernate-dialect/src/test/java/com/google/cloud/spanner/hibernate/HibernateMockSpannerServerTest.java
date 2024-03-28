@@ -42,6 +42,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
@@ -339,7 +340,10 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
     // We should have three read/write transactions:
     // 1. Two separate transactions for getting the values from the bit-reversed sequence.
     // 2. A transaction corresponding to the Hibernate transaction.
-    assertEquals(3, mockSpanner.countRequestsOfType(CommitRequest.class));
+    // The transactions for getting values from the bit-reversed sequence are rolled back instead
+    // of committed, as this prevents the transaction from being aborted on the emulator.
+    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(2, mockSpanner.countRequestsOfType(RollbackRequest.class));
 
     assertEquals(2, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
         .filter(request -> request.getSql().equals(getSequenceValuesSql)).count());
@@ -404,9 +408,11 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
     }
 
     // We should have two read/write transactions:
-    // 1. A separate transaction for getting the values from the bit-reversed sequence.
+    // 1. A separate transaction for getting the values from the bit-reversed sequence. This
+    //    transaction is rolled back.
     // 2. A transaction corresponding to the Hibernate transaction.
-    assertEquals(2, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(RollbackRequest.class));
 
     assertEquals(1, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
         .filter(request -> request.getSql().equals(getSequenceValuesSql)).count());
@@ -444,7 +450,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
             Statement.of(getSequenceValuesSql),
             createBitReversedSequenceResultSet(20001L, 20005L),
             createBitReversedSequenceResultSet(20006L, 20010L)));
-    mockSpanner.setCommitExecutionTime(SimulatedExecutionTime.ofException(
+    mockSpanner.setExecuteStreamingSqlExecutionTime(SimulatedExecutionTime.ofException(
         mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
 
     String insertSql = "insert into `test-entity` (name,id) values (@p1,@p2)";
@@ -466,7 +472,12 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
     // 1. Two transactions for getting the values from the bit-reversed sequence. The first one is
     //    aborted.
     // 2. A transaction corresponding to the Hibernate transaction.
-    assertEquals(3, mockSpanner.countRequestsOfType(CommitRequest.class));
+    // The transactions for getting values from the bit-reversed sequence are rolled back instead
+    // of committed, as this prevents the transaction from being aborted on the emulator. Only the
+    // transaction that successfully fetched a value from the bit-reversed sequence is rolled back.
+    // The aborted transaction is neither committed or rolled back.
+    assertEquals(1, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(RollbackRequest.class));
 
     // We should have two attempts to get sequence values.
     assertEquals(2, mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()

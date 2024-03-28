@@ -402,7 +402,13 @@ public class PooledBitReversedSequenceStyleGenerator implements
             }
           }
         }
-        connection.commit();
+        // Do a rollback instead of a commit here because:
+        // 1. We have only accessed a bit-reversed sequence during the transaction.
+        // 2. Committing or rolling back the transaction does not make any difference for the
+        //    sequence. Its state has been updated in both cases.
+        // 3. Committing the transaction on the emulator would cause it to be aborted, as the
+        //    emulator only supports one transaction at any time. Rolling back is however allowed.
+        connection.rollback();
         return identifiers.iterator();
       }
     } catch (SQLException sqlException) {
