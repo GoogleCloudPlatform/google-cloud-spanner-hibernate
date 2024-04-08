@@ -138,7 +138,6 @@ public abstract class AbstractMockSpannerServerTest {
     config.setProperty(
         "hibernate.connection.driver_class", "com.google.cloud.spanner.jdbc.JdbcDriver");
     config.setProperty("hibernate.connection.url", createTestJdbcUrl());
-    // config.setProperty("hibernate.dialect", "com.google.cloud.spanner.hibernate.SpannerDialect");
     for (Entry<String, String> property : hibernateProperties.entrySet()) {
       config.setProperty(property.getKey(), property.getValue());
     }

@@ -167,7 +167,7 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   public SpannerDialect() {
   }
 
-  /** Constructor. */
+  /** Constructor used for automatic dialect detection. */
   public SpannerDialect(DialectResolutionInfo info) {
     super(info);
   }
