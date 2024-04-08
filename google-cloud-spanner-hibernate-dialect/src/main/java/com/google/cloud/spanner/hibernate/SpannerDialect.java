@@ -34,6 +34,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.boot.model.TypeContributions;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.unique.UniqueDelegate;
+import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfo;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Constraint;
 import org.hibernate.mapping.ForeignKey;
@@ -161,6 +162,15 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   private final StandardSequenceExporter sequenceExporter = new SpannerSequenceExporter(this);
 
   private final SpannerUniqueDelegate spannerUniqueDelegate = new SpannerUniqueDelegate(this);
+
+  /** Default constructor. */
+  public SpannerDialect() {
+  }
+
+  /** Constructor. */
+  public SpannerDialect(DialectResolutionInfo info) {
+    super(info);
+  }
 
   @Override
   public SqlAstTranslatorFactory getSqlAstTranslatorFactory() {

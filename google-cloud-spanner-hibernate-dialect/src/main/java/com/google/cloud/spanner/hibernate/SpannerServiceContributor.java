@@ -20,13 +20,13 @@ package com.google.cloud.spanner.hibernate;
 
 import com.google.cloud.spanner.hibernate.schema.SpannerSchemaManagementTool;
 import java.util.Map;
-import java.util.Objects;
-import org.hibernate.boot.registry.StandardServiceInitiator;
+import javax.annotation.Nonnull;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.service.Service;
+import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.service.spi.ServiceContributor;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.tool.schema.UniqueConstraintSchemaUpdateStrategy;
+import org.hibernate.tool.schema.internal.SchemaManagementToolInitiator;
 import org.hibernate.tool.schema.spi.SchemaManagementTool;
 
 /**
@@ -46,31 +46,29 @@ public class SpannerServiceContributor implements ServiceContributor {
   static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
 
   @Override
-  public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder) {
-    if (Objects.equals(
-        serviceRegistryBuilder.getSettings().get("hibernate.dialect"),
-        SpannerDialect.class.getName())) {
-      serviceRegistryBuilder
-          // The custom Hibernate schema management tool for Spanner.
-          .addInitiator(
-              new StandardServiceInitiator() {
-                @Override
-                public Service initiateService(
-                    Map configurationValues, ServiceRegistryImplementor registry) {
-                  return SCHEMA_MANAGEMENT_TOOL;
+  public void contribute(@Nonnull StandardServiceRegistryBuilder serviceRegistryBuilder) {
+    serviceRegistryBuilder
+        // The custom Hibernate schema management tool for Spanner.
+        .addInitiator(
+            new SchemaManagementToolInitiator() {
+              @Override
+              public SchemaManagementTool initiateService(
+                  Map<String, Object> configurationValues, ServiceRegistryImplementor registry) {
+                JdbcEnvironment jdbcEnvironment = registry.getService(JdbcEnvironment.class);
+                if (jdbcEnvironment != null) {
+                  if (SpannerDialect.class.isAssignableFrom(
+                      jdbcEnvironment.getDialect().getClass())) {
+                    return SCHEMA_MANAGEMENT_TOOL;
+                  }
                 }
-
-                @Override
-                public Class getServiceInitiated() {
-                  return SchemaManagementTool.class;
-                }
-              })
-          // The user agent JDBC connection property to identify the library.
-          .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN)
-          // Adding this setting prevents Hibernate from dropping and re-creating (unique) indexes
-          // every time a session factory is created with hbm2dll=update. 
-          .applySetting("hibernate.schema_update.unique_constraint_strategy",
-                        UniqueConstraintSchemaUpdateStrategy.RECREATE_QUIETLY);
-    }
+                return super.initiateService(configurationValues, registry);
+              }
+            })
+        // The user agent JDBC connection property to identify the library.
+        .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN)
+        // Adding this setting prevents Hibernate from dropping and re-creating (unique) indexes
+        // every time a session factory is created with hbm2dll=update.
+        .applySetting("hibernate.schema_update.unique_constraint_strategy",
+                      UniqueConstraintSchemaUpdateStrategy.RECREATE_QUIETLY);
   }
 }
