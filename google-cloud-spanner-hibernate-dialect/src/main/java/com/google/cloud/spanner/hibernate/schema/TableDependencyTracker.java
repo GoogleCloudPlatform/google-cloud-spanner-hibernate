@@ -24,9 +24,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.hibernate.boot.Metadata;
 import org.hibernate.internal.HEMLogging;
+import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
+import org.hibernate.mapping.Table.ForeignKeyKey;
 import org.hibernate.tool.schema.Action;
 import org.jboss.logging.Logger;
 
@@ -74,6 +77,16 @@ public class TableDependencyTracker {
         } else {
           // If dropping tables, the child blocks the parent.
           dependencies.put(SchemaUtils.getTable(interleaved.parentEntity(), metadata), childTable);
+        }
+      }
+    }
+    if (schemaAction == Action.DROP) {
+      // Also take foreign key relations into account when dropping the schema.
+      for (Table parentTable : metadata.collectTableMappings()) {
+        for (Entry<ForeignKeyKey, ForeignKey> foreignKey : parentTable.getForeignKeys()
+            .entrySet()) {
+
+          foreignKey.getValue().getReferencedTable()
         }
       }
     }
