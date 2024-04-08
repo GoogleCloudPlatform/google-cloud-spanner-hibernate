@@ -25,11 +25,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.hibernate.HibernateException;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.relational.Database;
-import org.hibernate.mapping.Constraint;
-import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
 
 /**
@@ -85,30 +82,6 @@ public class SpannerDatabaseInfo {
     } catch (SQLException e) {
       throw new RuntimeException(
           "Failed to lookup Spanner Database foreign keys for table: " + table, e);
-    }
-  }
-
-  public Set<ForeignKey> getExportedForeignKeys(Table referencedTable) {
-    HashSet<ForeignKey> foreignKeys = new HashSet<>();
-    try (ResultSet exportedKeys = databaseMetaData.getExportedKeys(
-        referencedTable.getCatalog(), referencedTable.getSchema(), referencedTable.getName())) {
-      while (exportedKeys.next()) {
-        ForeignKey key = new ForeignKey();
-        key.setName(exportedKeys.getString("FK_NAME"));
-        key.setReferencedTable(referencedTable);
-
-        Table table = new Table(referencedTable.getContributor());
-        table.setCatalog(exportedKeys.getString("FKTABLE_CAT"));
-        table.setSchema(exportedKeys.getString("FKTABLE_SCHEM"));
-        table.setName(exportedKeys.getString("FKTABLE_NAME"));
-        key.setTable(table);
-
-        foreignKeys.add(key);
-      }
-      return foreignKeys;
-    } catch (SQLException e) {
-      throw new HibernateException(
-          "Failed to lookup Spanner Database foreign keys referencing table: " + referencedTable, e);
     }
   }
 

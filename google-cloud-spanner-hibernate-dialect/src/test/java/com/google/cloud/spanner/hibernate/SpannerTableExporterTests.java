@@ -129,7 +129,7 @@ public class SpannerTableExporterTests {
 
       assertThat(statements).containsExactly(
           "START BATCH DDL;",
-          "drop index name_index;",
+          "drop index if exists name_index;",
           "drop table `Employee`;",
           "RUN BATCH;");
     } finally {
@@ -160,7 +160,7 @@ public class SpannerTableExporterTests {
 
     assertThat(statements).containsExactly(
         "START BATCH DDL;",
-        "drop index name_index;",
+        "drop index if exists name_index;",
         "drop table `Employee`;",
         "drop sequence Employee_Sequence;",
         "RUN BATCH;");

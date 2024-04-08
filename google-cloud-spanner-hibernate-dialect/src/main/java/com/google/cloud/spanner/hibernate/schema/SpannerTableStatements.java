@@ -37,7 +37,6 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
-import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.type.CustomType;
 
@@ -78,17 +77,6 @@ public class SpannerTableStatements {
     }
 
     if (spannerDatabaseInfo.getAllTables().contains(table)) {
-      // Drop all incoming foreign key constraints.
-      Set<ForeignKey> exportedForeignKeys = spannerDatabaseInfo.getExportedForeignKeys(table);
-      for (ForeignKey foreignKey : exportedForeignKeys) {
-        if (foreignKey.getName() != null) {
-          dropStrings.add(
-              "alter table " + foreignKey.getTable().getQualifiedTableName().quote().getObjectName()
-                  .toString()
-                  + " drop constraint " + foreignKey.getName());
-        }
-      }
-
       dropStrings.add(this.spannerDialect.getDropTableString(
           table.getQualifiedTableName().quote().getObjectName().toString()));
     }

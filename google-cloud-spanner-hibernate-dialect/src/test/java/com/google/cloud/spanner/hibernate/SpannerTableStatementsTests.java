@@ -116,7 +116,8 @@ public class SpannerTableStatementsTests {
     table.addIndex(index);
 
     List<String> statements = spannerTableStatements.dropTable(table);
-    assertThat(statements).containsExactly("drop index address", "drop table `House`");
+    assertThat(statements).containsExactly(
+        "drop index if exists address", "drop table `House`");
   }
 
   @Test
