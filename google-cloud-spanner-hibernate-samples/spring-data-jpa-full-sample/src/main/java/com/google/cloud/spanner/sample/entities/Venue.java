@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.sample.entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import java.io.Serializable;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -71,6 +72,10 @@ public class Venue extends AbstractNonInterleavedEntity {
   @JdbcTypeCode(SqlTypes.JSON)
   private VenueDescription description;
 
+  @Column(name="TemplateObj")
+  @JdbcTypeCode( SqlTypes.JSON )
+  private Template template;
+
   public String getName() {
     return name;
   }
@@ -85,5 +90,13 @@ public class Venue extends AbstractNonInterleavedEntity {
 
   public void setDescription(VenueDescription description) {
     this.description = description;
+  }
+
+  public Template getTemplate() {
+    return template;
+  }
+
+  public void setTemplate(Template template) {
+    this.template = template;
   }
 }

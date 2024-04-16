@@ -19,13 +19,19 @@
 package com.google.cloud.spanner.sample.service;
 
 import com.google.cloud.spanner.hibernate.TransactionTag;
+import com.google.cloud.spanner.jdbc.JsonType;
 import com.google.cloud.spanner.sample.entities.Venue;
 import com.google.cloud.spanner.sample.entities.Venue.VenueDescription;
 import com.google.cloud.spanner.sample.repository.VenueRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
+import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 
 /**
@@ -37,6 +43,9 @@ public class VenueService {
   private final VenueRepository repository;
 
   private final RandomDataService randomDataService;
+
+  @PersistenceContext
+  private EntityManager entityManager;
 
   /**
    * Constructor with auto-injected dependencies.
@@ -84,5 +93,59 @@ public class VenueService {
       venues.add(venue);
     }
     return repository.saveAll(venues);
+  }
+  
+  private static final String JSON = "{\n"
+      + "  \"canTestConnection\": true,\n"
+      + "  \"detailTemplate\": {\n"
+      + "    \"properties\": [\n"
+      + "      {\n"
+      + "        \"descriptor\": {\n"
+      + "          \"description\": \"Select multiple regions\",\n"
+      + "          \"displayName\": \"Region\",\n"
+      + "          \"docRef\": \"https://guide.com\"\n"
+      + "        },\n"
+      + "        \"id\": \"region\",\n"
+      + "        \"options\": [\n"
+      + "          {\n"
+      + "            \"displayName\": \"us-east\",\n"
+      + "            \"id\": \"us-east\"\n"
+      + "          },\n"
+      + "          {\n"
+      + "            \"displayName\": \"canada\",\n"
+      + "            \"id\": \"canada\"\n"
+      + "          }\n"
+      + "        ],\n"
+      + "        \"required\": true,\n"
+      + "        \"type\": \"multi-select\"\n"
+      + "      }\n"
+      + "    ]\n"
+      + "  },\n"
+      + "  \"descriptor\": {\n"
+      + "    \"description\": \"Sample\",\n"
+      + "    \"displayName\": \"Test Name\",\n"
+      + "    \"docRef\": \"https://guide.com\"\n"
+      + "  },\n"
+      + "  \"hasAccount\": true,\n"
+      + "  \"icon\": \"http://svg_link\",\n"
+      + "  \"id\": \"abc\",\n"
+      + "  \"schemaVersion\": \"1.0\",\n"
+      + "  \"type\": \"xyz\",\n"
+      + "  \"vendor\": \"Test\"\n"
+      + "}";
+  
+  public UUID createVenueWithTemplate() {
+    // Insert a new Venue with a template using JDBC directly.
+    return entityManager.unwrap(Session.class).doReturningWork(connection -> {
+      try (PreparedStatement preparedStatement =
+          connection.prepareStatement("insert into Venue (id, template_obj) values (?, ?)")) {
+        UUID id = UUID.randomUUID();
+        preparedStatement.setString(1, id.toString());
+        preparedStatement.setObject(2, JSON, JsonType.VENDOR_TYPE_NUMBER);
+        preparedStatement.executeUpdate();
+        
+        return id;
+      }
+    });
   }
 }

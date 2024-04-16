@@ -22,7 +22,10 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.SpannerPool;
 import com.google.cloud.spanner.sample.entities.Concert;
 import com.google.cloud.spanner.sample.entities.Singer;
+import com.google.cloud.spanner.sample.entities.Template;
+import com.google.cloud.spanner.sample.entities.Venue;
 import com.google.cloud.spanner.sample.repository.ConcertRepository;
+import com.google.cloud.spanner.sample.repository.VenueRepository;
 import com.google.cloud.spanner.sample.service.AlbumService;
 import com.google.cloud.spanner.sample.service.ConcertService;
 import com.google.cloud.spanner.sample.service.SingerService;
@@ -34,6 +37,7 @@ import jakarta.annotation.PreDestroy;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -73,6 +77,8 @@ public class SampleApplication implements CommandLineRunner {
   private final StaleReadService staleReadService;
 
   private final ConcertRepository concertRepository;
+  
+  private final VenueRepository venueRepository;
 
   /**
    * Constructor with auto-injected dependencies.
@@ -85,7 +91,8 @@ public class SampleApplication implements CommandLineRunner {
       ConcertService concertService,
       TicketSaleService ticketSaleService,
       StaleReadService staleReadService,
-      ConcertRepository concertRepository) {
+      ConcertRepository concertRepository,
+      VenueRepository venueRepository) {
     this.singerService = singerService;
     this.albumService = albumService;
     this.trackService = trackService;
@@ -94,6 +101,7 @@ public class SampleApplication implements CommandLineRunner {
     this.ticketSaleService = ticketSaleService;
     this.staleReadService = staleReadService;
     this.concertRepository = concertRepository;
+    this.venueRepository = venueRepository;
   }
 
   public static void main(String[] args) {
@@ -131,6 +139,17 @@ public class SampleApplication implements CommandLineRunner {
     // Select all active singers. This query uses a FORCE_INDEX query hint.
     List<Singer> activeSingers = singerService.getActiveSingers();
     log.info("Found {} active singers", activeSingers.size());
+    
+    // Create a Venue with a Template object.
+    UUID venueId = venueService.createVenueWithTemplate();
+    // Read the venue template back using Hibernate.
+    Venue venue = venueRepository.findById(venueId).orElseThrow();
+    log.info("Found template: {}", venue.getTemplate());
+    
+    // Update the venue and write it back to the database.
+    venue.setName("Updated name");
+    venue.getTemplate().setType("Updated type");
+    venueRepository.save(venue);
   }
 
   void printData() {
