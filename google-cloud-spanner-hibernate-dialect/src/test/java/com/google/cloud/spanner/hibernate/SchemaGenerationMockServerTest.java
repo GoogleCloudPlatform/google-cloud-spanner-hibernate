@@ -247,9 +247,10 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             .collect(Collectors.toList());
     assertEquals(1, requests.size());
     UpdateDatabaseDdlRequest request = requests.get(0);
-    assertEquals(7, request.getStatementsCount());
+    assertEquals(8, request.getStatementsCount());
 
     int index = -1;
+    assertEquals("alter table Invoice drop constraint fk_invoice_customer", request.getStatements(++index));
     assertEquals("drop table `Account`", request.getStatements(++index));
     assertEquals("drop table `Customer`", request.getStatements(++index));
     assertEquals("drop table `customerId`", request.getStatements(++index));

@@ -295,7 +295,7 @@ public class GeneratedCreateTableStatementsTests {
 
       assertThat(sqlStrings).startsWith(
           "START BATCH DDL",
-          "drop index name_index",
+          "drop index if exists name_index",
           "drop table `Employee`",
           "drop table `Employee_Sequence`",
           "RUN BATCH"
@@ -330,7 +330,7 @@ public class GeneratedCreateTableStatementsTests {
 
     assertThat(sqlStrings).startsWith(
         "START BATCH DDL",
-        "drop index name_index",
+        "drop index if exists name_index",
         "drop table `Employee`",
         "drop sequence Employee_Sequence",
         "RUN BATCH"

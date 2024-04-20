@@ -71,7 +71,7 @@ public class SpannerTableStatements {
     if (existingTableIndices != null) {
       for (String indexName : getTableIndices(table)) {
         if (existingTableIndices.contains(indexName)) {
-          dropStrings.add("drop index " + getQualifiedIndexName(table, indexName));
+          dropStrings.add("drop index if exists " + getQualifiedIndexName(table, indexName));
         }
       }
     }
