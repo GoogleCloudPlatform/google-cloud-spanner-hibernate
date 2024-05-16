@@ -45,9 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hibernate.cfg.Configuration;
 
-/**
- * Test environment used for integration tests.
- */
+/** Test environment used for integration tests. */
 public class HibernateIntegrationTestEnv {
 
   // Spanner host URL should be set through this system property. The default is the default Spanner
@@ -59,8 +57,8 @@ public class HibernateIntegrationTestEnv {
   public static final String TEST_INSTANCE_PROPERTY = "HIBERNATE_TEST_INSTANCE";
   // DatabaseId should be set through this system property.
   public static final String TEST_DATABASE_PROPERTY = "HIBERNATE_TEST_DATABASE";
-  private static final Logger logger = Logger.getLogger(
-      HibernateIntegrationTestEnv.class.getName());
+  private static final Logger logger =
+      Logger.getLogger(HibernateIntegrationTestEnv.class.getName());
   // Default fallback project Id will be used if one isn't set via the system property.
   private static final String DEFAULT_PROJECT_ID = "span-cloud-testing";
   // Default instance id.
@@ -108,8 +106,8 @@ public class HibernateIntegrationTestEnv {
   }
 
   private String generateDatabaseId(String databaseIdFormat) {
-    String id = String.format("%s_%s",
-        databaseIdFormat, UUID.randomUUID().toString().replace('-', '_'));
+    String id =
+        String.format("%s_%s", databaseIdFormat, UUID.randomUUID().toString().replace('-', '_'));
     // Make sure the database id is not longer than the max allowed 30 characters.
     if (id.length() > 30) {
       id = id.substring(0, 30);
@@ -121,9 +119,7 @@ public class HibernateIntegrationTestEnv {
     return id;
   }
 
-  /**
-   * Creates a test database for this test environment. This method may only be called once.
-   */
+  /** Creates a test database for this test environment. This method may only be called once. */
   public Database createDatabase(Iterable<String> ddlStatements) {
     if (database != null) {
       throw new IllegalStateException("The test database has already been created.");
@@ -161,9 +157,7 @@ public class HibernateIntegrationTestEnv {
     DatabaseAdminClient client = spanner.getDatabaseAdminClient();
     OperationFuture<Database, CreateDatabaseMetadata> op =
         client.createDatabase(
-            client
-                .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
-                .build(),
+            client.newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId)).build(),
             ddlStatements);
     try {
       database = op.get();
@@ -176,9 +170,7 @@ public class HibernateIntegrationTestEnv {
     }
   }
 
-  /**
-   * Updates the schema of the test database.
-   */
+  /** Updates the schema of the test database. */
   public void updateDdl(String databaseId, Iterable<String> statements)
       throws ExecutionException, InterruptedException {
     Spanner spanner = getSpanner();
@@ -209,9 +201,7 @@ public class HibernateIntegrationTestEnv {
     return builder.build();
   }
 
-  /**
-   * Drops all the databases that were created by this test env.
-   */
+  /** Drops all the databases that were created by this test env. */
   public void cleanup() {
     if (database != null) {
       try {
@@ -226,8 +216,10 @@ public class HibernateIntegrationTestEnv {
   }
 
   String createTestJdbcUrl() {
-    String url = String.format("jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s",
-        projectId, instanceId, databaseId);
+    String url =
+        String.format(
+            "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s",
+            projectId, instanceId, databaseId);
     if (!Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST"))) {
       url += ";autoConfigEmulator=true";
     }
@@ -255,5 +247,4 @@ public class HibernateIntegrationTestEnv {
 
     return config;
   }
-
 }

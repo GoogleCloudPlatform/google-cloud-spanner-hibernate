@@ -26,8 +26,8 @@ import java.util.Set;
 import org.junit.Test;
 
 /**
- * Tests verifying that the SpannerKeyFieldIterator behaves as expected.
- * Note - Since the test classes are defined inline, each class in the heirarchy references 'this$0'
+ * Tests verifying that the SpannerKeyFieldIterator behaves as expected. Note - Since the test
+ * classes are defined inline, each class in the heirarchy references 'this$0'
  */
 public class SpannerKeyFieldIteratorTests {
 
@@ -36,8 +36,7 @@ public class SpannerKeyFieldIteratorTests {
     Set<SpannerEntityFieldKey> fields = new HashSet<>();
     for (Field field : SpannerKeyFieldIterator.iterable(Parent.class)) {
       fields.add(
-          new SpannerEntityFieldKey(field.getDeclaringClass(), field.getType(), field.getName())
-      );
+          new SpannerEntityFieldKey(field.getDeclaringClass(), field.getType(), field.getName()));
     }
 
     Set<SpannerEntityFieldKey> expected = new HashSet<>();
@@ -55,8 +54,7 @@ public class SpannerKeyFieldIteratorTests {
     Set<SpannerEntityFieldKey> fields = new HashSet<>();
     for (Field field : SpannerKeyFieldIterator.iterable(ParentSubClass.class)) {
       fields.add(
-          new SpannerEntityFieldKey(field.getDeclaringClass(), field.getType(), field.getName())
-      );
+          new SpannerEntityFieldKey(field.getDeclaringClass(), field.getType(), field.getName()));
     }
 
     Set<SpannerEntityFieldKey> expected = new HashSet<>();
@@ -75,8 +73,7 @@ public class SpannerKeyFieldIteratorTests {
     Set<SpannerEntityFieldKey> fields = new HashSet<>();
     for (Field field : SpannerKeyFieldIterator.iterable(GenericParentImpl.class)) {
       fields.add(
-          new SpannerEntityFieldKey(field.getDeclaringClass(), field.getType(), field.getName())
-      );
+          new SpannerEntityFieldKey(field.getDeclaringClass(), field.getType(), field.getName()));
     }
 
     // Due to type erasure the generic field will still be of type 'Object'

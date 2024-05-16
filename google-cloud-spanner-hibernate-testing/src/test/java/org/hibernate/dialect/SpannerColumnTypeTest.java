@@ -33,8 +33,7 @@ import org.junit.Test;
 public class SpannerColumnTypeTest extends BaseEntityManagerFunctionalTestCase {
 
   // Lists of data to read and write to Spanner array columns.
-  private static final List<BigDecimal> BIG_DECIMAL_LIST =
-      Arrays.asList(new BigDecimal(10000L));
+  private static final List<BigDecimal> BIG_DECIMAL_LIST = Arrays.asList(new BigDecimal(10000L));
   private static final List<Boolean> BOOLEAN_LIST = Arrays.asList(true, false);
   private static final List<byte[]> BYTES_LIST =
       Arrays.asList("hello".getBytes(), "good bye".getBytes());
@@ -46,44 +45,43 @@ public class SpannerColumnTypeTest extends BaseEntityManagerFunctionalTestCase {
 
   @Override
   protected Class<?>[] getAnnotatedClasses() {
-    return new Class<?>[]{
-      ListEntity.class
-    };
+    return new Class<?>[] {ListEntity.class};
   }
 
   @Test
   public void testArrayColumnMappings() {
     super.buildEntityManagerFactory();
 
-    doInJPA(this::entityManagerFactory, entityManager -> {
-      ListEntity listEntity = new ListEntity();
+    doInJPA(
+        this::entityManagerFactory,
+        entityManager -> {
+          ListEntity listEntity = new ListEntity();
 
-      listEntity.setBigDecimalList(BIG_DECIMAL_LIST);
-      listEntity.setBooleanList(BOOLEAN_LIST);
-      listEntity.setByteList(BYTES_LIST);
-      listEntity.setTimestampList(TIMESTAMP_LIST);
-      listEntity.setDoubleList(DOUBLE_LIST);
-      listEntity.setIntList(INT_LIST);
-      listEntity.setStringList(STRING_LIST);
+          listEntity.setBigDecimalList(BIG_DECIMAL_LIST);
+          listEntity.setBooleanList(BOOLEAN_LIST);
+          listEntity.setByteList(BYTES_LIST);
+          listEntity.setTimestampList(TIMESTAMP_LIST);
+          listEntity.setDoubleList(DOUBLE_LIST);
+          listEntity.setIntList(INT_LIST);
+          listEntity.setStringList(STRING_LIST);
 
-      entityManager.persist(listEntity);
-      entityManager.flush();
+          entityManager.persist(listEntity);
+          entityManager.flush();
 
-      Session session = entityManager.unwrap(Session.class);
-      List<ListEntity> listEntities =
-          session.createQuery(
-              "from ListEntity", ListEntity.class).list();
-      assertThat(listEntities).hasSize(1);
+          Session session = entityManager.unwrap(Session.class);
+          List<ListEntity> listEntities =
+              session.createQuery("from ListEntity", ListEntity.class).list();
+          assertThat(listEntities).hasSize(1);
 
-      ListEntity result = listEntities.get(0);
+          ListEntity result = listEntities.get(0);
 
-      assertThat(result.getBigDecimalList()).isEqualTo(BIG_DECIMAL_LIST);
-      assertThat(result.getBooleanList()).isEqualTo(BOOLEAN_LIST);
-      assertThat(result.getByteList()).isEqualTo(BYTES_LIST);
-      assertThat(result.getTimestampList()).isEqualTo(TIMESTAMP_LIST);
-      assertThat(result.getDoubleList()).isEqualTo(DOUBLE_LIST);
-      assertThat(result.getIntList()).isEqualTo(INT_LIST);
-      assertThat(result.getStringList()).isEqualTo(STRING_LIST);
-    });
+          assertThat(result.getBigDecimalList()).isEqualTo(BIG_DECIMAL_LIST);
+          assertThat(result.getBooleanList()).isEqualTo(BOOLEAN_LIST);
+          assertThat(result.getByteList()).isEqualTo(BYTES_LIST);
+          assertThat(result.getTimestampList()).isEqualTo(TIMESTAMP_LIST);
+          assertThat(result.getDoubleList()).isEqualTo(DOUBLE_LIST);
+          assertThat(result.getIntList()).isEqualTo(INT_LIST);
+          assertThat(result.getStringList()).isEqualTo(STRING_LIST);
+        });
   }
 }

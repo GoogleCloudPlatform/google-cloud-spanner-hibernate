@@ -29,9 +29,7 @@ import java.util.Random;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-/**
- * Service class for fetching and saving Track records.
- */
+/** Service class for fetching and saving Track records. */
 @Service
 public class TrackService {
 
@@ -41,9 +39,7 @@ public class TrackService {
 
   private final AlbumRepository albumRepository;
 
-  /**
-   * Constructor with auto-injected dependencies.
-   */
+  /** Constructor with auto-injected dependencies. */
   public TrackService(
       RandomDataService randomDataService,
       TrackRepository trackRepository,
@@ -53,9 +49,7 @@ public class TrackService {
     this.albumRepository = albumRepository;
   }
 
-  /**
-   * Generates the specified number of random Track records.
-   */
+  /** Generates the specified number of random Track records. */
   @Transactional
   public void generateRandomTracks(int numAlbums, int numTracksPerAlbum) {
     Random random = new Random();

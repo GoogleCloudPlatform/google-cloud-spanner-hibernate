@@ -23,23 +23,23 @@ import static com.google.cloud.spanner.hibernate.hints.Hints.joinTableHint;
 
 import com.google.common.collect.ImmutableList;
 
-/**
- * Util class for adding a GROUPBY_SCAN_OPTIMIZATION hint to queries.
- */
+/** Util class for adding a GROUPBY_SCAN_OPTIMIZATION hint to queries. */
 class GroupByScanOptimizationHint extends ReplaceQueryPartsHint {
 
   private static final String HINT = "GROUPBY_SCAN_OPTIMIZATION";
 
   static GroupByScanOptimizationHint from(String table, boolean value, ReplaceMode replaceMode) {
-    return new GroupByScanOptimizationHint(ImmutableList.of(
-        new Replacement(Hints.from(table), groupByScanOptimizationFrom(table, value),
-            replaceMode)));
+    return new GroupByScanOptimizationHint(
+        ImmutableList.of(
+            new Replacement(
+                Hints.from(table), groupByScanOptimizationFrom(table, value), replaceMode)));
   }
 
   static GroupByScanOptimizationHint join(String table, boolean value, ReplaceMode replaceMode) {
-    return new GroupByScanOptimizationHint(ImmutableList.of(
-        new Replacement(Hints.join(table), groupByScanOptimizationJoin(table, value),
-            replaceMode)));
+    return new GroupByScanOptimizationHint(
+        ImmutableList.of(
+            new Replacement(
+                Hints.join(table), groupByScanOptimizationJoin(table, value), replaceMode)));
   }
 
   private GroupByScanOptimizationHint(ImmutableList<Replacement> replacements) {
@@ -53,5 +53,4 @@ class GroupByScanOptimizationHint extends ReplaceQueryPartsHint {
   private static String groupByScanOptimizationJoin(String table, boolean value) {
     return joinTableHint(table, HINT, String.valueOf(value));
   }
-
 }

@@ -77,8 +77,9 @@ public class SpannerTableStatements {
     }
 
     if (spannerDatabaseInfo.getAllTables().contains(table)) {
-      dropStrings.add(this.spannerDialect.getDropTableString(
-          table.getQualifiedTableName().quote().getObjectName().toString()));
+      dropStrings.add(
+          this.spannerDialect.getDropTableString(
+              table.getQualifiedTableName().quote().getObjectName().toString()));
     }
     return dropStrings;
   }
@@ -131,9 +132,7 @@ public class SpannerTableStatements {
 
     // Get the comma separated string of the primary keys of the table.
     String primaryKeyColNames =
-        keyColumns.stream()
-            .map(Column::getQuotedName)
-            .collect(Collectors.joining(","));
+        keyColumns.stream().map(Column::getQuotedName).collect(Collectors.joining(","));
 
     // Get the comma separated string of all columns of the table.
     String allColumnNames =
@@ -186,9 +185,11 @@ public class SpannerTableStatements {
         }
       }
       if (typeCode == Code.UNRECOGNIZED) {
-        throw new IllegalArgumentException("Column " + col.getName()
-            + " has type 'ARRAY', but the mapped Hibernate type is not a subclass of "
-            + AbstractSpannerArrayType.class.getName());
+        throw new IllegalArgumentException(
+            "Column "
+                + col.getName()
+                + " has type 'ARRAY', but the mapped Hibernate type is not a subclass of "
+                + AbstractSpannerArrayType.class.getName());
       }
 
       String arrayType = typeCode.toString();
@@ -205,12 +206,15 @@ public class SpannerTableStatements {
       typeString = col.getSqlType(metadata);
     }
 
-    String result = col.getQuotedName() + " " + typeString
-        + (col.isNullable() ? this.spannerDialect.getNullColumnString() : " not null");
+    String result =
+        col.getQuotedName()
+            + " "
+            + typeString
+            + (col.isNullable() ? this.spannerDialect.getNullColumnString() : " not null");
     if (col.getDefaultValue() != null) {
       result = result + " default (" + col.getDefaultValue() + ")";
     }
-    
+
     return result;
   }
 

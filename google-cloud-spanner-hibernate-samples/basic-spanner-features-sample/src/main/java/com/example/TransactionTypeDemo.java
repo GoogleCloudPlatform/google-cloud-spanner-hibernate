@@ -26,9 +26,7 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
-/**
- * Code samples specifying a different Cloud Spanner Transaction Type.
- */
+/** Code samples specifying a different Cloud Spanner Transaction Type. */
 public class TransactionTypeDemo {
 
   /**
@@ -36,11 +34,9 @@ public class TransactionTypeDemo {
    * transaction.
    */
   public static void main(String[] args) {
-    StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-        .configure()
-        .build();
-    SessionFactory sessionFactory = new MetadataSources(registry).buildMetadata()
-        .buildSessionFactory();
+    StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure().build();
+    SessionFactory sessionFactory =
+        new MetadataSources(registry).buildMetadata().buildSessionFactory();
     SessionHelper sessionHelper = new SessionHelper(sessionFactory);
 
     runReadOnlyTransaction(sessionHelper);
@@ -55,8 +51,9 @@ public class TransactionTypeDemo {
       session.save(book);
       session.getTransaction().commit();
     } catch (PersistenceException ex) {
-      System.out.println("You will get the following error if you try to modify the tables in "
-          + "a read-only transaction: ");
+      System.out.println(
+          "You will get the following error if you try to modify the tables in "
+              + "a read-only transaction: ");
 
       Throwable throwable = ex;
       while (throwable != null) {

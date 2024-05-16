@@ -31,58 +31,63 @@ public class ReplaceQueryPartsHintTest {
 
   @Test
   public void testToComment() {
-    assertEquals("{\n"
-        + "  \"spanner_replacements\": [\n"
-        + "    {\n"
-        + "      \"regex\": \"from\",\n"
-        + "      \"replacement\": \"to\",\n"
-        + "      \"replace_mode\": \"ALL\"\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}", ReplaceQueryPartsHint.of("from", "to").toComment());
-    assertEquals("{\n"
-        + "  \"spanner_replacements\": [\n"
-        + "    {\n"
-        + "      \"regex\": \"from1\",\n"
-        + "      \"replacement\": \"to1\",\n"
-        + "      \"replace_mode\": \"ALL\"\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}", ReplaceQueryPartsHint.of("from1", "to1").toComment());
-    assertEquals("{\n"
-        + "  \"spanner_replacements\": [\n"
-        + "    {\n"
-        + "      \"regex\": \"from1\",\n"
-        + "      \"replacement\": \"to1\",\n"
-        + "      \"replace_mode\": \"FIRST\"\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}", ReplaceQueryPartsHint.of("from1", "to1", ReplaceMode.FIRST).toComment());
+    assertEquals(
+        "{\n"
+            + "  \"spanner_replacements\": [\n"
+            + "    {\n"
+            + "      \"regex\": \"from\",\n"
+            + "      \"replacement\": \"to\",\n"
+            + "      \"replace_mode\": \"ALL\"\n"
+            + "    }\n"
+            + "  ]\n"
+            + "}",
+        ReplaceQueryPartsHint.of("from", "to").toComment());
+    assertEquals(
+        "{\n"
+            + "  \"spanner_replacements\": [\n"
+            + "    {\n"
+            + "      \"regex\": \"from1\",\n"
+            + "      \"replacement\": \"to1\",\n"
+            + "      \"replace_mode\": \"ALL\"\n"
+            + "    }\n"
+            + "  ]\n"
+            + "}",
+        ReplaceQueryPartsHint.of("from1", "to1").toComment());
+    assertEquals(
+        "{\n"
+            + "  \"spanner_replacements\": [\n"
+            + "    {\n"
+            + "      \"regex\": \"from1\",\n"
+            + "      \"replacement\": \"to1\",\n"
+            + "      \"replace_mode\": \"FIRST\"\n"
+            + "    }\n"
+            + "  ]\n"
+            + "}",
+        ReplaceQueryPartsHint.of("from1", "to1", ReplaceMode.FIRST).toComment());
   }
 
   @Test
   public void testFromComment() {
     assertEquals(
         ReplaceQueryPartsHint.of(" from singers ", " from singers@{force_index=foo} "),
-        ReplaceQueryPartsHint.fromComment("{spanner_replacements: ["
-            + "{regex: \" from singers \", replacement: \" from singers@{force_index=foo} \"}"
-            + "]}"));
+        ReplaceQueryPartsHint.fromComment(
+            "{spanner_replacements: ["
+                + "{regex: \" from singers \", replacement: \" from singers@{force_index=foo} \"}"
+                + "]}"));
     assertEquals(
         ReplaceQueryPartsHint.of(
-            " from singers ",
-            " from singers@{force_index=foo} ",
-            ReplaceMode.ALL),
-        ReplaceQueryPartsHint.fromComment("{spanner_replacements: ["
-            + "{regex: \" from singers \", replacement: \" from singers@{force_index=foo} \"}]}"));
+            " from singers ", " from singers@{force_index=foo} ", ReplaceMode.ALL),
+        ReplaceQueryPartsHint.fromComment(
+            "{spanner_replacements: ["
+                + "{regex: \" from singers \", replacement: \" from singers@{force_index=foo} \"}]}"));
     assertEquals(
         ReplaceQueryPartsHint.of(
-            " from singers ",
-            " from singers@{force_index=foo} ",
-            ReplaceMode.FIRST),
-        ReplaceQueryPartsHint.fromComment("{spanner_replacements: [{"
-            + "regex: \" from singers \", "
-            + "replacement: \" from singers@{force_index=foo} \", "
-            + "replace_mode: \"FIRST\"}]}"));
+            " from singers ", " from singers@{force_index=foo} ", ReplaceMode.FIRST),
+        ReplaceQueryPartsHint.fromComment(
+            "{spanner_replacements: [{"
+                + "regex: \" from singers \", "
+                + "replacement: \" from singers@{force_index=foo} \", "
+                + "replace_mode: \"FIRST\"}]}"));
   }
 
   @Test
@@ -90,55 +95,61 @@ public class ReplaceQueryPartsHintTest {
     assertRoundTrip(ReplaceQueryPartsHint.of("from", "to"));
     assertRoundTrip(
         ReplaceQueryPartsHint.of(
-            "select *\nfrom foo\nwhere true",
-            "select *\nfrom bar\nwhere false"));
+            "select *\nfrom foo\nwhere true", "select *\nfrom bar\nwhere false"));
   }
 
   @Test
   public void testForceIndex() {
-    assertEquals("{\n"
-        + "  \"spanner_replacements\": [\n"
-        + "    {\n"
-        + "      \"regex\": \" from singers \",\n"
-        + "      \"replacement\": \" from singers @{FORCE_INDEX=idx_singers_active} \",\n"
-        + "      \"replace_mode\": \"ALL\"\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}", Hints.forceIndexFrom("singers", "idx_singers_active", ReplaceMode.ALL).toComment());
-    assertEquals("{\n"
-        + "  \"spanner_replacements\": [\n"
-        + "    {\n"
-        + "      \"regex\": \" join singers \",\n"
-        + "      \"replacement\": \" join singers @{FORCE_INDEX=idx_singers_active} \",\n"
-        + "      \"replace_mode\": \"ALL\"\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}", Hints.forceIndexJoin("singers", "idx_singers_active", ReplaceMode.ALL).toComment());
-    assertEquals("{\n"
-        + "  \"spanner_replacements\": [\n"
-        + "    {\n"
-        + "      \"regex\": \" from singers \",\n"
-        + "      \"replacement\": \" from singers @{FORCE_INDEX=idx_singers_active} \",\n"
-        + "      \"replace_mode\": \"ALL\"\n"
-        + "    },\n"
-        + "    {\n"
-        + "      \"regex\": \" join singers \",\n"
-        + "      \"replacement\": \" join singers @{FORCE_INDEX=idx_singers_active} \",\n"
-        + "      \"replace_mode\": \"ALL\"\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}", Hints.forceIndexFrom("singers", "idx_singers_active", ReplaceMode.ALL)
-        .combine(Hints.forceIndexJoin("singers", "idx_singers_active", ReplaceMode.ALL))
-        .toComment());
+    assertEquals(
+        "{\n"
+            + "  \"spanner_replacements\": [\n"
+            + "    {\n"
+            + "      \"regex\": \" from singers \",\n"
+            + "      \"replacement\": \" from singers @{FORCE_INDEX=idx_singers_active} \",\n"
+            + "      \"replace_mode\": \"ALL\"\n"
+            + "    }\n"
+            + "  ]\n"
+            + "}",
+        Hints.forceIndexFrom("singers", "idx_singers_active", ReplaceMode.ALL).toComment());
+    assertEquals(
+        "{\n"
+            + "  \"spanner_replacements\": [\n"
+            + "    {\n"
+            + "      \"regex\": \" join singers \",\n"
+            + "      \"replacement\": \" join singers @{FORCE_INDEX=idx_singers_active} \",\n"
+            + "      \"replace_mode\": \"ALL\"\n"
+            + "    }\n"
+            + "  ]\n"
+            + "}",
+        Hints.forceIndexJoin("singers", "idx_singers_active", ReplaceMode.ALL).toComment());
+    assertEquals(
+        "{\n"
+            + "  \"spanner_replacements\": [\n"
+            + "    {\n"
+            + "      \"regex\": \" from singers \",\n"
+            + "      \"replacement\": \" from singers @{FORCE_INDEX=idx_singers_active} \",\n"
+            + "      \"replace_mode\": \"ALL\"\n"
+            + "    },\n"
+            + "    {\n"
+            + "      \"regex\": \" join singers \",\n"
+            + "      \"replacement\": \" join singers @{FORCE_INDEX=idx_singers_active} \",\n"
+            + "      \"replace_mode\": \"ALL\"\n"
+            + "    }\n"
+            + "  ]\n"
+            + "}",
+        Hints.forceIndexFrom("singers", "idx_singers_active", ReplaceMode.ALL)
+            .combine(Hints.forceIndexJoin("singers", "idx_singers_active", ReplaceMode.ALL))
+            .toComment());
   }
 
   @Test
   public void testReplace() {
-    String inputSql = "select * "
-        + "from singers s1 "
-        + "inner join singers s2 on s1.id=s2.id "
-        + "where s1.last_name like 'foo%' "
-        + "and s1.id in (select s3.id from singers s3 where active=true)";
+    String inputSql =
+        "select * "
+            + "from singers s1 "
+            + "inner join singers s2 on s1.id=s2.id "
+            + "where s1.last_name like 'foo%' "
+            + "and s1.id in (select s3.id from singers s3 where active=true)";
     assertEquals(
         "select * "
             + "from singers@{force_index=idx} s1 "
@@ -153,20 +164,21 @@ public class ReplaceQueryPartsHintTest {
             + "inner join singers s2 on s1.id=s2.id "
             + "where s1.last_name like 'foo%' "
             + "and s1.id in (select s3.id from singers s3 where active=true)",
-        ReplaceQueryPartsHint
-            .of(" from singers ", " from singers@{force_index=idx} ", ReplaceMode.FIRST)
+        ReplaceQueryPartsHint.of(
+                " from singers ", " from singers@{force_index=idx} ", ReplaceMode.FIRST)
             .replace(inputSql));
     assertEquals(
         "select * "
             + "from singers@{force_index=idx} s1 "
             + "inner join singers s2 on s1.id=s2.id "
             + "where s1.last_name like 'foo%'",
-        ReplaceQueryPartsHint
-            .of(" from singers ", " from singers@{force_index=idx} ", ReplaceMode.FIRST)
+        ReplaceQueryPartsHint.of(
+                " from singers ", " from singers@{force_index=idx} ", ReplaceMode.FIRST)
             .combine(
                 ReplaceQueryPartsHint.of(
                     " and s1.id in \\(select s3.id from singers s3 where active=true\\)",
-                    "", ReplaceMode.FIRST))
+                    "",
+                    ReplaceMode.FIRST))
             .replace(inputSql));
     assertEquals(
         "select * "
@@ -175,12 +187,12 @@ public class ReplaceQueryPartsHintTest {
             + "where s1.last_name like 'foo%'",
         ReplaceQueryPartsHint.of(
                 " and s1.id in \\(select s3.id from singers s3 where active=true\\)",
-                "", ReplaceMode.FIRST)
+                "",
+                ReplaceMode.FIRST)
             .replace(inputSql));
   }
 
   private void assertRoundTrip(ReplaceQueryPartsHint hint) {
     assertEquals(hint, ReplaceQueryPartsHint.fromComment(hint.toComment()));
   }
-
 }

@@ -28,16 +28,20 @@ class IndexStrategyHint extends ReplaceQueryPartsHint {
 
   private static final String HINT = "INDEX_STRATEGY";
 
-  static IndexStrategyHint from(String table, IndexStrategy indexStrategy,
-      ReplaceMode replaceMode) {
-    return new IndexStrategyHint(ImmutableList.of(
-        new Replacement(Hints.from(table), indexStrategyFrom(table, indexStrategy), replaceMode)));
+  static IndexStrategyHint from(
+      String table, IndexStrategy indexStrategy, ReplaceMode replaceMode) {
+    return new IndexStrategyHint(
+        ImmutableList.of(
+            new Replacement(
+                Hints.from(table), indexStrategyFrom(table, indexStrategy), replaceMode)));
   }
 
-  static IndexStrategyHint join(String table, IndexStrategy indexStrategy,
-      ReplaceMode replaceMode) {
-    return new IndexStrategyHint(ImmutableList.of(
-        new Replacement(Hints.join(table), indexStrategyJoin(table, indexStrategy), replaceMode)));
+  static IndexStrategyHint join(
+      String table, IndexStrategy indexStrategy, ReplaceMode replaceMode) {
+    return new IndexStrategyHint(
+        ImmutableList.of(
+            new Replacement(
+                Hints.join(table), indexStrategyJoin(table, indexStrategy), replaceMode)));
   }
 
   private IndexStrategyHint(ImmutableList<Replacement> replacements) {
@@ -51,5 +55,4 @@ class IndexStrategyHint extends ReplaceQueryPartsHint {
   private static String indexStrategyJoin(String table, IndexStrategy indexStrategy) {
     return joinTableHint(table, HINT, indexStrategy.name());
   }
-
 }

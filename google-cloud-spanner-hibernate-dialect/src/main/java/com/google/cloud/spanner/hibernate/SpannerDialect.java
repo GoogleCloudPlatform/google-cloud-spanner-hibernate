@@ -99,16 +99,16 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
         @Override
         protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options)
             throws SQLException {
-          final String json = ((SpannerJsonJdbcType) getJdbcType()).toString(
-              value, getJavaType(), options);
+          final String json =
+              ((SpannerJsonJdbcType) getJdbcType()).toString(value, getJavaType(), options);
           st.setObject(index, json, JsonType.VENDOR_TYPE_NUMBER);
         }
 
         @Override
         protected void doBind(CallableStatement st, X value, String name, WrapperOptions options)
             throws SQLException {
-          final String json = ((SpannerJsonJdbcType) getJdbcType()).toString(
-              value, getJavaType(), options);
+          final String json =
+              ((SpannerJsonJdbcType) getJdbcType()).toString(value, getJavaType(), options);
           st.setObject(name, json, JsonType.VENDOR_TYPE_NUMBER);
         }
 
@@ -126,19 +126,17 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
       };
     }
   }
-  
+
   /**
    * Property name that can be used to disable sequence support in the Cloud Spanner dialect. You
    * can use this temporarily if you have an existing database that already uses table-backed
    * emulated sequences without an explicit table generator. The long-term solution is to either
-   * migrate to using actual sequences, or configuring your entities with an explicit
-   * {@link org.hibernate.id.enhanced.TableGenerator}.
+   * migrate to using actual sequences, or configuring your entities with an explicit {@link
+   * org.hibernate.id.enhanced.TableGenerator}.
    */
   public static String SPANNER_DISABLE_SEQUENCES_PROPERTY = "hibernate.spanner.disable_sequences";
 
-  /**
-   * Disables support for sequences for the {@link SpannerDialect}.
-   */
+  /** Disables support for sequences for the {@link SpannerDialect}. */
   public static void disableSpannerSequences() {
     System.setProperty(SPANNER_DISABLE_SEQUENCES_PROPERTY, "true");
   }
@@ -164,8 +162,7 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   private final SpannerUniqueDelegate spannerUniqueDelegate = new SpannerUniqueDelegate(this);
 
   /** Default constructor. */
-  public SpannerDialect() {
-  }
+  public SpannerDialect() {}
 
   /** Constructor used for automatic dialect detection. */
   public SpannerDialect(DialectResolutionInfo info) {
@@ -205,11 +202,7 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
     final DdlTypeRegistry ddlTypeRegistry =
         typeContributions.getTypeConfiguration().getDdlTypeRegistry();
     ddlTypeRegistry.addDescriptor(
-        new DdlTypeImpl(
-          SqlTypes.JSON,
-          columnType(SqlTypes.JSON),
-          castType(SqlTypes.JSON),
-          this));
+        new DdlTypeImpl(SqlTypes.JSON, columnType(SqlTypes.JSON), castType(SqlTypes.JSON), this));
   }
 
   @Override
@@ -226,7 +219,7 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   public Exporter<Sequence> getSequenceExporter() {
     return this.sequenceExporter;
   }
-  
+
   @Override
   public SpannerSequenceSupport getSequenceSupport() {
     return this.sequenceSupport;
@@ -234,8 +227,8 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
 
   @Override
   public String getQuerySequencesString() {
-    return "select seq.CATALOG as sequence_catalog, " 
-        + "seq.SCHEMA as sequence_schema, " 
+    return "select seq.CATALOG as sequence_catalog, "
+        + "seq.SCHEMA as sequence_schema, "
         + "seq.NAME as sequence_name,\n"
         + "       coalesce(kind.OPTION_VALUE, 'bit_reversed_positive') as KIND,\n"
         + "       coalesce(safe_cast(initial.OPTION_VALUE AS INT64),\n"
@@ -244,34 +237,36 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
         + "               when 'bit_reversed_signed' then -pow(2, 63)\n"
         + "               else 1\n"
         + "           end\n"
-        + "       ) as start_value, 1 as minimum_value, " + Long.MAX_VALUE + " as maximum_value,\n" 
+        + "       ) as start_value, 1 as minimum_value, "
+        + Long.MAX_VALUE
+        + " as maximum_value,\n"
         + "       1 as increment,\n"
         + "       safe_cast(skip_range_min.OPTION_VALUE as int64) as skip_range_min,\n"
         + "       safe_cast(skip_range_max.OPTION_VALUE as int64) as skip_range_max,\n"
         + "from INFORMATION_SCHEMA.SEQUENCES seq\n"
         + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS kind\n"
-        + "    on seq.CATALOG=kind.CATALOG and seq.SCHEMA=kind.SCHEMA and " 
+        + "    on seq.CATALOG=kind.CATALOG and seq.SCHEMA=kind.SCHEMA and "
         + "seq.NAME=kind.NAME and kind.OPTION_NAME='sequence_kind'\n"
         + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS initial\n"
-        + "    on seq.CATALOG=initial.CATALOG and seq.SCHEMA=initial.SCHEMA " 
+        + "    on seq.CATALOG=initial.CATALOG and seq.SCHEMA=initial.SCHEMA "
         + "and seq.NAME=initial.NAME and initial.OPTION_NAME='start_with_counter'\n"
         + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_min\n"
-        + "    on seq.CATALOG=skip_range_min.CATALOG and seq.SCHEMA=skip_range_min.SCHEMA " 
+        + "    on seq.CATALOG=skip_range_min.CATALOG and seq.SCHEMA=skip_range_min.SCHEMA "
         + "and seq.NAME=skip_range_min.NAME and skip_range_min.OPTION_NAME='skip_range_min'\n"
         + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_max\n"
-        + "    on seq.CATALOG=skip_range_max.CATALOG and seq.SCHEMA=skip_range_max.SCHEMA " 
+        + "    on seq.CATALOG=skip_range_max.CATALOG and seq.SCHEMA=skip_range_max.SCHEMA "
         + "and seq.NAME=skip_range_max.NAME and skip_range_max.OPTION_NAME='skip_range_max'";
   }
 
-  private static final class SpannerSequenceInformationExtractor extends
-      SequenceInformationExtractorLegacyImpl {
+  private static final class SpannerSequenceInformationExtractor
+      extends SequenceInformationExtractorLegacyImpl {
 
     private static final SpannerSequenceInformationExtractor INSTANCE =
         new SpannerSequenceInformationExtractor();
 
     @Override
-    public Iterable<SequenceInformation> extractMetadata(
-        ExtractionContext extractionContext) throws SQLException {
+    public Iterable<SequenceInformation> extractMetadata(ExtractionContext extractionContext)
+        throws SQLException {
       // Queries on INFORMATION_SCHEMA should use single-use read-only transactions.
       // In JDBC, the easiest way to achieve that is to use auto-commit.
       Connection connection = extractionContext.getJdbcConnection();
@@ -354,9 +349,7 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
 
   @Override
   public String addSqlHintOrComment(
-      String sql,
-      QueryOptions queryOptions,
-      boolean commentsEnabled) {
+      String sql, QueryOptions queryOptions, boolean commentsEnabled) {
     if (hasCommentHint(queryOptions)) {
       sql = applyHint(sql, queryOptions.getComment());
     }
@@ -397,5 +390,4 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
         && hint.contains("}")
         && hint.contains(ReplaceQueryPartsHint.SPANNER_REPLACEMENTS_FIELD_NAME);
   }
-
 }

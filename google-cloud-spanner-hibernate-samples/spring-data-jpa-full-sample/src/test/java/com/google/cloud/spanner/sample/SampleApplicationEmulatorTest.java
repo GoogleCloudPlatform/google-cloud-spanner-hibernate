@@ -39,7 +39,7 @@ public class SampleApplicationEmulatorTest {
   public static void setup() {
     emulator =
         new GenericContainer<>(
-            DockerImageName.parse("gcr.io/cloud-spanner-emulator/emulator:latest"))
+                DockerImageName.parse("gcr.io/cloud-spanner-emulator/emulator:latest"))
             .withExposedPorts(9010)
             .waitingFor(Wait.forListeningPort());
     emulator.start();
@@ -60,5 +60,4 @@ public class SampleApplicationEmulatorTest {
     System.setProperty("spanner.host", "//localhost:" + emulator.getMappedPort(9010));
     SpringApplication.run(SampleApplication.class).close();
   }
-
 }

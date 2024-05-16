@@ -90,7 +90,7 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
     public Connection getIsolatedConnection() {
       return this.getIsolatedConnection(true);
     }
-    
+
     @Override
     public Connection getIsolatedConnection(boolean autocommit) {
       Connection delegateConnection = this.delegate.getIsolatedConnection(autocommit);
@@ -99,7 +99,7 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
       return (Connection)
           Proxy.newProxyInstance(
               delegateConnection.getClass().getClassLoader(),
-              new Class[]{Connection.class},
+              new Class[] {Connection.class},
               (proxy, method, args) -> {
                 // Only handle the Connection#createStatement() differently.
                 // All other methods are just passed through.
@@ -118,20 +118,19 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
                   throw e.getTargetException();
                 }
               });
-      
     }
 
     /**
-     * Creates a proxy for a {@link Statement} that will throw a
-     * {@link com.google.cloud.spanner.SpannerException} instead of a {@link SQLException} if a
-     * `START BATCH DDL` or `RUN BATCH` statement fails.
+     * Creates a proxy for a {@link Statement} that will throw a {@link
+     * com.google.cloud.spanner.SpannerException} instead of a {@link SQLException} if a `START
+     * BATCH DDL` or `RUN BATCH` statement fails.
      */
     private Statement createProxyStatement(Connection delegateConnection) throws SQLException {
       Statement delegateStatement = delegateConnection.createStatement();
       return (Statement)
           Proxy.newProxyInstance(
               delegateConnection.getClass().getClassLoader(),
-              new Class[]{Statement.class},
+              new Class[] {Statement.class},
               (proxy1, method1, args1) -> {
                 // Only handle the Statement#execute(String) method differently.
                 // All other methods are just passed through.
@@ -146,9 +145,9 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
                       PARSER.parse(com.google.cloud.spanner.Statement.of(sql));
                   if (statement.getType() == StatementType.CLIENT_SIDE
                       && (statement.getClientSideStatementType()
-                      == ClientSideStatementType.START_BATCH_DDL
-                      || statement.getClientSideStatementType()
-                      == ClientSideStatementType.RUN_BATCH)) {
+                              == ClientSideStatementType.START_BATCH_DDL
+                          || statement.getClientSideStatementType()
+                              == ClientSideStatementType.RUN_BATCH)) {
                     try {
                       // Try to execute the statement, and convert any SQLException to a
                       // SpannerException.
@@ -220,8 +219,7 @@ public class SpannerSchemaManagementTool extends HibernateSchemaManagementTool {
 
     private static final SpannerExtractionTool INSTANCE = new SpannerExtractionTool();
 
-    private SpannerExtractionTool() {
-    }
+    private SpannerExtractionTool() {}
 
     @Override
     public ExtractionContext createExtractionContext(

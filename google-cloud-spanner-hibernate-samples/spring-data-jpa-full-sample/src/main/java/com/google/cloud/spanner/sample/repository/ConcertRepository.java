@@ -21,6 +21,4 @@ package com.google.cloud.spanner.sample.repository;
 import com.google.cloud.spanner.sample.entities.Concert;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ConcertRepository extends JpaRepository<Concert, String> {
-
-}
+public interface ConcertRepository extends JpaRepository<Concert, String> {}

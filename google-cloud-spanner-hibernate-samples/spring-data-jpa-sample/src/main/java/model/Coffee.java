@@ -31,33 +31,26 @@ import org.hibernate.annotations.Parameter;
 public class Coffee {
 
   /**
-   * This entity uses a bit-reversed sequence to generate identifiers. See
-   * {@link PooledBitReversedSequenceStyleGenerator} for more
-   * information.
+   * This entity uses a bit-reversed sequence to generate identifiers. See {@link
+   * PooledBitReversedSequenceStyleGenerator} for more information.
    */
   @Id
-  @GeneratedValue(
-      strategy = GenerationType.SEQUENCE,
-      generator = "coffee_id_generator"
-  )
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "coffee_id_generator")
   @GenericGenerator(
       name = "coffee_id_generator",
       type = PooledBitReversedSequenceStyleGenerator.class,
       parameters = {
-          @Parameter(name = "sequence_name", value = "coffee_id"),
-          @Parameter(name = "increment_size", value = "200")
-      }
-  )
+        @Parameter(name = "sequence_name", value = "coffee_id"),
+        @Parameter(name = "increment_size", value = "200")
+      })
   private Long id;
 
   private String size;
 
-  @ManyToOne
-  private Customer customer;
+  @ManyToOne private Customer customer;
 
   // Empty default constructor for Spring Data JPA.
-  public Coffee() {
-  }
+  public Coffee() {}
 
   public Coffee(Customer customer, String size) {
     this.customer = customer;

@@ -56,9 +56,7 @@ public class GeneratedSelectStatementsTests {
 
   private JDBCMockObjectFactory jdbcMockObjectFactory;
 
-  /**
-   * Set up the metadata for Hibernate to generate schema statements.
-   */
+  /** Set up the metadata for Hibernate to generate schema statements. */
   @Before
   public void setup() throws SQLException {
     this.jdbcMockObjectFactory = new JDBCMockObjectFactory();
@@ -66,18 +64,18 @@ public class GeneratedSelectStatementsTests {
 
     MockConnection connection = this.jdbcMockObjectFactory.getMockConnection();
     connection.setMetaData(MockJdbcUtils.metaDataBuilder().build());
-    this.jdbcMockObjectFactory.getMockDriver()
-        .setupConnection(connection);
+    this.jdbcMockObjectFactory.getMockDriver().setupConnection(connection);
 
-    this.registry = new StandardServiceRegistryBuilder()
-        .applySetting("hibernate.dialect", SpannerDialect.class.getName())
-        // must NOT set a driver class name so that Hibernate will use java.sql.DriverManager
-        // and discover the only mock driver we have set up.
-        .applySetting("hibernate.connection.url", "unused")
-        .applySetting("hibernate.connection.username", "unused")
-        .applySetting("hibernate.connection.password", "unused")
-        .applySetting("hibernate.hbm2ddl.auto", "create")
-        .build();
+    this.registry =
+        new StandardServiceRegistryBuilder()
+            .applySetting("hibernate.dialect", SpannerDialect.class.getName())
+            // must NOT set a driver class name so that Hibernate will use java.sql.DriverManager
+            // and discover the only mock driver we have set up.
+            .applySetting("hibernate.connection.url", "unused")
+            .applySetting("hibernate.connection.username", "unused")
+            .applySetting("hibernate.connection.password", "unused")
+            .applySetting("hibernate.hbm2ddl.auto", "create")
+            .build();
 
     this.metadata =
         new MetadataSources(this.registry)
@@ -89,12 +87,14 @@ public class GeneratedSelectStatementsTests {
   @Test
   public void selectLockAcquisitionTest() {
     // the translated statement must NOT show locking statements.
-    testStatementTranslation(x -> {
-      Query q = x.createQuery("select s from SubTestEntity s")
-          .setFirstResult(8).setMaxResults(15);
-      q.setLockMode(LockModeType.PESSIMISTIC_READ);
-      q.list();
-    }, "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 limit ? offset ?");
+    testStatementTranslation(
+        x -> {
+          Query q =
+              x.createQuery("select s from SubTestEntity s").setFirstResult(8).setMaxResults(15);
+          q.setLockMode(LockModeType.PESSIMISTIC_READ);
+          q.list();
+        },
+        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 limit ? offset ?");
   }
 
   @Test
@@ -106,38 +106,49 @@ public class GeneratedSelectStatementsTests {
     te.id = id;
     te.stringVal = "asdf";
     try {
-      openSessionAndDo(x -> {
-        x.save(te);
-        x.getTransaction().commit();
-      });
+      openSessionAndDo(
+          x -> {
+            x.save(te);
+            x.getTransaction().commit();
+          });
     } catch (OptimisticLockException exception) {
       // This exception is expected because the real Transaction is created by the real Session
       // but the mock driver cannot satisfy it.
       String preparedStatement =
-          this.jdbcMockObjectFactory.getMockConnection()
-              .getPreparedStatementResultSetHandler().getPreparedStatements().stream()
-              .map(MockPreparedStatement::getSQL).findFirst().get();
-      assertThat(preparedStatement).isEqualTo(
-          "insert into `test_table` (`boolColumn`,longVal,stringVal,`ID1`,id2) "
-              + "values (?,?,?,?,?)");
+          this.jdbcMockObjectFactory.getMockConnection().getPreparedStatementResultSetHandler()
+              .getPreparedStatements().stream()
+              .map(MockPreparedStatement::getSQL)
+              .findFirst()
+              .get();
+      assertThat(preparedStatement)
+          .isEqualTo(
+              "insert into `test_table` (`boolColumn`,longVal,stringVal,`ID1`,id2) "
+                  + "values (?,?,?,?,?)");
     }
   }
 
   @Test
   public void limitOffsetClauseTest() {
-    openSessionAndDo(session -> {
-      Query q = session.createQuery("select s from SubTestEntity s")
-          .setFirstResult(8).setMaxResults(15);
-      q.list();
-    });
+    openSessionAndDo(
+        session -> {
+          Query q =
+              session
+                  .createQuery("select s from SubTestEntity s")
+                  .setFirstResult(8)
+                  .setMaxResults(15);
+          q.list();
+        });
 
-    MockPreparedStatement statement = this.jdbcMockObjectFactory.getMockConnection()
-        .getPreparedStatementResultSetHandler()
-        .getPreparedStatements()
-        .get(0);
+    MockPreparedStatement statement =
+        this.jdbcMockObjectFactory
+            .getMockConnection()
+            .getPreparedStatementResultSetHandler()
+            .getPreparedStatements()
+            .get(0);
 
-    assertThat(statement.getSQL()).isEqualTo(
-        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 limit ? offset ?");
+    assertThat(statement.getSQL())
+        .isEqualTo(
+            "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 limit ? offset ?");
     assertThat(statement.getParameter(1)).isEqualTo(15);
     assertThat(statement.getParameter(2)).isEqualTo(8);
   }
@@ -146,10 +157,11 @@ public class GeneratedSelectStatementsTests {
   public void deleteDmlTest() {
     testUpdateStatementTranslation(
         "delete TestEntity where boolVal = true",
-        ImmutableList.of("delete from `TestEntity_stringList` where exists " 
-                + "(select 1 from `test_table` te1_0 where " 
-                + "(te1_0.`ID1`=`TestEntity_stringList`.`TestEntity_ID1` " 
-                + "and te1_0.id2=`TestEntity_stringList`.`TestEntity_id2`) " 
+        ImmutableList.of(
+            "delete from `TestEntity_stringList` where exists "
+                + "(select 1 from `test_table` te1_0 where "
+                + "(te1_0.`ID1`=`TestEntity_stringList`.`TestEntity_ID1` "
+                + "and te1_0.id2=`TestEntity_stringList`.`TestEntity_id2`) "
                 + "and (te1_0.`boolColumn`=true))",
             "delete from `test_table` where `boolColumn`=true"));
   }
@@ -158,7 +170,7 @@ public class GeneratedSelectStatementsTests {
   public void selectJoinTest() {
     testReadStatementTranslation(
         "select s from SubTestEntity s inner join s.testEntity",
-        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 " 
+        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 "
             + "join `test_table` te1_0 on te1_0.`ID1`=ste1_0.id1 and te1_0.id2=ste1_0.id2");
   }
 
@@ -169,36 +181,37 @@ public class GeneratedSelectStatementsTests {
     session.close();
   }
 
-  private void testStatementTranslation(Consumer<Session> hibernateOperation,
-      String executedStatement) {
+  private void testStatementTranslation(
+      Consumer<Session> hibernateOperation, String executedStatement) {
     testStatementTranslation(hibernateOperation, ImmutableList.of(executedStatement));
   }
 
-  private void testStatementTranslation(Consumer<Session> hibernateOperation,
-      List<String> executedStatement) {
+  private void testStatementTranslation(
+      Consumer<Session> hibernateOperation, List<String> executedStatement) {
     openSessionAndDo(hibernateOperation);
 
-    List<String> statements = this.jdbcMockObjectFactory.getMockConnection()
-        .getPreparedStatementResultSetHandler().getPreparedStatements().stream()
-        .map(MockPreparedStatement::getSQL).collect(
-            Collectors.toList());
+    List<String> statements =
+        this.jdbcMockObjectFactory.getMockConnection().getPreparedStatementResultSetHandler()
+            .getPreparedStatements().stream()
+            .map(MockPreparedStatement::getSQL)
+            .collect(Collectors.toList());
 
     assertThat(statements).isEqualTo(executedStatement);
   }
 
-  private void testUpdateStatementTranslation(String updateStatement,
-      String expectedDatabaseStatement) {
+  private void testUpdateStatementTranslation(
+      String updateStatement, String expectedDatabaseStatement) {
     testUpdateStatementTranslation(updateStatement, ImmutableList.of(expectedDatabaseStatement));
   }
 
-  private void testUpdateStatementTranslation(String updateStatement,
-      List<String> expectedDatabaseStatement) {
-    testStatementTranslation(x -> x.createQuery(updateStatement).executeUpdate(),
-        expectedDatabaseStatement);
+  private void testUpdateStatementTranslation(
+      String updateStatement, List<String> expectedDatabaseStatement) {
+    testStatementTranslation(
+        x -> x.createQuery(updateStatement).executeUpdate(), expectedDatabaseStatement);
   }
 
-  private void testReadStatementTranslation(String readStatement,
-      String expectedDatabaseStatement) {
+  private void testReadStatementTranslation(
+      String readStatement, String expectedDatabaseStatement) {
     testStatementTranslation(x -> x.createQuery(readStatement).list(), expectedDatabaseStatement);
   }
 }

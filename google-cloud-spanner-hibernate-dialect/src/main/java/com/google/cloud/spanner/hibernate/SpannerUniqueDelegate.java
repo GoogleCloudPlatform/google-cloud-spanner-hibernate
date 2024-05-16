@@ -26,9 +26,7 @@ import org.hibernate.dialect.unique.DefaultUniqueDelegate;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.UniqueKey;
 
-/**
- * Hibernate implementer which generates unique index strings in DDL statements.
- */
+/** Hibernate implementer which generates unique index strings in DDL statements. */
 public class SpannerUniqueDelegate extends DefaultUniqueDelegate {
 
   /**
@@ -42,16 +40,21 @@ public class SpannerUniqueDelegate extends DefaultUniqueDelegate {
   }
 
   @Override
-  public String getAlterTableToAddUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata,
-      SqlStringGenerationContext context) {
-    return Index.buildSqlCreateIndexString(context,
-        uniqueKey.getName(), uniqueKey.getTable(), uniqueKey.getColumns(),
-        uniqueKey.getColumnOrderMap(), true, metadata);
+  public String getAlterTableToAddUniqueKeyCommand(
+      UniqueKey uniqueKey, Metadata metadata, SqlStringGenerationContext context) {
+    return Index.buildSqlCreateIndexString(
+        context,
+        uniqueKey.getName(),
+        uniqueKey.getTable(),
+        uniqueKey.getColumns(),
+        uniqueKey.getColumnOrderMap(),
+        true,
+        metadata);
   }
 
   @Override
-  public String getAlterTableToDropUniqueKeyCommand(UniqueKey uniqueKey, Metadata metadata,
-      SqlStringGenerationContext context) {
+  public String getAlterTableToDropUniqueKeyCommand(
+      UniqueKey uniqueKey, Metadata metadata, SqlStringGenerationContext context) {
     StringBuilder buf = new StringBuilder("DROP INDEX ");
     if (!Strings.isNullOrEmpty(uniqueKey.getTable().getSchema())) {
       buf.append(dialect.quote(uniqueKey.getTable().getSchema())).append('.');

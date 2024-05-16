@@ -51,7 +51,7 @@ import org.jboss.logging.Logger;
  * <strong>DEPRECATED:</strong> Use {@link PooledBitReversedSequenceStyleGenerator} instead.
  *
  * <p>Table backed ID generator that reverses the bits in the returned sequence value.
- * 
+ *
  * <p>This generator uses a <strong>table to emulate a sequence</strong>. Cloud Spanner also
  * supports bit-reversed sequences that are stored and managed in the database. These are
  * recommended above this table backed solution.

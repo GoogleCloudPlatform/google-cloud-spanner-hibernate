@@ -25,22 +25,17 @@ import java.util.Objects;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * Abstract base class for all entities.
- */
+/** Abstract base class for all entities. */
 @MappedSuperclass
 public abstract class AbstractBaseEntity {
 
   // TODO: Update this to use the database as a source for the timestamp.
-  @CreationTimestamp
-  private Instant createdAt;
+  @CreationTimestamp private Instant createdAt;
 
   // TODO: Update this to use the database as a source for the timestamp.
-  @UpdateTimestamp
-  private Instant updatedAt;
+  @UpdateTimestamp private Instant updatedAt;
 
-  protected AbstractBaseEntity() {
-  }
+  protected AbstractBaseEntity() {}
 
   @Override
   public boolean equals(Object o) {

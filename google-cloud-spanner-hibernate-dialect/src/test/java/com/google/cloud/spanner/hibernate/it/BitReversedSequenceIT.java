@@ -57,62 +57,63 @@ import org.junit.runners.JUnit4;
 public class BitReversedSequenceIT {
 
   private static final HibernateIntegrationTestEnv TEST_ENV = new HibernateIntegrationTestEnv();
-  
+
   interface SequenceEntity {
     long getId();
-    
+
     String getName();
-    
+
     static <T extends SequenceEntity> T create(Class<T> entityClass, String name) throws Exception {
       return entityClass.getConstructor(String.class).newInstance(name);
     }
   }
-  
+
   @Table(name = "default_sequence_entity")
   @Entity
   static class DefaultSequenceEntity implements SequenceEntity {
-    
-    @Id
-    @GeneratedValue
-    private long id;
-    
+
+    @Id @GeneratedValue private long id;
+
     private String name;
-    
+
     public DefaultSequenceEntity() {}
-    
+
     public DefaultSequenceEntity(String name) {
       this.name = name;
     }
-    
+
     public long getId() {
       return id;
     }
-    
+
     public String getName() {
       return name;
     }
   }
-  
+
   @Table(name = "pooled_sequence_entity")
   @Entity
   static class PooledSequenceEntity implements SequenceEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,
-                    generator = "pooled_sequence_entity_generator")
-    @GenericGenerator(name = "pooled_sequence_entity_generator",
+    @GeneratedValue(
+        strategy = GenerationType.SEQUENCE,
+        generator = "pooled_sequence_entity_generator")
+    @GenericGenerator(
+        name = "pooled_sequence_entity_generator",
         type = PooledBitReversedSequenceStyleGenerator.class,
         parameters = {
-            @Parameter(name = "sequence_name", value = "pooled_sequence"),
-            @Parameter(name = "increment_size", value = "200"),
-            @Parameter(name = "initial_value", value = "5000"),
-            @Parameter(name = "exclude_range", value = "[1,1000]")})
+          @Parameter(name = "sequence_name", value = "pooled_sequence"),
+          @Parameter(name = "increment_size", value = "200"),
+          @Parameter(name = "initial_value", value = "5000"),
+          @Parameter(name = "exclude_range", value = "[1,1000]")
+        })
     private long id;
 
     private String name;
 
     public PooledSequenceEntity() {}
-    
+
     public PooledSequenceEntity(String name) {
       this.name = name;
     }
@@ -132,9 +133,12 @@ public class BitReversedSequenceIT {
     TEST_ENV.createDatabase(ImmutableList.of());
     // Generate the database schema from th entity model.
     //noinspection EmptyTryBlock
-    try (SessionFactory ignore = TEST_ENV.createTestHibernateConfig(
-        ImmutableList.of(DefaultSequenceEntity.class, PooledSequenceEntity.class),
-        ImmutableMap.of(Environment.HBM2DDL_AUTO, "create-only")).buildSessionFactory()) {
+    try (SessionFactory ignore =
+        TEST_ENV
+            .createTestHibernateConfig(
+                ImmutableList.of(DefaultSequenceEntity.class, PooledSequenceEntity.class),
+                ImmutableMap.of(Environment.HBM2DDL_AUTO, "create-only"))
+            .buildSessionFactory()) {
       // do nothing, just make sure the schema is generated.
     }
   }
@@ -144,18 +148,21 @@ public class BitReversedSequenceIT {
   public static void cleanup() {
     TEST_ENV.cleanup();
   }
-  
+
   @Test
   public void testDefaultSequenceEntity() throws Exception {
-    try (SessionFactory factory = TEST_ENV.createTestHibernateConfig(
-        ImmutableList.of(DefaultSequenceEntity.class),
-        ImmutableMap.of()).buildSessionFactory();
+    try (SessionFactory factory =
+            TEST_ENV
+                .createTestHibernateConfig(
+                    ImmutableList.of(DefaultSequenceEntity.class), ImmutableMap.of())
+                .buildSessionFactory();
         Session session = factory.openSession()) {
       Transaction transaction = session.beginTransaction();
       session.doWork(
-          connection -> connection
-              .createStatement()
-              .execute("insert into default_sequence_entity_SEQ (next_val) values (1)"));
+          connection ->
+              connection
+                  .createStatement()
+                  .execute("insert into default_sequence_entity_SEQ (next_val) values (1)"));
       transaction.commit();
     }
     testSequenceEntity(DefaultSequenceEntity.class);
@@ -165,13 +172,16 @@ public class BitReversedSequenceIT {
   public void testPooledSequenceEntity() throws Exception {
     testSequenceEntity(PooledSequenceEntity.class);
   }
-  
+
   private <T extends SequenceEntity> void testSequenceEntity(Class<T> entityClass)
       throws Exception {
     final int numRows = 300;
-    try (SessionFactory factory = TEST_ENV.createTestHibernateConfig(
-        ImmutableList.of(entityClass),
-        ImmutableMap.of(Environment.STATEMENT_BATCH_SIZE, "50")).buildSessionFactory();
+    try (SessionFactory factory =
+            TEST_ENV
+                .createTestHibernateConfig(
+                    ImmutableList.of(entityClass),
+                    ImmutableMap.of(Environment.STATEMENT_BATCH_SIZE, "50"))
+                .buildSessionFactory();
         Session session = factory.openSession()) {
       Transaction transaction = null;
       while (true) {
@@ -190,14 +200,14 @@ public class BitReversedSequenceIT {
           if (transaction != null) {
             transaction.rollback();
           }
-          if (hibernateException.getCause() 
+          if (hibernateException.getCause()
               instanceof JdbcAbortedDueToConcurrentModificationException) {
             continue;
           }
           throw hibernateException;
         }
       }
-        
+
       // Clear the session and load the entities back into memory.
       final Transaction readTransaction = session.beginTransaction();
       CriteriaBuilder builder = session.getCriteriaBuilder();
@@ -216,5 +226,4 @@ public class BitReversedSequenceIT {
       readTransaction.commit();
     }
   }
-
 }

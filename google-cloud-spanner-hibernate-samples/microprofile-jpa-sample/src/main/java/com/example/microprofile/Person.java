@@ -26,9 +26,7 @@ import java.sql.Types;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 
-/**
- * A simple Person entity with ID and name.
- */
+/** A simple Person entity with ID and name. */
 @Entity
 public class Person {
   @GeneratedValue(strategy = GenerationType.AUTO)

@@ -55,9 +55,11 @@ public class SpannerSequenceSupport implements SequenceSupport {
     } else {
       additionalOptions = ")";
     }
-    return "create sequence " + sequenceName + options.build().entrySet().stream()
-        .map(option -> option.getKey() + "=" + option.getValue()).collect(
-            Collectors.joining(", ", " options(", additionalOptions));
+    return "create sequence "
+        + sequenceName
+        + options.build().entrySet().stream()
+            .map(option -> option.getKey() + "=" + option.getValue())
+            .collect(Collectors.joining(", ", " options(", additionalOptions));
   }
 
   @Override
@@ -76,7 +78,8 @@ public class SpannerSequenceSupport implements SequenceSupport {
     // start a read/write transaction, even though the statement is a SELECT statement.
     return "/* spanner.force_read_write_transaction=true */ "
         + "/* spanner.ignore_during_internal_retry=true */ "
-        + "select " + getSelectSequenceNextValString(sequenceName);
+        + "select "
+        + getSelectSequenceNextValString(sequenceName);
   }
 
   @Override
@@ -101,5 +104,4 @@ public class SpannerSequenceSupport implements SequenceSupport {
     // 'Pooled' sequences support an increment size > 1.
     return false;
   }
-
 }

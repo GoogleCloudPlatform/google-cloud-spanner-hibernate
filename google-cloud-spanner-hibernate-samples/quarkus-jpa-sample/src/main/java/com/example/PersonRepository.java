@@ -22,10 +22,6 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.UUID;
 
-/**
- * A Panache CRUD repository for the {@link Person} entity.
- */
+/** A Panache CRUD repository for the {@link Person} entity. */
 @ApplicationScoped
-public class PersonRepository implements PanacheRepositoryBase<Person, UUID> {
-
-}
+public class PersonRepository implements PanacheRepositoryBase<Person, UUID> {}

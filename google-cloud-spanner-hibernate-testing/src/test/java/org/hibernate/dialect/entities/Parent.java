@@ -28,8 +28,7 @@ import java.io.Serializable;
 @Interleaved(parentEntity = GrandParent.class)
 public class Parent {
 
-  @EmbeddedId
-  public ParentId parentId;
+  @EmbeddedId public ParentId parentId;
 
   public String name;
 
@@ -61,23 +60,16 @@ public class Parent {
       this.parentId = parentId;
     }
 
-    public ParentId() {
-    }
+    public ParentId() {}
 
     @Override
     public String toString() {
-      return "ParentId{" +
-          "grandParentId=" + grandParentId +
-          ", parentId=" + parentId +
-          '}';
+      return "ParentId{" + "grandParentId=" + grandParentId + ", parentId=" + parentId + '}';
     }
   }
 
   @Override
   public String toString() {
-    return "Parent{" +
-        "parentId=" + parentId +
-        ", name='" + name + '\'' +
-        '}';
+    return "Parent{" + "parentId=" + parentId + ", name='" + name + '\'' + '}';
   }
 }

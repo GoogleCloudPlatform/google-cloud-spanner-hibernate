@@ -23,9 +23,9 @@ import java.util.Iterator;
 
 /**
  * Used for iterating over the declared fields on a given class definition. This includes
- * private/protected fields and fields in any superclasses. However, this relies on
- * {@link java.lang.Class#getDeclaredFields()} and as such, iteration order is not guaranteed.
- * Iteration will not include synthetic fields and can throw SecurityExceptions based on configured
+ * private/protected fields and fields in any superclasses. However, this relies on {@link
+ * java.lang.Class#getDeclaredFields()} and as such, iteration order is not guaranteed. Iteration
+ * will not include synthetic fields and can throw SecurityExceptions based on configured
  * SecurityManager
  *
  * @see java.lang.SecurityManager
@@ -35,9 +35,7 @@ public class SpannerKeyFieldIterator implements Iterator<Field> {
   private Class<?> clazz;
   private Field[] fields;
 
-  /**
-   * Constructor.
-   */
+  /** Constructor. */
   public SpannerKeyFieldIterator(Class<?> clazz) {
     this.clazz = clazz;
   }
@@ -79,9 +77,7 @@ public class SpannerKeyFieldIterator implements Iterator<Field> {
     return field;
   }
 
-  /**
-   * Build an iterable wrapping this key field iterator.
-   */
+  /** Build an iterable wrapping this key field iterator. */
   public static Iterable<Field> iterable(Class<?> clazz) {
     return () -> new SpannerKeyFieldIterator(clazz);
   }

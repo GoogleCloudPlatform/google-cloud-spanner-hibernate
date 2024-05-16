@@ -48,29 +48,25 @@ public class SampleApplication {
   public static void main(String[] args) {
 
     // Create Hibernate environment objects.
-    StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-        .configure()
-        .build();
-    SessionFactory sessionFactory = new MetadataSources(registry).buildMetadata()
-        .buildSessionFactory();
+    StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure().build();
+    SessionFactory sessionFactory =
+        new MetadataSources(registry).buildMetadata().buildSessionFactory();
     Session session = sessionFactory.openSession();
-  
+
     try {
       // Save a Person entity into Spanner Table.
       savePerson(session);
-  
+
       // Save a singer entity into the Spanner Table.
       saveSingerAlbum(session);
-      
+
     } finally {
       session.close();
       sessionFactory.close();
     }
   }
 
-  /**
-   * Saves a {@link Person} entity into a Spanner table.
-   */
+  /** Saves a {@link Person} entity into a Spanner table. */
   public static void savePerson(Session session) {
     session.beginTransaction();
 
@@ -93,8 +89,7 @@ public class SampleApplication {
     session.persist(person);
     session.getTransaction().commit();
 
-    List<Person> personsInTable =
-        session.createQuery("from Person", Person.class).list();
+    List<Person> personsInTable = session.createQuery("from Person", Person.class).list();
 
     System.out.printf("There are %d persons saved in the table:%n", personsInTable.size());
 
@@ -111,8 +106,8 @@ public class SampleApplication {
   public static void saveSingerAlbum(Session session) {
     session.beginTransaction();
 
-    Singer singer = new Singer(
-        "Singer1", new ArrayList<>(), Arrays.asList("nick_name1", "nickname_2"));
+    Singer singer =
+        new Singer("Singer1", new ArrayList<>(), Arrays.asList("nick_name1", "nickname_2"));
     Album album = new Album(singer, "Album name");
     singer.addAlbum(album);
 
@@ -122,8 +117,7 @@ public class SampleApplication {
     // Clear the session to ensure that we really read from the database.
     session.clear();
 
-    List<Singer> singers =
-        session.createQuery("from Singer", Singer.class).list();
+    List<Singer> singers = session.createQuery("from Singer", Singer.class).list();
     System.out.printf("There are %d singers saved in the table:%n", singers.size());
 
     for (Singer singerInTable : singers) {

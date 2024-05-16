@@ -1,4 +1,3 @@
-
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
@@ -20,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
 import org.hibernate.bytecode.enhance.spi.EnhancementContext;
 import org.hibernate.bytecode.spi.ClassTransformer;
@@ -31,12 +29,9 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.spi.Bootstrap;
 import org.hibernate.jpa.boot.spi.PersistenceUnitDescriptor;
-
 import org.hibernate.testing.junit4.BaseUnitTestCase;
 import org.junit.After;
 import org.junit.Before;
-
-import org.jboss.logging.Logger;
 
 /**
  * A base class for all ejb tests.
@@ -46,8 +41,10 @@ import org.jboss.logging.Logger;
  */
 public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCase {
 
-  // IMPL NOTE : Here we use @Before and @After (instead of @BeforeClassOnce and @AfterClassOnce like we do in
-  // BaseCoreFunctionalTestCase) because the old HEM test methodology was to create an EMF for each test method.
+  // IMPL NOTE : Here we use @Before and @After (instead of @BeforeClassOnce and @AfterClassOnce
+  // like we do in
+  // BaseCoreFunctionalTestCase) because the old HEM test methodology was to create an EMF for each
+  // test method.
 
   private static final Dialect dialect = new SpannerDialect();
 
@@ -70,23 +67,24 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   }
 
   @Before
-  @SuppressWarnings( {"UnusedDeclaration"})
+  @SuppressWarnings({"UnusedDeclaration"})
   public void buildEntityManagerFactory() {
-    log.trace( "Building EntityManagerFactory" );
+    log.trace("Building EntityManagerFactory");
 
-    entityManagerFactory =  Bootstrap.getEntityManagerFactoryBuilder(
-        buildPersistenceUnitDescriptor(),
-        buildSettings()
-    ).build().unwrap( SessionFactoryImplementor.class );
+    entityManagerFactory =
+        Bootstrap.getEntityManagerFactoryBuilder(buildPersistenceUnitDescriptor(), buildSettings())
+            .build()
+            .unwrap(SessionFactoryImplementor.class);
 
-    serviceRegistry = (StandardServiceRegistryImpl) entityManagerFactory.getServiceRegistry()
-        .getParentServiceRegistry();
+    serviceRegistry =
+        (StandardServiceRegistryImpl)
+            entityManagerFactory.getServiceRegistry().getParentServiceRegistry();
 
     afterEntityManagerFactoryBuilt();
   }
 
   private PersistenceUnitDescriptor buildPersistenceUnitDescriptor() {
-    return new TestingPersistenceUnitDescriptorImpl( getClass().getSimpleName() );
+    return new TestingPersistenceUnitDescriptorImpl(getClass().getSimpleName());
   }
 
   public static class TestingPersistenceUnitDescriptorImpl implements PersistenceUnitDescriptor {
@@ -177,8 +175,7 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
     }
 
     @Override
-    public void pushClassTransformer(EnhancementContext enhancementContext) {
-    }
+    public void pushClassTransformer(EnhancementContext enhancementContext) {}
 
     @Override
     public ClassTransformer getClassTransformer() {
@@ -189,22 +186,22 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   @SuppressWarnings("unchecked")
   protected Map buildSettings() {
     Map settings = getConfig();
-    addMappings( settings );
+    addMappings(settings);
 
-    if ( createSchema() ) {
-      settings.put( org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO, "create-drop" );
+    if (createSchema()) {
+      settings.put(org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO, "create-drop");
     }
     // TODO: Figure out what the equivalent in Hibernate 6 is for this.
     // settings.put( org.hibernate.cfg.AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
-    settings.put( org.hibernate.cfg.AvailableSettings.DIALECT, getDialect().getClass().getName() );
+    settings.put(org.hibernate.cfg.AvailableSettings.DIALECT, getDialect().getClass().getName());
     return settings;
   }
 
   @SuppressWarnings("unchecked")
   protected void addMappings(Map settings) {
     String[] mappings = getMappings();
-    if ( mappings != null ) {
-      settings.put( AvailableSettings.HBM_XML_FILES, String.join( ",", mappings ) );
+    if (mappings != null) {
+      settings.put(AvailableSettings.HBM_XML_FILES, String.join(",", mappings));
     }
   }
 
@@ -218,26 +215,27 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
     Map<Object, Object> config = Environment.getProperties();
     ArrayList<Class> classes = new ArrayList<Class>();
 
-    classes.addAll( Arrays.asList( getAnnotatedClasses() ) );
-    config.put( AvailableSettings.LOADED_CLASSES, classes );
-    for ( Map.Entry<Class, String> entry : getCachedClasses().entrySet() ) {
-      config.put( AvailableSettings.CLASS_CACHE_PREFIX + "." + entry.getKey().getName(), entry.getValue() );
+    classes.addAll(Arrays.asList(getAnnotatedClasses()));
+    config.put(AvailableSettings.LOADED_CLASSES, classes);
+    for (Map.Entry<Class, String> entry : getCachedClasses().entrySet()) {
+      config.put(
+          AvailableSettings.CLASS_CACHE_PREFIX + "." + entry.getKey().getName(), entry.getValue());
     }
-    for ( Map.Entry<String, String> entry : getCachedCollections().entrySet() ) {
-      config.put( AvailableSettings.COLLECTION_CACHE_PREFIX + "." + entry.getKey(), entry.getValue() );
+    for (Map.Entry<String, String> entry : getCachedCollections().entrySet()) {
+      config.put(
+          AvailableSettings.COLLECTION_CACHE_PREFIX + "." + entry.getKey(), entry.getValue());
     }
-    if ( getEjb3DD().length > 0 ) {
+    if (getEjb3DD().length > 0) {
       ArrayList<String> dds = new ArrayList<String>();
-      dds.addAll( Arrays.asList( getEjb3DD() ) );
-      config.put( AvailableSettings.ORM_XML_FILES, dds );
+      dds.addAll(Arrays.asList(getEjb3DD()));
+      config.put(AvailableSettings.ORM_XML_FILES, dds);
     }
 
-    addConfigOptions( config );
+    addConfigOptions(config);
     return config;
   }
 
-  protected void addConfigOptions(Map options) {
-  }
+  protected void addConfigOptions(Map options) {}
 
   protected static final Class<?>[] NO_CLASSES = new Class[0];
 
@@ -254,25 +252,22 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   }
 
   public String[] getEjb3DD() {
-    return new String[] { };
+    return new String[] {};
   }
 
-  protected void afterEntityManagerFactoryBuilt() {
-  }
+  protected void afterEntityManagerFactoryBuilt() {}
 
   protected boolean createSchema() {
     return true;
   }
 
-
   @After
-  @SuppressWarnings( {"UnusedDeclaration"})
+  @SuppressWarnings({"UnusedDeclaration"})
   public void releaseResources() {
     try {
       releaseUnclosedEntityManagers();
-    }
-    finally {
-      if ( entityManagerFactory != null && entityManagerFactory.isOpen()) {
+    } finally {
+      if (entityManagerFactory != null && entityManagerFactory.isOpen()) {
         entityManagerFactory.close();
       }
     }
@@ -280,26 +275,27 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   }
 
   private void releaseUnclosedEntityManagers() {
-    releaseUnclosedEntityManager( this.em );
+    releaseUnclosedEntityManager(this.em);
 
-    for ( EntityManager isolatedEm : isolatedEms ) {
-      releaseUnclosedEntityManager( isolatedEm );
+    for (EntityManager isolatedEm : isolatedEms) {
+      releaseUnclosedEntityManager(isolatedEm);
     }
   }
 
   private void releaseUnclosedEntityManager(EntityManager em) {
-    if ( em == null ) {
+    if (em == null) {
       return;
     }
-    if ( !em.isOpen() ) {
+    if (!em.isOpen()) {
       return;
     }
 
-    if ( em.getTransaction().isActive() ) {
+    if (em.getTransaction().isActive()) {
       em.getTransaction().rollback();
-      log.warn("You left an open transaction! Fix your test case. For now, we are closing it for you.");
+      log.warn(
+          "You left an open transaction! Fix your test case. For now, we are closing it for you.");
     }
-    if ( em.isOpen() ) {
+    if (em.isOpen()) {
       // as we open an EM before the test runs, it will still be open if the test uses a custom EM.
       // or, the person may have forgotten to close. So, do not raise a "fail", but log the fact.
       em.close();
@@ -308,7 +304,7 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
   }
 
   protected EntityManager getOrCreateEntityManager() {
-    if ( em == null || !em.isOpen() ) {
+    if (em == null || !em.isOpen()) {
       em = entityManagerFactory.createEntityManager();
     }
     return em;
@@ -316,26 +312,26 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
 
   protected EntityManager createIsolatedEntityManager() {
     EntityManager isolatedEm = entityManagerFactory.createEntityManager();
-    isolatedEms.add( isolatedEm );
+    isolatedEms.add(isolatedEm);
     return isolatedEm;
   }
 
   protected EntityManager createIsolatedEntityManager(Map props) {
     EntityManager isolatedEm = entityManagerFactory.createEntityManager(props);
-    isolatedEms.add( isolatedEm );
+    isolatedEms.add(isolatedEm);
     return isolatedEm;
   }
 
   protected EntityManager createEntityManager() {
-    return createEntityManager( Collections.emptyMap() );
+    return createEntityManager(Collections.emptyMap());
   }
 
   protected EntityManager createEntityManager(Map properties) {
     // always reopen a new EM and close the existing one
-    if ( em != null && em.isOpen() ) {
+    if (em != null && em.isOpen()) {
       em.close();
     }
-    em = entityManagerFactory.createEntityManager( properties );
+    em = entityManagerFactory.createEntityManager(properties);
     return em;
   }
 }

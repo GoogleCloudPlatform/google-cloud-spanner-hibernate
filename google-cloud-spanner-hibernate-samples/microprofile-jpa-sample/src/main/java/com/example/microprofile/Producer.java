@@ -23,9 +23,7 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Persistence;
 
-/**
- * Create an {@link EntityManager} bean that can be injected via CDI.
- */
+/** Create an {@link EntityManager} bean that can be injected via CDI. */
 @ApplicationScoped
 public class Producer {
 
@@ -36,8 +34,7 @@ public class Producer {
    */
   @Produces
   EntityManager entityManager() {
-    return Persistence.createEntityManagerFactory("spanner-example")
-        .createEntityManager();
+    return Persistence.createEntityManagerFactory("spanner-example").createEntityManager();
   }
 
   /**

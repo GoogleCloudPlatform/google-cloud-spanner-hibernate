@@ -30,9 +30,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
-/**
- * Hibernate entity demonstrating a one-to-many relationship with {@link Album} entity.
- */
+/** Hibernate entity demonstrating a one-to-many relationship with {@link Album} entity. */
 @Entity
 public class Singer {
 
@@ -49,9 +47,7 @@ public class Singer {
   @Type(SpannerStringArray.class)
   private List<String> nickNames;
 
-  /**
-   * Singer entity constructor.
-   */
+  /** Singer entity constructor. */
   public Singer(String name, List<Album> albums, List<String> nickNames) {
     this.name = name;
     this.albums = albums;
@@ -59,9 +55,7 @@ public class Singer {
   }
 
   // Default constructor used by JPA
-  public Singer() {
-
-  }
+  public Singer() {}
 
   public UUID getSingerId() {
     return singerId;
@@ -102,10 +96,15 @@ public class Singer {
   @Override
   public String toString() {
     return "Singer{"
-        + "singerId=" + singerId
-        + ", name='" + name + '\''
-        + ", albums=" + albums
-        + ", nickNames=" + nickNames
+        + "singerId="
+        + singerId
+        + ", name='"
+        + name
+        + '\''
+        + ", albums="
+        + albums
+        + ", nickNames="
+        + nickNames
         + '}';
   }
 }

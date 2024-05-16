@@ -29,18 +29,13 @@ import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Service class for executing stale reads.
- */
+/** Service class for executing stale reads. */
 @Service
 public class StaleReadService {
 
-  @PersistenceContext
-  private EntityManager entityManager;
+  @PersistenceContext private EntityManager entityManager;
 
-  /**
-   * Returns the current timestamp from Cloud Spanner.
-   */
+  /** Returns the current timestamp from Cloud Spanner. */
   public OffsetDateTime getCurrentTimestamp() {
     return entityManager
         .unwrap(Session.class)
@@ -57,9 +52,7 @@ public class StaleReadService {
             });
   }
 
-  /**
-   * Executes a read-only transaction at the given exact timestamp.
-   */
+  /** Executes a read-only transaction at the given exact timestamp. */
   @Transactional(readOnly = true)
   public <T> T executeReadOnlyTransactionAtTimestamp(
       OffsetDateTime timestamp, Supplier<T> transaction) {
@@ -67,9 +60,7 @@ public class StaleReadService {
         "read_timestamp " + timestamp.format(DateTimeFormatter.ISO_DATE_TIME), transaction);
   }
 
-  /**
-   * Executes a read-only transaction with the given staleness.
-   */
+  /** Executes a read-only transaction with the given staleness. */
   @Transactional(readOnly = true)
   public <T> T executeReadOnlyTransactionWithStaleness(String staleness, Supplier<T> transaction) {
     return entityManager
@@ -78,8 +69,7 @@ public class StaleReadService {
             connection -> {
               try (Statement statement = connection.createStatement()) {
                 try {
-                  statement.execute(
-                      String.format("set read_only_staleness='%s'", staleness));
+                  statement.execute(String.format("set read_only_staleness='%s'", staleness));
                   return transaction.get();
                 } catch (Throwable t) {
                   statement.execute("rollback");

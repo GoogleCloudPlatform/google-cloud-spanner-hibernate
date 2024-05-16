@@ -20,11 +20,16 @@ package com.google.cloud.spanner.hibernate.types;
 
 import com.google.cloud.spanner.Type.Code;
 
-/** Hibernate type definition for <pre>{@code ARRAY<JSON>}</pre>. */
+/**
+ * Hibernate type definition for
+ *
+ * <pre>{@code ARRAY<JSON>}</pre>
+ *
+ * .
+ */
 public class SpannerJsonArray extends SpannerStringArray {
   @Override
   public Code getSpannerTypeCode() {
     return Code.JSON;
   }
-
 }

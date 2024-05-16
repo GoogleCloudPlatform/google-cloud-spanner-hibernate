@@ -25,14 +25,11 @@ import jakarta.persistence.Id;
 @Entity
 public class GrandParent {
 
-  @Id
-  @GeneratedValue
-  public long grandParentId;
+  @Id @GeneratedValue public long grandParentId;
 
   public String name;
 
-  public GrandParent() {
-  }
+  public GrandParent() {}
 
   public long getGrandParentId() {
     return grandParentId;
@@ -52,9 +49,6 @@ public class GrandParent {
 
   @Override
   public String toString() {
-    return "GrandParent{" +
-        "grandParentId=" + grandParentId +
-        ", name='" + name + '\'' +
-        '}';
+    return "GrandParent{" + "grandParentId=" + grandParentId + ", name='" + name + '\'' + '}';
   }
 }

@@ -30,9 +30,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 // [START spanner_hibernate_inheritance]
-/**
- * An example {@link Entity} which demonstrates usage of {@link Inheritance}.
- */
+/** An example {@link Entity} which demonstrates usage of {@link Inheritance}. */
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Payment {

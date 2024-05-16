@@ -32,9 +32,7 @@ import java.util.Random;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-/**
- * Service class for fetching and saving Album records.
- */
+/** Service class for fetching and saving Album records. */
 @Service
 public class AlbumService {
 
@@ -44,27 +42,23 @@ public class AlbumService {
 
   private final SingerRepository singerRepository;
 
-  /**
-   * Constructor with auto-injected dependencies.
-   */
-  public AlbumService(RandomDataService randomDataService, AlbumRepository albumRepository,
+  /** Constructor with auto-injected dependencies. */
+  public AlbumService(
+      RandomDataService randomDataService,
+      AlbumRepository albumRepository,
       SingerRepository singerRepository) {
     this.randomDataService = randomDataService;
     this.albumRepository = albumRepository;
     this.singerRepository = singerRepository;
   }
 
-  /**
-   * Deletes all Album records in the database.
-   */
+  /** Deletes all Album records in the database. */
   @Transactional
   public void deleteAllAlbums() {
     albumRepository.deleteAll();
   }
 
-  /**
-   * Generates the specified number of random Album records.
-   */
+  /** Generates the specified number of random Album records. */
   @Transactional
   public List<Album> generateRandomAlbums(int count) {
     Random random = new Random();
@@ -78,9 +72,10 @@ public class AlbumService {
       byte[] picture = new byte[random.nextInt(400) + 100];
       random.nextBytes(picture);
       album.setCoverPicture(picture);
-      album.setMarketingBudget(BigDecimal.valueOf(random.nextInt())
-          .divide(BigDecimal.valueOf(100L), RoundingMode.HALF_UP)
-          .setScale(2, RoundingMode.HALF_UP));
+      album.setMarketingBudget(
+          BigDecimal.valueOf(random.nextInt())
+              .divide(BigDecimal.valueOf(100L), RoundingMode.HALF_UP)
+              .setScale(2, RoundingMode.HALF_UP));
       album.setReleaseDate(
           LocalDate.of(random.nextInt(100) + 1923, random.nextInt(12) + 1, random.nextInt(28) + 1));
       album.setSinger(singers.get(random.nextInt(singers.size())));

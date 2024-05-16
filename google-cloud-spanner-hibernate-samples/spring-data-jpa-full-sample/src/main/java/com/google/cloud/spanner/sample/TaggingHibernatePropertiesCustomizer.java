@@ -30,7 +30,9 @@ import org.springframework.stereotype.Component;
 public class TaggingHibernatePropertiesCustomizer implements HibernatePropertiesCustomizer {
   @Override
   public void customize(Map<String, Object> hibernateProperties) {
-    hibernateProperties.put(AvailableSettings.INTERCEPTOR, new TransactionTagInterceptor(
-        ImmutableSet.of(SampleApplication.class.getPackageName()), false));
+    hibernateProperties.put(
+        AvailableSettings.INTERCEPTOR,
+        new TransactionTagInterceptor(
+            ImmutableSet.of(SampleApplication.class.getPackageName()), false));
   }
 }

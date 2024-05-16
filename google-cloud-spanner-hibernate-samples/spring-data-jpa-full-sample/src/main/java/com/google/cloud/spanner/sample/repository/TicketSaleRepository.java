@@ -21,6 +21,4 @@ package com.google.cloud.spanner.sample.repository;
 import com.google.cloud.spanner.sample.entities.TicketSale;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TicketSaleRepository extends JpaRepository<TicketSale, Long> {
-
-}
+public interface TicketSaleRepository extends JpaRepository<TicketSale, Long> {}

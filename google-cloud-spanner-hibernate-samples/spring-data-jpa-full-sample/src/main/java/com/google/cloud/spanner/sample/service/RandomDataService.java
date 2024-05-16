@@ -24,9 +24,7 @@ import java.util.List;
 import java.util.Random;
 import org.springframework.stereotype.Service;
 
-/**
- * Shared service for generating random names and titles.
- */
+/** Shared service for generating random names and titles. */
 @Service
 public class RandomDataService {
 
@@ -75,30 +73,29 @@ public class RandomDataService {
           "Smith",
           "Thomas",
           "Wang");
-  
+
   private static final List<String> NICK_NAMES =
       ImmutableList.of(
           "Sparky",
-              "Ace",
-              "Maverick",
-              "Zip",
-              "Doc",
-              "Raven",
-              "Cricket",
-              "Glitch",
-              "Shadow",
-              "Rusty",
-              "Jinx",
-              "Flash",
-              "Chip",
-              "Domino",
-              "Zephyr",
-              "Scout",
-              "Orbit",
-              "Nova",
-              "Echo",
-              "Skipper"
-      );
+          "Ace",
+          "Maverick",
+          "Zip",
+          "Doc",
+          "Raven",
+          "Cricket",
+          "Glitch",
+          "Shadow",
+          "Rusty",
+          "Jinx",
+          "Flash",
+          "Chip",
+          "Domino",
+          "Zephyr",
+          "Scout",
+          "Orbit",
+          "Nova",
+          "Echo",
+          "Skipper");
 
   private static final List<String> NOUNS =
       ImmutableList.of(
@@ -223,20 +220,16 @@ public class RandomDataService {
 
   private final Random random = new Random();
 
-  /**
-   * Returns a random first name.
-   */
+  /** Returns a random first name. */
   public String getRandomFirstName() {
     return FIRST_NAMES.get(random.nextInt(FIRST_NAMES.size()));
   }
 
-  /**
-   * Returns a random last name.
-   */
+  /** Returns a random last name. */
   public String getRandomLastName() {
     return LAST_NAMES.get(random.nextInt(LAST_NAMES.size()));
   }
-  
+
   /** Returns a random list of nicknames. */
   public List<String> getRandomNickNames() {
     int num = random.nextInt(5) + 1;
@@ -247,52 +240,40 @@ public class RandomDataService {
     return result;
   }
 
-  /**
-   * Returns a random album title.
-   */
+  /** Returns a random album title. */
   public String getRandomAlbumTitle() {
     return ADJECTIVES.get(random.nextInt(ADJECTIVES.size()))
         + " "
         + NOUNS.get(random.nextInt(NOUNS.size()));
   }
 
-  /**
-   * Returns a random track title.
-   */
+  /** Returns a random track title. */
   public String getRandomTrackTitle() {
     return ADVERBS.get(random.nextInt(ADVERBS.size()))
         + " "
         + VERBS.get(random.nextInt(VERBS.size()));
   }
 
-  /**
-   * Returns a random venue name.
-   */
+  /** Returns a random venue name. */
   public String getRandomVenueName() {
     return ADJECTIVES.get(random.nextInt(ADJECTIVES.size()))
         + " "
         + NOUNS.get(random.nextInt(NOUNS.size()));
   }
 
-  /**
-   * Returns a random concert name.
-   */
+  /** Returns a random concert name. */
   public String getRandomConcertName() {
     return ADJECTIVES.get(random.nextInt(ADJECTIVES.size()))
         + " "
         + NOUNS.get(random.nextInt(NOUNS.size()));
   }
 
-  /**
-   * Returns a random venue type.
-   */
+  /** Returns a random venue type. */
   public String getRandomVenueType() {
     return VENUE_TYPES.get(random.nextInt(VENUE_TYPES.size()));
   }
 
-  /**
-   * Returns a random venue location.
-   */
+  /** Returns a random venue location. */
   public String getRandomVenueLocation() {
     return PLACES.get(random.nextInt(PLACES.size()));
   }

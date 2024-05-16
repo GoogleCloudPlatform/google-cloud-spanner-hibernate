@@ -72,17 +72,12 @@ import org.junit.Test;
  */
 public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMockServerTest {
 
-  /**
-   * Set up empty mocked results for schema queries.
-   */
+  /** Set up empty mocked results for schema queries. */
   @Before
   public void setupSchemaQueryResults() {
     mockSpanner.putStatementResult(
         StatementResult.query(
-            GET_TABLES_STATEMENT,
-            ResultSet.newBuilder()
-                .setMetadata(GET_TABLES_METADATA)
-                .build()));
+            GET_TABLES_STATEMENT, ResultSet.newBuilder().setMetadata(GET_TABLES_METADATA).build()));
     mockSpanner.putStatementResult(
         StatementResult.query(
             GET_INDEXES_STATEMENT,
@@ -93,26 +88,26 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
                         .build())
                 .build()));
     mockSpanner.putStatementResult(
-        StatementResult.query(GET_SEQUENCES_STATEMENT, ResultSet.newBuilder()
-            .setMetadata(GET_SEQUENCES_METADATA)
-            .build()));
-    mockSpanner.putStatementResult(StatementResult.query(GET_COLUMNS_STATEMENT, ResultSet
-        .newBuilder()
-        .setMetadata(GET_COLUMNS_METADATA)
-        .build()));
+        StatementResult.query(
+            GET_SEQUENCES_STATEMENT,
+            ResultSet.newBuilder().setMetadata(GET_SEQUENCES_METADATA).build()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            GET_COLUMNS_STATEMENT,
+            ResultSet.newBuilder().setMetadata(GET_COLUMNS_METADATA).build()));
   }
 
   @Test
   public void testGenerateSchema() {
-    for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
+    for (String hbm2Ddl : new String[] {"create-only", "update", "create"}) {
       mockDatabaseAdmin.getRequests().clear();
       addDdlResponseToSpannerAdmin();
 
       //noinspection EmptyTryBlock
       try (SessionFactory ignore =
           createTestHibernateConfig(
-              ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
-              ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
+                  ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
+                  ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
               .buildSessionFactory()) {
         // do nothing, just generate the schema.
       }
@@ -182,7 +177,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
       }
     }
   }
-  
+
   @Test
   public void testDropEmptySchema() {
     addDdlResponseToSpannerAdmin();
@@ -190,8 +185,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     //noinspection EmptyTryBlock
     try (SessionFactory ignore =
         createTestHibernateConfig(
-            ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
-            ImmutableMap.of("hibernate.hbm2ddl.auto", "drop"))
+                ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
+                ImmutableMap.of("hibernate.hbm2ddl.auto", "drop"))
             .buildSessionFactory()) {
       // do nothing, just generate the schema.
     }
@@ -208,33 +203,51 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
   @Test
   public void testDropExistingSchema() {
     mockSpanner.putStatementResult(
-        StatementResult.query(GET_TABLES_STATEMENT, ResultSet.newBuilder()
-            .setMetadata(GET_TABLES_METADATA)
-            .addRows(createTableRow("Account"))
-            .addRows(createTableRow("Customer"))
-            .addRows(createTableRow("customerId"))
-            .addRows(createTableRow("Invoice"))
-            .addRows(createTableRow("invoiceId"))
-            .addRows(createTableRow("Singer"))
-            .addRows(createTableRow("singerId"))
-            .build()));
-    mockSpanner.putStatementResult(StatementResult.query(GET_FOREIGN_KEYS_STATEMENT.toBuilder()
-        .bind("p1").to("%")
-        .bind("p2").to("%")
-        .bind("p3").to("INVOICE")
-        .build(), ResultSet.newBuilder()
-        .setMetadata(GET_FOREIGN_KEYS_METADATA)
-        .addRows(createForeignKeyRow("", "Customer", "customerId",
-            "", "Invoice", "customer_customerId", 1, 1, "fk_invoice_customer"))
-        .build()));
+        StatementResult.query(
+            GET_TABLES_STATEMENT,
+            ResultSet.newBuilder()
+                .setMetadata(GET_TABLES_METADATA)
+                .addRows(createTableRow("Account"))
+                .addRows(createTableRow("Customer"))
+                .addRows(createTableRow("customerId"))
+                .addRows(createTableRow("Invoice"))
+                .addRows(createTableRow("invoiceId"))
+                .addRows(createTableRow("Singer"))
+                .addRows(createTableRow("singerId"))
+                .build()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            GET_FOREIGN_KEYS_STATEMENT
+                .toBuilder()
+                .bind("p1")
+                .to("%")
+                .bind("p2")
+                .to("%")
+                .bind("p3")
+                .to("INVOICE")
+                .build(),
+            ResultSet.newBuilder()
+                .setMetadata(GET_FOREIGN_KEYS_METADATA)
+                .addRows(
+                    createForeignKeyRow(
+                        "",
+                        "Customer",
+                        "customerId",
+                        "",
+                        "Invoice",
+                        "customer_customerId",
+                        1,
+                        1,
+                        "fk_invoice_customer"))
+                .build()));
 
     addDdlResponseToSpannerAdmin();
 
     //noinspection EmptyTryBlock
     try (SessionFactory ignore =
         createTestHibernateConfig(
-            ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
-            ImmutableMap.of("hibernate.hbm2ddl.auto", "drop"))
+                ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
+                ImmutableMap.of("hibernate.hbm2ddl.auto", "drop"))
             .buildSessionFactory()) {
       // do nothing, just generate the schema.
     }
@@ -250,7 +263,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     assertEquals(8, request.getStatementsCount());
 
     int index = -1;
-    assertEquals("alter table Invoice drop constraint fk_invoice_customer", request.getStatements(++index));
+    assertEquals(
+        "alter table Invoice drop constraint fk_invoice_customer", request.getStatements(++index));
     assertEquals("drop table `Account`", request.getStatements(++index));
     assertEquals("drop table `Customer`", request.getStatements(++index));
     assertEquals("drop table `customerId`", request.getStatements(++index));
@@ -259,20 +273,20 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     assertEquals("drop table `Singer`", request.getStatements(++index));
     assertEquals("drop table `singerId`", request.getStatements(++index));
   }
-  
+
   @Test
   public void testGenerateEmployeeSchema() {
     SpannerDialect.disableSpannerSequences();
     try {
-      for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
+      for (String hbm2Ddl : new String[] {"create-only", "update", "create"}) {
         mockDatabaseAdmin.getRequests().clear();
         addDdlResponseToSpannerAdmin();
 
         //noinspection EmptyTryBlock
         try (SessionFactory ignore =
             createTestHibernateConfig(
-                ImmutableList.of(Employee.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
+                    ImmutableList.of(Employee.class),
+                    ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
                 .buildSessionFactory()) {
           // do nothing, just generate the schema.
         }
@@ -286,10 +300,11 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         assertEquals(1, requests.size());
         UpdateDatabaseDdlRequest request = requests.get(0);
         assertEquals(4, request.getStatementsCount());
-  
+
         int index = -1;
-  
-        // Hibernate creates the columns in a different order when using 'update' instead of 'create'.
+
+        // Hibernate creates the columns in a different order when using 'update' instead of
+        // 'create'.
         if (hbm2Ddl.equals("update")) {
           assertEquals(
               "create table Employee (id int64 not null,name string(255),manager_id int64) PRIMARY KEY (id)",
@@ -297,7 +312,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
           assertEquals(
               "create table Employee_Sequence (next_val int64) PRIMARY KEY ()",
               request.getStatements(++index));
-          assertEquals("create index name_index on Employee (name)", request.getStatements(++index));
+          assertEquals(
+              "create index name_index on Employee (name)", request.getStatements(++index));
           assertEquals(
               "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 foreign key (manager_id) references Employee (id)",
               request.getStatements(++index));
@@ -308,7 +324,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
           assertEquals(
               "create table Employee_Sequence (next_val int64) PRIMARY KEY ()",
               request.getStatements(++index));
-          assertEquals("create index name_index on Employee (name)", request.getStatements(++index));
+          assertEquals(
+              "create index name_index on Employee (name)", request.getStatements(++index));
           assertEquals(
               "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 foreign key (manager_id) references Employee (id)",
               request.getStatements(++index));
@@ -321,15 +338,15 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
 
   @Test
   public void testGenerateAirportSchema() {
-    for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
+    for (String hbm2Ddl : new String[] {"create-only", "update", "create"}) {
       mockDatabaseAdmin.getRequests().clear();
       addDdlResponseToSpannerAdmin();
 
       //noinspection EmptyTryBlock
       try (SessionFactory ignore =
           createTestHibernateConfig(
-              ImmutableList.of(Airplane.class, Airport.class),
-              ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
+                  ImmutableList.of(Airplane.class, Airport.class),
+                  ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
               .buildSessionFactory()) {
         // do nothing, just generate the schema.
       }
@@ -374,17 +391,17 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
   @Test
   public void testGenerateParentChildSchema() {
     SpannerDialect.disableSpannerSequences();
-    
+
     try {
-      for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
+      for (String hbm2Ddl : new String[] {"create-only", "update", "create"}) {
         mockDatabaseAdmin.getRequests().clear();
         addDdlResponseToSpannerAdmin();
 
         //noinspection EmptyTryBlock
         try (SessionFactory ignore =
             createTestHibernateConfig(
-                ImmutableList.of(GrandParent.class, Parent.class, Child.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
+                    ImmutableList.of(GrandParent.class, Parent.class, Child.class),
+                    ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
                 .buildSessionFactory()) {
           // do nothing, just generate the schema.
         }
@@ -424,15 +441,15 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
 
   @Test
   public void testGenerateTestEntitySchema() {
-    for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
+    for (String hbm2Ddl : new String[] {"create-only", "update", "create"}) {
       mockDatabaseAdmin.getRequests().clear();
       addDdlResponseToSpannerAdmin();
 
       //noinspection EmptyTryBlock
       try (SessionFactory ignore =
           createTestHibernateConfig(
-              ImmutableList.of(TestEntity.class, SubTestEntity.class),
-              ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
+                  ImmutableList.of(TestEntity.class, SubTestEntity.class),
+                  ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
               .buildSessionFactory()) {
         // do nothing, just generate the schema.
       }
@@ -450,7 +467,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
       int index = -1;
 
       if (hbm2Ddl.equals("update")) {
-        assertEquals("create table `TestEntity_stringList` ("
+        assertEquals(
+            "create table `TestEntity_stringList` ("
                 + "`TestEntity_ID1` int64 not null,"
                 + "`TestEntity_id2` string(255) not null,"
                 + "stringList string(255)) "
@@ -472,7 +490,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
                 + "foreign key (`TestEntity_ID1`, `TestEntity_id2`) references `test_table` (`ID1`, id2)",
             request.getStatements(++index));
       } else {
-        assertEquals("create table `TestEntity_stringList` ("
+        assertEquals(
+            "create table `TestEntity_stringList` ("
                 + "`TestEntity_ID1` int64 not null,"
                 + "`TestEntity_id2` string(255) not null,"
                 + "stringList string(255)) "
@@ -504,8 +523,9 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     //noinspection EmptyTryBlock
     try (SessionFactory ignore =
         createTestHibernateConfig(
-            ImmutableList.of(SequenceEntity.class, AutoIdEntity.class, PooledSequenceEntity.class),
-            ImmutableMap.of("hibernate.hbm2ddl.auto", "update"))
+                ImmutableList.of(
+                    SequenceEntity.class, AutoIdEntity.class, PooledSequenceEntity.class),
+                ImmutableMap.of("hibernate.hbm2ddl.auto", "update"))
             .buildSessionFactory()) {
       // do nothing, just generate the schema.
     }
@@ -534,7 +554,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         request.getStatements(++index));
     // The PooledSequenceEntity uses a pooled sequence. These are not supported by Cloud Spanner.
     // Hibernate therefore creates a table instead.
-    assertEquals("create table pooled_sequence (next_val int64) PRIMARY KEY ()",
+    assertEquals(
+        "create table pooled_sequence (next_val int64) PRIMARY KEY ()",
         request.getStatements(++index));
     assertEquals(
         "create table PooledSequenceEntity (id int64 not null,name string(255)) PRIMARY KEY (id)",
@@ -554,15 +575,15 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     SpannerDialect.disableSpannerSequences();
 
     try {
-      for (String hbm2Ddl : new String[]{"create-only", "update", "create"}) {
+      for (String hbm2Ddl : new String[] {"create-only", "update", "create"}) {
         mockDatabaseAdmin.getRequests().clear();
         addDdlResponseToSpannerAdmin();
 
         //noinspection EmptyTryBlock
         try (SessionFactory ignore =
             createTestHibernateConfig(
-                ImmutableList.of(SequenceEntity.class, AutoIdEntity.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "update"))
+                    ImmutableList.of(SequenceEntity.class, AutoIdEntity.class),
+                    ImmutableMap.of("hibernate.hbm2ddl.auto", "update"))
                 .buildSessionFactory()) {
           // do nothing, just generate the schema.
         }
@@ -616,55 +637,86 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
   public void testBatchedSequenceEntity_CreateOnly() {
     addDdlResponseToSpannerAdmin();
     long sequenceBatchSize = 5L;
-    String selectSequenceNextVals = "/* spanner.force_read_write_transaction=true */ "
-        + "/* spanner.ignore_during_internal_retry=true */ "
-        + " select get_next_sequence_value(sequence enhanced_sequence) AS n " 
-        + "from unnest(generate_array(1, 5))";
+    String selectSequenceNextVals =
+        "/* spanner.force_read_write_transaction=true */ "
+            + "/* spanner.ignore_during_internal_retry=true */ "
+            + " select get_next_sequence_value(sequence enhanced_sequence) AS n "
+            + "from unnest(generate_array(1, 5))";
     String insertSql = "insert into PooledBitReversedSequenceEntity (name,id) values (@p1,@p2)";
-    mockSpanner.putStatementResult(StatementResult.query(Statement.of(selectSequenceNextVals),
-        ResultSet.newBuilder()
-            .setMetadata(ResultSetMetadata.newBuilder()
-                .setRowType(StructType.newBuilder()
-                    .addFields(Field.newBuilder().setName("n")
-                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build())
-                    .build())
-                .build())
-            .addAllRows(LongStream.rangeClosed(1L, sequenceBatchSize)
-                .mapToObj(id -> ListValue.newBuilder()
-                    .addValues(
-                        Value.newBuilder().setStringValue(String.valueOf(Long.reverse(id))).build())
-                    .build()).collect(Collectors.toList()))
-            .build()));
-    mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
-        .bind("p1").to("test1")
-        .bind("p2").to(Long.reverse(1L))
-        .build(), 1L));
-    mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
-        .bind("p1").to("test2")
-        .bind("p2").to(Long.reverse(2L))
-        .build(), 1L));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.of(selectSequenceNextVals),
+            ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("n")
+                                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
+                                        .build())
+                                .build())
+                        .build())
+                .addAllRows(
+                    LongStream.rangeClosed(1L, sequenceBatchSize)
+                        .mapToObj(
+                            id ->
+                                ListValue.newBuilder()
+                                    .addValues(
+                                        Value.newBuilder()
+                                            .setStringValue(String.valueOf(Long.reverse(id)))
+                                            .build())
+                                    .build())
+                        .collect(Collectors.toList()))
+                .build()));
+    mockSpanner.putStatementResult(
+        StatementResult.update(
+            Statement.newBuilder(insertSql)
+                .bind("p1")
+                .to("test1")
+                .bind("p2")
+                .to(Long.reverse(1L))
+                .build(),
+            1L));
+    mockSpanner.putStatementResult(
+        StatementResult.update(
+            Statement.newBuilder(insertSql)
+                .bind("p1")
+                .to("test2")
+                .bind("p2")
+                .to(Long.reverse(2L))
+                .build(),
+            1L));
 
     try (SessionFactory sessionFactory =
-        createTestHibernateConfig(
-            ImmutableList.of(PooledBitReversedSequenceEntity.class, LegacySequenceEntity.class),
-            ImmutableMap.of(Environment.HBM2DDL_AUTO, "create-only",
-                Environment.STATEMENT_BATCH_SIZE, "50"))
-            .buildSessionFactory(); Session session = sessionFactory.openSession()) {
+            createTestHibernateConfig(
+                    ImmutableList.of(
+                        PooledBitReversedSequenceEntity.class, LegacySequenceEntity.class),
+                    ImmutableMap.of(
+                        Environment.HBM2DDL_AUTO,
+                        "create-only",
+                        Environment.STATEMENT_BATCH_SIZE,
+                        "50"))
+                .buildSessionFactory();
+        Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
       assertEquals(Long.reverse(1L), session.save(new PooledBitReversedSequenceEntity("test1")));
       assertEquals(Long.reverse(2L), session.save(new PooledBitReversedSequenceEntity("test2")));
       transaction.commit();
     }
 
-    ExecuteSqlRequest sequenceRequest = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class)
-        .stream().filter(request -> request.getSql().equals(selectSequenceNextVals))
-        .findFirst().orElse(ExecuteSqlRequest.getDefaultInstance());
+    ExecuteSqlRequest sequenceRequest =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+            .filter(request -> request.getSql().equals(selectSequenceNextVals))
+            .findFirst()
+            .orElse(ExecuteSqlRequest.getDefaultInstance());
     assertTrue(sequenceRequest.hasTransaction());
     assertTrue(sequenceRequest.getTransaction().hasBegin());
     assertTrue(sequenceRequest.getTransaction().getBegin().hasReadWrite());
     assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
-    ExecuteBatchDmlRequest insertRequest = mockSpanner.getRequestsOfType(
-        ExecuteBatchDmlRequest.class).get(0);
+    ExecuteBatchDmlRequest insertRequest =
+        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).get(0);
     assertTrue(insertRequest.hasTransaction());
     assertTrue(insertRequest.getTransaction().hasBegin());
     assertTrue(insertRequest.getTransaction().getBegin().hasReadWrite());
@@ -709,83 +761,124 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
 
     // Setup schema results.
     mockSpanner.putStatementResult(
-        StatementResult.query(GET_TABLES_STATEMENT, ResultSet.newBuilder()
-            .setMetadata(GET_TABLES_METADATA)
-            .addRows(createTableRow("PooledBitReversedSequenceEntity"))
-            .build()));
+        StatementResult.query(
+            GET_TABLES_STATEMENT,
+            ResultSet.newBuilder()
+                .setMetadata(GET_TABLES_METADATA)
+                .addRows(createTableRow("PooledBitReversedSequenceEntity"))
+                .build()));
     mockSpanner.putStatementResult(
-        StatementResult.query(GET_SEQUENCES_STATEMENT, ResultSet.newBuilder()
-            .setMetadata(GET_SEQUENCES_METADATA)
-            .addRows(createSequenceRow("enhanced_sequence"))
-            .build()));
+        StatementResult.query(
+            GET_SEQUENCES_STATEMENT,
+            ResultSet.newBuilder()
+                .setMetadata(GET_SEQUENCES_METADATA)
+                .addRows(createSequenceRow("enhanced_sequence"))
+                .build()));
     mockSpanner.putStatementResult(
-        StatementResult.query(GET_COLUMNS_STATEMENT, ResultSet.newBuilder()
-            .setMetadata(GET_COLUMNS_METADATA)
-            .addRows(
-                createColumnRow("PooledBitReversedSequenceEntity", "id", Types.BIGINT, "INT64", 1))
-            .addRows(createColumnRow("PooledBitReversedSequenceEntity", "name", Types.NVARCHAR,
-                "STRING(MAX)", 2))
-            .build()));
+        StatementResult.query(
+            GET_COLUMNS_STATEMENT,
+            ResultSet.newBuilder()
+                .setMetadata(GET_COLUMNS_METADATA)
+                .addRows(
+                    createColumnRow(
+                        "PooledBitReversedSequenceEntity", "id", Types.BIGINT, "INT64", 1))
+                .addRows(
+                    createColumnRow(
+                        "PooledBitReversedSequenceEntity",
+                        "name",
+                        Types.NVARCHAR,
+                        "STRING(MAX)",
+                        2))
+                .build()));
     mockSpanner.putStatementResult(
-        StatementResult.query(GET_INDEXES_STATEMENT, ResultSet.newBuilder()
-            .setMetadata(
-                ResultSetMetadata.newBuilder()
-                    .setRowType(StructType.newBuilder().build())
-                    .build())
-            .build()));
+        StatementResult.query(
+            GET_INDEXES_STATEMENT,
+            ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(StructType.newBuilder().build())
+                        .build())
+                .build()));
 
     long sequenceBatchSize = 5L;
-    String selectSequenceNextVals = "/* spanner.force_read_write_transaction=true */ "
-        + "/* spanner.ignore_during_internal_retry=true */ "
-        + " select get_next_sequence_value(sequence enhanced_sequence) AS n " 
-        + "from unnest(generate_array(1, 5))";
+    String selectSequenceNextVals =
+        "/* spanner.force_read_write_transaction=true */ "
+            + "/* spanner.ignore_during_internal_retry=true */ "
+            + " select get_next_sequence_value(sequence enhanced_sequence) AS n "
+            + "from unnest(generate_array(1, 5))";
     String insertSql = "insert into PooledBitReversedSequenceEntity (name,id) values (@p1,@p2)";
-    mockSpanner.putStatementResult(StatementResult.query(Statement.of(selectSequenceNextVals),
-        ResultSet.newBuilder()
-            .setMetadata(ResultSetMetadata.newBuilder()
-                .setRowType(StructType.newBuilder()
-                    .addFields(Field.newBuilder().setName("n")
-                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build()).build())
-                    .build())
-                .build())
-            .addAllRows(LongStream.rangeClosed(1L, sequenceBatchSize)
-                .mapToObj(id -> ListValue.newBuilder()
-                    .addValues(
-                        Value.newBuilder().setStringValue(String.valueOf(Long.reverse(id))).build())
-                    .build()).collect(Collectors.toList()))
-            .build()));
-    mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
-        .bind("p1").to("test1")
-        .bind("p2").to(Long.reverse(1L))
-        .build(), 1L));
-    mockSpanner.putStatementResult(StatementResult.update(Statement.newBuilder(insertSql)
-        .bind("p1").to("test2")
-        .bind("p2").to(Long.reverse(2L))
-        .build(), 1L));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.of(selectSequenceNextVals),
+            ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("n")
+                                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
+                                        .build())
+                                .build())
+                        .build())
+                .addAllRows(
+                    LongStream.rangeClosed(1L, sequenceBatchSize)
+                        .mapToObj(
+                            id ->
+                                ListValue.newBuilder()
+                                    .addValues(
+                                        Value.newBuilder()
+                                            .setStringValue(String.valueOf(Long.reverse(id)))
+                                            .build())
+                                    .build())
+                        .collect(Collectors.toList()))
+                .build()));
+    mockSpanner.putStatementResult(
+        StatementResult.update(
+            Statement.newBuilder(insertSql)
+                .bind("p1")
+                .to("test1")
+                .bind("p2")
+                .to(Long.reverse(1L))
+                .build(),
+            1L));
+    mockSpanner.putStatementResult(
+        StatementResult.update(
+            Statement.newBuilder(insertSql)
+                .bind("p1")
+                .to("test2")
+                .bind("p2")
+                .to(Long.reverse(2L))
+                .build(),
+            1L));
 
     try (SessionFactory sessionFactory =
-        createTestHibernateConfig(
-            ImmutableList.of(PooledBitReversedSequenceEntity.class),
-            ImmutableMap.of(Environment.HBM2DDL_AUTO, "update",
-                Environment.STATEMENT_BATCH_SIZE, "50"))
-            .buildSessionFactory(); Session session = sessionFactory.openSession()) {
+            createTestHibernateConfig(
+                    ImmutableList.of(PooledBitReversedSequenceEntity.class),
+                    ImmutableMap.of(
+                        Environment.HBM2DDL_AUTO, "update", Environment.STATEMENT_BATCH_SIZE, "50"))
+                .buildSessionFactory();
+        Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
       assertEquals(Long.reverse(1L), session.save(new PooledBitReversedSequenceEntity("test1")));
       assertEquals(Long.reverse(2L), session.save(new PooledBitReversedSequenceEntity("test2")));
       transaction.commit();
     }
 
-    ExecuteSqlRequest sequenceRequest = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class)
-        .stream().filter(request -> request.getSql().equals(selectSequenceNextVals))
-        .findFirst().orElse(ExecuteSqlRequest.getDefaultInstance());
+    ExecuteSqlRequest sequenceRequest =
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+            .filter(request -> request.getSql().equals(selectSequenceNextVals))
+            .findFirst()
+            .orElse(ExecuteSqlRequest.getDefaultInstance());
     assertTrue(sequenceRequest.hasTransaction());
     assertTrue(sequenceRequest.getTransaction().hasBegin());
     assertTrue(sequenceRequest.getTransaction().getBegin().hasReadWrite());
     // Note the existence of an ExecuteBatchDml request. This verifies that our bit-reversed
     // sequence generator supports batch inserts.
     assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
-    ExecuteBatchDmlRequest insertRequest = mockSpanner.getRequestsOfType(
-        ExecuteBatchDmlRequest.class).get(0);
+    ExecuteBatchDmlRequest insertRequest =
+        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).get(0);
     assertTrue(insertRequest.hasTransaction());
     assertTrue(insertRequest.getTransaction().hasBegin());
     assertTrue(insertRequest.getTransaction().getBegin().hasReadWrite());
@@ -802,5 +895,5 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             .map(request -> (UpdateDatabaseDdlRequest) request)
             .collect(Collectors.toList());
     assertEquals(0, requests.size());
-  }  
+  }
 }

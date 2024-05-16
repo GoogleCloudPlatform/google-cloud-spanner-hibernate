@@ -18,7 +18,6 @@
 
 package com.google.cloud.spanner.hibernate.it.model;
 
-
 import com.google.cloud.spanner.hibernate.Interleaved;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -29,33 +28,26 @@ import jakarta.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * Track is interleaved in Album.
- */
+/** Track is interleaved in Album. */
 @Entity
 @Interleaved(parentEntity = Album.class, cascadeDelete = true)
 public class Track extends AbstractBaseEntity {
 
   /**
    * Track is interleaved in the Album entity. This requires the primary key of Track to include all
-   * the columns of the primary key of Album, in addition to its own primary key value.
-   * {@link TrackId} defines the composite primary key of the {@link Track} entity.
+   * the columns of the primary key of Album, in addition to its own primary key value. {@link
+   * TrackId} defines the composite primary key of the {@link Track} entity.
    */
   @Embeddable
   public static class TrackId implements Serializable {
 
-    /**
-     * `id` is the primary key column that Track 'inherits' from Album.
-     */
+    /** `id` is the primary key column that Track 'inherits' from Album. */
     private Long id;
 
-    /**
-     * `trackNumber` is the additional primary key column that is used by Track.
-     */
+    /** `trackNumber` is the additional primary key column that is used by Track. */
     private long trackNumber;
 
-    protected TrackId() {
-    }
+    protected TrackId() {}
 
     public TrackId(Long id, long trackNumber) {
       this.id = id;
@@ -85,26 +77,18 @@ public class Track extends AbstractBaseEntity {
     }
   }
 
-  /**
-   * Hibernate requires a default constructor.
-   */
-  protected Track() {
-  }
+  /** Hibernate requires a default constructor. */
+  protected Track() {}
 
   public Track(Album album, long trackNumber, String title) {
     setTrackId(new TrackId(album.getId(), trackNumber));
     this.title = title;
   }
 
-  /**
-   * Use the @EmbeddedId annotation to define a composite primary key from an @Embeddable class.
-   */
-  @EmbeddedId
-  private TrackId trackId;
+  /** Use the @EmbeddedId annotation to define a composite primary key from an @Embeddable class. */
+  @EmbeddedId private TrackId trackId;
 
-  /**
-   * The "id" column is both part of the primary key, and a reference to the albums table.
-   */
+  /** The "id" column is both part of the primary key, and a reference to the albums table. */
   @ManyToOne(optional = false)
   @JoinColumn(name = "id", updatable = false, insertable = false)
   private Album album;

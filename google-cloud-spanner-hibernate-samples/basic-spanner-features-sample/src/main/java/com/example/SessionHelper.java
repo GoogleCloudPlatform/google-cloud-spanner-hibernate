@@ -22,8 +22,8 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 /**
- * A wrapper class for the {@link org.hibernate.SessionFactory} class to help access different
- * read modes and transactions types for Cloud Spanner.
+ * A wrapper class for the {@link org.hibernate.SessionFactory} class to help access different read
+ * modes and transactions types for Cloud Spanner.
  *
  * <p>NOTE: Because JDBC connections are pooled and re-used by sessions, if you alter the JDBC
  * connection (such as setting it to read-only), newly created sessions may unexpectedly inherit
@@ -38,40 +38,37 @@ public class SessionHelper {
     this.sessionFactory = sessionFactory;
   }
 
-  /**
-   * Creates a read-write session.
-   */
+  /** Creates a read-write session. */
   public Session createReadWriteSession() {
     Session session = sessionFactory.openSession();
-    session.doWork(conn -> {
-      // read-write transactions always use strong reads.
-      conn.setReadOnly(false);
-    });
+    session.doWork(
+        conn -> {
+          // read-write transactions always use strong reads.
+          conn.setReadOnly(false);
+        });
     return session;
   }
 
-  /**
-   * Creates a read-only session.
-   */
+  /** Creates a read-only session. */
   public Session createReadOnlySession() {
     Session session = sessionFactory.openSession();
-    session.doWork(conn -> {
-      conn.setReadOnly(true);
-      conn.createStatement().execute("SET READ_ONLY_STALENESS = 'STRONG'");
-    });
+    session.doWork(
+        conn -> {
+          conn.setReadOnly(true);
+          conn.createStatement().execute("SET READ_ONLY_STALENESS = 'STRONG'");
+        });
     return session;
   }
 
-  /**
-   * Create a session for exact stale reads at {@code stalenessSeconds} in the past.
-   */
+  /** Create a session for exact stale reads at {@code stalenessSeconds} in the past. */
   public Session createExactStaleReadSession(int stalenessSeconds) {
     Session session = sessionFactory.openSession();
-    session.doWork(conn -> {
-      conn.setReadOnly(true);
-      conn.createStatement().execute(
-          "SET READ_ONLY_STALENESS = 'EXACT_STALENESS " + stalenessSeconds + "s'");
-    });
+    session.doWork(
+        conn -> {
+          conn.setReadOnly(true);
+          conn.createStatement()
+              .execute("SET READ_ONLY_STALENESS = 'EXACT_STALENESS " + stalenessSeconds + "s'");
+        });
     return session;
   }
 }

@@ -39,8 +39,7 @@ import org.hibernate.annotations.Type;
 @Entity
 public class AllTypes extends AbstractBaseEntity {
 
-  @Id
-  private Long id;
+  @Id private Long id;
 
   private Boolean colBool;
 

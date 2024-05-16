@@ -74,9 +74,7 @@ public class SampleApplication implements CommandLineRunner {
 
   private final ConcertRepository concertRepository;
 
-  /**
-   * Constructor with auto-injected dependencies.
-   */
+  /** Constructor with auto-injected dependencies. */
   public SampleApplication(
       SingerService singerService,
       AlbumService albumService,

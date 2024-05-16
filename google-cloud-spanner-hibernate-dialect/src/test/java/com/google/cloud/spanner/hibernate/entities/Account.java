@@ -22,26 +22,20 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import java.math.BigDecimal;
 
-/**
- * Sample entity with a {@link BigDecimal} column to demonstrate NUMERIC support.
- */
+/** Sample entity with a {@link BigDecimal} column to demonstrate NUMERIC support. */
 @Entity
 public class Account {
 
-  @Id
-  private long id;
+  @Id private long id;
 
   private String name;
 
   private BigDecimal amount;
 
   // Default constructor for Hibernate
-  protected Account() {
-  }
+  protected Account() {}
 
-  /**
-   * Constructs the Account entity.
-   */
+  /** Constructs the Account entity. */
   public Account(long id, String name, BigDecimal amount) {
     this.id = id;
     this.name = name;

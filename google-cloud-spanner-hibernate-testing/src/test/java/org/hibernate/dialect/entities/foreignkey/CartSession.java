@@ -27,16 +27,14 @@ import org.hibernate.annotations.ForeignKey;
 @Entity
 public class CartSession {
 
-  @Id
-  public long sessionId;
+  @Id public long sessionId;
 
   @OneToOne
-  @JoinColumn(name="cartId")
-  @ForeignKey(name="Fk_sessionDetails_cartId")
+  @JoinColumn(name = "cartId")
+  @ForeignKey(name = "Fk_sessionDetails_cartId")
   private Cart cart;
 
-  public CartSession() {
-  }
+  public CartSession() {}
 
   public long getSessionId() {
     return sessionId;

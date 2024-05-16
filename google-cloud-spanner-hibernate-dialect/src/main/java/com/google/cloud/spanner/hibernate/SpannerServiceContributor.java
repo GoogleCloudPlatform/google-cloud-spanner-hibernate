@@ -68,7 +68,8 @@ public class SpannerServiceContributor implements ServiceContributor {
         .applySetting("hibernate.connection.userAgent", HIBERNATE_API_CLIENT_LIB_TOKEN)
         // Adding this setting prevents Hibernate from dropping and re-creating (unique) indexes
         // every time a session factory is created with hbm2dll=update.
-        .applySetting("hibernate.schema_update.unique_constraint_strategy",
-                      UniqueConstraintSchemaUpdateStrategy.RECREATE_QUIETLY);
+        .applySetting(
+            "hibernate.schema_update.unique_constraint_strategy",
+            UniqueConstraintSchemaUpdateStrategy.RECREATE_QUIETLY);
   }
 }

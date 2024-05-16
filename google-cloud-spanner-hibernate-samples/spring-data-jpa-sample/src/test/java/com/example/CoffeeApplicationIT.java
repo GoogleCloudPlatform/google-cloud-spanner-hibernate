@@ -44,14 +44,11 @@ import org.springframework.util.LinkedMultiValueMap;
     classes = CoffeeApplication.class)
 public class CoffeeApplicationIT {
 
-  @Autowired
-  CustomerRepository customerRepository;
+  @Autowired CustomerRepository customerRepository;
 
-  @Autowired
-  CoffeeRepository coffeeRepository;
+  @Autowired CoffeeRepository coffeeRepository;
 
-  @Autowired
-  TestRestTemplate restTemplate;
+  @Autowired TestRestTemplate restTemplate;
 
   @Before
   @After

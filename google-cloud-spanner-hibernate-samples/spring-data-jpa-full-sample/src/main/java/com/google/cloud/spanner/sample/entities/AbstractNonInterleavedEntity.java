@@ -33,9 +33,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 @MappedSuperclass
 public abstract class AbstractNonInterleavedEntity extends AbstractEntity {
 
-  /**
-   * Use a UUID as primary key.
-   */
+  /** Use a UUID as primary key. */
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   @JdbcTypeCode(Types.CHAR)
@@ -48,5 +46,4 @@ public abstract class AbstractNonInterleavedEntity extends AbstractEntity {
   public void setId(UUID id) {
     this.id = id;
   }
-
 }

@@ -43,9 +43,7 @@ public class BitReversedSequenceStructure extends SequenceStructure {
   private final int initialValue;
   private final List<Range<Long>> excludedRanges;
 
-  /**
-   * Constructor for a new bit-reversed sequence structure.
-   */
+  /** Constructor for a new bit-reversed sequence structure. */
   public BitReversedSequenceStructure(
       JdbcEnvironment jdbcEnvironment,
       String contributor,
@@ -150,14 +148,14 @@ public class BitReversedSequenceStructure extends SequenceStructure {
 
     @Override
     public String[] sqlCreateStrings(SqlStringGenerationContext context) {
-      return new String[]{
-          context
-              .getDialect()
-              .getSequenceSupport()
-              .getCreateSequenceString(context.format(sequence.getName()))
-          + " bit_reversed_positive"
-          + buildSkipRangeOptions(excludeRanges)
-          + buildStartCounterOption(sequence.getInitialValue())
+      return new String[] {
+        context
+                .getDialect()
+                .getSequenceSupport()
+                .getCreateSequenceString(context.format(sequence.getName()))
+            + " bit_reversed_positive"
+            + buildSkipRangeOptions(excludeRanges)
+            + buildStartCounterOption(sequence.getInitialValue())
       };
     }
 

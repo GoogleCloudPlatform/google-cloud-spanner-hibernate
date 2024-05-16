@@ -22,7 +22,13 @@ import com.google.cloud.spanner.Type.Code;
 import java.math.BigDecimal;
 import java.util.List;
 
-/** Hibernate type definition for <pre>{@code ARRAY<NUMERIC>}</pre>. */
+/**
+ * Hibernate type definition for
+ *
+ * <pre>{@code ARRAY<NUMERIC>}</pre>
+ *
+ * .
+ */
 public class SpannerNumericArray extends AbstractSpannerArrayType<BigDecimal, BigDecimal> {
 
   @Override

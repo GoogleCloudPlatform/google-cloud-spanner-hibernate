@@ -38,8 +38,7 @@ public class Concert extends AbstractNonInterleavedEntity {
 
   private OffsetDateTime endTime;
 
-  public Concert() {
-  }
+  public Concert() {}
 
   public String getName() {
     return name;

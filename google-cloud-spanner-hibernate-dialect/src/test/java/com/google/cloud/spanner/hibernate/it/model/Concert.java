@@ -31,9 +31,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
-/**
- * Concert entity.
- */
+/** Concert entity. */
 @Entity
 // NOTE: Hibernate 5 does not generate a DDL statement for this constraint.
 @Check(constraints = "endTime > startTime")
@@ -47,9 +45,9 @@ public class Concert extends AbstractBaseEntity {
       //       emulator supports it.
       strategy = "com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator",
       parameters = {
-          // Use a separate name for each entity to ensure that it uses a separate table.
-          @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "concert_id"),
-          @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
+        // Use a separate name for each entity to ensure that it uses a separate table.
+        @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "concert_id"),
+        @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
       })
   private Long id;
 
@@ -68,18 +66,15 @@ public class Concert extends AbstractBaseEntity {
   @Column(nullable = false)
   private OffsetDateTime endTime;
 
-  protected Concert() {
-  }
+  protected Concert() {}
 
   public Concert(Venue venue, Singer singer) {
     this(venue, singer, null, null, null);
   }
 
-  /**
-   * Constructor.
-   */
-  public Concert(Venue venue, Singer singer, String name, OffsetDateTime startTime,
-      OffsetDateTime endTime) {
+  /** Constructor. */
+  public Concert(
+      Venue venue, Singer singer, String name, OffsetDateTime startTime, OffsetDateTime endTime) {
     this.venue = venue;
     this.singer = singer;
     this.name = name;

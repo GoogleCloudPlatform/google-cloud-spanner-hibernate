@@ -50,11 +50,14 @@ public abstract class AbstractTransactionTagInterceptor implements Interceptor {
     if (tag != null) {
       Session session = getSession(tx);
       if (session != null) {
-        session.doWork(connection -> {
-          if (!(connection.isReadOnly() || connection.getAutoCommit())) {
-            connection.createStatement().execute(generateSetTransactionTagStatement(session, tag));
-          }
-        });
+        session.doWork(
+            connection -> {
+              if (!(connection.isReadOnly() || connection.getAutoCommit())) {
+                connection
+                    .createStatement()
+                    .execute(generateSetTransactionTagStatement(session, tag));
+              }
+            });
       }
     }
   }
@@ -87,8 +90,8 @@ public abstract class AbstractTransactionTagInterceptor implements Interceptor {
   protected abstract String getTag();
 
   /**
-   * Gets the session from the transaction.
-   * Unfortunately, there is no public API to do so, so we have to use reflection.
+   * Gets the session from the transaction. Unfortunately, there is no public API to do so, so we
+   * have to use reflection.
    */
   private @Nullable Session getSession(Transaction tx) {
     if (tx instanceof TransactionImpl && sessionField != null) {
@@ -102,5 +105,4 @@ public abstract class AbstractTransactionTagInterceptor implements Interceptor {
     }
     return null;
   }
-
 }

@@ -25,9 +25,7 @@ import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.tool.schema.internal.StandardForeignKeyExporter;
 
-/**
- * Produces the Foreign Key DDL strings for Hibernate table creation.
- */
+/** Produces the Foreign Key DDL strings for Hibernate table creation. */
 public class SpannerForeignKeyExporter extends StandardForeignKeyExporter {
 
   private SpannerDatabaseInfo spannerDatabaseInfo;
@@ -41,8 +39,8 @@ public class SpannerForeignKeyExporter extends StandardForeignKeyExporter {
   }
 
   @Override
-  public String[] getSqlDropStrings(ForeignKey foreignKey, Metadata metadata,
-      SqlStringGenerationContext context) {
+  public String[] getSqlDropStrings(
+      ForeignKey foreignKey, Metadata metadata, SqlStringGenerationContext context) {
     if (spannerDatabaseInfo == null) {
       throw new IllegalStateException(
           "Cannot determine which foreign keys to drop because spannerDatabaseInfo was null.");

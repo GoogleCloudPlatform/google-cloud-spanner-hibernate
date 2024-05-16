@@ -24,8 +24,8 @@ import javax.annotation.Nullable;
 /**
  * Utility class for building various query hints for Cloud Spanner.
  *
- * <p>All hints in this class can also be created manually using the
- * {@link ReplaceQueryPartsHint} class.
+ * <p>All hints in this class can also be created manually using the {@link ReplaceQueryPartsHint}
+ * class.
  *
  * <p>Usage with {@link org.hibernate.query.Query}:
  *
@@ -115,9 +115,7 @@ public class Hints {
 
   private static final String SELECT_OR_DML = "(?i)(?:^|\\s)(select|insert|update|delete)";
 
-  /**
-   * Creates a hint that will prepend '@{hint=value}' to the first occurrence of regex.
-   */
+  /** Creates a hint that will prepend '@{hint=value}' to the first occurrence of regex. */
   private static ReplaceQueryPartsHint statementHint(String hint, Object value) {
     return ReplaceQueryPartsHint.of(
         SELECT_OR_DML, String.format("@{%s=%s}$1", hint, value), ReplaceMode.FIRST);
@@ -191,9 +189,7 @@ public class Hints {
    */
   public static ReplaceQueryPartsHint forceStreamable(boolean value) {
     return ReplaceQueryPartsHint.of(
-        "(?i)(^|\\s)(select)",
-        "$1$2 @{FORCE_STREAMABLE=" + value + "}",
-        ReplaceMode.FIRST);
+        "(?i)(^|\\s)(select)", "$1$2 @{FORCE_STREAMABLE=" + value + "}", ReplaceMode.FIRST);
   }
 
   /**
@@ -204,17 +200,15 @@ public class Hints {
    */
   public static ReplaceQueryPartsHint preferStreamable(boolean value) {
     return ReplaceQueryPartsHint.of(
-        "(?i)(^|\\s)(select)",
-        "$1$2@{PREFER_STREAMABLE=" + value + "}",
-        ReplaceMode.FIRST);
+        "(?i)(^|\\s)(select)", "$1$2@{PREFER_STREAMABLE=" + value + "}", ReplaceMode.FIRST);
   }
 
   /**
    * Creates a hint that replaces occurrences of <code>from table</code> with <code>from
    * table@{FORCE_INDEX=index}</code>.
    *
-   * <p>Combine this hint with a {@link #forceIndexJoin(String, String, ReplaceMode)} hint if
-   * you want to add a FORCE_INDEX hint to both <code>from table</code> and <code>join table</code>
+   * <p>Combine this hint with a {@link #forceIndexJoin(String, String, ReplaceMode)} hint if you
+   * want to add a FORCE_INDEX hint to both <code>from table</code> and <code>join table</code>
    * occurrences in the query.
    *
    * @param table the table name to annotate with the FORCE_INDEX hint.
@@ -231,8 +225,8 @@ public class Hints {
    * Creates a hint that replaces occurrences of <code>join table</code> with <code>join
    * table@{FORCE_INDEX=index}</code>.
    *
-   * <p>Combine this hint with a {@link #forceIndexFrom(String, String, ReplaceMode)} hint if
-   * you want to add a FORCE_INDEX hint to both <code>from table</code> and <code>join table</code>
+   * <p>Combine this hint with a {@link #forceIndexFrom(String, String, ReplaceMode)} hint if you
+   * want to add a FORCE_INDEX hint to both <code>from table</code> and <code>join table</code>
    * occurrences in the query.
    *
    * @param table the table name to annotate with the FORCE_INDEX hint.
@@ -249,10 +243,9 @@ public class Hints {
    * Creates a hint that replaces occurrences of <code>from table</code> with <code>from
    * table@{GROUPBY_SCAN_OPTIMIZATION=value}</code>.
    *
-   * <p>Combine this hint with a
-   * {@link #groupByScanOptimizationJoin(String, boolean, ReplaceMode)} hint if you want to add
-   * a GROUPBY_SCAN_OPTIMIZATION hint to both <code>from table</code> and <code>join table</code>
-   * occurrences in the query.
+   * <p>Combine this hint with a {@link #groupByScanOptimizationJoin(String, boolean, ReplaceMode)}
+   * hint if you want to add a GROUPBY_SCAN_OPTIMIZATION hint to both <code>from table</code> and
+   * <code>join table</code> occurrences in the query.
    *
    * @param table the table name to annotate with the GROUPBY_SCAN_OPTIMIZATION hint.
    * @param value the hint value.
@@ -268,10 +261,9 @@ public class Hints {
    * Creates a hint that replaces occurrences of <code>join table</code> with <code>join
    * table@{GROUPBY_SCAN_OPTIMIZATION=value}</code>.
    *
-   * <p>Combine this hint with a
-   * {@link #groupByScanOptimizationFrom(String, boolean, ReplaceMode)} hint if you want to add
-   * a GROUPBY_SCAN_OPTIMIZATION hint to both <code>from table</code> and <code>join table</code>
-   * occurrences in the query.
+   * <p>Combine this hint with a {@link #groupByScanOptimizationFrom(String, boolean, ReplaceMode)}
+   * hint if you want to add a GROUPBY_SCAN_OPTIMIZATION hint to both <code>from table</code> and
+   * <code>join table</code> occurrences in the query.
    *
    * @param table the table name to annotate with the GROUPBY_SCAN_OPTIMIZATION hint.
    * @param value the hint value.
@@ -287,9 +279,8 @@ public class Hints {
    * Creates a hint that replaces occurrences of <code>from table</code> with <code>from
    * table@{SCAN_METHOD=value}</code>.
    *
-   * <p>Combine this hint with a
-   * {@link #scanMethodJoin(String, ScanMethod, ReplaceMode)} hint if you want to add
-   * a SCAN_METHOD hint to both <code>from table</code> and <code>join table</code>
+   * <p>Combine this hint with a {@link #scanMethodJoin(String, ScanMethod, ReplaceMode)} hint if
+   * you want to add a SCAN_METHOD hint to both <code>from table</code> and <code>join table</code>
    * occurrences in the query.
    *
    * @param table the table name to annotate with the SCAN_METHOD hint.
@@ -306,9 +297,8 @@ public class Hints {
    * Creates a hint that replaces occurrences of <code>join table</code> with <code>join
    * table@{SCAN_METHOD=value}</code>.
    *
-   * <p>Combine this hint with a
-   * {@link #scanMethodFrom(String, ScanMethod, ReplaceMode)} hint if you want to add
-   * a SCAN_METHOD hint to both <code>from table</code> and <code>join table</code>
+   * <p>Combine this hint with a {@link #scanMethodFrom(String, ScanMethod, ReplaceMode)} hint if
+   * you want to add a SCAN_METHOD hint to both <code>from table</code> and <code>join table</code>
    * occurrences in the query.
    *
    * @param table the table name to annotate with the SCAN_METHOD hint.
@@ -325,10 +315,9 @@ public class Hints {
    * Creates a hint that replaces occurrences of <code>from table</code> with <code>from
    * table@{INDEX_STRATEGY=value}</code>.
    *
-   * <p>Combine this hint with a
-   * {@link #indexStrategyJoin(String, IndexStrategy, ReplaceMode)} hint if you want to add
-   * a INDEX_STRATEGY hint to both <code>from table</code> and <code>join table</code>
-   * occurrences in the query.
+   * <p>Combine this hint with a {@link #indexStrategyJoin(String, IndexStrategy, ReplaceMode)} hint
+   * if you want to add a INDEX_STRATEGY hint to both <code>from table</code> and <code>join table
+   * </code> occurrences in the query.
    *
    * @param table the table name to annotate with the INDEX_STRATEGY hint.
    * @param value the hint value.
@@ -344,10 +333,9 @@ public class Hints {
    * Creates a hint that replaces occurrences of <code>join table</code> with <code>join
    * table@{INDEX_STRATEGY=value}</code>.
    *
-   * <p>Combine this hint with a
-   * {@link #indexStrategyFrom(String, IndexStrategy, ReplaceMode)} hint if you want to add
-   * a INDEX_STRATEGY hint to both <code>from table</code> and <code>join table</code>
-   * occurrences in the query.
+   * <p>Combine this hint with a {@link #indexStrategyFrom(String, IndexStrategy, ReplaceMode)} hint
+   * if you want to add a INDEX_STRATEGY hint to both <code>from table</code> and <code>join table
+   * </code> occurrences in the query.
    *
    * @param table the table name to annotate with the INDEX_STRATEGY hint.
    * @param value the hint value.
@@ -360,8 +348,8 @@ public class Hints {
   }
 
   /**
-   * Creates a hint that replaces occurrences of <code>join table</code> with
-   * <code>join@{FORCE_JOIN_ORDER=value} table</code>.
+   * Creates a hint that replaces occurrences of <code>join table</code> with <code>
+   * join@{FORCE_JOIN_ORDER=value} table</code>.
    *
    * @param table the table name to annotate with the FORCE_JOIN_ORDER hint.
    * @param value the hint value.
@@ -371,14 +359,12 @@ public class Hints {
   public static ReplaceQueryPartsHint forceJoinOrder(
       String table, boolean value, ReplaceMode replaceMode) {
     return ReplaceQueryPartsHint.of(
-        join(table),
-        " join@{FORCE_JOIN_ORDER=" + value + "} " + table + " ",
-        replaceMode);
+        join(table), " join@{FORCE_JOIN_ORDER=" + value + "} " + table + " ", replaceMode);
   }
 
   /**
-   * Creates a hint that replaces occurrences of <code>join table</code> with
-   * <code>join@{JOIN_METHOD=value} table</code>.
+   * Creates a hint that replaces occurrences of <code>join table</code> with <code>
+   * join@{JOIN_METHOD=value} table</code>.
    *
    * @param table the table name to annotate with the JOIN_METHOD hint.
    * @param value the hint value.
@@ -388,14 +374,11 @@ public class Hints {
   public static ReplaceQueryPartsHint joinMethod(
       String table, JoinMethod value, ReplaceMode replaceMode) {
     return ReplaceQueryPartsHint.of(
-        join(table),
-        " join@{JOIN_METHOD=" + value.name() + "} " + table + " ",
-        replaceMode);
+        join(table), " join@{JOIN_METHOD=" + value.name() + "} " + table + " ", replaceMode);
   }
 
   /**
-   * Creates a hint that replaces occurrences of <code>join table</code> with
-   * <code>
+   * Creates a hint that replaces occurrences of <code>join table</code> with <code>
    * join@{JOIN_METHOD=HASH_JOIN
    *     [, HASH_JOIN_BUILD_SIDE=buildSide]
    *     [, HASH_JOIN_EXECUTION=execution]}
@@ -425,8 +408,8 @@ public class Hints {
   }
 
   /**
-   * Creates a hint that replaces occurrences of <code>join table</code> with
-   * <code>join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_BUILD_SIDE=value} table</code>.
+   * Creates a hint that replaces occurrences of <code>join table</code> with <code>
+   * join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_BUILD_SIDE=value} table</code>.
    *
    * <p><strong>This hint also automatically adds JOIN_METHOD=HASH_JOIN.</strong>
    *
@@ -439,14 +422,13 @@ public class Hints {
       String table, HashJoinBuildSide value, ReplaceMode replaceMode) {
     return ReplaceQueryPartsHint.of(
         join(table),
-        " join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_BUILD_SIDE="
-            + value.name() + "} " + table + " ",
+        " join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_BUILD_SIDE=" + value.name() + "} " + table + " ",
         replaceMode);
   }
 
   /**
-   * Creates a hint that replaces occurrences of <code>join table</code> with
-   * <code>join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_EXECUTION=value} table</code>.
+   * Creates a hint that replaces occurrences of <code>join table</code> with <code>
+   * join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_EXECUTION=value} table</code>.
    *
    * <p><strong>This hint also automatically adds JOIN_METHOD=HASH_JOIN.</strong>
    *
@@ -459,15 +441,13 @@ public class Hints {
       String table, HashJoinExecution value, ReplaceMode replaceMode) {
     return ReplaceQueryPartsHint.of(
         join(table),
-        " join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_EXECUTION="
-            + value.name()
-            + "} " + table + " ",
+        " join@{JOIN_METHOD=HASH_JOIN, HASH_JOIN_EXECUTION=" + value.name() + "} " + table + " ",
         replaceMode);
   }
 
   /**
-   * Creates a hint that replaces occurrences of <code>join table</code> with
-   * <code>join@{JOIN_METHOD=APPLY_JOIN, BATCH_MODE=value} table</code>.
+   * Creates a hint that replaces occurrences of <code>join table</code> with <code>
+   * join@{JOIN_METHOD=APPLY_JOIN, BATCH_MODE=value} table</code>.
    *
    * <p><strong>This hint also automatically adds JOIN_METHOD=APPLY_JOIN.</strong>
    *
@@ -503,5 +483,4 @@ public class Hints {
   static String joinTableHint(String table, String hint, String value) {
     return join(table) + "@{" + hint + '=' + value + "} ";
   }
-
 }

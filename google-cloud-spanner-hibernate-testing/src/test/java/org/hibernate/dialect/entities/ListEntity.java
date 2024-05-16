@@ -30,16 +30,14 @@ import java.util.List;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 
-/**
- * A test entity with a lot of Array column fields.
- */
+/** A test entity with a lot of Array column fields. */
 // TODO: Re-implement array types
-//@TypeDefs({
+// @TypeDefs({
 //    @TypeDef(
 //        name = "spanner-array",
 //        typeClass = SpannerArrayListType.class
 //    )
-//})
+// })
 @Entity
 public class ListEntity {
 
@@ -49,31 +47,31 @@ public class ListEntity {
   private UUID id;
 
   @Transient
-  //@Type(type = "spanner-array")
+  // @Type(type = "spanner-array")
   private List<Boolean> booleanList;
 
   @Transient
-  //@Type(type = "spanner-array")
+  // @Type(type = "spanner-array")
   private List<byte[]> byteList;
 
   @Transient
-  //@Type(type = "spanner-array")
+  // @Type(type = "spanner-array")
   private List<Timestamp> timestampList;
 
   @Transient
-  //@Type(type = "spanner-array")
+  // @Type(type = "spanner-array")
   private List<Double> doubleList;
 
   @Transient
-  //@Type(type = "spanner-array")
+  // @Type(type = "spanner-array")
   private List<Integer> intList;
 
   @Transient
-  //@Type(type = "spanner-array")
+  // @Type(type = "spanner-array")
   private List<BigDecimal> bigDecimalList;
 
   @Transient
-  //@Type(type = "spanner-array")
+  // @Type(type = "spanner-array")
   private List<String> stringList;
 
   public List<Boolean> getBooleanList() {

@@ -29,17 +29,15 @@ import org.hibernate.annotations.OnDeleteAction;
 @Entity
 public class Item {
 
-  @Id
-  public long itemId;
+  @Id public long itemId;
 
   @ManyToOne
-  @JoinColumn(name="cartId")
-  @ForeignKey(name="Fk_itemDetails_cartId")
+  @JoinColumn(name = "cartId")
+  @ForeignKey(name = "Fk_itemDetails_cartId")
   @OnDelete(action = OnDeleteAction.CASCADE)
   public Cart cart;
 
-  public Item() {
-  }
+  public Item() {}
 
   public long getItemId() {
     return itemId;

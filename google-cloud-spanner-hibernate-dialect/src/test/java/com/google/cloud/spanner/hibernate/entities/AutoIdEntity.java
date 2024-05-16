@@ -26,12 +26,9 @@ import jakarta.persistence.Id;
 /** Test entity that uses an automatically selected ID generator. */
 @Entity
 public class AutoIdEntity {
-  @Id
-  @GeneratedValue
-  private long id;
+  @Id @GeneratedValue private long id;
 
-  @Column
-  private String name;
+  @Column private String name;
 
   protected AutoIdEntity() {}
 

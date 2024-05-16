@@ -29,20 +29,16 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 /**
  * Code samples for using Stale Reads in Hibernate.
  *
- * <p>Stale reads allow you to read from the Spanner database at a timestamp in the past.
- * See: https://cloud.google.com/spanner/docs/reads
+ * <p>Stale reads allow you to read from the Spanner database at a timestamp in the past. See:
+ * https://cloud.google.com/spanner/docs/reads
  */
 public class StaleReadsDemo {
 
-  /**
-   * Runs the Stale Read demo.
-   */
+  /** Runs the Stale Read demo. */
   public static void main(String[] args) {
-    StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-        .configure()
-        .build();
-    SessionFactory sessionFactory = new MetadataSources(registry).buildMetadata()
-        .buildSessionFactory();
+    StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure().build();
+    SessionFactory sessionFactory =
+        new MetadataSources(registry).buildMetadata().buildSessionFactory();
     SessionHelper sessionHelper = new SessionHelper(sessionFactory);
 
     runStaleReads(sessionHelper);
@@ -63,7 +59,8 @@ public class StaleReadsDemo {
 
       // Perform a strong read. One book is returned.
       List<Book> booksInTable =
-          session.createQuery("from Book b where b.id = :id", Book.class)
+          session
+              .createQuery("from Book b where b.id = :id", Book.class)
               .setParameter("id", book.getId())
               .list();
       System.out.println("Executing a strong read: " + booksInTable);
@@ -71,7 +68,8 @@ public class StaleReadsDemo {
 
     try (Session session = sessionHelper.createExactStaleReadSession(600)) {
       List<Book> booksInTable =
-          session.createQuery("from Book b where b.id = :id", Book.class)
+          session
+              .createQuery("from Book b where b.id = :id", Book.class)
               .setParameter("id", book.getId())
               .list();
       System.out.println(

@@ -27,9 +27,7 @@ import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-/**
- * A sample Hibernate entity which helps verify usage of the unique constraint in Hibernate.
- */
+/** A sample Hibernate entity which helps verify usage of the unique constraint in Hibernate. */
 @Entity
 public class Airplane {
 

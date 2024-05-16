@@ -28,17 +28,15 @@ import java.util.Set;
 @Entity
 public class Cart {
 
-  @Id
-  public long cartId;
+  @Id public long cartId;
 
-  @OneToMany(mappedBy="cart")
+  @OneToMany(mappedBy = "cart")
   public Set<Item> items;
 
-  @OneToOne(mappedBy="cart", cascade=CascadeType.REMOVE)
+  @OneToOne(mappedBy = "cart", cascade = CascadeType.REMOVE)
   public CartSession session;
 
-  public Cart() {
-  }
+  public Cart() {}
 
   public long getCartId() {
     return cartId;

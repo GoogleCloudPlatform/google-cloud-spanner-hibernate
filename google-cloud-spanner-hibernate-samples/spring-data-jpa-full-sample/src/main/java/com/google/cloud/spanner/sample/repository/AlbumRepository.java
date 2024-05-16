@@ -21,6 +21,4 @@ package com.google.cloud.spanner.sample.repository;
 import com.google.cloud.spanner.sample.entities.Album;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AlbumRepository extends JpaRepository<Album, String> {
-
-}
+public interface AlbumRepository extends JpaRepository<Album, String> {}

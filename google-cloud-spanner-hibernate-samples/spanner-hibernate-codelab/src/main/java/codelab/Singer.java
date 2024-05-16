@@ -28,9 +28,7 @@ import java.util.Date;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 
-/**
- * An entity representing a singer.
- */
+/** An entity representing a singer. */
 @Entity
 public class Singer {
 
@@ -46,12 +44,9 @@ public class Singer {
   @Temporal(TemporalType.DATE)
   private Date birthDate;
 
-  public Singer() {
-  }
+  public Singer() {}
 
-  /**
-   * Alternative constructor.
-   */
+  /** Alternative constructor. */
   public Singer(String firstName, String lastName, Date birthDate) {
     this.firstName = firstName;
     this.lastName = lastName;

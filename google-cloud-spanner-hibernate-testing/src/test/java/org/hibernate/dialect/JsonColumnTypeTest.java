@@ -33,29 +33,28 @@ public class JsonColumnTypeTest extends BaseEntityManagerFunctionalTestCase {
 
   @Override
   protected Class<?>[] getAnnotatedClasses() {
-    return new Class<?>[]{
-        JsonEntity.class
-    };
+    return new Class<?>[] {JsonEntity.class};
   }
 
   @Test
   public void jsonColumnTest() {
-    doInJPA(this::entityManagerFactory, entityManager -> {
-      JsonEntity jsonEntity = new JsonEntity();
-      jsonEntity.setEmployee(createEmployee());
+    doInJPA(
+        this::entityManagerFactory,
+        entityManager -> {
+          JsonEntity jsonEntity = new JsonEntity();
+          jsonEntity.setEmployee(createEmployee());
 
-      entityManager.persist(jsonEntity);
-      entityManager.flush();
+          entityManager.persist(jsonEntity);
+          entityManager.flush();
 
-      Session session = entityManager.unwrap(Session.class);
-      List<JsonEntity> entities =
-          session.createQuery(
-              "from JsonEntity", JsonEntity.class).list();
-      assertThat(entities).hasSizeGreaterThan(0);
+          Session session = entityManager.unwrap(Session.class);
+          List<JsonEntity> entities =
+              session.createQuery("from JsonEntity", JsonEntity.class).list();
+          assertThat(entities).hasSizeGreaterThan(0);
 
-      JsonEntity entity = entities.get(0);
-      assertThat(entity.getEmployee()).isEqualTo(createEmployee());
-    });
+          JsonEntity entity = entities.get(0);
+          assertThat(entity.getEmployee()).isEqualTo(createEmployee());
+        });
   }
 
   private static Employee createEmployee() {

@@ -22,6 +22,4 @@ import com.google.cloud.spanner.sample.entities.Track;
 import com.google.cloud.spanner.sample.entities.Track.TrackId;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TrackRepository extends JpaRepository<Track, TrackId> {
-
-}
+public interface TrackRepository extends JpaRepository<Track, TrackId> {}

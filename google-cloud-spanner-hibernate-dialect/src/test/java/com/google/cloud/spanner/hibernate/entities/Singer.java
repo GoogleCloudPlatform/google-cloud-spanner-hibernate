@@ -33,26 +33,26 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
 @Entity
 @Check(constraints = "first_name is not null or last_name is not null")
 public class Singer {
-  
+
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customerId")
   @GenericGenerator(
-             name = "customerId",
-             type = BitReversedSequenceStyleGenerator.class,
-             parameters = {
-                 @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "singerId"),
-                 @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
-                 @Parameter(name = SequenceStyleGenerator.INITIAL_PARAM, value = "50000"),
-                 @Parameter(name = BitReversedSequenceStyleGenerator.EXCLUDE_RANGES_PARAM, 
-                     value = "[1,1000] [10000,20000]"),
-             })
+      name = "customerId",
+      type = BitReversedSequenceStyleGenerator.class,
+      parameters = {
+        @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "singerId"),
+        @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
+        @Parameter(name = SequenceStyleGenerator.INITIAL_PARAM, value = "50000"),
+        @Parameter(
+            name = BitReversedSequenceStyleGenerator.EXCLUDE_RANGES_PARAM,
+            value = "[1,1000] [10000,20000]"),
+      })
   @Column(nullable = false)
   private long id;
-  
+
   public Singer() {}
-  
+
   public long getId() {
     return id;
   }
-
 }
