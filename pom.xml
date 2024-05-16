@@ -289,17 +289,6 @@
           </dependency>
         </dependencies>
         <executions>
-<!--          <execution>-->
-<!--            <id>validate-google-style</id>-->
-<!--            <phase>validate</phase>-->
-<!--            <goals>-->
-<!--              <goal>check</goal>-->
-<!--            </goals>-->
-<!--            <configuration>-->
-<!--              <configLocation>google_checks.xml</configLocation>-->
-<!--              <suppressionsLocation>checkstyle/checkstyle-suppressions.xml</suppressionsLocation>-->
-<!--            </configuration>-->
-<!--          </execution>-->
           <execution>
             <id>validate-file-header</id>
             <phase>validate</phase>
