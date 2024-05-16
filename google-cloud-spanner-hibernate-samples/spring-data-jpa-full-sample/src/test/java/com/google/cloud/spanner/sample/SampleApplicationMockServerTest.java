@@ -291,6 +291,9 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
             1L));
     mockSpanner.putPartialStatementResult(
         StatementResult.update(
+            Statement.of("update venue set description=@p1,updated_at=@p2 where id=@p3"), 1L));
+    mockSpanner.putPartialStatementResult(
+        StatementResult.update(
             Statement.of(
                 "insert into concert (created_at,end_time,name,singer_id,start_time,updated_at,venue_id,id) values (@p1,@p2,@p3,@p4,@p5,@p6,@p7,@p8)"),
             1L));
@@ -682,6 +685,11 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         35,
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
             .filter(request -> !request.getSql().equals("SELECT 1"))
+            .filter(
+                request ->
+                    !request
+                        .getSql()
+                        .equals("update venue set description=@p1,updated_at=@p2 where id=@p3"))
             .count());
     assertEquals(6, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
     assertEquals(11, mockSpanner.countRequestsOfType(CommitRequest.class));
