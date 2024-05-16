@@ -32,9 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-/**
- * Service class for fetching and saving Singer records.
- */
+/** Service class for fetching and saving Singer records. */
 @Service
 public class SingerService {
 
@@ -44,12 +42,9 @@ public class SingerService {
 
   private final SingerRepository repository;
 
-  @PersistenceContext
-  private EntityManager entityManager;
+  @PersistenceContext private EntityManager entityManager;
 
-  /**
-   * Constructor with auto-injected dependencies.
-   */
+  /** Constructor with auto-injected dependencies. */
   public SingerService(RandomDataService randomDataService, SingerRepository repository) {
     this.randomDataService = randomDataService;
     this.repository = repository;
@@ -69,34 +64,34 @@ public class SingerService {
   @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public void printSingersWithLastNameStartingWith(String prefix) {
     log.info("Fetching all singers whose last name start with an '{}'", prefix);
-    repository.searchByLastNameStartsWith(prefix).forEach(singer -> {
-      log.info("Singer: {}", singer.getFullName());
-      log.info("# albums: {}", singer.getAlbums().size());
-      for (Album album : singer.getAlbums()) {
-        log.info("  Album: {}", album.getTitle());
-        log.info("  # tracks: {}", album.getTracks().size());
-        for (Track track : album.getTracks()) {
-          log.info("    Track #{}: {}", track.getTrackId().getTrackNumber(), track.getTitle());
-        }
-      }
-      log.info("# concerts: {}", singer.getConcerts().size());
-      for (Concert concert : singer.getConcerts()) {
-        log.info("  Concert: {} starts at {}", concert.getName(), concert.getStartTime());
-      }
-    });
+    repository
+        .searchByLastNameStartsWith(prefix)
+        .forEach(
+            singer -> {
+              log.info("Singer: {}", singer.getFullName());
+              log.info("# albums: {}", singer.getAlbums().size());
+              for (Album album : singer.getAlbums()) {
+                log.info("  Album: {}", album.getTitle());
+                log.info("  # tracks: {}", album.getTracks().size());
+                for (Track track : album.getTracks()) {
+                  log.info(
+                      "    Track #{}: {}", track.getTrackId().getTrackNumber(), track.getTitle());
+                }
+              }
+              log.info("# concerts: {}", singer.getConcerts().size());
+              for (Concert concert : singer.getConcerts()) {
+                log.info("  Concert: {} starts at {}", concert.getName(), concert.getStartTime());
+              }
+            });
   }
 
-  /**
-   * Deletes all singer records in the database.
-   */
+  /** Deletes all singer records in the database. */
   @Transactional
   public void deleteAllSingers() {
     repository.deleteAll();
   }
 
-  /**
-   * Generates the specified number of random singer records.
-   */
+  /** Generates the specified number of random singer records. */
   @Transactional
   public List<Singer> generateRandomSingers(int count) {
     List<Singer> singers = new ArrayList<>(count);

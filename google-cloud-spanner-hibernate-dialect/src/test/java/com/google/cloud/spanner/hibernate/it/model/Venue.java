@@ -16,7 +16,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-
 package com.google.cloud.spanner.hibernate.it.model;
 
 import jakarta.persistence.CascadeType;
@@ -34,16 +33,14 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.type.SqlTypes;
 
-/**
- * Venue entity.
- */
+/** Venue entity. */
 @Entity
 public class Venue extends AbstractBaseEntity {
 
   /**
-   * {@link VenueDescription} is a POJO that is used for the JSON field 'description' of the
-   * {@link Venue} entity. It is automatically serialized and deserialized when an instance of the
-   * entity is loaded or persisted.
+   * {@link VenueDescription} is a POJO that is used for the JSON field 'description' of the {@link
+   * Venue} entity. It is automatically serialized and deserialized when an instance of the entity
+   * is loaded or persisted.
    */
   public static class VenueDescription implements Serializable {
 
@@ -84,9 +81,9 @@ public class Venue extends AbstractBaseEntity {
       //       emulator supports it.
       strategy = "com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator",
       parameters = {
-          // Use a separate name for each entity to ensure that it uses a separate table.
-          @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "venue_id"),
-          @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
+        // Use a separate name for each entity to ensure that it uses a separate table.
+        @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "venue_id"),
+        @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
       })
   private Long id;
 
@@ -103,8 +100,7 @@ public class Venue extends AbstractBaseEntity {
   @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL)
   private List<Concert> concerts;
 
-  protected Venue() {
-  }
+  protected Venue() {}
 
   public Venue(String name, VenueDescription description) {
     this.name = name;

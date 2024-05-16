@@ -26,9 +26,7 @@ import java.sql.Types;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 
-/**
- * Simple Hibernate Entity used by the sample application.
- */
+/** Simple Hibernate Entity used by the sample application. */
 @Entity
 public class Book {
 
@@ -41,9 +39,7 @@ public class Book {
 
   private String author;
 
-  public Book() {
-
-  }
+  public Book() {}
 
   public Book(String title, String author) {
     this.title = title;
@@ -76,10 +72,6 @@ public class Book {
 
   @Override
   public String toString() {
-    return "Book{"
-        + "id=" + id
-        + ", title='" + title + '\''
-        + ", author='" + author + '\''
-        + '}';
+    return "Book{" + "id=" + id + ", title='" + title + '\'' + ", author='" + author + '\'' + '}';
   }
 }

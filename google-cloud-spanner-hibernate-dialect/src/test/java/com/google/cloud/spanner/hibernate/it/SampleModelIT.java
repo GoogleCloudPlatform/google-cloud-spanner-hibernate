@@ -79,16 +79,22 @@ public class SampleModelIT {
 
   private static SessionFactory sessionFactory;
 
-  /**
-   * Creates the test database and session factory.
-   */
+  /** Creates the test database and session factory. */
   @BeforeClass
   public static void createDataDatabase() {
     TEST_ENV.createDatabase(ImmutableList.of());
-    sessionFactory = TEST_ENV.createTestHibernateConfig(
-        ImmutableList.of(
-            Singer.class, Album.class, Track.class, Venue.class, Concert.class, AllTypes.class),
-        ImmutableMap.of("hibernate.hbm2ddl.auto", "update")).buildSessionFactory();
+    sessionFactory =
+        TEST_ENV
+            .createTestHibernateConfig(
+                ImmutableList.of(
+                    Singer.class,
+                    Album.class,
+                    Track.class,
+                    Venue.class,
+                    Concert.class,
+                    AllTypes.class),
+                ImmutableMap.of("hibernate.hbm2ddl.auto", "update"))
+            .buildSessionFactory();
     try (Session session = sessionFactory.openSession()) {
       final Transaction transaction = session.beginTransaction();
       Singer peter = new Singer("Peter", "Allison");
@@ -106,9 +112,7 @@ public class SampleModelIT {
     }
   }
 
-  /**
-   * Drops the test database.
-   */
+  /** Drops the test database. */
   @AfterClass
   public static void dropTestDatabase() {
     if (sessionFactory != null) {
@@ -117,32 +121,32 @@ public class SampleModelIT {
     TEST_ENV.cleanup();
   }
 
-  /**
-   * Clean up any data that the test might have added.
-   */
+  /** Clean up any data that the test might have added. */
   @After
   public void deleteTestData() {
     try (Session session = sessionFactory.openSession()) {
       final Transaction transaction = session.beginTransaction();
-      session.createMutationQuery("delete from Concert "
-              + "where not singer.id=:id1 "
-              + "  and not singer.id=:id2")
+      session
+          .createMutationQuery(
+              "delete from Concert " + "where not singer.id=:id1 " + "  and not singer.id=:id2")
           .setParameter("id1", Long.reverse(50000))
           .setParameter("id2", Long.reverse(50001))
           .executeUpdate();
-      session.createMutationQuery("delete from Venue "
-              + "where not id in (select venue.id from Concert)")
+      session
+          .createMutationQuery(
+              "delete from Venue " + "where not id in (select venue.id from Concert)")
           .executeUpdate();
       session.createMutationQuery("delete from Track where 1=1").executeUpdate();
-      session.createMutationQuery("delete from Album "
-              + "where not (singer.id=:id1 or singer.id=:id2) "
-              + "or not (title='Album 1' or title='Album 2')")
+      session
+          .createMutationQuery(
+              "delete from Album "
+                  + "where not (singer.id=:id1 or singer.id=:id2) "
+                  + "or not (title='Album 1' or title='Album 2')")
           .setParameter("id1", Long.reverse(50000))
           .setParameter("id2", Long.reverse(50001))
           .executeUpdate();
-      session.createMutationQuery("delete from Singer "
-              + "where not id=:id1 "
-              + "  and not id=:id2")
+      session
+          .createMutationQuery("delete from Singer " + "where not id=:id1 " + "  and not id=:id2")
           .setParameter("id1", Long.reverse(50000))
           .setParameter("id2", Long.reverse(50001))
           .executeUpdate();
@@ -219,7 +223,7 @@ public class SampleModelIT {
       Album album = new Album(peter, "Album 3");
       album.setMarketingBudget(new BigDecimal("990429.23"));
       album.setReleaseDate(LocalDate.of(2023, 9, 27));
-      album.setCoverPicture(new byte[]{10, 20, 30, 1, 2, 3, 127, 127, 0, 0, -128, -100});
+      album.setCoverPicture(new byte[] {10, 20, 30, 1, 2, 3, 127, 127, 0, 0, -128, -100});
       session.save(album);
       transaction.commit();
 
@@ -229,8 +233,8 @@ public class SampleModelIT {
       assertEquals("Album 3", album.getTitle());
       assertEquals(new BigDecimal("990429.23"), album.getMarketingBudget());
       assertEquals(LocalDate.of(2023, 9, 27), album.getReleaseDate());
-      assertArrayEquals(new byte[]{10, 20, 30, 1, 2, 3, 127, 127, 0, 0, -128, -100},
-          album.getCoverPicture());
+      assertArrayEquals(
+          new byte[] {10, 20, 30, 1, 2, 3, 127, 127, 0, 0, -128, -100}, album.getCoverPicture());
     }
   }
 
@@ -305,17 +309,21 @@ public class SampleModelIT {
       session.save(venue);
       Concert concert = new Concert(venue, peter);
       concert.setName("Peter Live!");
-      concert.setStartTime(OffsetDateTime.of(LocalDate.of(2023, 9, 26), LocalTime.of(19, 30),
-          ZoneOffset.of("+02:00")));
-      concert.setEndTime(OffsetDateTime.of(LocalDate.of(2023, 9, 27), LocalTime.of(2, 0),
-          ZoneOffset.of("+02:00")));
+      concert.setStartTime(
+          OffsetDateTime.of(
+              LocalDate.of(2023, 9, 26), LocalTime.of(19, 30), ZoneOffset.of("+02:00")));
+      concert.setEndTime(
+          OffsetDateTime.of(
+              LocalDate.of(2023, 9, 27), LocalTime.of(2, 0), ZoneOffset.of("+02:00")));
       session.save(concert);
       transaction.commit();
 
       session.refresh(concert);
-      assertEquals(Instant.from(OffsetDateTime.of(2023, 9, 26, 17, 30, 0, 0, ZoneOffset.UTC)),
+      assertEquals(
+          Instant.from(OffsetDateTime.of(2023, 9, 26, 17, 30, 0, 0, ZoneOffset.UTC)),
           Instant.from(concert.getStartTime()));
-      assertEquals(Instant.from(OffsetDateTime.of(2023, 9, 27, 0, 0, 0, 0, ZoneOffset.UTC)),
+      assertEquals(
+          Instant.from(OffsetDateTime.of(2023, 9, 27, 0, 0, 0, 0, ZoneOffset.UTC)),
           Instant.from(concert.getEndTime()));
     }
   }
@@ -333,8 +341,9 @@ public class SampleModelIT {
       Singer singer = new Singer("First", "Last");
       // Adding albums in this way does not automatically save the albums as well, as we have not
       // specified any cascade actions on the albums collection.
-      singer.setAlbums(new ArrayList<>(
-          ImmutableList.of(new Album(singer, "Title 1"), new Album(singer, "Title 2"))));
+      singer.setAlbums(
+          new ArrayList<>(
+              ImmutableList.of(new Album(singer, "Title 1"), new Album(singer, "Title 2"))));
       final Transaction transaction = session.beginTransaction();
       session.save(singer);
       transaction.commit();
@@ -347,8 +356,9 @@ public class SampleModelIT {
 
       // Manually saving the albums as well does work.
       Singer singer2 = new Singer("First", "Last");
-      singer2.setAlbums(new ArrayList<>(
-          ImmutableList.of(new Album(singer, "Title 1"), new Album(singer, "Title 2"))));
+      singer2.setAlbums(
+          new ArrayList<>(
+              ImmutableList.of(new Album(singer, "Title 1"), new Album(singer, "Title 2"))));
       final Transaction transaction2 = session.beginTransaction();
       session.save(singer2);
       for (Album album : singer2.getAlbums()) {
@@ -372,10 +382,8 @@ public class SampleModelIT {
       // We need to save the album before adding tracks to it, as the tracks must use the same id
       // as the album (Track is INTERLEAVED IN PARENT Album).
       session.save(album);
-      album.setTracks(ImmutableList.of(
-          new Track(album, 1L, "Track 1"),
-          new Track(album, 2L, "Track 2")
-      ));
+      album.setTracks(
+          ImmutableList.of(new Track(album, 1L, "Track 1"), new Track(album, 2L, "Track 2")));
       for (Track track : album.getTracks()) {
         session.save(track);
       }
@@ -407,23 +415,27 @@ public class SampleModelIT {
       // 2. One internal transaction that is started by Hibernate to generate ID values for the
       //    concerts.
       // The emulator does not support parallel transactions.
-      final Transaction transaction = isUsingEmulator()
-          ? null
-          : session.beginTransaction();
+      final Transaction transaction = isUsingEmulator() ? null : session.beginTransaction();
       Singer peter = session.get(Singer.class, Long.reverse(50000L));
       Venue venue = new Venue("Concert Hall", new VenueDescription());
-      venue.setConcerts(ImmutableList.of(
-          new Concert(venue, peter, "Concert 1",
-              OffsetDateTime.of(LocalDate.of(2023, 9, 29), LocalTime.of(20, 0),
-                  ZoneOffset.of("+02")),
-              OffsetDateTime.of(LocalDate.of(2023, 9, 30), LocalTime.of(1, 30),
-                  ZoneOffset.of("+02"))),
-          new Concert(venue, peter, "Concert 1",
-              OffsetDateTime.of(LocalDate.of(2023, 10, 3), LocalTime.of(15, 0),
-                  ZoneOffset.of("+02")),
-              OffsetDateTime.of(LocalDate.of(2023, 10, 3), LocalTime.of(20, 0),
-                  ZoneOffset.of("+02")))
-      ));
+      venue.setConcerts(
+          ImmutableList.of(
+              new Concert(
+                  venue,
+                  peter,
+                  "Concert 1",
+                  OffsetDateTime.of(
+                      LocalDate.of(2023, 9, 29), LocalTime.of(20, 0), ZoneOffset.of("+02")),
+                  OffsetDateTime.of(
+                      LocalDate.of(2023, 9, 30), LocalTime.of(1, 30), ZoneOffset.of("+02"))),
+              new Concert(
+                  venue,
+                  peter,
+                  "Concert 1",
+                  OffsetDateTime.of(
+                      LocalDate.of(2023, 10, 3), LocalTime.of(15, 0), ZoneOffset.of("+02")),
+                  OffsetDateTime.of(
+                      LocalDate.of(2023, 10, 3), LocalTime.of(20, 0), ZoneOffset.of("+02")))));
       // This should also cascade-save all the concerts of the venue, as the association is defined
       // with cascade = CascadeType.ALL.
       session.save(venue);
@@ -471,8 +483,10 @@ public class SampleModelIT {
       saved.setColTimestamp(Instant.ofEpochMilli(1000L));
       saved.setColBoolArray(Arrays.asList(Boolean.TRUE, null, Boolean.FALSE));
       saved.setColBytesArray(
-          Arrays.asList("test1".getBytes(StandardCharsets.UTF_8), null, "test2".getBytes(
-              StandardCharsets.UTF_8)));
+          Arrays.asList(
+              "test1".getBytes(StandardCharsets.UTF_8),
+              null,
+              "test2".getBytes(StandardCharsets.UTF_8)));
       saved.setColDateArray(
           Arrays.asList(LocalDate.of(2000, 1, 1), null, LocalDate.of(1970, 1, 1)));
       saved.setColFloat64Array(Arrays.asList(3.14d, null, 6.626d));
@@ -523,30 +537,45 @@ public class SampleModelIT {
       Root<Singer> root = cr.from(Singer.class);
       root.join("albums", JoinType.LEFT);
       cr.select(root);
-      Query<Singer> query = session.createQuery(cr)
-          .addQueryHint(
-              Hints.forceIndexFrom("Singer", "idx_singer_active", ReplaceMode.ALL).toQueryHint())
-          .addQueryHint(
-              Hints.forceIndexJoin("Album", "idx_album_title", ReplaceMode.ALL).toQueryHint());
+      Query<Singer> query =
+          session
+              .createQuery(cr)
+              .addQueryHint(
+                  Hints.forceIndexFrom("Singer", "idx_singer_active", ReplaceMode.ALL)
+                      .toQueryHint())
+              .addQueryHint(
+                  Hints.forceIndexJoin("Album", "idx_album_title", ReplaceMode.ALL).toQueryHint());
       assertEquals(2, query.getResultList().size());
 
       // Verify that adding a hint for a non-existing index fails.
-      Query<Singer> invalidQuery = session.createQuery(cr).addQueryHint(
-          Hints.forceIndexFrom("Singer", "idx_does_not_exist", ReplaceMode.ALL).toQueryHint());
-      HibernateException exception = assertThrows(HibernateException.class,
-          invalidQuery::getResultList);
-      assertTrue(exception.getMessage(), exception.getMessage()
-          .contains("does not have a secondary index called idx_does_not_exist"));
+      Query<Singer> invalidQuery =
+          session
+              .createQuery(cr)
+              .addQueryHint(
+                  Hints.forceIndexFrom("Singer", "idx_does_not_exist", ReplaceMode.ALL)
+                      .toQueryHint());
+      HibernateException exception =
+          assertThrows(HibernateException.class, invalidQuery::getResultList);
+      assertTrue(
+          exception.getMessage(),
+          exception
+              .getMessage()
+              .contains("does not have a secondary index called idx_does_not_exist"));
 
-      Query<Singer> joinMethodQuery = session.createQuery(cr).addQueryHint(
-          Hints.joinMethod("Album", JoinMethod.MERGE_JOIN, ReplaceMode.ALL)
-              .toQueryHint());
+      Query<Singer> joinMethodQuery =
+          session
+              .createQuery(cr)
+              .addQueryHint(
+                  Hints.joinMethod("Album", JoinMethod.MERGE_JOIN, ReplaceMode.ALL).toQueryHint());
       assertEquals(2, joinMethodQuery.getResultList().size());
 
       // Verify that adding combined hints works.
-      Query<Singer> hashJoinExecutionQuery = session.createQuery(cr).addQueryHint(
-          Hints.hashJoinExecution("Album", HashJoinExecution.ONE_PASS, ReplaceMode.ALL)
-              .toQueryHint());
+      Query<Singer> hashJoinExecutionQuery =
+          session
+              .createQuery(cr)
+              .addQueryHint(
+                  Hints.hashJoinExecution("Album", HashJoinExecution.ONE_PASS, ReplaceMode.ALL)
+                      .toQueryHint());
       assertEquals(2, hashJoinExecutionQuery.getResultList().size());
 
       if (!isUsingEmulator()) {
@@ -555,26 +584,32 @@ public class SampleModelIT {
         //     Hints.forceStreamable(true).toQueryHint());
         // assertEquals(2, forceStreamableQuery.getResultList().size());
 
-        Query<Singer> optimizerVersionQuery = session.createQuery(cr).addQueryHint(
-            Hints.optimizerVersion("1").toQueryHint());
+        Query<Singer> optimizerVersionQuery =
+            session.createQuery(cr).addQueryHint(Hints.optimizerVersion("1").toQueryHint());
         assertEquals(2, optimizerVersionQuery.getResultList().size());
 
-        Query<Singer> allowDistributedMergeQuery = session.createQuery(cr).addQueryHint(
-            Hints.allowDistributedMerge(true).toQueryHint());
+        Query<Singer> allowDistributedMergeQuery =
+            session.createQuery(cr).addQueryHint(Hints.allowDistributedMerge(true).toQueryHint());
         assertEquals(2, allowDistributedMergeQuery.getResultList().size());
 
-        Query<Singer> hashJoinBuildSideQuery = session.createQuery(cr).addQueryHint(
-            Hints.hashJoinBuildSide("Album", HashJoinBuildSide.BUILD_RIGHT, ReplaceMode.ALL)
-                .toQueryHint());
+        Query<Singer> hashJoinBuildSideQuery =
+            session
+                .createQuery(cr)
+                .addQueryHint(
+                    Hints.hashJoinBuildSide("Album", HashJoinBuildSide.BUILD_RIGHT, ReplaceMode.ALL)
+                        .toQueryHint());
         assertEquals(2, hashJoinBuildSideQuery.getResultList().size());
 
-        Query<Singer> hashJoinQuery = session.createQuery(cr).addQueryHint(
-            Hints.hashJoin(
-                "Album",
-                    HashJoinBuildSide.BUILD_RIGHT,
-                    HashJoinExecution.ONE_PASS,
-                    ReplaceMode.ALL)
-                .toQueryHint());
+        Query<Singer> hashJoinQuery =
+            session
+                .createQuery(cr)
+                .addQueryHint(
+                    Hints.hashJoin(
+                            "Album",
+                            HashJoinBuildSide.BUILD_RIGHT,
+                            HashJoinExecution.ONE_PASS,
+                            ReplaceMode.ALL)
+                        .toQueryHint());
         assertEquals(2, hashJoinQuery.getResultList().size());
       }
     }

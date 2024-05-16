@@ -35,9 +35,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
-/**
- * Album entity definition.
- */
+/** Album entity definition. */
 @Entity
 @Table(indexes = {@Index(name = "idx_album_title", columnList = "title")})
 public class Album extends AbstractBaseEntity {
@@ -50,9 +48,9 @@ public class Album extends AbstractBaseEntity {
       //       emulator supports it.
       strategy = "com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator",
       parameters = {
-          // Use a separate name for each entity to ensure that it uses a separate table.
-          @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "album_id"),
-          @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
+        // Use a separate name for each entity to ensure that it uses a separate table.
+        @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "album_id"),
+        @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
       })
   private Long id;
 
@@ -68,14 +66,11 @@ public class Album extends AbstractBaseEntity {
   @ManyToOne(optional = false, fetch = FetchType.EAGER)
   private Singer singer;
 
-  /**
-   * The 'id' column in Track maps to Album. The corresponding property is called 'album'.
-   */
+  /** The 'id' column in Track maps to Album. The corresponding property is called 'album'. */
   @OneToMany(mappedBy = "album")
   private List<Track> tracks;
 
-  protected Album() {
-  }
+  protected Album() {}
 
   public Album(Singer singer, String title) {
     this.singer = singer;

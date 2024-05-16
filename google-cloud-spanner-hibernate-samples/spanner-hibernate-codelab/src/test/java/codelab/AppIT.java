@@ -24,22 +24,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 
-/**
- * This verifies the sample application.
- */
+/** This verifies the sample application. */
 public class AppIT {
 
-  @Rule
-  public final SystemOutRule systemOutRule = new SystemOutRule().enableLog();
+  @Rule public final SystemOutRule systemOutRule = new SystemOutRule().enableLog();
 
   @Test
   public void test() {
-    App.main(new String[]{});
+    App.main(new String[] {});
 
-    assertThat(systemOutRule.getLog()).contains("Singers who were born in 1990 or later:\n"
-        + "Jacqueline Long born on 1990-07-29\n"
-        + "Dylan Shaw born on 1998-05-02\n"
-        + "Albums: \n"
-        + "\"Go, Go, Go\" by Melissa Garcia\n");
+    assertThat(systemOutRule.getLog())
+        .contains(
+            "Singers who were born in 1990 or later:\n"
+                + "Jacqueline Long born on 1990-07-29\n"
+                + "Dylan Shaw born on 1998-05-02\n"
+                + "Albums: \n"
+                + "\"Go, Go, Go\" by Melissa Garcia\n");
   }
 }

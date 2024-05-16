@@ -63,9 +63,7 @@ public class SpannerTableExporterTests {
 
   private MockConnection connection;
 
-  /**
-   * Set up the metadata for Hibernate to generate schema statements.
-   */
+  /** Set up the metadata for Hibernate to generate schema statements. */
   @Before
   public void setup() throws SQLException {
     JDBCMockObjectFactory jdbcMockObjectFactory = new JDBCMockObjectFactory();
@@ -75,10 +73,11 @@ public class SpannerTableExporterTests {
     this.connection.setMetaData(MockJdbcUtils.metaDataBuilder().build());
     jdbcMockObjectFactory.getMockDriver().setupConnection(this.connection);
 
-    this.registry = new StandardServiceRegistryBuilder()
-        .applySetting("hibernate.dialect", SpannerDialect.class.getName())
-        .applySetting("hibernate.connection.url", "unused")
-        .build();
+    this.registry =
+        new StandardServiceRegistryBuilder()
+            .applySetting("hibernate.dialect", SpannerDialect.class.getName())
+            .applySetting("hibernate.connection.url", "unused")
+            .build();
 
     this.metadata =
         new MetadataSources(this.registry).addAnnotatedClass(TestEntity.class).buildMetadata();
@@ -87,12 +86,12 @@ public class SpannerTableExporterTests {
   @Test
   public void generateDropStringsTest() throws IOException, SQLException {
 
-    this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
-        .setTables("test_table", "`TestEntity_stringList`")
-        .build());
+    this.connection.setMetaData(
+        MockJdbcUtils.metaDataBuilder().setTables("test_table", "`TestEntity_stringList`").build());
 
     String testFileName = UUID.randomUUID().toString();
-    new SchemaExport().setOutputFile(testFileName)
+    new SchemaExport()
+        .setOutputFile(testFileName)
         .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
     File scriptFile = new File(testFileName);
     scriptFile.deleteOnExit();
@@ -110,28 +109,31 @@ public class SpannerTableExporterTests {
     SpannerDialect.disableSpannerSequences();
     try {
       Namespace namespace = mock(Namespace.class);
-      when(namespace.getPhysicalName()).thenReturn(
-          new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
+      when(namespace.getPhysicalName())
+          .thenReturn(new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
       Table table = new Table("orm", namespace, Identifier.toIdentifier("Employee"), false);
-      this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
-          .setTables("Employee", "Employee_SEQ")
-          .setIndices(table, "name_index")
-          .build());
+      this.connection.setMetaData(
+          MockJdbcUtils.metaDataBuilder()
+              .setTables("Employee", "Employee_SEQ")
+              .setIndices(table, "name_index")
+              .build());
 
       Metadata employeeMetadata =
           new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
       String testFileName = UUID.randomUUID().toString();
-      new SchemaExport().setOutputFile(testFileName)
+      new SchemaExport()
+          .setOutputFile(testFileName)
           .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), employeeMetadata);
       File scriptFile = new File(testFileName);
       scriptFile.deleteOnExit();
       List<String> statements = Files.readAllLines(scriptFile.toPath());
 
-      assertThat(statements).containsExactly(
-          "START BATCH DDL;",
-          "drop index if exists name_index;",
-          "drop table `Employee`;",
-          "RUN BATCH;");
+      assertThat(statements)
+          .containsExactly(
+              "START BATCH DDL;",
+              "drop index if exists name_index;",
+              "drop table `Employee`;",
+              "RUN BATCH;");
     } finally {
       SpannerDialect.enableSpannerSequences();
     }
@@ -141,58 +143,60 @@ public class SpannerTableExporterTests {
   public void generateDeleteStringsWithIndices_withSequencesEnabled()
       throws IOException, SQLException {
     Namespace namespace = mock(Namespace.class);
-    when(namespace.getPhysicalName()).thenReturn(
-        new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
+    when(namespace.getPhysicalName())
+        .thenReturn(new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
     Table table = new Table("orm", namespace, Identifier.toIdentifier("Employee"), false);
-    this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
-        .setTables("Employee", "Employee_SEQ")
-        .setIndices(table, "name_index")
-        .build());
+    this.connection.setMetaData(
+        MockJdbcUtils.metaDataBuilder()
+            .setTables("Employee", "Employee_SEQ")
+            .setIndices(table, "name_index")
+            .build());
 
     Metadata employeeMetadata =
         new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
     String testFileName = UUID.randomUUID().toString();
-    new SchemaExport().setOutputFile(testFileName)
+    new SchemaExport()
+        .setOutputFile(testFileName)
         .drop(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), employeeMetadata);
     File scriptFile = new File(testFileName);
     scriptFile.deleteOnExit();
     List<String> statements = Files.readAllLines(scriptFile.toPath());
 
-    assertThat(statements).containsExactly(
-        "START BATCH DDL;",
-        "drop index if exists name_index;",
-        "drop table `Employee`;",
-        "drop sequence Employee_Sequence;",
-        "RUN BATCH;");
+    assertThat(statements)
+        .containsExactly(
+            "START BATCH DDL;",
+            "drop index if exists name_index;",
+            "drop table `Employee`;",
+            "drop sequence Employee_Sequence;",
+            "RUN BATCH;");
   }
 
   @Test
   public void omitCreatingPreexistingTables() throws IOException, SQLException {
     SpannerDialect.disableSpannerSequences();
     try {
-      this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
-          .setTables("Employee")
-          .build());
+      this.connection.setMetaData(MockJdbcUtils.metaDataBuilder().setTables("Employee").build());
 
       Metadata employeeMetadata =
           new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
       String testFileName = UUID.randomUUID().toString();
-      new SchemaExport().setOutputFile(testFileName)
+      new SchemaExport()
+          .setOutputFile(testFileName)
           .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), employeeMetadata);
       File scriptFile = new File(testFileName);
       scriptFile.deleteOnExit();
       List<String> statements = Files.readAllLines(scriptFile.toPath());
 
-      assertThat(statements).containsExactly(
-          // This omits creating the Employee table since it is declared to exist in metadata.
-          "START BATCH DDL;",
-          "create table Employee_Sequence (next_val int64) PRIMARY KEY ();",
-          "create index name_index on Employee (name);",
-          "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
-              + "foreign key (manager_id) references Employee (id);",
-          "RUN BATCH;",
-          "insert into Employee_Sequence values ( 1 );"
-      );
+      assertThat(statements)
+          .containsExactly(
+              // This omits creating the Employee table since it is declared to exist in metadata.
+              "START BATCH DDL;",
+              "create table Employee_Sequence (next_val int64) PRIMARY KEY ();",
+              "create index name_index on Employee (name);",
+              "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
+                  + "foreign key (manager_id) references Employee (id);",
+              "RUN BATCH;",
+              "insert into Employee_Sequence values ( 1 );");
     } finally {
       SpannerDialect.enableSpannerSequences();
     }
@@ -201,34 +205,34 @@ public class SpannerTableExporterTests {
   @Test
   public void omitCreatingPreexistingTables_withSequencesEnabled()
       throws IOException, SQLException {
-    this.connection.setMetaData(MockJdbcUtils.metaDataBuilder()
-        .setTables("Employee")
-        .build());
+    this.connection.setMetaData(MockJdbcUtils.metaDataBuilder().setTables("Employee").build());
 
     Metadata employeeMetadata =
         new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
     String testFileName = UUID.randomUUID().toString();
-    new SchemaExport().setOutputFile(testFileName)
+    new SchemaExport()
+        .setOutputFile(testFileName)
         .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), employeeMetadata);
     File scriptFile = new File(testFileName);
     scriptFile.deleteOnExit();
     List<String> statements = Files.readAllLines(scriptFile.toPath());
 
-    assertThat(statements).containsExactly(
-        // This omits creating the Employee table since it is declared to exist in metadata.
-        "START BATCH DDL;",
-        "create sequence Employee_Sequence options(sequence_kind=\"bit_reversed_positive\");",
-        "create index name_index on Employee (name);",
-        "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
-            + "foreign key (manager_id) references Employee (id);",
-        "RUN BATCH;"
-    );
+    assertThat(statements)
+        .containsExactly(
+            // This omits creating the Employee table since it is declared to exist in metadata.
+            "START BATCH DDL;",
+            "create sequence Employee_Sequence options(sequence_kind=\"bit_reversed_positive\");",
+            "create index name_index on Employee (name);",
+            "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
+                + "foreign key (manager_id) references Employee (id);",
+            "RUN BATCH;");
   }
 
   @Test
   public void generateCreateStringsTest() throws IOException {
     String testFileName = UUID.randomUUID().toString();
-    new SchemaExport().setOutputFile(testFileName)
+    new SchemaExport()
+        .setOutputFile(testFileName)
         .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), this.metadata);
     File scriptFile = new File(testFileName);
     scriptFile.deleteOnExit();
@@ -236,13 +240,15 @@ public class SpannerTableExporterTests {
 
     // The types in the following string need to be updated when SpannerDialect
     // implementation maps types.
-    String expectedCreateString = "create table `test_table` (`ID1` int64 not null,id2"
-        + " string(255) not null,`boolColumn` bool,longVal int64 not null,stringVal"
-        + " string(255)) PRIMARY KEY (`ID1`,id2);";
+    String expectedCreateString =
+        "create table `test_table` (`ID1` int64 not null,id2"
+            + " string(255) not null,`boolColumn` bool,longVal int64 not null,stringVal"
+            + " string(255)) PRIMARY KEY (`ID1`,id2);";
 
-    String expectedCollectionCreateString = "create table `TestEntity_stringList` "
-        + "(`TestEntity_ID1` int64 not null,`TestEntity_id2` string(255) not null,"
-        + "stringList string(255)) PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList);";
+    String expectedCollectionCreateString =
+        "create table `TestEntity_stringList` "
+            + "(`TestEntity_ID1` int64 not null,`TestEntity_id2` string(255) not null,"
+            + "stringList string(255)) PRIMARY KEY (`TestEntity_ID1`,`TestEntity_id2`,stringList);";
 
     String foreignKeyString =
         "alter table `TestEntity_stringList` add constraint FK2is6fwy3079dmfhjot09x5och "
@@ -258,14 +264,16 @@ public class SpannerTableExporterTests {
 
   @Test
   public void generateCreateStringsEmptyEntityTest() {
-    assertThatThrownBy(() -> {
-      Metadata metadata = new MetadataSources(this.registry)
-          .addAnnotatedClass(EmptyEntity.class)
-          .buildMetadata();
-      new SchemaExport()
-          .setOutputFile("unused")
-          .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata);
-    })
+    assertThatThrownBy(
+            () -> {
+              Metadata metadata =
+                  new MetadataSources(this.registry)
+                      .addAnnotatedClass(EmptyEntity.class)
+                      .buildMetadata();
+              new SchemaExport()
+                  .setOutputFile("unused")
+                  .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata);
+            })
         .isInstanceOf(AnnotationException.class)
         .hasMessage(
             "Entity 'com.google.cloud.spanner.hibernate.SpannerTableExporterTests$EmptyEntity' "
@@ -275,15 +283,17 @@ public class SpannerTableExporterTests {
 
   @Test
   public void generateCreateStringsNoPkEntityTest() {
-    assertThatThrownBy(() -> {
-      Metadata metadata = new MetadataSources(this.registry)
-          .addAnnotatedClass(NoPkEntity.class)
-          .buildMetadata();
+    assertThatThrownBy(
+            () -> {
+              Metadata metadata =
+                  new MetadataSources(this.registry)
+                      .addAnnotatedClass(NoPkEntity.class)
+                      .buildMetadata();
 
-      new SchemaExport()
-          .setOutputFile("unused")
-          .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata);
-    })
+              new SchemaExport()
+                  .setOutputFile("unused")
+                  .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), metadata);
+            })
         .isInstanceOf(AnnotationException.class)
         .hasMessage(
             "Entity 'com.google.cloud.spanner.hibernate.SpannerTableExporterTests$NoPkEntity' "

@@ -59,9 +59,7 @@ public class Person {
   @OneToMany(cascade = CascadeType.ALL)
   private List<Payment> payments = new ArrayList<>();
 
-  public Person() {
-
-  }
+  public Person() {}
 
   public UUID getId() {
     return id;
@@ -106,11 +104,19 @@ public class Person {
   @Override
   public String toString() {
     return "Person{"
-        + "\n id=" + id
-        + "\n name='" + name + '\''
-        + "\n nickname='" + nickname + '\''
-        + "\n address='" + address + '\''
-        + "\n total_payments=" + payments.stream().mapToLong(p -> p.getAmount().longValue()).sum()
+        + "\n id="
+        + id
+        + "\n name='"
+        + name
+        + '\''
+        + "\n nickname='"
+        + nickname
+        + '\''
+        + "\n address='"
+        + address
+        + '\''
+        + "\n total_payments="
+        + payments.stream().mapToLong(p -> p.getAmount().longValue()).sum()
         + "\n}";
   }
 }

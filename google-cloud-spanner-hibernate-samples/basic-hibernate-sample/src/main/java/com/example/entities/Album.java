@@ -33,9 +33,7 @@ import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-/**
- * Sample Hibernate entity.
- */
+/** Sample Hibernate entity. */
 @Entity
 @Interleaved(parentEntity = Singer.class, cascadeDelete = true)
 @IdClass(AlbumId.class)
@@ -59,8 +57,7 @@ public class Album {
     this.title = title;
   }
 
-  public Album() {
-  }
+  public Album() {}
 
   public String getTitle() {
     return title;
@@ -81,15 +78,17 @@ public class Album {
   @Override
   public String toString() {
     return "Album{"
-        + "albumId=" + albumId
-        + ", singer=" + singer.getName()
-        + ", title='" + title + '\''
+        + "albumId="
+        + albumId
+        + ", singer="
+        + singer.getName()
+        + ", title='"
+        + title
+        + '\''
         + '}';
   }
 
-  /**
-   * The embedded key for an entity using the {@link Interleaved} annotation.
-   */
+  /** The embedded key for an entity using the {@link Interleaved} annotation. */
   public static class AlbumId implements Serializable {
 
     // The embedded key of an interleaved table contain all of the Primary Key fields
@@ -104,8 +103,7 @@ public class Album {
       this.albumId = albumId;
     }
 
-    public AlbumId() {
-    }
+    public AlbumId() {}
 
     @Override
     public boolean equals(Object o) {
@@ -116,8 +114,7 @@ public class Album {
         return false;
       }
       AlbumId albumId1 = (AlbumId) o;
-      return Objects.equals(singer, albumId1.singer)
-          && Objects.equals(albumId, albumId1.albumId);
+      return Objects.equals(singer, albumId1.singer) && Objects.equals(albumId, albumId1.albumId);
     }
 
     @Override

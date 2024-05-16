@@ -32,38 +32,60 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.hibernate.mapping.Table;
 
-/**
- * Helper class to building mock objects for the mock JDBC driver.
- */
+/** Helper class to building mock objects for the mock JDBC driver. */
 public class MockJdbcUtils {
 
-  private static final String[] TABLE_METADATA_COLUMNS = new String[]{
-      "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "TABLE_TYPE", "REMARKS", "TYPE_CAT",
-      "TYPE_SCHEM", "TYPE_NAME", "SELF_REFERENCING_COL_NAME", "REF"
-  };
+  private static final String[] TABLE_METADATA_COLUMNS =
+      new String[] {
+        "TABLE_CAT",
+        "TABLE_SCHEM",
+        "TABLE_NAME",
+        "TABLE_TYPE",
+        "REMARKS",
+        "TYPE_CAT",
+        "TYPE_SCHEM",
+        "TYPE_NAME",
+        "SELF_REFERENCING_COL_NAME",
+        "REF"
+      };
 
-  private static final String[] COLUMN_METADATA_LABELS = new String[]{
-      "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "COLUMN_NAME", "DATA_TYPE",
-      "TYPE_NAME", "COLUMN_SIZE", "DECIMAL_DIGITS", "IS_NULLABLE",
-  };
+  private static final String[] COLUMN_METADATA_LABELS =
+      new String[] {
+        "TABLE_CAT",
+        "TABLE_SCHEM",
+        "TABLE_NAME",
+        "COLUMN_NAME",
+        "DATA_TYPE",
+        "TYPE_NAME",
+        "COLUMN_SIZE",
+        "DECIMAL_DIGITS",
+        "IS_NULLABLE",
+      };
 
-  private static final String[] IMPORTED_KEY_COLUMNS = new String[]{
-      "PKTABLE_CAT", "PKTABLE_SCHEM", "PKTABLE_NAME", "PKCOLUMN_NAME",
-      "FKTABLE_CAT", "FKTABLE_SCHEM", "FKTABLE_NAME", "FKCOLUMN_NAME",
-      "KEY_SEQ", "UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME",
-      "DEFERRABILITY"
-  };
+  private static final String[] IMPORTED_KEY_COLUMNS =
+      new String[] {
+        "PKTABLE_CAT",
+        "PKTABLE_SCHEM",
+        "PKTABLE_NAME",
+        "PKCOLUMN_NAME",
+        "FKTABLE_CAT",
+        "FKTABLE_SCHEM",
+        "FKTABLE_NAME",
+        "FKCOLUMN_NAME",
+        "KEY_SEQ",
+        "UPDATE_RULE",
+        "DELETE_RULE",
+        "FK_NAME",
+        "PK_NAME",
+        "DEFERRABILITY"
+      };
 
-  /**
-   * Creates the metadata object read by Hibernate to determine which tables already exist.
-   */
+  /** Creates the metadata object read by Hibernate to determine which tables already exist. */
   public static MockDatabaseMetaDataBuilder metaDataBuilder() {
     return new MockDatabaseMetaDataBuilder();
   }
 
-  /**
-   * Constructs a mock Column metadata {@link ResultSet} describing fake columns of the tables.
-   */
+  /** Constructs a mock Column metadata {@link ResultSet} describing fake columns of the tables. */
   private static ResultSet createColumnMetadataResultSet(Map<String, List<String>> columns) {
     MockResultSet mockResultSet = initResultSet(COLUMN_METADATA_LABELS);
 
@@ -85,10 +107,7 @@ public class MockJdbcUtils {
     return mockResultSet;
   }
 
-
-  /**
-   * Constructs a mock Table metadata {@link ResultSet} describing table names.
-   */
+  /** Constructs a mock Table metadata {@link ResultSet} describing table names. */
   private static ResultSet createTableMetadataResultSet(String... tableNames) {
     MockResultSet mockResultSet = initResultSet(TABLE_METADATA_COLUMNS);
 
@@ -103,21 +122,18 @@ public class MockJdbcUtils {
     return mockResultSet;
   }
 
-  /**
-   * Constructs a {@link MockResultSet} containing database metadata about indices for testing.
-   */
+  /** Constructs a {@link MockResultSet} containing database metadata about indices for testing. */
   private static ResultSet createIndexMetadataResultSet(Table table, String... indexNames) {
-    MockResultSet mockResultSet = initResultSet(
-        "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "INDEX_NAME");
+    MockResultSet mockResultSet =
+        initResultSet("TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "INDEX_NAME");
 
     for (int i = 0; i < indexNames.length; i++) {
       String[] row =
-          new String[]{table.getCatalog(), table.getSchema(), table.getName(), indexNames[i]};
+          new String[] {table.getCatalog(), table.getSchema(), table.getName(), indexNames[i]};
       mockResultSet.addRow(row);
     }
 
     return mockResultSet;
-
   }
 
   private static ResultSet createImportedKeysResultSet(
@@ -141,8 +157,7 @@ public class MockJdbcUtils {
   }
 
   private static ResettingMockResultSet initResultSet(String... columnLabels) {
-    ResettingMockResultSet mockResultSet =
-        new ResettingMockResultSet(UUID.randomUUID().toString());
+    ResettingMockResultSet mockResultSet = new ResettingMockResultSet(UUID.randomUUID().toString());
     for (int i = 0; i < columnLabels.length; i++) {
       mockResultSet.addColumn(columnLabels[i]);
     }
@@ -150,9 +165,7 @@ public class MockJdbcUtils {
     return mockResultSet;
   }
 
-  /**
-   * A builder to help build the mock JDBC metadata objects.
-   */
+  /** A builder to help build the mock JDBC metadata objects. */
   public static class MockDatabaseMetaDataBuilder {
 
     private ResultSet columns = new MockResultSet(UUID.randomUUID().toString());
@@ -181,9 +194,7 @@ public class MockJdbcUtils {
       return this;
     }
 
-    /**
-     * Sets which indices are present in the Spanner database.
-     */
+    /** Sets which indices are present in the Spanner database. */
     public MockDatabaseMetaDataBuilder setIndices(Table table, String... indices) {
       this.indexInfo = createIndexMetadataResultSet(table, indices);
       return this;
@@ -216,7 +227,6 @@ public class MockJdbcUtils {
       return mockDatabaseMetaData;
     }
   }
-
 
   /**
    * An extension of {@link MockResultSet} which resets the cursor when it is closed. It is useful

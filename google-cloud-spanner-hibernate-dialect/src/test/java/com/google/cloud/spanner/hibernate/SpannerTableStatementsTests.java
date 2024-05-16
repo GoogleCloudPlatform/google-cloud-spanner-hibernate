@@ -45,18 +45,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-/**
- * Tests to verify DDL statement generation for table creation.
- */
+/** Tests to verify DDL statement generation for table creation. */
 public class SpannerTableStatementsTests {
 
   private SpannerTableStatements spannerTableStatements;
 
   private Metadata metadata;
 
-  /**
-   * Setup the mocks for the test.
-   */
+  /** Setup the mocks for the test. */
   @Before
   public void setupSpannerDatabaseInfo() {
     // Metadata mocks
@@ -66,19 +62,22 @@ public class SpannerTableStatementsTests {
     TypeConfiguration typeConfiguration = mock(TypeConfiguration.class);
     when(database.getTypeConfiguration()).thenReturn(typeConfiguration);
     Namespace namespace = mock(Namespace.class);
-    when(namespace.getPhysicalName()).thenReturn(
-        new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
+    when(namespace.getPhysicalName())
+        .thenReturn(new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
 
     // Initialize SpannerDatabaseInfo
-    HashSet<Table> allTables = new HashSet<>(Arrays.asList(
-        new Table("orm", namespace, Identifier.toIdentifier("Student"), false),
-        new Table("orm", namespace, Identifier.toIdentifier("Teacher"), false),
-        new Table("orm", namespace, Identifier.toIdentifier("House"), false)));
+    HashSet<Table> allTables =
+        new HashSet<>(
+            Arrays.asList(
+                new Table("orm", namespace, Identifier.toIdentifier("Student"), false),
+                new Table("orm", namespace, Identifier.toIdentifier("Teacher"), false),
+                new Table("orm", namespace, Identifier.toIdentifier("House"), false)));
     SpannerDatabaseInfo spannerDatabaseInfo = Mockito.mock(SpannerDatabaseInfo.class);
     when(spannerDatabaseInfo.getAllTables()).thenReturn(allTables);
-    Map<Table, Set<String>> indices = ImmutableMap.of(
-        new Table("orm", namespace, Identifier.toIdentifier("House"), false),
-        ImmutableSet.of("address"));
+    Map<Table, Set<String>> indices =
+        ImmutableMap.of(
+            new Table("orm", namespace, Identifier.toIdentifier("House"), false),
+            ImmutableSet.of("address"));
     when(spannerDatabaseInfo.getAllIndices()).thenReturn(indices);
 
     // Initialize SpannerStatements
@@ -89,8 +88,8 @@ public class SpannerTableStatementsTests {
   @Test
   public void testDropTableStatement() {
     Namespace namespace = mock(Namespace.class);
-    when(namespace.getPhysicalName()).thenReturn(
-        new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
+    when(namespace.getPhysicalName())
+        .thenReturn(new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
     Table table = new Table("orm", namespace, Identifier.toIdentifier("House"), false);
 
     List<String> statements = spannerTableStatements.dropTable(table);
@@ -116,8 +115,7 @@ public class SpannerTableStatementsTests {
     table.addIndex(index);
 
     List<String> statements = spannerTableStatements.dropTable(table);
-    assertThat(statements).containsExactly(
-        "drop index if exists address", "drop table `House`");
+    assertThat(statements).containsExactly("drop index if exists address", "drop table `House`");
   }
 
   @Test

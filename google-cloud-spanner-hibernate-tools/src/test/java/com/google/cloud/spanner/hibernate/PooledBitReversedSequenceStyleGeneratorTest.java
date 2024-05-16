@@ -65,8 +65,7 @@ public class PooledBitReversedSequenceStyleGeneratorTest {
     assertEquals(
         ImmutableList.of(Range.closed(1L, 10L), Range.closed(20L, 30L)),
         parseExcludedRanges(
-            "test_sequence",
-            asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "[1,10] [20,30]"))));
+            "test_sequence", asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "[1,10] [20,30]"))));
     assertEquals(
         ImmutableList.of(Range.closed(1L, 10L), Range.closed(20L, 30L), Range.closed(-30L, -20L)),
         parseExcludedRanges(
@@ -78,22 +77,22 @@ public class PooledBitReversedSequenceStyleGeneratorTest {
             + "Excluded ranges must be given as a space-separated sequence of ranges between "
             + "square brackets, e.g. '[1,1000] [2001,3000]'. Found '[foo,-2000]'",
         assertThrows(
-            MappingException.class,
-            () ->
-                parseExcludedRanges(
-                    "test_sequence",
-                    asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "[foo,-2000]"))))
+                MappingException.class,
+                () ->
+                    parseExcludedRanges(
+                        "test_sequence",
+                        asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "[foo,-2000]"))))
             .getMessage());
     assertEquals(
         "Invalid range found for the [test_sequence] sequence: For input string: \"\"\n"
             + "Excluded ranges must be given as a space-separated sequence of ranges between "
             + "square brackets, e.g. '[1,1000] [2001,3000]'. Found '[,1000]'",
         assertThrows(
-            MappingException.class,
-            () ->
-                parseExcludedRanges(
-                    "test_sequence",
-                    asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "[,1000]"))))
+                MappingException.class,
+                () ->
+                    parseExcludedRanges(
+                        "test_sequence",
+                        asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "[,1000]"))))
             .getMessage());
     assertEquals(
         "Invalid range found for the [test_sequence] sequence: "
@@ -101,11 +100,11 @@ public class PooledBitReversedSequenceStyleGeneratorTest {
             + "Excluded ranges must be given as a space-separated sequence of ranges between "
             + "square brackets, e.g. '[1,1000] [2001,3000]'. Found '[1,1000][2000,3000]'",
         assertThrows(
-            MappingException.class,
-            () ->
-                parseExcludedRanges(
-                    "test_sequence",
-                    asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "[1,1000][2000,3000]"))))
+                MappingException.class,
+                () ->
+                    parseExcludedRanges(
+                        "test_sequence",
+                        asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "[1,1000][2000,3000]"))))
             .getMessage());
     assertEquals(
         "Invalid range found for the [test_sequence] sequence: "
@@ -113,25 +112,25 @@ public class PooledBitReversedSequenceStyleGeneratorTest {
             + "Excluded ranges must be given as a space-separated sequence of ranges between "
             + "square brackets, e.g. '[1,1000] [2001,3000]'. Found '1,1000'",
         assertThrows(
-            MappingException.class,
-            () ->
-                parseExcludedRanges(
-                    "test_sequence",
-                    asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "1,1000 2000,3000"))))
+                MappingException.class,
+                () ->
+                    parseExcludedRanges(
+                        "test_sequence",
+                        asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "1,1000 2000,3000"))))
             .getMessage());
     assertEquals(
         "Invalid range found for the [test_sequence] sequence: Invalid range: [-1000..-2000]\n"
             + "Excluded ranges must be given as a space-separated sequence of ranges "
             + "between square brackets, e.g. '[1,1000] [2001,3000]'. Found '[-1000,-2000]'",
         assertThrows(
-            MappingException.class,
-            () ->
-                parseExcludedRanges(
-                    "test_sequence",
-                    asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "[-1000,-2000]"))))
+                MappingException.class,
+                () ->
+                    parseExcludedRanges(
+                        "test_sequence",
+                        asProperties(ImmutableMap.of(EXCLUDE_RANGE_PARAM, "[-1000,-2000]"))))
             .getMessage());
   }
-  
+
   @Test
   public void testBuildPostgresSelect() {
     ServiceRegistry registry = mock(ServiceRegistry.class);
@@ -142,24 +141,28 @@ public class PooledBitReversedSequenceStyleGeneratorTest {
     when(environment.getDialect()).thenReturn(dialect);
     when(environment.getIdentifierHelper()).thenReturn(identifierHelper);
     when(identifierHelper.toIdentifier("")).thenReturn(Identifier.toIdentifier(""));
-    when(identifierHelper.toIdentifier("public"))
-        .thenReturn(Identifier.toIdentifier("public"));
+    when(identifierHelper.toIdentifier("public")).thenReturn(Identifier.toIdentifier("public"));
     when(identifierHelper.toIdentifier("test_sequence"))
         .thenReturn(Identifier.toIdentifier("test_sequence"));
-    
-    PooledBitReversedSequenceStyleGenerator generator
-        = new PooledBitReversedSequenceStyleGenerator();
-    generator.configure(mock(Type.class), asProperties(ImmutableMap.of(
-        "catalog", "",
-        "schema", "public",
-        "sequence_name", "test_sequence",
-        "increment_size", "5"
-    )), registry);
-    assertEquals("/* spanner.force_read_write_transaction=true */ " 
-        + "/* spanner.ignore_during_internal_retry=true */  select " 
-        + "nextval('test_sequence') as n, nextval('test_sequence') as n, " 
-        + "nextval('test_sequence') as n, nextval('test_sequence') as n, " 
-        + "nextval('test_sequence') as n", generator.getSelect());
+
+    PooledBitReversedSequenceStyleGenerator generator =
+        new PooledBitReversedSequenceStyleGenerator();
+    generator.configure(
+        mock(Type.class),
+        asProperties(
+            ImmutableMap.of(
+                "catalog", "",
+                "schema", "public",
+                "sequence_name", "test_sequence",
+                "increment_size", "5")),
+        registry);
+    assertEquals(
+        "/* spanner.force_read_write_transaction=true */ "
+            + "/* spanner.ignore_during_internal_retry=true */  select "
+            + "nextval('test_sequence') as n, nextval('test_sequence') as n, "
+            + "nextval('test_sequence') as n, nextval('test_sequence') as n, "
+            + "nextval('test_sequence') as n",
+        generator.getSelect());
   }
 
   @Test
@@ -178,18 +181,23 @@ public class PooledBitReversedSequenceStyleGeneratorTest {
 
     PooledBitReversedSequenceStyleGenerator generator =
         new PooledBitReversedSequenceStyleGenerator();
-    generator.configure(mock(Type.class), asProperties(ImmutableMap.of(
-        "catalog", "",
-        "schema", "public",
-        "sequence_name", "test_sequence",
-        "increment_size", "5"
-    )), registry);
-    assertEquals("/* spanner.force_read_write_transaction=true */ " 
-        + "/* spanner.ignore_during_internal_retry=true */  " 
-        + "select get_next_sequence_value(sequence test_sequence) AS n " 
-        + "from unnest(generate_array(1, 5))", generator.getSelect());
+    generator.configure(
+        mock(Type.class),
+        asProperties(
+            ImmutableMap.of(
+                "catalog", "",
+                "schema", "public",
+                "sequence_name", "test_sequence",
+                "increment_size", "5")),
+        registry);
+    assertEquals(
+        "/* spanner.force_read_write_transaction=true */ "
+            + "/* spanner.ignore_during_internal_retry=true */  "
+            + "select get_next_sequence_value(sequence test_sequence) AS n "
+            + "from unnest(generate_array(1, 5))",
+        generator.getSelect());
   }
-  
+
   static Properties asProperties(Map<String, String> map) {
     Properties properties = new Properties();
     for (Entry<String, String> entry : map.entrySet()) {
@@ -197,5 +205,4 @@ public class PooledBitReversedSequenceStyleGeneratorTest {
     }
     return properties;
   }
-
 }

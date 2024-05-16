@@ -27,10 +27,11 @@ import java.lang.annotation.Target;
  * Annotation for adding transaction tags to Hibernate transactions.
  *
  * <p>Usage:
+ *
  * <ol>
- *   <li>Add the {@link TransactionTagInterceptor} to your Hibernate configuration.</li>
- *   <li>Add the {@link TransactionTag} annotation to a method that is also tagged with
- *   {@link jakarta.transaction.Transactional}.</li>
+ *   <li>Add the {@link TransactionTagInterceptor} to your Hibernate configuration.
+ *   <li>Add the {@link TransactionTag} annotation to a method that is also tagged with {@link
+ *       jakarta.transaction.Transactional}.
  * </ol>
  *
  * <p>Example:
@@ -56,7 +57,8 @@ import java.lang.annotation.Target;
  * }
  * }</pre>
  *
- * <p>See <a href="https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/-/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample">
+ * <p>See <a
+ * href="https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/-/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample">
  * Spring Data JPA Full Sample</a> for a working sample application.
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -64,9 +66,9 @@ import java.lang.annotation.Target;
 public @interface TransactionTag {
 
   /**
-   * The transaction tag value. Max length is 50 characters.
-   * See <a href="https://cloud.google.com/spanner/docs/introspection/troubleshooting-with-tags#limitations">
-   *   Limitations</a> for all limitations on transaction tag values.
+   * The transaction tag value. Max length is 50 characters. See <a
+   * href="https://cloud.google.com/spanner/docs/introspection/troubleshooting-with-tags#limitations">
+   * Limitations</a> for all limitations on transaction tag values.
    */
   String value();
 }

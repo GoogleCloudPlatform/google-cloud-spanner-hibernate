@@ -27,9 +27,9 @@ import org.hibernate.type.SqlTypes;
 public class Venue extends AbstractNonInterleavedEntity {
 
   /**
-   * {@link VenueDescription} is a POJO that is used for the JSON field 'description' of the
-   * {@link Venue} entity. It is automatically serialized and deserialized when an instance of the
-   * entity is loaded or persisted.
+   * {@link VenueDescription} is a POJO that is used for the JSON field 'description' of the {@link
+   * Venue} entity. It is automatically serialized and deserialized when an instance of the entity
+   * is loaded or persisted.
    */
   public static class VenueDescription implements Serializable {
 

@@ -28,13 +28,15 @@ class ForceIndexHint extends ReplaceQueryPartsHint {
   private static final String HINT = "FORCE_INDEX";
 
   static ForceIndexHint from(String table, String index, ReplaceMode replaceMode) {
-    return new ForceIndexHint(ImmutableList.of(
-        new Replacement(Hints.from(table), forceIndexFrom(table, index), replaceMode)));
+    return new ForceIndexHint(
+        ImmutableList.of(
+            new Replacement(Hints.from(table), forceIndexFrom(table, index), replaceMode)));
   }
 
   static ForceIndexHint join(String table, String index, ReplaceMode replaceMode) {
-    return new ForceIndexHint(ImmutableList.of(
-        new Replacement(Hints.join(table), forceIndexJoin(table, index), replaceMode)));
+    return new ForceIndexHint(
+        ImmutableList.of(
+            new Replacement(Hints.join(table), forceIndexJoin(table, index), replaceMode)));
   }
 
   private ForceIndexHint(ImmutableList<Replacement> replacements) {
@@ -48,5 +50,4 @@ class ForceIndexHint extends ReplaceQueryPartsHint {
   private static String forceIndexJoin(String table, String index) {
     return joinTableHint(table, HINT, index);
   }
-
 }

@@ -29,9 +29,7 @@ public class SpannerEntityFieldKey {
   private final Class<?> type;
   private final String name;
 
-  /**
-   * Constructor.
-   */
+  /** Constructor. */
   public SpannerEntityFieldKey(Class<?> type, String name) {
     this(null, type, name);
   }
@@ -40,8 +38,8 @@ public class SpannerEntityFieldKey {
    * Constructor.
    *
    * @param declaringClass - declaring class
-   * @param type           - field type
-   * @param name           - field name
+   * @param type - field type
+   * @param name - field name
    */
   public SpannerEntityFieldKey(Class<?> declaringClass, Class<?> type, String name) {
     this.declaringClass = declaringClass;
@@ -71,9 +69,13 @@ public class SpannerEntityFieldKey {
   @Override
   public String toString() {
     return "SpannerEntityFieldKey{"
-        + "declaringClass=" + declaringClass.toString()
-        + "\n, type=" + type.toString()
-        + "\n, name='" + name + '\''
+        + "declaringClass="
+        + declaringClass.toString()
+        + "\n, type="
+        + type.toString()
+        + "\n, name='"
+        + name
+        + '\''
         + "\n}";
   }
 }

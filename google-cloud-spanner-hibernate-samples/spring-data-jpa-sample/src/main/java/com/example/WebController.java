@@ -35,26 +35,20 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-/**
- * Web Controller for the sample Hibernate application.
- */
+/** Web Controller for the sample Hibernate application. */
 @Controller
 public class WebController {
 
-  @Autowired
-  private CoffeeRepository coffeeRepository;
+  @Autowired private CoffeeRepository coffeeRepository;
 
-  @Autowired
-  private CustomerRepository customerRepository;
+  @Autowired private CustomerRepository customerRepository;
 
   @GetMapping("/")
   public ModelAndView listCustomers() {
     return new ModelAndView("index", getModelMap());
   }
 
-  /**
-   * Provides the POST endpoint for creating a customer.
-   */
+  /** Provides the POST endpoint for creating a customer. */
   @PostMapping("/createCustomer")
   public ModelAndView createCustomer(
       @RequestParam("name") String name, @RequestParam("email") String email) {
@@ -68,9 +62,7 @@ public class WebController {
     return new ModelAndView("index", modelMap);
   }
 
-  /**
-   * Provides the POST endpoint for ordering coffees for a customer.
-   */
+  /** Provides the POST endpoint for ordering coffees for a customer. */
   @PostMapping("/orderCoffee")
   public ModelAndView orderCoffee(
       @RequestParam("customerId") String customerId,
@@ -92,15 +84,15 @@ public class WebController {
     Map<String, Object> modelMap = getModelMap();
     modelMap.put(
         "message",
-        "Successfully created " + coffeeCount
-            + " coffees for customer " + currentCustomer.getName());
+        "Successfully created "
+            + coffeeCount
+            + " coffees for customer "
+            + currentCustomer.getName());
 
     return new ModelAndView("index", modelMap);
   }
 
-  /**
-   * Provides the POST endpoint for deleting a customer and their corresponding records.
-   */
+  /** Provides the POST endpoint for deleting a customer and their corresponding records. */
   @PostMapping("/deleteCustomer")
   public ModelAndView orderCoffee(@RequestParam("customerId") String customerId) {
     Customer currentCustomer = customerRepository.findById(UUID.fromString(customerId)).get();

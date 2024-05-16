@@ -37,14 +37,12 @@ public class App {
 
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
-  /**
-   * The main method that does the CRUD operations.
-   */
+  /** The main method that does the CRUD operations. */
   public static void main(String[] args) {
     // create a Hibernate sessionFactory and session
     StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure().build();
-    SessionFactory sessionFactory = new MetadataSources(registry).buildMetadata()
-        .buildSessionFactory();
+    SessionFactory sessionFactory =
+        new MetadataSources(registry).buildMetadata().buildSessionFactory();
     Session session = sessionFactory.openSession();
 
     clearData(session);
@@ -83,20 +81,27 @@ public class App {
   }
 
   private static void readData(Session session) {
-    List<Singer> singers = session
-        .createQuery("from Singer where birthDate >= '1990-01-01' order by lastName")
-        .list();
+    List<Singer> singers =
+        session.createQuery("from Singer where birthDate >= '1990-01-01' order by lastName").list();
     System.out.println("Singers who were born in 1990 or later:");
     for (Singer singer : singers) {
-      System.out.println(singer.getFirstName() + " " + singer.getLastName() + " born on "
-          + DATE_FORMAT.format(singer.getBirthDate()));
+      System.out.println(
+          singer.getFirstName()
+              + " "
+              + singer.getLastName()
+              + " born on "
+              + DATE_FORMAT.format(singer.getBirthDate()));
     }
 
     List<Album> albums = session.createQuery("from Album").list();
     System.out.println("Albums: ");
     for (Album album : albums) {
-      System.out
-          .println("\"" + album.getAlbumTitle() + "\" by " + album.getSinger().getFirstName() + " "
+      System.out.println(
+          "\""
+              + album.getAlbumTitle()
+              + "\" by "
+              + album.getSinger().getFirstName()
+              + " "
               + album.getSinger().getLastName());
     }
   }

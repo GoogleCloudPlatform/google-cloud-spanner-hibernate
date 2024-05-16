@@ -29,8 +29,7 @@ import org.hibernate.dialect.entities.Parent.ParentId;
 @Interleaved(parentEntity = Parent.class)
 public class Child {
 
-  @EmbeddedId
-  public ChildId childId;
+  @EmbeddedId public ChildId childId;
 
   public String name;
 
@@ -54,23 +53,16 @@ public class Child {
       this.childId = childId;
     }
 
-    public ChildId() {
-    }
+    public ChildId() {}
 
     @Override
     public String toString() {
-      return "ChildId{" +
-          "parentId=" + parentId +
-          ", childId=" + childId +
-          '}';
+      return "ChildId{" + "parentId=" + parentId + ", childId=" + childId + '}';
     }
   }
 
   @Override
   public String toString() {
-    return "Child{" +
-        "childId=" + childId +
-        ", name='" + name + '\'' +
-        '}';
+    return "Child{" + "childId=" + childId + ", name='" + name + '\'' + '}';
   }
 }

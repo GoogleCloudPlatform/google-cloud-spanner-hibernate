@@ -23,9 +23,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 
-/**
- * The parent Interleaved entity in the interleaved test cases.
- */
+/** The parent Interleaved entity in the interleaved test cases. */
 @Entity
 public class GrandParent {
 
@@ -34,8 +32,7 @@ public class GrandParent {
   @SequenceGenerator(
       name = "GrandParent_Generator",
       sequenceName = "GrandParent_Sequence",
-      allocationSize = 1
-  )
+      allocationSize = 1)
   public long grandParentId;
 
   public String name;

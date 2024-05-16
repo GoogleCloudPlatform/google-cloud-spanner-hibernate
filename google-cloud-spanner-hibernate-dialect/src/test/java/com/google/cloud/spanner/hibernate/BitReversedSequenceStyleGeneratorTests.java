@@ -274,7 +274,7 @@ public class BitReversedSequenceStyleGeneratorTests {
                         asProperties(ImmutableMap.of(EXCLUDE_RANGES_PARAM, "[1,1000][2000,3000]"))))
             .getMessage());
     assertEquals(
-        "Invalid range found for the [test_sequence] sequence: " 
+        "Invalid range found for the [test_sequence] sequence: "
             + "Range is not enclosed between '[' and ']'\n"
             + "Excluded ranges must be given as a space-separated sequence of ranges between "
             + "square brackets, e.g. '[1,1000] [2001,3000]'. Found '1,1000'",

@@ -51,27 +51,30 @@ public abstract class AbstractSpannerArrayType<A, T> implements UserType<List<T>
   }
 
   public abstract A[] toArray(List<T> value);
-  
+
   public List<T> toList(java.sql.Array array) throws SQLException {
     return Arrays.asList((T[]) array.getArray());
   }
 
   @Override
-  public List<T> nullSafeGet(ResultSet rs, int position, SharedSessionContractImplementor session,
-      Object owner) throws SQLException {
+  public List<T> nullSafeGet(
+      ResultSet rs, int position, SharedSessionContractImplementor session, Object owner)
+      throws SQLException {
     Array array = rs.getArray(position);
     return array != null ? toList(array) : null;
   }
 
   @Override
-  public void nullSafeSet(PreparedStatement st, List<T> value, int index,
-      SharedSessionContractImplementor session) throws SQLException {
+  public void nullSafeSet(
+      PreparedStatement st, List<T> value, int index, SharedSessionContractImplementor session)
+      throws SQLException {
     if (st != null) {
       if (value != null) {
-        session.doWork(connection -> {
-          Array array = connection.createArrayOf(getArrayElementTypeName(), toArray(value));
-          st.setArray(index, array);
-        });
+        session.doWork(
+            connection -> {
+              Array array = connection.createArrayOf(getArrayElementTypeName(), toArray(value));
+              st.setArray(index, array);
+            });
       } else {
         st.setNull(index, Types.ARRAY);
       }

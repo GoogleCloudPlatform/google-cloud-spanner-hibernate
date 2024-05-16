@@ -16,7 +16,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-
 package com.google.cloud.spanner.hibernate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,30 +47,33 @@ public class SpannerServiceContributorTest {
   public void testUserAgentContribution() throws SQLException {
     // create mock Driver so we can intercept the call to Driver.connect(url, props)
     AtomicBoolean obtainedConnection = new AtomicBoolean();
-    MockDriver mockDriver = new MockDriver() {
-      public Connection connect(String url, Properties info) throws SQLException {
-        if (info.get("userAgent").equals("sp-hib")) {
-          obtainedConnection.set(true);
-          return super.connect(url, info);
-        }
-        throw new SQLException(
-            String.format("Missing or unexpected user agent string: %s", info.get("userAgent")));
-      }
-    };
+    MockDriver mockDriver =
+        new MockDriver() {
+          public Connection connect(String url, Properties info) throws SQLException {
+            if (info.get("userAgent").equals("sp-hib")) {
+              obtainedConnection.set(true);
+              return super.connect(url, info);
+            }
+            throw new SQLException(
+                String.format(
+                    "Missing or unexpected user agent string: %s", info.get("userAgent")));
+          }
+        };
     mockDriver.setupConnection(mock(Connection.class));
 
     // make sure our mock driver is discovered by Hibernate
     deregisterDrivers();
     DriverManager.registerDriver(mockDriver);
 
-    StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-        .applySetting("hibernate.dialect", SpannerDialect.class.getName())
-        // must NOT set a driver class name so that Hibernate will use java.sql.DriverManager
-        // and discover the only mock driver we have set up.
-        .applySetting("hibernate.connection.url", "unused")
-        .applySetting("hibernate.connection.username", "unused")
-        .applySetting("hibernate.connection.password", "unused")
-        .build();
+    StandardServiceRegistry registry =
+        new StandardServiceRegistryBuilder()
+            .applySetting("hibernate.dialect", SpannerDialect.class.getName())
+            // must NOT set a driver class name so that Hibernate will use java.sql.DriverManager
+            // and discover the only mock driver we have set up.
+            .applySetting("hibernate.connection.url", "unused")
+            .applySetting("hibernate.connection.username", "unused")
+            .applySetting("hibernate.connection.password", "unused")
+            .build();
 
     // trigger creation of connections for the connection pool
     Metadata metadata = new MetadataSources(registry).buildMetadata();
@@ -90,6 +92,4 @@ public class SpannerServiceContributorTest {
       throw new NestedApplicationException(exc);
     }
   }
-
 }
-

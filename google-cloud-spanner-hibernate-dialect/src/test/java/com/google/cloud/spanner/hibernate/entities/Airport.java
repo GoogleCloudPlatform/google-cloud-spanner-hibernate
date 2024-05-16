@@ -29,8 +29,8 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 /**
- * An entity which uses a {@link OneToMany}, which triggers usage of the Hibernate
- * unique constraint.
+ * An entity which uses a {@link OneToMany}, which triggers usage of the Hibernate unique
+ * constraint.
  */
 @Entity
 public class Airport {
@@ -40,6 +40,5 @@ public class Airport {
   @JdbcTypeCode(SqlTypes.CHAR)
   private UUID id;
 
-  @OneToMany
-  private List<Airplane> airplanes;
+  @OneToMany private List<Airplane> airplanes;
 }

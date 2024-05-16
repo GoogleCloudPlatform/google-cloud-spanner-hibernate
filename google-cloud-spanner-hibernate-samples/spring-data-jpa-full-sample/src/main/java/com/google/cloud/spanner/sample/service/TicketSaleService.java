@@ -30,9 +30,7 @@ import java.util.List;
 import java.util.Random;
 import org.springframework.stereotype.Service;
 
-/**
- * Service class for fetching and saving TicketSale records.
- */
+/** Service class for fetching and saving TicketSale records. */
 @Service
 public class TicketSaleService {
 
@@ -42,9 +40,7 @@ public class TicketSaleService {
 
   private final RandomDataService randomDataService;
 
-  /**
-   * Constructor with auto-injected dependencies.
-   */
+  /** Constructor with auto-injected dependencies. */
   public TicketSaleService(
       TicketSaleRepository repository,
       ConcertRepository concertRepository,
@@ -54,17 +50,13 @@ public class TicketSaleService {
     this.randomDataService = randomDataService;
   }
 
-  /**
-   * Deletes all TicketSale records in the database.
-   */
+  /** Deletes all TicketSale records in the database. */
   @Transactional
   public void deleteAllTicketSales() {
     repository.deleteAll();
   }
 
-  /**
-   * Generates the specified number of random TicketSale records.
-   */
+  /** Generates the specified number of random TicketSale records. */
   @Transactional
   public List<TicketSale> generateRandomTicketSales(int count) {
     Random random = new Random();
@@ -78,9 +70,7 @@ public class TicketSaleService {
       TicketSale ticketSale = new TicketSale();
       ticketSale.setConcert(concerts.get(random.nextInt(concerts.size())));
       ticketSale.setCustomerName(
-          randomDataService.getRandomFirstName()
-              + " "
-              + randomDataService.getRandomLastName());
+          randomDataService.getRandomFirstName() + " " + randomDataService.getRandomLastName());
       ticketSale.setPrice(
           BigDecimal.valueOf(random.nextDouble() * 300).setScale(2, RoundingMode.HALF_UP));
       int numSeats = random.nextInt(5) + 1;

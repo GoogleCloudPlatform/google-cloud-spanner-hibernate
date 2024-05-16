@@ -28,16 +28,14 @@ import java.util.Objects;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 
-/**
- * A Test entity with JSON entity fields.
- */
+/** A Test entity with JSON entity fields. */
 // TODO: User-defined types need a re-implementation for Hibernate 6.
-//@TypeDefs({
+// @TypeDefs({
 //    @TypeDef(
 //        name = "json",
 //        typeClass = SpannerJsonType.class
 //    )
-//})
+// })
 @Entity
 public class JsonEntity {
 
@@ -47,8 +45,7 @@ public class JsonEntity {
   private UUID id;
 
   // TODO: Update mapping to use JSON
-  @Transient
-  private Employee employee;
+  @Transient private Employee employee;
 
   public UUID getId() {
     return id;
@@ -91,8 +88,7 @@ public class JsonEntity {
         return false;
       }
       Employee employee = (Employee) o;
-      return Objects.equals(name, employee.name) && Objects
-          .equals(address, employee.address);
+      return Objects.equals(name, employee.name) && Objects.equals(address, employee.address);
     }
 
     @Override

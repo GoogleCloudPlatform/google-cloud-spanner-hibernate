@@ -32,13 +32,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 @MappedSuperclass
 public class AbstractEntity {
 
-  @Column
-  @CreationTimestamp
-  private OffsetDateTime createdAt;
+  @Column @CreationTimestamp private OffsetDateTime createdAt;
 
-  @Column
-  @UpdateTimestamp
-  private OffsetDateTime updatedAt;
+  @Column @UpdateTimestamp private OffsetDateTime updatedAt;
 
   public OffsetDateTime getCreatedAt() {
     return createdAt;

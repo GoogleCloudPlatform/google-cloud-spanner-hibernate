@@ -77,8 +77,8 @@ import org.hibernate.type.Type;
  * the generator if your entity table already contains data. The excluded values should be given as
  * closed range. E.g. "[1,1000]" to skip all values between 1 and 1000 (inclusive).
  *
- * <p>It is recommended to use a separate sequence for each entity. Set the sequence name to use
- * for a generator with the SequenceStyleGenerator.SEQUENCE_PARAM parameter (see example below).
+ * <p>It is recommended to use a separate sequence for each entity. Set the sequence name to use for
+ * a generator with the SequenceStyleGenerator.SEQUENCE_PARAM parameter (see example below).
  *
  * <p>Example usage:
  *
@@ -99,12 +99,10 @@ import org.hibernate.type.Type;
  * private Long customerId;
  * }</pre>
  */
-public class PooledBitReversedSequenceStyleGenerator implements
-    BulkInsertionCapableIdentifierGenerator, PersistentIdentifierGenerator {
+public class PooledBitReversedSequenceStyleGenerator
+    implements BulkInsertionCapableIdentifierGenerator, PersistentIdentifierGenerator {
 
-  /**
-   * The default increment (fetch) size for an {@link PooledBitReversedSequenceStyleGenerator}.
-   */
+  /** The default increment (fetch) size for an {@link PooledBitReversedSequenceStyleGenerator}. */
   public static final int DEFAULT_INCREMENT_SIZE = 50;
   /**
    * Configuration property for defining a range that should be excluded by a bit-reversed sequence
@@ -112,9 +110,7 @@ public class PooledBitReversedSequenceStyleGenerator implements
    */
   public static final String EXCLUDE_RANGE_PARAM = "exclude_range";
 
-  /**
-   * Legacy parameter name.
-   */
+  /** Legacy parameter name. */
   private static final String EXCLUDE_RANGES_PARAM = "exclude_ranges";
 
   /**
@@ -122,6 +118,7 @@ public class PooledBitReversedSequenceStyleGenerator implements
    * will be lifted in the future.
    */
   private static final int POSTGRES_MAX_INCREMENT_SIZE = 1000;
+
   private static final Iterator<Long> EMPTY_ITERATOR = Collections.emptyIterator();
   private final Lock lock = new ReentrantLock();
   private final Optimizer optimizer = new NoopOptimizer(Long.class, 1);
@@ -160,8 +157,9 @@ public class PooledBitReversedSequenceStyleGenerator implements
   }
 
   private static String buildSkipRangeOptions(List<Range<Long>> excludeRanges) {
-    return String.format("skip_range_min=%d, skip_range_max=%d", getMinSkipRange(excludeRanges),
-        getMaxSkipRange(excludeRanges));
+    return String.format(
+        "skip_range_min=%d, skip_range_max=%d",
+        getMinSkipRange(excludeRanges), getMaxSkipRange(excludeRanges));
   }
 
   private static long getMinSkipRange(List<Range<Long>> excludeRanges) {
@@ -169,13 +167,18 @@ public class PooledBitReversedSequenceStyleGenerator implements
   }
 
   private static long getMaxSkipRange(List<Range<Long>> excludeRanges) {
-    return excludeRanges.stream().map(Range::upperEndpoint).max(Long::compare)
+    return excludeRanges.stream()
+        .map(Range::upperEndpoint)
+        .max(Long::compare)
         .orElse(Long.MAX_VALUE);
   }
 
   private static int determineInitialValue(Properties params) {
-    int initialValue = ConfigurationHelper.getInt(SequenceStyleGenerator.INITIAL_PARAM, params,
-        SequenceStyleGenerator.DEFAULT_INITIAL_VALUE);
+    int initialValue =
+        ConfigurationHelper.getInt(
+            SequenceStyleGenerator.INITIAL_PARAM,
+            params,
+            SequenceStyleGenerator.DEFAULT_INITIAL_VALUE);
     if (initialValue <= 0) {
       throw new MappingException("initial value must be positive");
     }
@@ -197,8 +200,8 @@ public class PooledBitReversedSequenceStyleGenerator implements
       // Combine the two arrays.
       String[] newArray = new String[excludedRangeArray.length + excludedRangesArray.length];
       System.arraycopy(excludedRangeArray, 0, newArray, 0, excludedRangeArray.length);
-      System.arraycopy(excludedRangesArray, 0, newArray, excludedRangeArray.length,
-          excludedRangesArray.length);
+      System.arraycopy(
+          excludedRangesArray, 0, newArray, excludedRangeArray.length, excludedRangesArray.length);
       excludedRangesArray = newArray;
     } else if (excludedRangeArray != null) {
       excludedRangesArray = excludedRangeArray;
@@ -235,7 +238,7 @@ public class PooledBitReversedSequenceStyleGenerator implements
     }
     return builder.build();
   }
-  
+
   @Override
   public Optimizer getOptimizer() {
     return optimizer;
@@ -250,24 +253,31 @@ public class PooledBitReversedSequenceStyleGenerator implements
     this.fetchSize = determineFetchSize(params);
     int initialValue = determineInitialValue(params);
     this.select = buildSelect(sequenceName, fetchSize);
-    List<Range<Long>> excludeRanges = parseExcludedRanges(sequenceName.getObjectName().getText(),
-        params);
-    this.databaseStructure = buildDatabaseStructure(determineContributor(params), type,
-        sequenceName, initialValue, excludeRanges, jdbcEnvironment);
+    List<Range<Long>> excludeRanges =
+        parseExcludedRanges(sequenceName.getObjectName().getText(), params);
+    this.databaseStructure =
+        buildDatabaseStructure(
+            determineContributor(params),
+            type,
+            sequenceName,
+            initialValue,
+            excludeRanges,
+            jdbcEnvironment);
   }
-  
+
   private String determineContributor(Properties params) {
     final String contributor = params.getProperty(IdentifierGenerator.CONTRIBUTOR_NAME);
     return contributor == null ? "orm" : contributor;
   }
-  
+
   private int determineFetchSize(Properties params) {
     int fetchSize;
     if (ConfigurationHelper.getInteger("fetch_size", params) != null) {
       fetchSize = ConfigurationHelper.getInt("fetch_size", params, DEFAULT_INCREMENT_SIZE);
     } else {
-      fetchSize = ConfigurationHelper.getInt(SequenceStyleGenerator.INCREMENT_PARAM, params,
-          DEFAULT_INCREMENT_SIZE);
+      fetchSize =
+          ConfigurationHelper.getInt(
+              SequenceStyleGenerator.INCREMENT_PARAM, params, DEFAULT_INCREMENT_SIZE);
     }
     if (fetchSize <= 0) {
       throw new MappingException("increment size must be positive");
@@ -303,25 +313,32 @@ public class PooledBitReversedSequenceStyleGenerator implements
       // Put the excluded range in the catalog name. We have no other way of getting that
       // information into the sequence. The SpannerSequenceExporter then extracts this information
       // and removes the bogus catalog name.
-      sequenceName = new QualifiedSequenceName(
-          Identifier.toIdentifier(buildSkipRangeOptions(excludeRanges)),
-          sequenceName.getSchemaName(), sequenceName.getObjectName());
+      sequenceName =
+          new QualifiedSequenceName(
+              Identifier.toIdentifier(buildSkipRangeOptions(excludeRanges)),
+              sequenceName.getSchemaName(),
+              sequenceName.getObjectName());
     }
-    return new SequenceStructure(jdbcEnvironment, contributor, sequenceName, initialValue, 1,
-        type.getReturnedClass());
+    return new SequenceStructure(
+        jdbcEnvironment, contributor, sequenceName, initialValue, 1, type.getReturnedClass());
   }
 
   private String buildSelect(QualifiedSequenceName sequenceName, int fetchSize) {
-    String hints = "/* spanner.force_read_write_transaction=true */ "
-        + "/* spanner.ignore_during_internal_retry=true */ ";
+    String hints =
+        "/* spanner.force_read_write_transaction=true */ "
+            + "/* spanner.ignore_during_internal_retry=true */ ";
 
     if (isPostgres()) {
-      return String.format("%s select %s",
-          hints, IntStream.range(0, fetchSize).mapToObj(
+      return String.format(
+          "%s select %s",
+          hints,
+          IntStream.range(0, fetchSize)
+              .mapToObj(
                   ignore -> "nextval('" + sequenceName.getSequenceName().getText() + "') as n")
               .collect(Collectors.joining(", ")));
     }
-    return String.format("%s select get_next_sequence_value(sequence %s) AS n "
+    return String.format(
+        "%s select get_next_sequence_value(sequence %s) AS n "
             + "from unnest(generate_array(1, %d))",
         hints, sequenceName.getSequenceName().getText(), fetchSize);
   }
@@ -343,7 +360,9 @@ public class PooledBitReversedSequenceStyleGenerator implements
   @Override
   public String determineBulkInsertionIdentifierGenerationSelectFragment(
       SqlStringGenerationContext context) {
-    return context.getDialect().getSequenceSupport()
+    return context
+        .getDialect()
+        .getSequenceSupport()
         .getSelectSequenceNextValString(getSequenceName());
   }
 
@@ -367,8 +386,8 @@ public class PooledBitReversedSequenceStyleGenerator implements
 
   @Override
   public void registerExportables(Database database) {
-    Namespace namespace = database.locateNamespace(sequenceName.getCatalogName(),
-        sequenceName.getSchemaName());
+    Namespace namespace =
+        database.locateNamespace(sequenceName.getCatalogName(), sequenceName.getSchemaName());
     Sequence sequence = namespace.locateSequence(sequenceName.getSequenceName());
     if (sequence == null) {
       this.databaseStructure.registerExportables(database);
@@ -433,8 +452,9 @@ public class PooledBitReversedSequenceStyleGenerator implements
                   finalConnection
                       .createStatement()
                       .execute(
-                          String.format("set %sretry_aborts_internally=%s", extensionPrefix,
-                              finalRetryAbortsInternally)));
+                          String.format(
+                              "set %sretry_aborts_internally=%s",
+                              extensionPrefix, finalRetryAbortsInternally)));
           ignoreSqlException(connection::commit);
         }
         ignoreSqlException(
@@ -445,8 +465,8 @@ public class PooledBitReversedSequenceStyleGenerator implements
 
   private Boolean isRetryAbortsInternally(Statement statement) {
     String prefix = dialect.openQuote() == '"' ? "spanner." : "variable ";
-    try (ResultSet resultSet = statement.executeQuery(
-        String.format("show %sretry_aborts_internally", prefix))) {
+    try (ResultSet resultSet =
+        statement.executeQuery(String.format("show %sretry_aborts_internally", prefix))) {
       if (resultSet.next()) {
         return resultSet.getBoolean(1);
       }
@@ -482,5 +502,4 @@ public class PooledBitReversedSequenceStyleGenerator implements
 
     void run() throws SQLException;
   }
-
 }

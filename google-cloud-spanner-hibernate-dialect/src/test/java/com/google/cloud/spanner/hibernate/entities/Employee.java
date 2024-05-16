@@ -34,9 +34,7 @@ import jakarta.persistence.Table;
  * @author Chengyuan Zhao
  */
 @Entity
-@Table(indexes = {
-    @Index(columnList = "name", name = "name_index")
-})
+@Table(indexes = {@Index(columnList = "name", name = "name_index")})
 public class Employee {
 
   @Id
@@ -44,8 +42,7 @@ public class Employee {
   @SequenceGenerator(
       name = "employee_generator",
       sequenceName = "Employee_Sequence",
-      allocationSize = 1
-  )
+      allocationSize = 1)
   public Long id;
 
   @ManyToOne(cascade = {CascadeType.ALL})

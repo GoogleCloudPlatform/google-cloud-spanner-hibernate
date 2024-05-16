@@ -34,16 +34,14 @@ import org.hibernate.mapping.Table;
  * information about what tables and indices currently exist in the database.
  */
 public class SpannerDatabaseInfo {
-  
+
   private final Set<Table> tableNames;
 
   private final Map<Table, Set<String>> indexNames;
 
   private final DatabaseMetaData databaseMetaData;
 
-  /**
-   * Constructs the {@link SpannerDatabaseInfo} by querying the Spanner database metadata.
-   */
+  /** Constructs the {@link SpannerDatabaseInfo} by querying the Spanner database metadata. */
   public SpannerDatabaseInfo(Database database, DatabaseMetaData databaseMetaData)
       throws SQLException {
     this.tableNames = extractDatabaseTables(database, databaseMetaData);
@@ -51,29 +49,23 @@ public class SpannerDatabaseInfo {
     this.databaseMetaData = databaseMetaData;
   }
 
-  /**
-   * Returns the table names in the Spanner database.
-   */
+  /** Returns the table names in the Spanner database. */
   public Set<Table> getAllTables() {
     return tableNames;
   }
 
-  /**
-   * Returns the names of all the indices in the Spanner database.
-   */
+  /** Returns the names of all the indices in the Spanner database. */
   public Map<Table, Set<String>> getAllIndices() {
     return indexNames;
   }
 
-  /**
-   * Returns the names of all the imported foreign keys for a specified {@code tableName}.
-   */
+  /** Returns the names of all the imported foreign keys for a specified {@code tableName}. */
   public Set<String> getImportedForeignKeys(Table table) {
     try {
       HashSet<String> foreignKeys = new HashSet<>();
 
-      ResultSet rs = databaseMetaData.getImportedKeys(
-          table.getCatalog(), table.getSchema(), table.getName());
+      ResultSet rs =
+          databaseMetaData.getImportedKeys(table.getCatalog(), table.getSchema(), table.getName());
       while (rs.next()) {
         foreignKeys.add(rs.getString("FK_NAME"));
       }
@@ -90,17 +82,18 @@ public class SpannerDatabaseInfo {
     HashSet<Table> result = new HashSet<>();
 
     // Passing all null parameters will get all the tables and apply no filters.
-    try (ResultSet resultSet = databaseMetaData.getTables(
-        null, null, null, null)) {
+    try (ResultSet resultSet = databaseMetaData.getTables(null, null, null, null)) {
       while (resultSet.next()) {
         String type = resultSet.getString("TABLE_TYPE");
         if (type.equals("TABLE")) {
-          Table table = new Table("orm",
-              database.locateNamespace(
-                  Identifier.toIdentifier(resultSet.getString("TABLE_CAT")),
-                  Identifier.toIdentifier(resultSet.getString("TABLE_SCHEM"))),
-              Identifier.toIdentifier(resultSet.getString("TABLE_NAME")),
-              false);
+          Table table =
+              new Table(
+                  "orm",
+                  database.locateNamespace(
+                      Identifier.toIdentifier(resultSet.getString("TABLE_CAT")),
+                      Identifier.toIdentifier(resultSet.getString("TABLE_SCHEM"))),
+                  Identifier.toIdentifier(resultSet.getString("TABLE_NAME")),
+                  false);
           result.add(table);
         }
       }
@@ -112,17 +105,18 @@ public class SpannerDatabaseInfo {
   private static Map<Table, Set<String>> extractDatabaseIndices(
       Database database, DatabaseMetaData databaseMetaData) throws SQLException {
     HashMap<Table, Set<String>> result = new HashMap<>();
-    try (ResultSet indexResultSet = databaseMetaData.getIndexInfo(
-        null, null, null, false, false)) {
+    try (ResultSet indexResultSet = databaseMetaData.getIndexInfo(null, null, null, false, false)) {
 
       while (indexResultSet.next()) {
         String name = indexResultSet.getString("INDEX_NAME");
-        Table table = new Table("orm",
-            database.locateNamespace(
-                Identifier.toIdentifier(indexResultSet.getString("TABLE_CAT")),
-                Identifier.toIdentifier(indexResultSet.getString("TABLE_SCHEM"))),
-            Identifier.toIdentifier(indexResultSet.getString("TABLE_NAME")),
-            false);
+        Table table =
+            new Table(
+                "orm",
+                database.locateNamespace(
+                    Identifier.toIdentifier(indexResultSet.getString("TABLE_CAT")),
+                    Identifier.toIdentifier(indexResultSet.getString("TABLE_SCHEM"))),
+                Identifier.toIdentifier(indexResultSet.getString("TABLE_NAME")),
+                false);
         Set<String> tableIndices = result.computeIfAbsent(table, k -> new HashSet<>());
         tableIndices.add(name);
       }

@@ -31,9 +31,7 @@ import jakarta.persistence.IdClass;
 import java.io.Serializable;
 import org.junit.Test;
 
-/**
- * Tests for the Spanner schema utilities.
- */
+/** Tests for the Spanner schema utilities. */
 public class SchemaUtilsTests {
 
   @Test
@@ -74,9 +72,7 @@ public class SchemaUtilsTests {
   @Entity
   static class Parent {
 
-    @Id
-    @GeneratedValue
-    String parentId;
+    @Id @GeneratedValue String parentId;
   }
 
   @Entity
@@ -89,16 +85,14 @@ public class SchemaUtilsTests {
   static class ChildMissingEmbeddedId {
 
     // Intentionally no embedded Id
-    @Id
-    String childId;
+    @Id String childId;
   }
 
   @Entity
   @Interleaved(parentEntity = Parent.class)
   static class ChildIncompleteEmbeddedId {
 
-    @EmbeddedId
-    CompositeId id;
+    @EmbeddedId CompositeId id;
 
     static class CompositeId implements Serializable {
       // Intentionally no reference to the primary key in the Parent
@@ -110,8 +104,7 @@ public class SchemaUtilsTests {
   @Interleaved(parentEntity = Parent.class)
   static class ValidChild {
 
-    @EmbeddedId
-    CompositeId childId;
+    @EmbeddedId CompositeId childId;
 
     static class CompositeId implements Serializable {
       String parentId;
@@ -120,30 +113,25 @@ public class SchemaUtilsTests {
   }
 
   static class ChildId implements Serializable {
-    @Id
-    String parentId;
+    @Id String parentId;
 
-    @Id
-    String childId;
+    @Id String childId;
   }
 
   @Entity
   @IdClass(value = ChildId.class)
   @Interleaved(parentEntity = Parent.class)
   static class ValidChildWithIdClass {
-    @Id
-    String parentId;
+    @Id String parentId;
 
-    @Id
-    String childId;
+    @Id String childId;
   }
 
   @Entity
   @Interleaved(parentEntity = ExtendedParent.class)
   static class ValidChildParentHeirarchy {
 
-    @EmbeddedId
-    CompositeId childId;
+    @EmbeddedId CompositeId childId;
 
     static class CompositeId implements Serializable {
       String parentId;
@@ -153,16 +141,13 @@ public class SchemaUtilsTests {
 
   // for testing nested embeddable ids
   static class GrandParent {
-    @Id
-    @GeneratedValue
-    public long grandParentId;
+    @Id @GeneratedValue public long grandParentId;
   }
 
   @Interleaved(parentEntity = GrandParent.class)
   static class NestedParent {
 
-    @EmbeddedId
-    public ParentId parentId;
+    @EmbeddedId public ParentId parentId;
 
     @Embeddable
     static class ParentId implements Serializable {
@@ -174,8 +159,7 @@ public class SchemaUtilsTests {
   @Interleaved(parentEntity = NestedParent.class)
   static class NestedChild {
 
-    @EmbeddedId
-    public ChildId childId;
+    @EmbeddedId public ChildId childId;
 
     @Embeddable
     static class ChildId implements Serializable {
@@ -187,8 +171,7 @@ public class SchemaUtilsTests {
   // For testing cyclical embeddable ids
   @Interleaved(parentEntity = CyclicalNestedChild.class)
   class CyclicalGrandParent {
-    @EmbeddedId
-    public GrandParentId grandParentId;
+    @EmbeddedId public GrandParentId grandParentId;
 
     @Embeddable
     class GrandParentId implements Serializable {
@@ -200,8 +183,7 @@ public class SchemaUtilsTests {
   @Interleaved(parentEntity = CyclicalGrandParent.class)
   class CyclicalNestedParent {
 
-    @EmbeddedId
-    public ParentId parentId;
+    @EmbeddedId public ParentId parentId;
 
     @Embeddable
     class ParentId implements Serializable {
@@ -213,8 +195,7 @@ public class SchemaUtilsTests {
   @Interleaved(parentEntity = CyclicalNestedParent.class)
   class CyclicalNestedChild {
 
-    @EmbeddedId
-    public ChildId childId;
+    @EmbeddedId public ChildId childId;
 
     @Embeddable
     class ChildId implements Serializable {

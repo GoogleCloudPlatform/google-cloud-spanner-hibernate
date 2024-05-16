@@ -99,7 +99,8 @@ public class SpannerDialectTests {
   @Test
   public void getSchemaResolverTest() throws SQLException {
     String schemaName =
-        this.spannerDialect.getSchemaNameResolver()
+        this.spannerDialect
+            .getSchemaNameResolver()
             .resolveSchemaName(mock(Connection.class), this.spannerDialect);
 
     assertThat(schemaName).isEmpty();
@@ -291,8 +292,8 @@ public class SpannerDialectTests {
 
   @Test
   public void applyLocksToSqlTest() {
-    String originalStatement = this.spannerDialect.applyLocksToSql(
-        "original statement", null, null);
+    String originalStatement =
+        this.spannerDialect.applyLocksToSql("original statement", null, null);
     assertThat(originalStatement).isEqualTo("original statement");
   }
 

@@ -40,14 +40,10 @@ import java.util.UUID;
 @Consumes(MediaType.APPLICATION_JSON)
 public class PersonController {
 
-  /**
-   * Inject a Panache repository for CRUD operations.
-   */
+  /** Inject a Panache repository for CRUD operations. */
   @Inject PersonRepository personRepository;
 
-  /**
-   * Optionally, inject the JPA {@link EntityManager} for direct JPA access.
-   */
+  /** Optionally, inject the JPA {@link EntityManager} for direct JPA access. */
   @Inject EntityManager entityManager;
 
   /**

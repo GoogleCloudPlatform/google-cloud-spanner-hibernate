@@ -35,15 +35,13 @@ public class SequenceEntity {
       name = "sequence-generator",
       type = SequenceStyleGenerator.class,
       parameters = {
-          @Parameter(name = "sequence_name", value = "test_sequence"),
-          @Parameter(name = "initial_value", value = "1"),
-          @Parameter(name = "increment_size", value = "1")
-      }
-  )
+        @Parameter(name = "sequence_name", value = "test_sequence"),
+        @Parameter(name = "initial_value", value = "1"),
+        @Parameter(name = "increment_size", value = "1")
+      })
   private long id;
 
-  @Column
-  private String name;
+  @Column private String name;
 
   protected SequenceEntity() {}
 

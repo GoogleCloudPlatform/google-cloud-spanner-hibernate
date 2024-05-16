@@ -46,14 +46,10 @@ import org.junit.Test;
 public class SampleApplicationIT {
 
   private final StandardServiceRegistry registry =
-      new StandardServiceRegistryBuilder()
-          .configure()
-          .build();
+      new StandardServiceRegistryBuilder().configure().build();
 
   private final SessionFactory sessionFactory =
-      new MetadataSources(registry)
-          .buildMetadata()
-          .buildSessionFactory();
+      new MetadataSources(registry).buildMetadata().buildSessionFactory();
 
   private Session session;
 

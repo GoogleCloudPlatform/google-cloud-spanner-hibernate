@@ -26,9 +26,7 @@ import java.sql.Types;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 
-/**
- * An entity representing a musical album.
- */
+/** An entity representing a musical album. */
 @Entity
 public class Album {
 
@@ -37,13 +35,11 @@ public class Album {
   @JdbcTypeCode(Types.CHAR)
   UUID albumId;
 
-  @ManyToOne
-  Singer singer;
+  @ManyToOne Singer singer;
 
   String albumTitle;
 
-  public Album() {
-  }
+  public Album() {}
 
   public Album(Singer singer, String albumTitle) {
     this.singer = singer;

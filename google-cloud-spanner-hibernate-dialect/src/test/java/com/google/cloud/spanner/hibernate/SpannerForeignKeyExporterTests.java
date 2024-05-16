@@ -38,9 +38,7 @@ import org.hibernate.mapping.Table;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * Tests correct creation of Spanner foreign keys.
- */
+/** Tests correct creation of Spanner foreign keys. */
 public class SpannerForeignKeyExporterTests {
 
   private SpannerForeignKeyExporter spannerForeignKeyExporter;
@@ -51,15 +49,12 @@ public class SpannerForeignKeyExporterTests {
 
   private SqlStringGenerationContext context;
 
-
-  /**
-   * Setup the mocks needed for the Spanner foreign key tests.
-   */
+  /** Setup the mocks needed for the Spanner foreign key tests. */
   @Before
   public void setup() {
     Namespace namespace = mock(Namespace.class);
-    when(namespace.getPhysicalName()).thenReturn(
-        new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
+    when(namespace.getPhysicalName())
+        .thenReturn(new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
     this.spannerDatabaseInfo = mock(SpannerDatabaseInfo.class);
     Table table = new Table("orm", namespace, Identifier.toIdentifier("address"), false);
     Set<Table> tables = Collections.singleton(table);
@@ -71,38 +66,45 @@ public class SpannerForeignKeyExporterTests {
     this.spannerForeignKeyExporter = new SpannerForeignKeyExporter(new SpannerDialect());
     this.spannerForeignKeyExporter.init(spannerDatabaseInfo);
     this.context = mock(SqlStringGenerationContext.class);
-    when(this.context.format(any(QualifiedTableName.class))).thenAnswer(invocation ->
-        ((QualifiedTableName) invocation.getArguments()[0]).getTableName().getCanonicalName());
+    when(this.context.format(any(QualifiedTableName.class)))
+        .thenAnswer(
+            invocation ->
+                ((QualifiedTableName) invocation.getArguments()[0])
+                    .getTableName()
+                    .getCanonicalName());
   }
 
   @Test
   public void testDropForeignKey() {
-    String[] dropStatements = spannerForeignKeyExporter.getSqlDropStrings(
-        foreignKey("address", "address_fk"), metadata, this.context);
+    String[] dropStatements =
+        spannerForeignKeyExporter.getSqlDropStrings(
+            foreignKey("address", "address_fk"), metadata, this.context);
     assertThat(dropStatements).containsExactly("alter table address drop constraint address_fk");
   }
 
   @Test
   public void testDropMissingForeignKey_missingTable() {
-    String[] dropStatements = spannerForeignKeyExporter.getSqlDropStrings(
-        foreignKey("person", "person_fk"), metadata, this.context);
+    String[] dropStatements =
+        spannerForeignKeyExporter.getSqlDropStrings(
+            foreignKey("person", "person_fk"), metadata, this.context);
     assertThat(dropStatements).isEmpty();
   }
 
   @Test
   public void testDropMissingForeignKey_missingForeignKey() {
-    String[] dropStatements = spannerForeignKeyExporter.getSqlDropStrings(
-        foreignKey("address", "other_fk"), metadata, this.context);
+    String[] dropStatements =
+        spannerForeignKeyExporter.getSqlDropStrings(
+            foreignKey("address", "other_fk"), metadata, this.context);
     assertThat(dropStatements).isEmpty();
   }
 
   private static ForeignKey foreignKey(String tableName, String foreignKeyName) {
     ForeignKey foreignKey = new ForeignKey();
     foreignKey.setName(foreignKeyName);
-    
+
     Namespace namespace = mock(Namespace.class);
-    when(namespace.getPhysicalName()).thenReturn(
-        new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
+    when(namespace.getPhysicalName())
+        .thenReturn(new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
     Table table = new Table("orm", namespace, Identifier.toIdentifier(tableName), false);
     foreignKey.setTable(table);
     foreignKey.setReferencedTable(table);
@@ -110,4 +112,3 @@ public class SpannerForeignKeyExporterTests {
     return foreignKey;
   }
 }
-

@@ -24,21 +24,16 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import java.io.Serializable;
 
-/**
- * Hibernate entity used in interleaved tests.
- */
+/** Hibernate entity used in interleaved tests. */
 @Entity
 @Interleaved(parentEntity = Parent.class)
 public class Child {
 
-  @EmbeddedId
-  public ChildId childId;
+  @EmbeddedId public ChildId childId;
 
   public String name;
 
-  /**
-   * Embedded ID containing the interleaved parents' fields.
-   */
+  /** Embedded ID containing the interleaved parents' fields. */
   @Embeddable
   public static class ChildId implements Serializable {
 

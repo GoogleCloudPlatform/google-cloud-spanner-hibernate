@@ -34,9 +34,7 @@ import java.util.Random;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-/**
- * Service class for fetching and saving Concert records.
- */
+/** Service class for fetching and saving Concert records. */
 @Service
 public class ConcertService {
 
@@ -48,9 +46,7 @@ public class ConcertService {
 
   private final RandomDataService randomDataService;
 
-  /**
-   * Constructor with auto-injected dependencies.
-   */
+  /** Constructor with auto-injected dependencies. */
   public ConcertService(
       ConcertRepository repository,
       SingerRepository singerRepository,
@@ -62,17 +58,13 @@ public class ConcertService {
     this.randomDataService = randomDataService;
   }
 
-  /**
-   * Deletes all Concert records in the database.
-   */
+  /** Deletes all Concert records in the database. */
   @Transactional
   public void deleteAllConcerts() {
     repository.deleteAll();
   }
 
-  /**
-   * Generates the specified number of random Concert records.
-   */
+  /** Generates the specified number of random Concert records. */
   @Transactional
   public List<Concert> generateRandomConcerts(int count) {
     Random random = new Random();

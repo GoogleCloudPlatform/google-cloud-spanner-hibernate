@@ -29,13 +29,15 @@ class ScanMethodHint extends ReplaceQueryPartsHint {
   private static final String HINT = "SCAN_METHOD";
 
   static ScanMethodHint from(String table, ScanMethod scanMethod, ReplaceMode replaceMode) {
-    return new ScanMethodHint(ImmutableList.of(
-        new Replacement(Hints.from(table), scanMethodFrom(table, scanMethod), replaceMode)));
+    return new ScanMethodHint(
+        ImmutableList.of(
+            new Replacement(Hints.from(table), scanMethodFrom(table, scanMethod), replaceMode)));
   }
 
   static ScanMethodHint join(String table, ScanMethod scanMethod, ReplaceMode replaceMode) {
-    return new ScanMethodHint(ImmutableList.of(
-        new Replacement(Hints.join(table), scanMethodJoin(table, scanMethod), replaceMode)));
+    return new ScanMethodHint(
+        ImmutableList.of(
+            new Replacement(Hints.join(table), scanMethodJoin(table, scanMethod), replaceMode)));
   }
 
   private ScanMethodHint(ImmutableList<Replacement> replacements) {
@@ -49,5 +51,4 @@ class ScanMethodHint extends ReplaceQueryPartsHint {
   private static String scanMethodJoin(String table, ScanMethod scanMethod) {
     return joinTableHint(table, HINT, scanMethod.name());
   }
-
 }

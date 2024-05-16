@@ -26,9 +26,11 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
-/** Test entity that uses a pooled sequence. Pooled sequences are not supported in Cloud Spanner,
- * unless they use the custom
- * {@link com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator}. */
+/**
+ * Test entity that uses a pooled sequence. Pooled sequences are not supported in Cloud Spanner,
+ * unless they use the custom {@link
+ * com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator}.
+ */
 @Entity
 public class PooledSequenceEntity {
   @Id
@@ -37,15 +39,13 @@ public class PooledSequenceEntity {
       name = "sequence-generator",
       type = SequenceStyleGenerator.class,
       parameters = {
-          @Parameter(name = "sequence_name", value = "pooled_sequence"),
-          @Parameter(name = "initial_value", value = "1"),
-          @Parameter(name = "increment_size", value = "1000")
-      }
-  )
+        @Parameter(name = "sequence_name", value = "pooled_sequence"),
+        @Parameter(name = "initial_value", value = "1"),
+        @Parameter(name = "increment_size", value = "1000")
+      })
   private long id;
 
-  @Column
-  private String name;
+  @Column private String name;
 
   protected PooledSequenceEntity() {}
 

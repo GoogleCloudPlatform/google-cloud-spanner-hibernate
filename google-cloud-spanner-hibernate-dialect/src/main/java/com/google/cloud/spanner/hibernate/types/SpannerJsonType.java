@@ -25,8 +25,8 @@ import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.usertype.DynamicParameterizedType;
 
 /**
- * A {@link org.hibernate.usertype.UserType} which supports mapping Spanner JSON columns to
- * entity fields.
+ * A {@link org.hibernate.usertype.UserType} which supports mapping Spanner JSON columns to entity
+ * fields.
  */
 public class SpannerJsonType extends AbstractSingleColumnStandardBasicType<Object>
     implements DynamicParameterizedType {

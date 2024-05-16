@@ -21,7 +21,13 @@ package com.google.cloud.spanner.hibernate.types;
 import com.google.cloud.spanner.Type.Code;
 import java.util.List;
 
-/** Hibernate type definition for <pre>{@code ARRAY<BOOL>}</pre>. */
+/**
+ * Hibernate type definition for
+ *
+ * <pre>{@code ARRAY<BOOL>}</pre>
+ *
+ * .
+ */
 public class SpannerBoolArray extends AbstractSpannerArrayType<Boolean, Boolean> {
 
   @Override

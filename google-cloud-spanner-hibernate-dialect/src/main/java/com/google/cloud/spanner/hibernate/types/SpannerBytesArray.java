@@ -21,7 +21,13 @@ package com.google.cloud.spanner.hibernate.types;
 import com.google.cloud.spanner.Type.Code;
 import java.util.List;
 
-/** Hibernate type definition for <pre>{@code ARRAY<BYTES>}</pre>. */
+/**
+ * Hibernate type definition for
+ *
+ * <pre>{@code ARRAY<BYTES>}</pre>
+ *
+ * .
+ */
 public class SpannerBytesArray extends AbstractSpannerArrayType<byte[], byte[]> {
 
   @Override

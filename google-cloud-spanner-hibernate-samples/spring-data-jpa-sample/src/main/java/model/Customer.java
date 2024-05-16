@@ -46,9 +46,7 @@ public class Customer {
   private List<Coffee> coffees = new ArrayList<>();
 
   // Default constructor for Spring Data JPA.
-  protected Customer() {
-
-  }
+  protected Customer() {}
 
   public Customer(String name, String email) {
     this.name = name;

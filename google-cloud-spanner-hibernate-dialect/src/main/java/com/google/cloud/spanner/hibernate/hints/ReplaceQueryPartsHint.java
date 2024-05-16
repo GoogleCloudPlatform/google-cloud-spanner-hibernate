@@ -75,13 +75,9 @@ import org.hibernate.HibernateException;
  */
 public class ReplaceQueryPartsHint {
 
-  /**
-   * Specifies how replacements should be applied to the query string.
-   */
+  /** Specifies how replacements should be applied to the query string. */
   public enum ReplaceMode {
-    /**
-     * Only replace the first occurrence in the query string.
-     */
+    /** Only replace the first occurrence in the query string. */
     FIRST {
       @Override
       String apply(String sql, String key, String replacement) {
@@ -89,9 +85,7 @@ public class ReplaceQueryPartsHint {
       }
     },
 
-    /**
-     * Replace all occurrences in the query string (default).
-     */
+    /** Replace all occurrences in the query string (default). */
     ALL {
       @Override
       String apply(String sql, String key, String replacement) {
@@ -102,9 +96,7 @@ public class ReplaceQueryPartsHint {
     abstract String apply(String sql, String key, String replacement);
   }
 
-  /**
-   * Replacement that should be applied to a query string.
-   */
+  /** Replacement that should be applied to a query string. */
   public static class Replacement {
     private final String regex;
 
@@ -117,7 +109,7 @@ public class ReplaceQueryPartsHint {
      *
      * @param regex a regular expression for the part of the query that should be replaced
      * @param replacement the replacement string that should replace <code>regex</code>. May contain
-     *                    $1, $2, ... to refer to matching groups in the regular expression.
+     *     $1, $2, ... to refer to matching groups in the regular expression.
      * @param replaceMode whether to replace all or only the first occurrence in the query string
      */
     public Replacement(String regex, String replacement, ReplaceMode replaceMode) {
@@ -153,25 +145,20 @@ public class ReplaceQueryPartsHint {
 
   private final List<Replacement> replacements;
 
-  /**
-   * Re-creates a hint from a JSON-formatted comment.
-   */
+  /** Re-creates a hint from a JSON-formatted comment. */
   public static ReplaceQueryPartsHint fromComment(String comment) {
     return fromJson(comment);
   }
 
-  /**
-   * Creates a hint that will replace all occurrences of {@code regex} with
-   * {@code replacement}.
-   */
+  /** Creates a hint that will replace all occurrences of {@code regex} with {@code replacement}. */
   public static ReplaceQueryPartsHint of(String regex, String replacement) {
     return new ReplaceQueryPartsHint(
         ImmutableList.of(new Replacement(regex, replacement, ReplaceMode.ALL)));
   }
 
   /**
-   * Creates a hint that will replace occurrences of {@code regex} with {@code replacement}
-   * using the given {@link ReplaceMode}.
+   * Creates a hint that will replace occurrences of {@code regex} with {@code replacement} using
+   * the given {@link ReplaceMode}.
    */
   public static ReplaceQueryPartsHint of(
       String regex, String replacement, ReplaceMode replaceMode) {
@@ -183,9 +170,7 @@ public class ReplaceQueryPartsHint {
     this.replacements = Preconditions.checkNotNull(replacements);
   }
 
-  /**
-   * Creates a hint that will apply all the replacements in the given list.
-   */
+  /** Creates a hint that will apply all the replacements in the given list. */
   public ReplaceQueryPartsHint(List<Replacement> replacements) {
     this.replacements = ImmutableList.copyOf(Preconditions.checkNotNull(replacements));
   }
@@ -202,9 +187,7 @@ public class ReplaceQueryPartsHint {
             .build());
   }
 
-  /**
-   * Applies the replacements to the given SQL statement.
-   */
+  /** Applies the replacements to the given SQL statement. */
   public String replace(String sql) {
     for (Replacement replacement : replacements) {
       sql = replacement.replaceMode.apply(sql, replacement.regex, replacement.replacement);
@@ -226,16 +209,12 @@ public class ReplaceQueryPartsHint {
     return Objects.equals(this.replacements, other.replacements);
   }
 
-  /**
-   * Returns this hint as a query hint that can be added to a query.
-   */
+  /** Returns this hint as a query hint that can be added to a query. */
   public String toQueryHint() {
     return toString();
   }
 
-  /**
-   * Returns this hint as a comment that can be added to a query.
-   */
+  /** Returns this hint as a comment that can be added to a query. */
   public String toComment() {
     return toString();
   }
@@ -262,21 +241,19 @@ public class ReplaceQueryPartsHint {
       generator.writeEndObject();
       return writer.toString();
     } catch (IOException ioException) {
-      throw new HibernateException("failed to convert hint to comment: " + ioException.getMessage(),
-          ioException);
+      throw new HibernateException(
+          "failed to convert hint to comment: " + ioException.getMessage(), ioException);
     }
   }
 
-  /**
-   * Re-creates a hint from a JSON-formatted string.
-   */
+  /** Re-creates a hint from a JSON-formatted string. */
   public static ReplaceQueryPartsHint fromJson(String json) {
     try {
       JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
       JsonElement replacementsElement = jsonObject.get(SPANNER_REPLACEMENTS_FIELD_NAME);
       if (replacementsElement == null) {
-        throw new HibernateException("Hint does not contain a " + SPANNER_REPLACEMENTS_FIELD_NAME
-            + " element at the root");
+        throw new HibernateException(
+            "Hint does not contain a " + SPANNER_REPLACEMENTS_FIELD_NAME + " element at the root");
       }
       if (!replacementsElement.isJsonArray()) {
         throw new HibernateException(SPANNER_REPLACEMENTS_FIELD_NAME + " must be an array");
@@ -285,14 +262,14 @@ public class ReplaceQueryPartsHint {
       ImmutableList.Builder<Replacement> replacementsMapBuilder = ImmutableList.builder();
       for (JsonElement replacement : replacementsArray.asList()) {
         if (!replacement.isJsonObject()) {
-          throw new HibernateException("All elements of " + SPANNER_REPLACEMENTS_FIELD_NAME
-              + " must be objects");
+          throw new HibernateException(
+              "All elements of " + SPANNER_REPLACEMENTS_FIELD_NAME + " must be objects");
         }
         JsonObject replacementObject = replacement.getAsJsonObject();
         JsonElement regexElement = replacementObject.get(REGEX_FIELD_NAME);
         if (regexElement == null) {
-          throw new HibernateException("Missing " + REGEX_FIELD_NAME
-              + " field in replacement object");
+          throw new HibernateException(
+              "Missing " + REGEX_FIELD_NAME + " field in replacement object");
         }
         if (!regexElement.isJsonPrimitive()) {
           throw new HibernateException(REGEX_FIELD_NAME + " must be a string");
@@ -301,15 +278,14 @@ public class ReplaceQueryPartsHint {
         String replacementString = getAsString(replacementObject, REPLACEMENT_FIELD_NAME);
         String replaceModeString =
             getAsString(replacementObject, REPLACE_MODE_FIELD_NAME, /* optional = */ true);
-        ReplaceMode replaceMode = replaceModeString == null
-            ? ReplaceMode.ALL
-            : ReplaceMode.valueOf(replaceModeString);
+        ReplaceMode replaceMode =
+            replaceModeString == null ? ReplaceMode.ALL : ReplaceMode.valueOf(replaceModeString);
         replacementsMapBuilder.add(new Replacement(regex, replacementString, replaceMode));
       }
       return new ReplaceQueryPartsHint(replacementsMapBuilder.build());
     } catch (JsonSyntaxException exception) {
-      throw new HibernateException("Comment is not a valid hint: " + exception.getMessage(),
-          exception);
+      throw new HibernateException(
+          "Comment is not a valid hint: " + exception.getMessage(), exception);
     }
   }
 
@@ -330,5 +306,4 @@ public class ReplaceQueryPartsHint {
     }
     return element.getAsString();
   }
-
 }

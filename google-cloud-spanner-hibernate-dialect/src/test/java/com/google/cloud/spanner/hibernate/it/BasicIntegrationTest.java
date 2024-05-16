@@ -57,8 +57,10 @@ public class BasicIntegrationTest {
 
   @Test
   public void testCrud() {
-    try (SessionFactory factory = TEST_ENV.createTestHibernateConfig(
-        ImmutableList.of(TestEntity.class)).buildSessionFactory();
+    try (SessionFactory factory =
+            TEST_ENV
+                .createTestHibernateConfig(ImmutableList.of(TestEntity.class))
+                .buildSessionFactory();
         Session session = factory.openSession()) {
       // Insert a row.
       runWithTransactionAndClearSession(session, () -> session.save(new TestEntity(1L, "One")));
@@ -94,19 +96,15 @@ public class BasicIntegrationTest {
   @Entity
   static class TestEntity {
 
-    @Id
-    private Long id;
+    @Id private Long id;
 
-    @Column
-    private String value;
+    @Column private String value;
 
-    protected TestEntity() {
-    }
+    protected TestEntity() {}
 
     TestEntity(long id, String value) {
       this.id = id;
       this.value = value;
     }
   }
-
 }

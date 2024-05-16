@@ -45,17 +45,13 @@ public class InterleavedTest extends BaseEntityManagerFunctionalTestCase {
 
   @Override
   protected Class<?>[] getAnnotatedClasses() {
-    return new Class<?>[]{
-        Parent.class,
-        GrandParent.class,
-        Child.class
-    };
+    return new Class<?>[] {Parent.class, GrandParent.class, Child.class};
   }
 
   /**
    * We override the default with the 'create-drop' mode because we would like to verify that the
-   * interleaved tables are created and dropped in the correct order:
-   * parents created before children; children dropped before parents.
+   * interleaved tables are created and dropped in the correct order: parents created before
+   * children; children dropped before parents.
    */
   @Override
   protected Map buildSettings() {
@@ -68,25 +64,27 @@ public class InterleavedTest extends BaseEntityManagerFunctionalTestCase {
   public void testInterleavedEntities() throws SQLException {
     super.buildEntityManagerFactory();
 
-    doInJPA(this::entityManagerFactory, entityManager -> {
-      GrandParent grandParent = new GrandParent();
-      grandParent.setName("Grandparent1");
-      entityManager.persist(grandParent);
+    doInJPA(
+        this::entityManagerFactory,
+        entityManager -> {
+          GrandParent grandParent = new GrandParent();
+          grandParent.setName("Grandparent1");
+          entityManager.persist(grandParent);
 
-      Parent parent = new Parent();
-      parent.setParentId(new ParentId(grandParent.grandParentId, 1L));
-      parent.setName("A_Parent");
-      entityManager.persist(parent);
+          Parent parent = new Parent();
+          parent.setParentId(new ParentId(grandParent.grandParentId, 1L));
+          parent.setName("A_Parent");
+          entityManager.persist(parent);
 
-      Child child = new Child();
-      child.setChildId(new ChildId(parent.parentId, 2L));
-      child.setName("Foobar");
-      entityManager.persist(child);
+          Child child = new Child();
+          child.setChildId(new ChildId(parent.parentId, 2L));
+          child.setName("Foobar");
+          entityManager.persist(child);
 
-      verifyEntities(entityManager, GrandParent.class);
-      verifyEntities(entityManager, Parent.class);
-      verifyEntities(entityManager, Child.class);
-    });
+          verifyEntities(entityManager, GrandParent.class);
+          verifyEntities(entityManager, Parent.class);
+          verifyEntities(entityManager, Child.class);
+        });
 
     verifyInterleavedTablesDdl();
   }
@@ -116,18 +114,14 @@ public class InterleavedTest extends BaseEntityManagerFunctionalTestCase {
 
       assertThat(childToParentTableMap)
           .contains(
-              entry("Child", "Parent"),
-              entry("Parent", "GrandParent"),
-              entry("GrandParent", null));
+              entry("Child", "Parent"), entry("Parent", "GrandParent"), entry("GrandParent", null));
     }
-
   }
 
   private static void verifyEntities(EntityManager entityManager, Class<?> entityClass) {
     Session session = entityManager.unwrap(Session.class);
     List<?> entityList =
-        session.createQuery(
-            "from " + entityClass.getSimpleName(), entityClass).list();
+        session.createQuery("from " + entityClass.getSimpleName(), entityClass).list();
     assertThat(entityList).hasSize(1);
   }
 }

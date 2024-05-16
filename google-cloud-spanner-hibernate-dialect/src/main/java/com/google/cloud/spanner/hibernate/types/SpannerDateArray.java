@@ -27,7 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Hibernate type definition for <pre>{@code ARRAY<DATE>}</pre>.
+ * Hibernate type definition for
+ *
+ * <pre>{@code ARRAY<DATE>}</pre>
+ *
+ * .
  */
 public class SpannerDateArray extends AbstractSpannerArrayType<Date, LocalDate> {
 

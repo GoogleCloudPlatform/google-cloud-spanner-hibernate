@@ -47,9 +47,9 @@ public class Invoice {
       name = "invoiceId",
       type = BitReversedSequenceStyleGenerator.class,
       parameters = {
-          @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
-          @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "invoiceId"),
-          @Parameter(name = SequenceStyleGenerator.INITIAL_PARAM, value = "1")
+        @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
+        @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "invoiceId"),
+        @Parameter(name = SequenceStyleGenerator.INITIAL_PARAM, value = "1")
       })
   @Column(nullable = false)
   private Long invoiceId;
@@ -61,5 +61,4 @@ public class Invoice {
   @JoinColumn(foreignKey = @ForeignKey(name = "fk_invoice_customer"))
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Customer customer;
-
 }

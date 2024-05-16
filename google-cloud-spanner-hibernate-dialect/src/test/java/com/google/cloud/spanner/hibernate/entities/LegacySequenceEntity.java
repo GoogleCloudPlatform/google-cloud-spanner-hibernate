@@ -35,20 +35,20 @@ public class LegacySequenceEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "legacy_sequence")
-  @GenericGenerator(name = "legacy_sequence",
+  @GenericGenerator(
+      name = "legacy_sequence",
       strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
       parameters = {
-          @Parameter(name = "sequence_name", value = "legacy_entity_sequence"),
-          @Parameter(name = "increment_size", value = "5"),
-          @Parameter(name = "initial_value", value = "5000"),
-          @Parameter(name = "exclude_ranges", value = "[1,1000] [10000,20000]")})
+        @Parameter(name = "sequence_name", value = "legacy_entity_sequence"),
+        @Parameter(name = "increment_size", value = "5"),
+        @Parameter(name = "initial_value", value = "5000"),
+        @Parameter(name = "exclude_ranges", value = "[1,1000] [10000,20000]")
+      })
   private long id;
 
-  @Column
-  private String name;
+  @Column private String name;
 
-  public LegacySequenceEntity() {
-  }
+  public LegacySequenceEntity() {}
 
   public LegacySequenceEntity(String name) {
     this.name = name;
@@ -69,5 +69,4 @@ public class LegacySequenceEntity {
   public void setName(String name) {
     this.name = name;
   }
-
 }

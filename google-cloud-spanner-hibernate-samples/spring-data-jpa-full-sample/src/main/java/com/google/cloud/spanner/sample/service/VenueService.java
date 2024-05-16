@@ -28,9 +28,7 @@ import java.util.List;
 import java.util.Random;
 import org.springframework.stereotype.Service;
 
-/**
- * Service class for fetching and saving Venue records.
- */
+/** Service class for fetching and saving Venue records. */
 @Service
 public class VenueService {
 
@@ -38,17 +36,13 @@ public class VenueService {
 
   private final RandomDataService randomDataService;
 
-  /**
-   * Constructor with auto-injected dependencies.
-   */
+  /** Constructor with auto-injected dependencies. */
   public VenueService(VenueRepository repository, RandomDataService randomDataService) {
     this.repository = repository;
     this.randomDataService = randomDataService;
   }
 
-  /**
-   * Deletes all Venue records in the database.
-   */
+  /** Deletes all Venue records in the database. */
   @Transactional
   public void deleteAllVenues() {
     repository.deleteAll();

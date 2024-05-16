@@ -36,8 +36,7 @@ import java.util.List;
 @Table(name = "`test_table`")
 public class TestEntity {
 
-  @EmbeddedId
-  public IdClass id;
+  @EmbeddedId public IdClass id;
 
   @Column(nullable = true)
   public String stringVal;
@@ -47,12 +46,9 @@ public class TestEntity {
 
   public long longVal;
 
-  @ElementCollection
-  List<String> stringList;
+  @ElementCollection List<String> stringList;
 
-  /**
-   * A simple Hibernate embedded ID used in tests.
-   */
+  /** A simple Hibernate embedded ID used in tests. */
   @Embeddable
   public static class IdClass implements Serializable {
 

@@ -22,8 +22,11 @@ import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 /**
- * A REST application that has the root context of <pre>/api</pre>.
+ * A REST application that has the root context of
+ *
+ * <pre>/api</pre>
+ *
+ * .
  */
 @ApplicationPath("/")
-public class RestApplication extends Application {
-}
+public class RestApplication extends Application {}

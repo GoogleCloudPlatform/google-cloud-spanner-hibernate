@@ -42,17 +42,13 @@ import javax.ws.rs.core.MediaType;
 @RequestScoped
 public class PersonController {
 
-  /**
-   * Inject the JPA {@link EntityManager} for direct JPA access.
-   */
-  @Inject
-  EntityManager entityManager;
+  /** Inject the JPA {@link EntityManager} for direct JPA access. */
+  @Inject EntityManager entityManager;
 
   /**
    * Create a new {@link Person} entity with auto-generated ID.
    *
    * @param person JSON payload for Person
-   *
    * @return created {@link Person} entity
    */
   @POST
@@ -71,7 +67,6 @@ public class PersonController {
    * Retrieve a {@link Person} entity by ID.
    *
    * @param id UUID String to lookup
-   *
    * @return a {@link Person} entity
    */
   @GET

@@ -73,7 +73,7 @@ public class GeneratedUpdateTableStatementsTests {
   public void testUpdateStatements_createTables() throws SQLException {
     SpannerDialect.disableSpannerSequences();
     setupTestTables("Hello");
-    
+
     try {
       List<String> sqlStrings =
           defaultConnection.getStatementResultSetHandler().getExecutedStatements();
@@ -142,9 +142,9 @@ public class GeneratedUpdateTableStatementsTests {
         defaultConnection.getStatementResultSetHandler().getExecutedStatements();
     assertThat(sqlStrings).containsExactly("START BATCH DDL", "RUN BATCH");
     sqlStrings = defaultConnection.getPreparedStatementResultSetHandler().getExecutedStatements();
-    assertThat(sqlStrings).containsExactly(
-        new SpannerDialect().getQuerySequencesString(),
-        "select * from `Customer` where 1=0");
+    assertThat(sqlStrings)
+        .containsExactly(
+            new SpannerDialect().getQuerySequencesString(), "select * from `Customer` where 1=0");
   }
 
   /** Sets up which pre-existing tables that Hibernate sees. */

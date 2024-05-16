@@ -27,7 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Hibernate type definition for <pre>{@code ARRAY<TIMESTAMP>}</pre>.
+ * Hibernate type definition for
+ *
+ * <pre>{@code ARRAY<TIMESTAMP>}</pre>
+ *
+ * .
  */
 public class SpannerTimestampArray extends AbstractSpannerArrayType<Timestamp, Instant> {
 
