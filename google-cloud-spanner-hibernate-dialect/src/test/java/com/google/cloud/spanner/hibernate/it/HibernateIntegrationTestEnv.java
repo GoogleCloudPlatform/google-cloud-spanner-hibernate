@@ -62,9 +62,9 @@ public class HibernateIntegrationTestEnv {
   private static final Logger logger = Logger.getLogger(
       HibernateIntegrationTestEnv.class.getName());
   // Default fallback project Id will be used if one isn't set via the system property.
-  private static final String DEFAULT_PROJECT_ID = "span-cloud-testing";
+  private static final String DEFAULT_PROJECT_ID = "appdev-soda-spanner-staging";
   // Default instance id.
-  private static final String DEFAULT_INSTANCE_ID = "hibernate-testing";
+  private static final String DEFAULT_INSTANCE_ID = "hibernate-tests";
   // Default database id.
   private static final String DEFAULT_DATABASE_ID = "test-db";
   // Shared Spanner instance that is automatically created and closed.
