@@ -20,10 +20,13 @@ package com.google.cloud.spanner.sample.entities;
 
 import jakarta.persistence.Entity;
 import java.io.Serializable;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
+// Use DynamicUpdate to prevent the JSON column from being updated everytime this entity is updated.
+@DynamicUpdate
 public class Venue extends AbstractNonInterleavedEntity {
 
   /**
