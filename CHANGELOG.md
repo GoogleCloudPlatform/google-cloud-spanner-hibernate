@@ -1,6 +1,21 @@
 # Changelog
 
 
+## [3.3.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.3.1...v3.3.2) (2024-05-16)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.google.guava:guava to v32.1.3-jre ([#1045](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1045)) ([650ede1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/650ede14c235fd26acad991d155f9ef06b1e374f))
+
+
+### Dependencies
+
+* bump org.apache.maven.plugins:maven-deploy-plugin ([#1024](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1024)) ([d97a6ed](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/d97a6edabe8527a2c76abf787391bb810843280f))
+* bump org.apache.maven.plugins:maven-jar-plugin ([#1008](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1008)) ([af75d5d](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/af75d5d8036afcaa287a8507171e01236d9c4400))
+* bump org.jboss.logging:jboss-logging ([#1036](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1036)) ([7aaf2c7](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/7aaf2c75969be6c57e4e99b513069f80d920664a))
+* bump Spanner JDBC to 2.18.0 ([#1043](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1043)) ([92cb7f1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/92cb7f1f0206b9baf0e5218f6f228630b7ded01f))
+
 ## [3.3.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.3.0...v3.3.1) (2024-04-20)
 
 
