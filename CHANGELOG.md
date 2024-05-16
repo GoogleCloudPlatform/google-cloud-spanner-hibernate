@@ -1,6 +1,18 @@
 # Changelog
 
 
+## [3.4.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.3.2...v3.4.0) (2024-05-16)
+
+
+### Features
+
+* support Hibernate 6.5 ([#1058](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1058)) ([d376680](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/d3766807d042fc2b806fb6eb663d1fe11c0529f6))
+
+
+### Dependencies
+
+* bump hibernate.version from 6.3.1.Final to 6.5.1.Final in /google-cloud-spanner-hibernate-dialect ([#1037](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1037)) ([5be5aca](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/5be5aca938abd8971018d4fd9b4a99b7da17c243))
+
 ## [3.3.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.3.1...v3.3.2) (2024-05-16)
 
 
