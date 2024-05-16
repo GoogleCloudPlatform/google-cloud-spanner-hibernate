@@ -3,7 +3,7 @@
 
 = Google Cloud Spanner Dialect for Hibernate ORM
 
-This is a dialect compatible with https://hibernate.org/orm/releases/6.3/[Hibernate 6.3] for the https://cloud.google.com/spanner/[Google Cloud Spanner] database service.
+This is a dialect compatible with https://hibernate.org/orm/releases/6.5/[Hibernate 6.5] for the https://cloud.google.com/spanner/[Google Cloud Spanner] database service.
 The `SpannerDialect` produces SQL, DML, and DDL statements for most common entity types and relationships using standard Hibernate and Java Persistence annotations.
 
 Version 1.x and 2.x of this library supports Hibernate 5.4.
@@ -25,7 +25,7 @@ Maven coordinates for the dialect:
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
-  <version>3.2.0</version>
+  <version>3.4.0</version>
 </dependency>
 ----
 // {x-version-update-start:google-cloud-spanner-hibernate-dialect:released}
@@ -37,7 +37,7 @@ Maven coordinates for the official https://cloud.google.com/spanner/docs/open-so
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-jdbc</artifactId>
-  <version>2.16.0</version>
+  <version>2.18.0</version>
 </dependency>
 ----
 
@@ -70,7 +70,8 @@ You are now ready to begin using Hibernate with Cloud Spanner.
 
 == Examples
 
-To see some examples of using the dialect, please consult our https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples[sample applications] or try the https://codelabs.developers.google.com/codelabs/cloud-spanner-hibernate/[Cloud Spanner Hibernate codelab].
+To see a full working sample application for using the dialect, please see our
+https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/-/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample[Spring Data JPA sample application].
 
 == User Guide
 
@@ -106,6 +107,8 @@ Leaving out this annotation causes a `BYTES` column to be used.
 
 ==== Use @GeneratedValue for ID Generation
 
+__NOTE__: Read to the end of this section to see the recommended way to set up `@GeneratedValue`.
+
 Hibernate's `@GeneratedValue` annotation for numeric fields is supported, and will by default use a
 positive bit-reversed sequence. A bit-reversed sequence internally uses a monotonically increasing
 counter  that is reversed before being returned to Hibernate. This means that the identifiers that
@@ -116,7 +119,7 @@ are generated are in the form bitReversePositive(1), bitReversePositive(2), ...:
 public class Employee {
 
   @Id
-  @GeneratedValue   // Generates a bit-reversed sequence with an increment_size=1
+  @GeneratedValue   // Generates a bit-reversed sequence with an increment_size=1, this is not recommended!
   public Long id;
 }
 ----
