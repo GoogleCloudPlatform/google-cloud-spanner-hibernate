@@ -16,9 +16,10 @@
 
 	<profiles>
 		<profile>
-			<id>only-enable-spring-samples-when-jdk-17-or-later</id>
+			<id>samples-only-compatible-with-jdk-17-or-later</id>
 			<activation><jdk>[17,)</jdk></activation>
 			<modules>
+				<module>quarkus-jpa-sample</module>
 				<module>spring-data-jpa-sample</module>
 				<module>spring-data-jpa-full-sample</module>
 			</modules>
@@ -28,7 +29,6 @@
 	<modules>
 		<module>basic-hibernate-sample</module>
 		<module>microprofile-jpa-sample</module>
-		<module>quarkus-jpa-sample</module>
 		<module>spanner-hibernate-codelab</module>
 		<module>basic-spanner-features-sample</module>
 	</modules>
