@@ -1,9 +1,34 @@
 steps:
-  - name: maven:3-openjdk-11
+  - name: maven:3-eclipse-temurin-11
+    entrypoint: mvn
+    args: [ 'install', '-DskipTests', '--batch-mode' ]
+
+  - name: maven:3-eclipse-temurin-11
+    entrypoint: mvn
+    args: [
+      'verify',
+      '-f',
+      'google-cloud-spanner-hibernate-samples/pom.xml',
+      '-Dhibernate.connection.url=$_JDBC_URL_SAMPLES',
+      '-Dspring.datasource.url=$_JDBC_URL_SAMPLES',
+      '-Dquarkus.datasource.jdbc.url=$_JDBC_URL_SAMPLES'
+    ]
+
+  - name: maven:3-eclipse-temurin-11
+    entrypoint: mvn
+    args: [
+      'verify',
+      '-f',
+      'google-cloud-spanner-hibernate-testing/pom.xml',
+      '-Dhibernate.show_sql=false',
+      '-Dhibernate.connection.url=$_JDBC_URL_INTEGRATION'
+    ]
+
+  - name: maven:3-eclipse-temurin-17
     entrypoint: mvn
     args: ['install', '-DskipTests', '--batch-mode']
 
-  - name: maven:3-openjdk-11
+  - name: maven:3-eclipse-temurin-17
     entrypoint: mvn
     args: [
         'verify',
@@ -14,7 +39,7 @@ steps:
         '-Dquarkus.datasource.jdbc.url=$_JDBC_URL_SAMPLES'
     ]
 
-  - name: maven:3-openjdk-11
+  - name: maven:3-eclipse-temurin-17
     entrypoint: mvn
     args: [
         'verify',
