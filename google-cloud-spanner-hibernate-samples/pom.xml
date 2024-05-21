@@ -14,14 +14,23 @@
 	<artifactId>google-cloud-spanner-hibernate-samples</artifactId>
 	<packaging>pom</packaging>
 
+	<profiles>
+		<profile>
+			<id>only-enable-spring-samples-when-jdk-17-or-later</id>
+			<activation><jdk>[17,)</jdk></activation>
+			<modules>
+				<module>spring-data-jpa-sample</module>
+				<module>spring-data-jpa-full-sample</module>
+			</modules>
+		</profile>
+	</profiles>
+
 	<modules>
 		<module>basic-hibernate-sample</module>
-		<module>spring-data-jpa-sample</module>
 		<module>microprofile-jpa-sample</module>
 		<module>quarkus-jpa-sample</module>
 		<module>spanner-hibernate-codelab</module>
 		<module>basic-spanner-features-sample</module>
-		<module>spring-data-jpa-full-sample</module>
 	</modules>
 
 	<build>
