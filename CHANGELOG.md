@@ -1,6 +1,15 @@
 # Changelog
 
 
+## [3.4.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.4.0...v3.4.1) (2024-05-21)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.google.guava:guava to v33 ([#1073](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1073)) ([d4f755c](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/d4f755cc20f9fbb1a93e3d1ff9c0ea9e81051858))
+* **deps:** update dependency jakarta.enterprise:jakarta.enterprise.cdi-api to v4 ([#1080](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1080)) ([7741b23](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/7741b23c5bee7c9ca4bbf525cfc996f9985dd2a0))
+* **deps:** update hibernate.version to v6.5.2.final ([#1079](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1079)) ([e5449b4](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/e5449b4f349181f505cf90c2fcef1a4db88f3b26))
+
 ## [3.4.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.3.2...v3.4.0) (2024-05-16)
 
 
