@@ -37,6 +37,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: 17
+          distribution: temurin
       - name: Auth
         uses: google-github-actions/auth@v2
         with:
