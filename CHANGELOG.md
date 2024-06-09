@@ -1,6 +1,23 @@
 # Changelog
 
 
+## [3.4.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.4.1...v3.4.2) (2024-06-09)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.google.guava:guava to v33.2.1-jre ([#1108](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1108)) ([af0912f](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/af0912ffcb294626a4fd34bc7c6120739f24a7a1))
+* **deps:** update dependency io.opentelemetry:opentelemetry-bom to v1.39.0 ([#1127](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1127)) ([75b46c5](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/75b46c5620371f30198e3bcc8f0e09584468f052))
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#1095](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1095)) ([9bd958c](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/9bd958c5ddb920acc15fb45f2f3cceac2fc7aec1))
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#1120](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1120)) ([65f8b95](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/65f8b9579fe5bd86df619560c714668dea90c243))
+* bump org.apache.maven.plugins:maven-checkstyle-plugin ([#1124](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1124)) ([db4ca40](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/db4ca407af24011f71e93adb847c8572f6d7f497))
+* bump org.apache.maven.plugins:maven-javadoc-plugin ([#1117](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1117)) ([4d8cbe9](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/4d8cbe988c27d4d90339a686945c863c5c62100c))
+* bump org.sonatype.plugins:nexus-staging-maven-plugin ([#1105](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1105)) ([17e0a7c](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/17e0a7c1d265c6cac79433030124bf5b39c27d92))
+
 ## [3.4.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.4.0...v3.4.1) (2024-05-21)
 
 
