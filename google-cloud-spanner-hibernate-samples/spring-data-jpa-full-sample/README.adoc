@@ -59,6 +59,10 @@ This sample application showcases how to use the following features:
    `TransactionTagInterceptor` to your Hibernate configuration.
    See link:src/main/java/com/google/cloud/spanner/sample/TaggingHibernatePropertiesCustomizer.java[TaggingHibernatePropertiesCustomizer.java] for how this is done in this sample application.
 
-8. Add statement and query hints to generated queries. See the `findByActive` method in the
+8. Add statement tags to generated queries. See the `searchByLastNameStartsWith` method in
+   link:src/main/java/com/google/cloud/spanner/sample/repository/SingerRepository.java[SingerRepository.java]
+   for an example of how to add a statement tag.
+
+9. Add statement and query hints to generated queries. See the `findByActive` method in the
    link:src/main/java/com/google/cloud/spanner/sample/repository/SingerRepository.java[SingerRepository.java]
    file for an example.
