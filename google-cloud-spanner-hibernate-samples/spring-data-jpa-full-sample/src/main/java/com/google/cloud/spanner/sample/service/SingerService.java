@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.sample.service;
 
+import com.google.cloud.spanner.hibernate.TransactionTag;
 import com.google.cloud.spanner.sample.entities.Album;
 import com.google.cloud.spanner.sample.entities.Concert;
 import com.google.cloud.spanner.sample.entities.Singer;
@@ -93,6 +94,7 @@ public class SingerService {
 
   /** Generates the specified number of random singer records. */
   @Transactional
+  @TransactionTag("generate_random_singers")
   public List<Singer> generateRandomSingers(int count) {
     List<Singer> singers = new ArrayList<>(count);
     for (int i = 0; i < count; i++) {

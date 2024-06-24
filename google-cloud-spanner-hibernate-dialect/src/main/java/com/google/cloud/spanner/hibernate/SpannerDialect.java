@@ -350,11 +350,15 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   @Override
   public String addSqlHintOrComment(
       String sql, QueryOptions queryOptions, boolean commentsEnabled) {
-    if (hasCommentHint(queryOptions)) {
-      sql = applyHint(sql, queryOptions.getComment());
-    }
-    if (queryOptions.getDatabaseHints() != null && !queryOptions.getDatabaseHints().isEmpty()) {
-      sql = applyQueryHints(sql, queryOptions);
+    if (hasStatementHint(queryOptions)) {
+      sql = queryOptions.getComment() + sql;
+    } else {
+      if (hasCommentHint(queryOptions)) {
+        sql = applyHint(sql, queryOptions.getComment());
+      }
+      if (queryOptions.getDatabaseHints() != null && !queryOptions.getDatabaseHints().isEmpty()) {
+        sql = applyQueryHints(sql, queryOptions);
+      }
     }
     return super.addSqlHintOrComment(sql, queryOptions, commentsEnabled);
   }
@@ -389,5 +393,13 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
         && hint.contains("{")
         && hint.contains("}")
         && hint.contains(ReplaceQueryPartsHint.SPANNER_REPLACEMENTS_FIELD_NAME);
+  }
+
+  private static boolean hasStatementHint(QueryOptions queryOptions) {
+    return hasStatementHint(queryOptions.getComment());
+  }
+
+  private static boolean hasStatementHint(String hint) {
+    return !Strings.isNullOrEmpty(hint) && hint.startsWith("@{") && hint.endsWith("}");
   }
 }

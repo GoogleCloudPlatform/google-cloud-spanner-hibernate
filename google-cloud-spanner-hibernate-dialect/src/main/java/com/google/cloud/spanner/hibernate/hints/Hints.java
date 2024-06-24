@@ -122,6 +122,16 @@ public class Hints {
   }
 
   /**
+   * Creates a hint that adds @{STATEMENT_TAG=value} to the statement.
+   *
+   * @param tag the statement tag to add to the statement
+   * @return a hint that can be added as a comment or query hint to a Hibernate statement
+   */
+  public static ReplaceQueryPartsHint statementTag(String tag) {
+    return statementHint("STATEMENT_TAG", tag);
+  }
+
+  /**
    * Creates a hint that adds @{USE_ADDITIONAL_PARALLELISM=value} to the statement.
    *
    * @param value the hint value

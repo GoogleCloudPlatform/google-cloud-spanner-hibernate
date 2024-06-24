@@ -670,6 +670,13 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                                 .build())
                         .build())
                 .build()));
+
+    // Add results for selecting albums.
+    String selectAlbumsSql =
+        "select a1_0.id,a1_0.cover_picture,a1_0.created_at,a1_0.marketing_budget,a1_0.release_date,a1_0.singer_id,a1_0.title,a1_0.updated_at from album a1_0 where a1_0.title=@p1";
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(selectAlbumsSql).bind("p1").to("Foo").build(), empty()));
   }
 
   @Test
@@ -750,7 +757,27 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                     request
                         .getRequestOptions()
                         .getTransactionTag()
-                        .equals("service_SingerService_generateRandomSingers"))
+                        .equals("generate_random_singers"))
+            .count());
+    assertEquals(
+        1,
+        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
+            .filter(
+                request ->
+                    request
+                        .getRequestOptions()
+                        .getTransactionTag()
+                        .equals("generate_random_albums"))
+            .count());
+    assertEquals(
+        3,
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+            .filter(
+                request ->
+                    request
+                        .getRequestOptions()
+                        .getRequestTag()
+                        .equals("search_singers_by_last_name_starts_with"))
             .count());
   }
 

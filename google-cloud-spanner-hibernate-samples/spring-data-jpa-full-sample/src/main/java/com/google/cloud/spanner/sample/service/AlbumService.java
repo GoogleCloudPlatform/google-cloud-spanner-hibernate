@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.sample.service;
 
+import com.google.cloud.spanner.hibernate.TransactionTag;
 import com.google.cloud.spanner.sample.entities.Album;
 import com.google.cloud.spanner.sample.entities.Singer;
 import com.google.cloud.spanner.sample.repository.AlbumRepository;
@@ -52,6 +53,10 @@ public class AlbumService {
     this.singerRepository = singerRepository;
   }
 
+  public List<Album> getAlbums(String title) {
+    return this.albumRepository.getAlbumsByTitle(title);
+  }
+
   /** Deletes all Album records in the database. */
   @Transactional
   public void deleteAllAlbums() {
@@ -60,6 +65,7 @@ public class AlbumService {
 
   /** Generates the specified number of random Album records. */
   @Transactional
+  @TransactionTag("generate_random_albums")
   public List<Album> generateRandomAlbums(int count) {
     Random random = new Random();
 
