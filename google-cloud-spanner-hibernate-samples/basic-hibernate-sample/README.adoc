@@ -1,7 +1,9 @@
 = Cloud Spanner Hibernate Example
 
-This sample application demonstrates using https://hibernate.org/[Hibernate] with https://cloud.google.com/spanner/[Google Cloud Spanner].
+This sample application demonstrates the basics of using https://hibernate.org/[Hibernate] with https://cloud.google.com/spanner/[Google Cloud Spanner].
 
+See https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample[this Cloud Spanner Spring Data JPA with Hibernate Sample]
+for a sample application that shows all available Spanner features that can be used with Hibernate.
 
 == Setup & Configuration
 1. Create a Google Cloud Platform Project
