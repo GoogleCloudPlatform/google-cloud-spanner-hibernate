@@ -19,6 +19,19 @@
 package com.google.cloud.spanner.sample.repository;
 
 import com.google.cloud.spanner.sample.entities.Album;
+import jakarta.persistence.QueryHint;
+import java.util.List;
+import org.hibernate.jpa.AvailableHints;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.QueryHints;
 
-public interface AlbumRepository extends JpaRepository<Album, String> {}
+public interface AlbumRepository extends JpaRepository<Album, String> {
+
+  // Statement hints, for example hints for adding a statement tag, can be added directly as a
+  // simple comment.
+  @QueryHints(
+      @QueryHint(
+          name = AvailableHints.HINT_COMMENT,
+          value = "@{STATEMENT_TAG=get_albums_by_title}"))
+  List<Album> getAlbumsByTitle(String title);
+}

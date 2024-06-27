@@ -172,6 +172,22 @@ public class HintsTest {
   }
 
   @Test
+  public void testStatementTag() {
+    assertEquals(
+        "@{STATEMENT_TAG=my_tag}select * from singers",
+        Hints.statementTag("my_tag").replace("select * from singers"));
+    assertEquals(
+        "@{STATEMENT_TAG=other_tag}SELECT * from singers",
+        Hints.statementTag("other_tag").replace("SELECT * from singers"));
+    assertEquals(
+        "@{STATEMENT_TAG=insert_singer}" + "insert into singers (id, value) SELECT * from singers",
+        Hints.statementTag("insert_singer")
+            .replace("insert into singers (id, value) SELECT * from singers"));
+
+    System.out.println(Hints.statementTag("get_albums_by_title").toComment());
+  }
+
+  @Test
   public void testUseAdditionalParallelism() {
     assertEquals(
         "@{USE_ADDITIONAL_PARALLELISM=true}select * from singers",
