@@ -20,7 +20,6 @@
 			<activation><jdk>[17,)</jdk></activation>
 			<modules>
 				<module>quarkus-jpa-sample</module>
-				<module>spring-data-jpa-sample</module>
 				<module>spring-data-jpa-full-sample</module>
 			</modules>
 		</profile>

@@ -1,5 +1,8 @@
 = Cloud Spanner Quarkus JPA and Panache with Hibernate Sample
 
+See https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample[this Cloud Spanner Spring Data JPA with Hibernate Sample]
+for a sample application that shows all available Spanner features that can be used with Hibernate.
+
 WARNING: This sample temporarily does not work; it hangs when trying to acquire Spanner sessions. See https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/373 for context.
 
 This sample application demonstrates using https://quarkus.io/[Quarkus] with https://quarkus.io/guides/hibernate-orm[JPA], https://quarkus.io/guides/hibernate-orm-panache[Panache] and https://cloud.google.com/spanner/[Google Cloud Spanner].

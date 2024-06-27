@@ -2,6 +2,9 @@
 
 This is the solution for the https://codelabs.developers.google.com/codelabs/cloud-spanner-hibernate[Cloud Spanner with Hibernate ORM Codelab].
 
+See https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample[this Cloud Spanner Spring Data JPA with Hibernate Sample]
+for a sample application that shows all available Spanner features that can be used with Hibernate.
+
 == Setup & Configuration
 1. Create a Google Cloud Platform project.
 2. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account] with Cloud Spanner permission.
