@@ -1,6 +1,28 @@
 # Changelog
 
 
+## [3.5.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.4.2...v3.5.0) (2024-06-28)
+
+
+### Features
+
+* support statement tags ([#1157](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1157)) ([aa3efb6](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/aa3efb6dfc43533205e7ba8967c1aa2614a95193))
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#1133](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1133)) ([f045bd8](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/f045bd837ba497280e44e015bd9944a3d999c718))
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#1154](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1154)) ([054c935](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/054c935af781645b57c669f9d43b409099d9bbe7))
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#1167](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1167)) ([eedef97](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/eedef9750d7b0c5e35fa0add810d14d213f77ed6))
+* bump org.apache.maven.plugins:maven-failsafe-plugin ([#1140](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1140)) ([02c3b18](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/02c3b187a8d814a18029718108068cb0bd56c18b))
+* bump org.apache.maven.plugins:maven-jar-plugin ([#1147](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1147)) ([1b2a3d0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/1b2a3d0bbbe5043754ce898ab36e66cd41728490))
+* bump org.apache.maven.plugins:maven-surefire-plugin ([#1139](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1139)) ([871bd39](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/871bd39e790275625dfbfe24223d1c671ba0087b))
+
+
+### Documentation
+
+* fix typo in hint in README ([#1156](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1156)) ([756ed50](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/756ed501333bd836d7abc19db62285884bd313ed))
+
 ## [3.4.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.4.1...v3.4.2) (2024-06-09)
 
 
