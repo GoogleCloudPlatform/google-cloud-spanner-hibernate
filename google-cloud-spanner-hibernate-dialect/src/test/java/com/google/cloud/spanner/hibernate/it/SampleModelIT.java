@@ -476,6 +476,7 @@ public class SampleModelIT {
       saved.setColBytes("test".getBytes(StandardCharsets.UTF_8));
       saved.setColDate(LocalDate.of(2024, 2, 2));
       saved.setColFloat64(3.14d);
+      saved.setColFloat32(2.71f);
       saved.setColInt64(100L);
       saved.setColJson("{\"key\":\"value\"}");
       saved.setColNumeric(new BigDecimal("6.626"));
@@ -490,6 +491,7 @@ public class SampleModelIT {
       saved.setColDateArray(
           Arrays.asList(LocalDate.of(2000, 1, 1), null, LocalDate.of(1970, 1, 1)));
       saved.setColFloat64Array(Arrays.asList(3.14d, null, 6.626d));
+      saved.setColFloat32Array(Arrays.asList(2.71f, null, 6.022f));
       saved.setColInt64Array(Arrays.asList(1L, null, 2L));
       saved.setColJsonArray(Arrays.asList("{\"key\":\"value1\"}", null, "{\"key\":\"value2\"}"));
       saved.setColNumericArray(Arrays.asList(BigDecimal.ZERO, null, BigDecimal.TEN));
@@ -509,6 +511,7 @@ public class SampleModelIT {
       assertArrayEquals(saved.getColBytes(), fetched.getColBytes());
       assertEquals(saved.getColDate(), fetched.getColDate());
       assertEquals(saved.getColFloat64(), fetched.getColFloat64());
+      assertEquals(saved.getColFloat32(), fetched.getColFloat32());
       assertEquals(saved.getColInt64(), fetched.getColInt64());
       assertEquals(saved.getColJson(), fetched.getColJson());
       assertEquals(saved.getColNumeric(), fetched.getColNumeric());
@@ -521,6 +524,7 @@ public class SampleModelIT {
       }
       assertEquals(saved.getColDateArray(), fetched.getColDateArray());
       assertEquals(saved.getColFloat64Array(), fetched.getColFloat64Array());
+      assertEquals(saved.getColFloat32Array(), fetched.getColFloat32Array());
       assertEquals(saved.getColInt64Array(), fetched.getColInt64Array());
       assertEquals(saved.getColJsonArray(), fetched.getColJsonArray());
       assertEquals(saved.getColNumericArray(), fetched.getColNumericArray());

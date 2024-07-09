@@ -133,7 +133,7 @@ sequence in the database.
 
 The `increment_size` for this pooled generator can not exceed 200.
 
-This is the **recommended configuration** for bit-reversed sequences: 
+This is the **recommended configuration** for bit-reversed sequences:
 
 [source, java]
 ----
@@ -318,6 +318,7 @@ This project offers the following Hibernate type mappings for specific Spanner c
 | `ARRAY<BOOL>`      | `com.google.cloud.spanner.hibernate.types.SpannerBoolArray`
 | `ARRAY<BYTES>`     | `com.google.cloud.spanner.hibernate.types.SpannerBytesArray`
 | `ARRAY<DATE>`      | `com.google.cloud.spanner.hibernate.types.SpannerDateArray`
+| `ARRAY<FLOAT32>`   | `com.google.cloud.spanner.hibernate.types.SpannerFloat32Array`
 | `ARRAY<FLOAT64>`   | `com.google.cloud.spanner.hibernate.types.SpannerFloat64Array`
 | `ARRAY<INT64>`     | `com.google.cloud.spanner.hibernate.types.SpannerInt64Array`
 | `ARRAY<JSON>`      | `com.google.cloud.spanner.hibernate.types.SpannerJsonArray`
