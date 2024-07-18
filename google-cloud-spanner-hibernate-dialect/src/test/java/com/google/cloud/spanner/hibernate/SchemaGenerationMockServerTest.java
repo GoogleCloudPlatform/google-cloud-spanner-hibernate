@@ -482,6 +482,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
                 + "`ID1` int64 not null,"
                 + "id2 string(255) not null,"
                 + "`boolColumn` bool,"
+                + "floatVal float32 not null,"
+                + "floatValStoredAsDouble float64 not null,"
                 + "longVal int64 not null,"
                 + "stringVal string(255)) PRIMARY KEY (`ID1`,id2)",
             request.getStatements(++index));
@@ -503,6 +505,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         assertEquals(
             "create table `test_table` ("
                 + "`boolColumn` bool,"
+                + "floatVal float32 not null,"
+                + "floatValStoredAsDouble float64 not null,"
                 + "`ID1` int64 not null,"
                 + "longVal int64 not null,"
                 + "id2 string(255) not null,"

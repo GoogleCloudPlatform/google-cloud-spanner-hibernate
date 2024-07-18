@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.hibernate;
 
+import static java.sql.Types.REAL;
 import static org.hibernate.type.SqlTypes.DECIMAL;
 import static org.hibernate.type.SqlTypes.JSON;
 import static org.hibernate.type.SqlTypes.NUMERIC;
@@ -188,6 +189,16 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
     }
     if (sqlTypeCode == JSON) {
       return "json";
+    }
+    // The JDBC spec is a bit confusing here.
+    // DOUBLE == FLOAT == 64 bit
+    // REAL == 32 bit
+    // The default Hibernate implementation did not really get this right, as it uses
+    // java.sql.Types.FLOAT for java.lang.Float. It should have been java.sql.Types.REAL.
+    // This dialect follows the default Hibernate implementation, and in order to actually
+    // use a float32, you need to annotate the column with the JDBC type code REAL.
+    if (sqlTypeCode == REAL) {
+      return "float32";
     }
     return super.columnType(sqlTypeCode);
   }
