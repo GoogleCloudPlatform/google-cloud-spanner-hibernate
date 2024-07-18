@@ -536,6 +536,7 @@ public class SampleModelIT {
       // Verify that float32 is actually used.
       session.doWork(
           connection -> {
+            connection.setAutoCommit(true);
             try (ResultSet column =
                 connection
                     .createStatement()
@@ -544,6 +545,8 @@ public class SampleModelIT {
               assertTrue(column.next());
               assertEquals("FLOAT32", column.getString(1));
               assertFalse(column.next());
+            } finally {
+              connection.createStatement().execute("reset all");
             }
           });
     }
