@@ -536,6 +536,7 @@ public class SampleModelIT {
       // Verify that float32 is actually used.
       session.doWork(
           connection -> {
+            connection.setAutoCommit(true);
             try (ResultSet column =
                 connection
                     .createStatement()
@@ -544,6 +545,8 @@ public class SampleModelIT {
               assertTrue(column.next());
               assertEquals("FLOAT32", column.getString(1));
               assertFalse(column.next());
+            } finally {
+              connection.createStatement().execute("reset all");
             }
           });
     }
@@ -580,7 +583,10 @@ public class SampleModelIT {
           exception.getMessage(),
           exception
               .getMessage()
-              .contains("does not have a secondary index called idx_does_not_exist"));
+              .contains("does not have a secondary index called idx_does_not_exist")
+              || exception
+              .getMessage()
+              .contains("does not have an index called idx_does_not_exist"));
 
       Query<Singer> joinMethodQuery =
           session
