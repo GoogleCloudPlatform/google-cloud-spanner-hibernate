@@ -10,7 +10,7 @@
 
   <properties>
     <apache.lang.version>3.15.0</apache.lang.version>
-    <spanner.version>6.70.0</spanner.version>
+    <spanner.version>6.71.0</spanner.version>
   </properties>
 
   <modelVersion>4.0.0</modelVersion>
