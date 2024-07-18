@@ -583,7 +583,10 @@ public class SampleModelIT {
           exception.getMessage(),
           exception
               .getMessage()
-              .contains("does not have a secondary index called idx_does_not_exist"));
+              .contains("does not have a secondary index called idx_does_not_exist")
+              || exception
+              .getMessage()
+              .contains("does not have an index called idx_does_not_exist"));
 
       Query<Singer> joinMethodQuery =
           session
