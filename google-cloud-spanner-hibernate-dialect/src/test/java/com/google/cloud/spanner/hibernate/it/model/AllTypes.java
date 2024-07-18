@@ -21,6 +21,7 @@ package com.google.cloud.spanner.hibernate.it.model;
 import com.google.cloud.spanner.hibernate.types.SpannerBoolArray;
 import com.google.cloud.spanner.hibernate.types.SpannerBytesArray;
 import com.google.cloud.spanner.hibernate.types.SpannerDateArray;
+import com.google.cloud.spanner.hibernate.types.SpannerFloat32Array;
 import com.google.cloud.spanner.hibernate.types.SpannerFloat64Array;
 import com.google.cloud.spanner.hibernate.types.SpannerInt64Array;
 import com.google.cloud.spanner.hibernate.types.SpannerJsonArray;
@@ -30,9 +31,11 @@ import com.google.cloud.spanner.hibernate.types.SpannerTimestampArray;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import java.math.BigDecimal;
+import java.sql.Types;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 
 /** Test entity for mapping all supported types. */
@@ -48,6 +51,9 @@ public class AllTypes extends AbstractBaseEntity {
   private LocalDate colDate;
 
   private Double colFloat64;
+
+  @JdbcTypeCode(Types.REAL)
+  private Float colFloat32;
 
   private Long colInt64;
 
@@ -70,6 +76,9 @@ public class AllTypes extends AbstractBaseEntity {
 
   @Type(SpannerFloat64Array.class)
   private List<Double> colFloat64Array;
+
+  @Type(SpannerFloat32Array.class)
+  private List<Float> colFloat32Array;
 
   @Type(SpannerInt64Array.class)
   private List<Long> colInt64Array;
@@ -125,6 +134,14 @@ public class AllTypes extends AbstractBaseEntity {
 
   public void setColFloat64(Double colFloat64) {
     this.colFloat64 = colFloat64;
+  }
+
+  public Float getColFloat32() {
+    return colFloat32;
+  }
+
+  public void setColFloat32(Float colFloat32) {
+    this.colFloat32 = colFloat32;
   }
 
   public Long getColInt64() {
@@ -197,6 +214,14 @@ public class AllTypes extends AbstractBaseEntity {
 
   public void setColFloat64Array(List<Double> colFloat64Array) {
     this.colFloat64Array = colFloat64Array;
+  }
+
+  public List<Float> getColFloat32Array() {
+    return colFloat32Array;
+  }
+
+  public void setColFloat32Array(List<Float> colFloat32Array) {
+    this.colFloat32Array = colFloat32Array;
   }
 
   public List<Long> getColInt64Array() {

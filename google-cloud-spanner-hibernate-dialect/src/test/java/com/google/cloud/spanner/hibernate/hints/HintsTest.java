@@ -183,8 +183,6 @@ public class HintsTest {
         "@{STATEMENT_TAG=insert_singer}" + "insert into singers (id, value) SELECT * from singers",
         Hints.statementTag("insert_singer")
             .replace("insert into singers (id, value) SELECT * from singers"));
-
-    System.out.println(Hints.statementTag("get_albums_by_title").toComment());
   }
 
   @Test
