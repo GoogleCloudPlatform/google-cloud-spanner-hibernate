@@ -48,9 +48,7 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -58,14 +56,10 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.checkerframework.checker.initialization.qual.Initialized;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.jdbc.Work;
 import org.hibernate.query.Query;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -538,15 +532,20 @@ public class SampleModelIT {
       assertEquals(saved.getColNumericArray(), fetched.getColNumericArray());
       assertEquals(saved.getColStringArray(), fetched.getColStringArray());
       assertEquals(saved.getColTimestampArray(), fetched.getColTimestampArray());
-      
+
       // Verify that float32 is actually used.
-      session.doWork(connection -> {
-        try (ResultSet column = connection.createStatement().executeQuery("select spanner_type from information_schema.columns where table_schema='' and table_name='AllTypes' and column_name='colFloat32'")) {
-          assertTrue(column.next());
-          assertEquals("FLOAT32", column.getString(1));
-          assertFalse(column.next());
-        }
-      });
+      session.doWork(
+          connection -> {
+            try (ResultSet column =
+                connection
+                    .createStatement()
+                    .executeQuery(
+                        "select spanner_type from information_schema.columns where table_schema='' and table_name='AllTypes' and column_name='colFloat32'")) {
+              assertTrue(column.next());
+              assertEquals("FLOAT32", column.getString(1));
+              assertFalse(column.next());
+            }
+          });
     }
   }
 
