@@ -25,7 +25,9 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import java.io.Serializable;
+import java.sql.Types;
 import java.util.List;
+import org.hibernate.annotations.JdbcTypeCode;
 
 /**
  * A test entity class used for generating schema statements.
@@ -45,6 +47,16 @@ public class TestEntity {
   public boolean boolVal;
 
   public long longVal;
+
+  // Types.REAL is the JDBC equivalent of a single-precision floating point number.
+  // This is translated to float32 in Spanner.
+  @JdbcTypeCode(Types.REAL)
+  public float floatVal;
+
+  // Hibernate translates java.lang.float to Types.FLOAT.
+  // According to the JDBC spec, Types.FLOAT == Types.DOUBLE.
+  // That means that this column is stored as a float64 in Spanner.
+  public float floatValStoredAsDouble;
 
   @ElementCollection List<String> stringList;
 

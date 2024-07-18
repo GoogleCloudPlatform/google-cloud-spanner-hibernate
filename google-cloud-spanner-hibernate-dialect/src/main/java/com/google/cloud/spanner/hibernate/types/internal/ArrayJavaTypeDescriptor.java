@@ -141,6 +141,8 @@ public class ArrayJavaTypeDescriptor extends AbstractClassJavaType<List<?>>
       return Code.INT64;
     } else if (Double.class.isAssignableFrom(javaType)) {
       return Code.FLOAT64;
+    } else if (Float.class.isAssignableFrom(javaType)) {
+      return Code.FLOAT32;
     } else if (String.class.isAssignableFrom(javaType)) {
       return Code.STRING;
     } else if (UUID.class.isAssignableFrom(javaType)) {
