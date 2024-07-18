@@ -37,7 +37,7 @@ Maven coordinates for the official https://cloud.google.com/spanner/docs/open-so
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-jdbc</artifactId>
-  <version>2.18.0</version>
+  <version>2.20.1</version>
 </dependency>
 ----
 
@@ -118,8 +118,10 @@ are generated are in the form bitReversePositive(1), bitReversePositive(2), ...:
 @Entity
 public class Employee {
 
+  // Generates a bit-reversed sequence with an increment_size=1.
+  // This is not recommended!
   @Id
-  @GeneratedValue   // Generates a bit-reversed sequence with an increment_size=1, this is not recommended!
+  @GeneratedValue   
   public Long id;
 }
 ----
@@ -145,7 +147,8 @@ public class Employee {
   @GenericGenerator(
     name = "employeeId",
     // Use this custom strategy to ensure the use of a bit-reversed sequence that is compatible with
-    // batching multiple inserts. See also https://docs.jboss.org/hibernate/orm/5.4/userguide/html_single/Hibernate_User_Guide.html#batch.
+    // batching multiple inserts.
+    // See also https://docs.jboss.org/hibernate/orm/5.4/userguide/html_single/Hibernate_User_Guide.html#batch.
     strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
     parameters = {
       // Use a separate sequence name for each entity.

@@ -29,6 +29,9 @@ import org.hibernate.SessionFactory;
  * connection (such as setting it to read-only), newly created sessions may unexpectedly inherit
  * settings made by previous sessions. Therefore, it helps to have a wrapper class to manage
  * creating new sessions, such as this.
+ *
+ * <p>You can reset the state of a JDBC connection to its default by executing the SQL statement
+ * RESET ALL.
  */
 public class SessionHelper {
 
