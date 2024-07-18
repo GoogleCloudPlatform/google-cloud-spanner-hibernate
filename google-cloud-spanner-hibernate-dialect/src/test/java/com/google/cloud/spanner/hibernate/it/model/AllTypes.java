@@ -31,9 +31,11 @@ import com.google.cloud.spanner.hibernate.types.SpannerTimestampArray;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import java.math.BigDecimal;
+import java.sql.Types;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 
 /** Test entity for mapping all supported types. */
@@ -50,6 +52,7 @@ public class AllTypes extends AbstractBaseEntity {
 
   private Double colFloat64;
 
+  @JdbcTypeCode(Types.REAL)
   private Float colFloat32;
 
   private Long colInt64;
