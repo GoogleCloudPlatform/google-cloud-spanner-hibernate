@@ -9,7 +9,7 @@
   </parent>
 
   <properties>
-    <apache.lang.version>3.15.0</apache.lang.version>
+    <apache.lang.version>3.16.0</apache.lang.version>
     <spanner.version>6.71.0</spanner.version>
   </properties>
 
