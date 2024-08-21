@@ -43,6 +43,7 @@ import com.google.spanner.v1.TypeCode;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -250,52 +251,59 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putStatementResults(
         StatementResult.query(
             Statement.of(
-                "select ts1_0.id,ts1_0.concert_id,ts1_0.created_at,ts1_0.customer_name,ts1_0.price,ts1_0.seats,ts1_0.updated_at from ticket_sale ts1_0"),
+                "select ts1_0.id,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',ts1_0.concert_id,ts1_0.created_at,ts1_0.customer_name,ts1_0.price,ts1_0.seats,ts1_0.updated_at from ticket_sale ts1_0"),
             empty()));
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.of(
-                "select c1_0.id,c1_0.created_at,c1_0.end_time,c1_0.name,c1_0.singer_id,c1_0.start_time,c1_0.updated_at,c1_0.venue_id from concert c1_0"),
+                "select c1_0.id,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',c1_0.created_at,c1_0.end_time,c1_0.name,c1_0.singer_id,c1_0.start_time,c1_0.updated_at,c1_0.venue_id from concert c1_0"),
             empty()));
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.of(
-                "select a1_0.id,a1_0.cover_picture,a1_0.created_at,a1_0.marketing_budget,a1_0.release_date,a1_0.singer_id,a1_0.title,a1_0.updated_at from album a1_0"),
+                "select a1_0.id,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',a1_0.cover_picture,a1_0.created_at,a1_0.marketing_budget,a1_0.release_date,a1_0.singer_id,a1_0.title,a1_0.updated_at from album a1_0"),
             empty()));
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.of(
-                "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0"),
+                "select s1_0.id,s1_0.active,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0"),
             empty()));
 
     // Add results for the insert statements.
     mockSpanner.putPartialStatementResult(
         StatementResult.update(
             Statement.of(
-                "insert into singer (active,created_at,first_name,last_name,nick_names,updated_at,id) values (@p1,@p2,@p3,@p4,@p5,@p6,@p7)"),
+                "insert into singer (active,commit_timestamp_created,created_at,first_name,last_name,nick_names,updated_at,id) values (@p1,pending_commit_timestamp(),@p2,@p3,@p4,@p5,@p6,@p7)"),
             1L));
     mockSpanner.putPartialStatementResult(
         StatementResult.update(
             Statement.of(
-                "insert into album (cover_picture,created_at,marketing_budget,release_date,singer_id,title,updated_at,id) values (@p1,@p2,@p3,@p4,@p5,@p6,@p7,@p8)"),
+                "insert into album (commit_timestamp_created,cover_picture,created_at,marketing_budget,release_date,singer_id,title,updated_at,id) values (pending_commit_timestamp(),@p1,@p2,@p3,@p4,@p5,@p6,@p7,@p8)"),
             1L));
     mockSpanner.putPartialStatementResult(
         StatementResult.update(
             Statement.of(
-                "insert into track (created_at,sample_rate,title,updated_at,id,track_number) values (@p1,@p2,@p3,@p4,@p5,@p6)"),
+                "insert into track (commit_timestamp_created,created_at,sample_rate,title,updated_at,id,track_number) values (pending_commit_timestamp(),@p1,@p2,@p3,@p4,@p5,@p6)"),
             1L));
     mockSpanner.putPartialStatementResult(
         StatementResult.update(
             Statement.of(
-                "insert into venue (created_at,description,name,updated_at,id) values (@p1,@p2,@p3,@p4,@p5)"),
+                "insert into venue (commit_timestamp_created,created_at,description,name,updated_at,id) values (pending_commit_timestamp(),@p1,@p2,@p3,@p4,@p5)"),
             1L));
     mockSpanner.putPartialStatementResult(
         StatementResult.update(
-            Statement.of("update venue set description=@p1,updated_at=@p2 where id=@p3"), 1L));
+            Statement.of(
+                "update venue set commit_timestamp_updated=pending_commit_timestamp(),description=@p1,updated_at=@p2 where id=@p3"),
+            1L));
     mockSpanner.putPartialStatementResult(
         StatementResult.update(
             Statement.of(
-                "insert into concert (created_at,end_time,name,singer_id,start_time,updated_at,venue_id,id) values (@p1,@p2,@p3,@p4,@p5,@p6,@p7,@p8)"),
+                "insert into concert (commit_timestamp_created,created_at,end_time,name,singer_id,start_time,updated_at,venue_id,id) values (pending_commit_timestamp(),@p1,@p2,@p3,@p4,@p5,@p6,@p7,@p8)"),
+            1L));
+    mockSpanner.putPartialStatementResult(
+        StatementResult.update(
+            Statement.of(
+                "update singer set active=@p1,commit_timestamp_updated=pending_commit_timestamp(),updated_at=@p2 where id=@p3"),
             1L));
 
     // Add results for selecting singers.
@@ -315,6 +323,16 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                                 Field.newBuilder()
                                     .setName("active")
                                     .setType(Type.newBuilder().setCode(TypeCode.BOOL).build())
+                                    .build())
+                            .addFields(
+                                Field.newBuilder()
+                                    .setName("")
+                                    .setType(Type.newBuilder().setCode(TypeCode.TIMESTAMP).build())
+                                    .build())
+                            .addFields(
+                                Field.newBuilder()
+                                    .setName("")
+                                    .setType(Type.newBuilder().setCode(TypeCode.TIMESTAMP).build())
                                     .build())
                             .addFields(
                                 Field.newBuilder()
@@ -357,6 +375,8 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                 ListValue.newBuilder()
                     .addValues(Value.newBuilder().setStringValue(singerId.toString()).build())
                     .addValues(Value.newBuilder().setBoolValue(true).build())
+                    .addValues(Value.newBuilder().setStringValue("0001-01-01T00:00:00Z").build())
+                    .addValues(Value.newBuilder().setStringValue("0001-01-01T00:00:00Z").build())
                     .addValues(
                         Value.newBuilder()
                             .setStringValue(OffsetDateTime.now(ZoneId.of("UTC")).toString())
@@ -381,7 +401,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(
-                    "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0 limit @p1 offset @p2")
+                    "select s1_0.id,s1_0.active,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0 limit @p1 offset @p2")
                 .bind("p1")
                 .to(20L)
                 .bind("p2")
@@ -391,7 +411,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(
-                    "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0 where s1_0.id=@p1")
+                    "select s1_0.id,s1_0.active,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0 where s1_0.id=@p1")
                 .bind("p1")
                 .to(singerId.toString())
                 .build(),
@@ -399,12 +419,12 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putPartialStatementResult(
         StatementResult.query(
             Statement.of(
-                "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0 where starts_with(s1_0.last_name,@p1)=true"),
+                "select s1_0.id,s1_0.active,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer s1_0 where starts_with(s1_0.last_name,@p1)=true"),
             singerResultSet));
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(
-                    "select s1_0.id,s1_0.active,s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer @{FORCE_INDEX=idx_singer_active} s1_0 where s1_0.active=@p1")
+                    "select s1_0.id,s1_0.active,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',s1_0.created_at,s1_0.first_name,s1_0.full_name,s1_0.last_name,s1_0.nick_names,s1_0.updated_at from singer @{FORCE_INDEX=idx_singer_active} s1_0 where s1_0.active=@p1")
                 .bind("p1")
                 .to(true)
                 .build(),
@@ -421,6 +441,16 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                                 Field.newBuilder()
                                     .setName("id")
                                     .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
+                                    .build())
+                            .addFields(
+                                Field.newBuilder()
+                                    .setName("")
+                                    .setType(Type.newBuilder().setCode(TypeCode.TIMESTAMP).build())
+                                    .build())
+                            .addFields(
+                                Field.newBuilder()
+                                    .setName("")
+                                    .setType(Type.newBuilder().setCode(TypeCode.TIMESTAMP).build())
                                     .build())
                             .addFields(
                                 Field.newBuilder()
@@ -463,6 +493,8 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                 ListValue.newBuilder()
                     .addValues(
                         Value.newBuilder().setStringValue(UUID.randomUUID().toString()).build())
+                    .addValues(Value.newBuilder().setStringValue("0001-01-01T00:00:00Z").build())
+                    .addValues(Value.newBuilder().setStringValue("0001-01-01T00:00:00Z").build())
                     .addValues(
                         Value.newBuilder()
                             .setStringValue(
@@ -485,7 +517,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(
-                    "select a1_0.id,a1_0.cover_picture,a1_0.created_at,a1_0.marketing_budget,a1_0.release_date,a1_0.singer_id,a1_0.title,a1_0.updated_at from album a1_0 limit @p1 offset @p2")
+                    "select a1_0.id,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',a1_0.cover_picture,a1_0.created_at,a1_0.marketing_budget,a1_0.release_date,a1_0.singer_id,a1_0.title,a1_0.updated_at from album a1_0 limit @p1 offset @p2")
                 .bind("p1")
                 .to(30L)
                 .bind("p2")
@@ -495,7 +527,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(
-                    "select a1_0.singer_id,a1_0.id,a1_0.cover_picture,a1_0.created_at,a1_0.marketing_budget,a1_0.release_date,a1_0.title,a1_0.updated_at from album a1_0 where a1_0.singer_id=@p1")
+                    "select a1_0.singer_id,a1_0.id,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',a1_0.cover_picture,a1_0.created_at,a1_0.marketing_budget,a1_0.release_date,a1_0.title,a1_0.updated_at from album a1_0 where a1_0.singer_id=@p1")
                 .bind("p1")
                 .to(singerId.toString())
                 .build(),
@@ -513,6 +545,18 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                                     Field.newBuilder()
                                         .setName("id")
                                         .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
+                                        .build())
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("")
+                                        .setType(
+                                            Type.newBuilder().setCode(TypeCode.TIMESTAMP).build())
+                                        .build())
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("")
+                                        .setType(
+                                            Type.newBuilder().setCode(TypeCode.TIMESTAMP).build())
                                         .build())
                                 .addFields(
                                     Field.newBuilder()
@@ -555,6 +599,10 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                         .addValues(
                             Value.newBuilder().setStringValue(UUID.randomUUID().toString()).build())
                         .addValues(
+                            Value.newBuilder().setStringValue("0001-01-01T00:00:00Z").build())
+                        .addValues(
+                            Value.newBuilder().setStringValue("0001-01-01T00:00:00Z").build())
+                        .addValues(
                             Value.newBuilder()
                                 .setStringValue(
                                     Base64.getEncoder().encodeToString(new byte[] {1, 2, 3}))
@@ -576,14 +624,14 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putPartialStatementResult(
         StatementResult.query(
             Statement.of(
-                "select t1_0.id,t1_0.track_number,t1_0.created_at,t1_0.sample_rate,t1_0.title,t1_0.updated_at from track t1_0 where t1_0.id=@p1"),
+                "select t1_0.id,t1_0.track_number,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',t1_0.created_at,t1_0.sample_rate,t1_0.title,t1_0.updated_at from track t1_0 where t1_0.id=@p1"),
             empty()));
 
     // Add results for selecting venues.
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.of(
-                "select v1_0.id,v1_0.created_at,v1_0.description,v1_0.name,v1_0.updated_at from venue v1_0"),
+                "select v1_0.id,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',v1_0.created_at,v1_0.description,v1_0.name,v1_0.updated_at from venue v1_0"),
             ResultSet.newBuilder()
                 .setMetadata(
                     ResultSetMetadata.newBuilder()
@@ -593,6 +641,18 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                                     Field.newBuilder()
                                         .setName("id")
                                         .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
+                                        .build())
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("")
+                                        .setType(
+                                            Type.newBuilder().setCode(TypeCode.TIMESTAMP).build())
+                                        .build())
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("")
+                                        .setType(
+                                            Type.newBuilder().setCode(TypeCode.TIMESTAMP).build())
                                         .build())
                                 .addFields(
                                     Field.newBuilder()
@@ -623,6 +683,10 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                         .addValues(
                             Value.newBuilder().setStringValue(UUID.randomUUID().toString()).build())
                         .addValues(
+                            Value.newBuilder().setStringValue("0001-01-01T00:00:00Z").build())
+                        .addValues(
+                            Value.newBuilder().setStringValue("0001-01-01T00:00:00Z").build())
+                        .addValues(
                             Value.newBuilder()
                                 .setStringValue(OffsetDateTime.now(ZoneId.of("UTC")).toString())
                                 .build())
@@ -641,7 +705,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(
-                    "select c1_0.singer_id,c1_0.id,c1_0.created_at,c1_0.end_time,c1_0.name,c1_0.start_time,c1_0.updated_at,c1_0.venue_id from concert c1_0 where c1_0.singer_id=@p1")
+                    "select c1_0.singer_id,c1_0.id,timestamp '0001-01-01T00:00:00Z',timestamp '0001-01-01T00:00:00Z',c1_0.created_at,c1_0.end_time,c1_0.name,c1_0.start_time,c1_0.updated_at,c1_0.venue_id from concert c1_0 where c1_0.singer_id=@p1")
                 .bind("p1")
                 .to(singerId.toString())
                 .build(),
@@ -677,6 +741,29 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(selectAlbumsSql).bind("p1").to("Foo").build(), empty()));
+
+    String selectCommitTimestampSql = "select timestamp '0001-01-01T00:00:00Z'";
+    mockSpanner.putPartialStatementResult(
+        StatementResult.query(
+            Statement.of(selectCommitTimestampSql),
+            ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setType(
+                                            Type.newBuilder().setCode(TypeCode.TIMESTAMP).build())
+                                        .build())
+                                .build())
+                        .build())
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(
+                            Value.newBuilder().setStringValue("0001-01-01T00:00:00Z").build())
+                        .build())
+                .build()));
   }
 
   @Test
@@ -688,18 +775,20 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     System.setProperty("spanner.auto_tag_transactions", "true");
     SpringApplication.run(SampleApplication.class).close();
 
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertEquals(
-        35,
+        37,
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
             .filter(request -> !request.getSql().equals("SELECT 1"))
             .filter(
                 request ->
                     !request
                         .getSql()
-                        .equals("update venue set description=@p1,updated_at=@p2 where id=@p3"))
+                        .equals(
+                            "update venue set commit_timestamp_updated=pending_commit_timestamp(),description=@p1,updated_at=@p2 where id=@p3"))
             .count());
     assertEquals(6, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
-    assertEquals(11, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(12, mockSpanner.countRequestsOfType(CommitRequest.class));
 
     // Verify that we receive a transaction tag for the generateRandomVenues() method.
     assertEquals(
@@ -778,6 +867,16 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                         .getRequestOptions()
                         .getRequestTag()
                         .equals("search_singers_by_last_name_starts_with"))
+            .count());
+    assertEquals(
+        1,
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+            .filter(
+                request ->
+                    request
+                        .getSql()
+                        .equals(
+                            "update singer set active=@p1,commit_timestamp_updated=pending_commit_timestamp(),updated_at=@p2 where id=@p3"))
             .count());
   }
 

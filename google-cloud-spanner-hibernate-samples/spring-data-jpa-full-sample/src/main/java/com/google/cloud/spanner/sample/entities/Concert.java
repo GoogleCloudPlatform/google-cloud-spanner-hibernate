@@ -18,12 +18,15 @@
 
 package com.google.cloud.spanner.sample.entities;
 
+import com.google.cloud.spanner.sample.SingleTableWithCommitTimestampEntityPersister;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import java.time.OffsetDateTime;
+import org.hibernate.annotations.Persister;
 
 @Entity
+@Persister(impl = SingleTableWithCommitTimestampEntityPersister.class)
 public class Concert extends AbstractNonInterleavedEntity {
 
   private String name;

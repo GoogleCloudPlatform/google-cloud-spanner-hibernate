@@ -129,6 +129,10 @@ public class SampleApplication implements CommandLineRunner {
     // Select all active singers. This query uses a FORCE_INDEX query hint.
     List<Singer> activeSingers = singerService.getActiveSingers();
     log.info("Found {} active singers", activeSingers.size());
+    // Deactivate one of the singers.
+    if (!activeSingers.isEmpty()) {
+      singerService.deactivateSinger(activeSingers.get(0));
+    }
   }
 
   void printData() {

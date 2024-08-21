@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.sample.entities;
 
+import com.google.cloud.spanner.sample.SingleTableWithCommitTimestampEntityPersister;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,8 +28,10 @@ import jakarta.persistence.OneToMany;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import org.hibernate.annotations.Persister;
 
 @Entity
+@Persister(impl = SingleTableWithCommitTimestampEntityPersister.class)
 public class Album extends AbstractNonInterleavedEntity {
 
   @Basic(optional = false)
