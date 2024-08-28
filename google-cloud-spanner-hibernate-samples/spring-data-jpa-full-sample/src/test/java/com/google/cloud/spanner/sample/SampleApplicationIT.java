@@ -90,7 +90,7 @@ public class SampleApplicationIT {
           Thread.sleep(5000L);
         }
       }
-      assertTrue(foundTrace);
+      assertTrue("No traces found", foundTrace);
     } catch (ResourceExhaustedException resourceExhaustedException) {
       if (resourceExhaustedException
           .getMessage()

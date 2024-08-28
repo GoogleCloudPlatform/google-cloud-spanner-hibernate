@@ -38,7 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Test environment used for integration tests. */
-class HibernateIntegrationTestEnv {
+public class HibernateIntegrationTestEnv {
 
   // Spanner host URL should be set through this system property. The default is the default Spanner
   // host URL.
@@ -116,7 +116,7 @@ class HibernateIntegrationTestEnv {
   }
 
   /** Creates a test database for this test environment. This method may only be called once. */
-  void createDatabase(Iterable<String> ddlStatements) {
+  public void createDatabase(Iterable<String> ddlStatements) {
     if (database != null) {
       throw new IllegalStateException("The test database has already been created.");
     }

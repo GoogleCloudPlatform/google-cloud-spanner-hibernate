@@ -102,8 +102,12 @@ public class SampleApplication implements CommandLineRunner {
     // Add an application listener that initializes OpenTelemetry BEFORE any data source is created
     // by Spring. This ensures that the Spanner JDBC driver can pick up the OpenTelemetry
     // configuration and use this for all JDBC connections that are created.
-    application.addListeners(new OpenTelemetryInitializer());
+    OpenTelemetryInitializer openTelemetryInitializer = new OpenTelemetryInitializer();
+    application.addListeners(openTelemetryInitializer);
     application.run(args).close();
+    
+    SpannerPool.closeSpannerPool();
+    openTelemetryInitializer.getOpenTelemetrySdk().close();
   }
 
   @Override
