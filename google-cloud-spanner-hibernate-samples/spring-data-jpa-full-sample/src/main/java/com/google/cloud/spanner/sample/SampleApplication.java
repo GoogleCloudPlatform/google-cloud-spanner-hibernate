@@ -107,7 +107,9 @@ public class SampleApplication implements CommandLineRunner {
     application.run(args).close();
 
     SpannerPool.closeSpannerPool();
-    openTelemetryInitializer.getOpenTelemetrySdk().close();
+    if (openTelemetryInitializer.getOpenTelemetrySdk() != null) {
+      openTelemetryInitializer.getOpenTelemetrySdk().close();
+    }
   }
 
   @Override
