@@ -22,7 +22,6 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.opentelemetry.trace.TraceConfiguration;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
@@ -44,9 +43,9 @@ import org.springframework.core.env.ConfigurableEnvironment;
  */
 public class OpenTelemetryInitializer
     implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
-  
+
   private OpenTelemetrySdk openTelemetrySdk;
-  
+
   public OpenTelemetrySdk getOpenTelemetrySdk() {
     return this.openTelemetrySdk;
   }
@@ -82,17 +81,18 @@ public class OpenTelemetryInitializer
 
     // Create an OpenTelemetry object and register it as the global OpenTelemetry object. This
     // will automatically be picked up by the Spanner libraries and used for tracing.
-    this.openTelemetrySdk = OpenTelemetrySdk.builder()
-        .setTracerProvider(
-            SdkTracerProvider.builder()
-                // Set sampling to 'AlwaysOn' in this example. In production, you want to reduce
-                // this to a smaller fraction to limit the number of traces that are being
-                // collected.
-                .setSampler(Sampler.alwaysOn())
-                .setResource(Resource.builder().put("service.name", serviceName).build())
-                .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
-                .build())
-        .buildAndRegisterGlobal();
+    this.openTelemetrySdk =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    // Set sampling to 'AlwaysOn' in this example. In production, you want to reduce
+                    // this to a smaller fraction to limit the number of traces that are being
+                    // collected.
+                    .setSampler(Sampler.alwaysOn())
+                    .setResource(Resource.builder().put("service.name", serviceName).build())
+                    .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
+                    .build())
+            .buildAndRegisterGlobal();
   }
 
   private boolean hasDefaultCredentials() {
