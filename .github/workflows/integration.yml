@@ -49,3 +49,7 @@ jobs:
       - name: Run Integration Tests
         working-directory: google-cloud-spanner-hibernate-dialect
         run: mvn -B verify
+
+      - name: Run Sample Integration Tests
+        working-directory: google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample
+        run: mvn -B verify

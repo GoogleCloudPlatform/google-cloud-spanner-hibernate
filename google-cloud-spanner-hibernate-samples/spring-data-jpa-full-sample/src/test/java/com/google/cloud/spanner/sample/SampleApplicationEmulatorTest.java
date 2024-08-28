@@ -18,13 +18,14 @@
 
 package com.google.cloud.spanner.sample;
 
+import com.google.cloud.spanner.SpannerOptionsHelper;
 import com.google.cloud.spanner.connection.SpannerPool;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.springframework.boot.SpringApplication;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
@@ -56,8 +57,11 @@ public class SampleApplicationEmulatorTest {
 
   @Test
   public void testRunApplication() {
+    SpannerOptionsHelper.resetActiveTracingFramework();
+    GlobalOpenTelemetry.resetForTest();
+
     System.setProperty("spanner.emulator", "true");
     System.setProperty("spanner.host", "//localhost:" + emulator.getMappedPort(9010));
-    SpringApplication.run(SampleApplication.class).close();
+    SampleApplication.main(new String[] {});
   }
 }
