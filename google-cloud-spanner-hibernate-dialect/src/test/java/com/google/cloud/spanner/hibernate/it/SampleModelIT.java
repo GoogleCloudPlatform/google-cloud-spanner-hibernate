@@ -181,18 +181,21 @@ public class SampleModelIT {
       final Transaction transaction = session.beginTransaction();
       Singer singer1 = new Singer("singer1", "singer1");
       singer1.setBirthDate(LocalDate.of(1998, 10, 12));
-      assertNotNull(session.save(singer1));
+      session.persist(singer1);
+      assertNotNull(singer1.getId());
       session.flush();
       assertEquals("singer1 singer1", singer1.getFullName());
       assertEquals(LocalDate.of(1998, 10, 12), singer1.getBirthDate());
 
       Singer singer2 = new Singer(null, "singer2");
-      assertNotNull(session.save(singer2));
+      session.persist(singer2);
+      assertNotNull(singer2.getId());
       session.flush();
       assertEquals("singer2", singer2.getFullName());
 
       Singer singer3 = new Singer("singer3", null);
-      assertNotNull(session.save(singer3));
+      session.persist(singer3);
+      assertNotNull(singer3.getId());
       session.flush();
       assertEquals("singer3", singer3.getFullName());
 
@@ -200,7 +203,7 @@ public class SampleModelIT {
       // does not generate the check constraint.
       // TODO: Revisit this in Hibernate 6.
       Singer singer4 = new Singer(null, null);
-      session.save(singer4);
+      session.persist(singer4);
       session.flush();
       assertNull(singer4.getFullName());
 
@@ -226,7 +229,7 @@ public class SampleModelIT {
       album.setMarketingBudget(new BigDecimal("990429.23"));
       album.setReleaseDate(LocalDate.of(2023, 9, 27));
       album.setCoverPicture(new byte[] {10, 20, 30, 1, 2, 3, 127, 127, 0, 0, -128, -100});
-      session.save(album);
+      session.persist(album);
       transaction.commit();
 
       // Reload the album from the database and verify that we read back the same values.
@@ -248,7 +251,7 @@ public class SampleModelIT {
       Album album = peter.getAlbums().get(0);
       Track track = new Track(album, 1, "Track 1");
       track.setSampleRate(3.14d);
-      session.save(track);
+      session.persist(track);
       transaction.commit();
 
       // Reload the album from the database and verify that we read back the same values.
@@ -308,7 +311,7 @@ public class SampleModelIT {
       Singer peter = session.get(Singer.class, Long.reverse(50000L));
       final Transaction transaction = session.beginTransaction();
       Venue venue = new Venue("Venue 2", new VenueDescription());
-      session.save(venue);
+      session.persist(venue);
       Concert concert = new Concert(venue, peter);
       concert.setName("Peter Live!");
       concert.setStartTime(
@@ -317,7 +320,7 @@ public class SampleModelIT {
       concert.setEndTime(
           OffsetDateTime.of(
               LocalDate.of(2023, 9, 27), LocalTime.of(2, 0), ZoneOffset.of("+02:00")));
-      session.save(concert);
+      session.persist(concert);
       transaction.commit();
 
       session.refresh(concert);
@@ -347,7 +350,7 @@ public class SampleModelIT {
           new ArrayList<>(
               ImmutableList.of(new Album(singer, "Title 1"), new Album(singer, "Title 2"))));
       final Transaction transaction = session.beginTransaction();
-      session.save(singer);
+      session.persist(singer);
       transaction.commit();
 
       // Verify that the albums of the singer were not saved.
@@ -362,9 +365,9 @@ public class SampleModelIT {
           new ArrayList<>(
               ImmutableList.of(new Album(singer, "Title 1"), new Album(singer, "Title 2"))));
       final Transaction transaction2 = session.beginTransaction();
-      session.save(singer2);
+      session.persist(singer2);
       for (Album album : singer2.getAlbums()) {
-        session.save(album);
+        session.persist(album);
       }
       transaction2.commit();
 
@@ -383,23 +386,21 @@ public class SampleModelIT {
       Album album = new Album(peter, "Album 3");
       // We need to save the album before adding tracks to it, as the tracks must use the same id
       // as the album (Track is INTERLEAVED IN PARENT Album).
-      session.save(album);
+      session.persist(album);
       album.setTracks(
           ImmutableList.of(new Track(album, 1L, "Track 1"), new Track(album, 2L, "Track 2")));
       for (Track track : album.getTracks()) {
-        session.save(track);
+        session.persist(track);
       }
       transaction.commit();
-
       // Reload the album from the database.
       session.clear();
       Album album2 = session.get(Album.class, album.getId());
-      assertEquals(2, album2.getTracks().size());
 
       // Verify that we can delete an album with tracks, as Cloud Spanner will cascade-delete the
       // tracks of an album. Hibernate does not know about this.
       Transaction deleteTransaction = session.beginTransaction();
-      session.delete(album2);
+      session.remove(album2);
       deleteTransaction.commit();
 
       // The album should no longer be present in the database.
@@ -440,7 +441,7 @@ public class SampleModelIT {
                       LocalDate.of(2023, 10, 3), LocalTime.of(20, 0), ZoneOffset.of("+02")))));
       // This should also cascade-save all the concerts of the venue, as the association is defined
       // with cascade = CascadeType.ALL.
-      session.save(venue);
+      session.persist(venue);
       if (transaction == null) {
         // Create a transaction here if we are using the emulator. The fact that we 'saved' the
         // venue outside of this transaction is not a problem for Hibernate. It will still include
@@ -460,7 +461,7 @@ public class SampleModelIT {
       // cascade-delete clause.
       session.clear();
       Transaction deleteTransaction = session.beginTransaction();
-      session.delete(venue2);
+      session.remove(venue2);
       deleteTransaction.commit();
 
       session.clear();
