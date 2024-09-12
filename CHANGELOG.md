@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [3.7.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.6.0...v3.7.0) (2024-09-12)
+
+
+### Features
+
+* support Hibernate 6.6.0.Final ([#1288](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1288)) ([7286c26](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/7286c2672ec3f2dffe39bd527dd2f347426e7a61))
+
+
+### Bug Fixes
+
+* **deps:** update dependency io.opentelemetry:opentelemetry-bom to v1.42.1 ([#1284](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1284)) ([d6e59de](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/d6e59de8ac465cb24adf8ab798a29fce3b1b8224))
+* **deps:** update hibernate.version to v6.6.0.final ([#1249](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1249)) ([decd928](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/decd928af6dd55e4f9d9d5a2e6750eb76a905d6f))
+
 ## [3.6.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.5.0...v3.6.0) (2024-09-12)
 
 
