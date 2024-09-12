@@ -73,6 +73,18 @@ You are now ready to begin using Hibernate with Cloud Spanner.
 To see a full working sample application for using the dialect, please see our
 https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/-/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample[Spring Data JPA sample application].
 
+== Tracing and Latency Debugging
+
+The Spanner JDBC driver supports tracing with OpenTelemetry. These traces give you insights into the
+transactions and queries that are executed by your application, and can be helpful when debugging
+slow transactions or other latency problems.
+
+https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/-/documentation/latency-debugging-guide.md[See this Latency Debugging Guide]
+for more information on how to use OpenTelemetry with Hibernate and the Spanner JDBC driver.
+
+https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/-/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample[The Spring Data JPA sample application]
+also contains a working sample for setting up OpenTelemetry tracing.
+
 == User Guide
 
 This guide contains a variety of best practices for using Hibernate with Spanner which can significantly improve the performance of your application.
