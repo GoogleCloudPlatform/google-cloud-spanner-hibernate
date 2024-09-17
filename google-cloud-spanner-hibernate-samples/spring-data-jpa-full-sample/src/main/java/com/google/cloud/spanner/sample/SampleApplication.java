@@ -22,6 +22,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.SpannerPool;
 import com.google.cloud.spanner.sample.entities.Concert;
 import com.google.cloud.spanner.sample.entities.Singer;
+import com.google.cloud.spanner.sample.opentelemetry.OpenTelemetryInitializer;
 import com.google.cloud.spanner.sample.repository.ConcertRepository;
 import com.google.cloud.spanner.sample.service.AlbumService;
 import com.google.cloud.spanner.sample.service.ConcertService;
@@ -41,16 +42,18 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Sample application using Spring Boot Data JPA with PGAdapter and a Cloud Spanner database.
+ * Sample application using Spring Boot Data JPA (Hibernate) with PGAdapter and a Cloud Spanner
+ * database.
  *
  * <p>This sample shows how to do the following:
  *
  * <ol>
  *   <li>Use auto-generated sequential primary key values without the risk of creating hotspots
- *   <li>Use interleaved tables with Spring Boot Data JPA
+ *   <li>Use interleaved tables with Spring Boot Data JPA (Hibernate)
  *   <li>How to map all supported data types to the corresponding Java types
  *   <li>How to execute read/write and read-only transactions
  *   <li>How to execute stale reads on Cloud Spanner
+ *   <li>How to use OpenTelemetry with Spanner and Hibernate
  * </ol>
  */
 @SpringBootApplication
@@ -95,7 +98,18 @@ public class SampleApplication implements CommandLineRunner {
   }
 
   public static void main(String[] args) {
-    SpringApplication.run(SampleApplication.class, args).close();
+    SpringApplication application = new SpringApplication(SampleApplication.class);
+    // Add an application listener that initializes OpenTelemetry BEFORE any data source is created
+    // by Spring. This ensures that the Spanner JDBC driver can pick up the OpenTelemetry
+    // configuration and use this for all JDBC connections that are created.
+    OpenTelemetryInitializer openTelemetryInitializer = new OpenTelemetryInitializer();
+    application.addListeners(openTelemetryInitializer);
+    application.run(args).close();
+
+    SpannerPool.closeSpannerPool();
+    if (openTelemetryInitializer.getOpenTelemetrySdk() != null) {
+      openTelemetryInitializer.getOpenTelemetrySdk().close();
+    }
   }
 
   @Override

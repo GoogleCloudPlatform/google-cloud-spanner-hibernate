@@ -22,6 +22,7 @@ import static junit.framework.TestCase.assertEquals;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.SpannerOptionsHelper;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractMockServerTest;
 import com.google.common.base.Strings;
@@ -40,6 +41,7 @@ import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
@@ -49,7 +51,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.springframework.boot.SpringApplication;
 
 /** Runs the {@link SampleApplication} and verifies that it sends the expected requests. */
 @RunWith(JUnit4.class)
@@ -768,12 +769,15 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testRunApplication() {
+    SpannerOptionsHelper.resetActiveTracingFramework();
+    GlobalOpenTelemetry.resetForTest();
+
     System.setProperty("spanner.emulator", "false");
     System.setProperty("spanner.host", "//localhost:" + getPort());
     System.setProperty("spanner.connectionProperties", ";usePlainText=true");
     // Enable automatic tagging of transactions that do not already have a tag.
     System.setProperty("spanner.auto_tag_transactions", "true");
-    SpringApplication.run(SampleApplication.class).close();
+    SampleApplication.main(new String[] {});
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertEquals(
