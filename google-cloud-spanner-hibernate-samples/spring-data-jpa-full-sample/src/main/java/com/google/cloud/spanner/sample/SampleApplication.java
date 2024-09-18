@@ -155,7 +155,7 @@ public class SampleApplication implements CommandLineRunner {
     
     // Create a new in-active singer.
     // This creates a created_at commit timestamp. The timestamp is not directly read back by
-    // Hibernate.
+    // Hibernate. 
     Singer newSinger = new Singer();
     newSinger.setFirstName("test");
     newSinger.setLastName("test");
@@ -165,6 +165,9 @@ public class SampleApplication implements CommandLineRunner {
     // Update the same singer to trigger an last_updated commit timestamp.
     newSinger.setLastName("other lastname");
     singerRepository.save(newSinger);
+    
+    // Create two new singers in a transaction.
+    singerService.saveNewSingers();
     
     // Select the active singers and print the created_at/last_updated_at values that were generated
     // with commit timestamps.

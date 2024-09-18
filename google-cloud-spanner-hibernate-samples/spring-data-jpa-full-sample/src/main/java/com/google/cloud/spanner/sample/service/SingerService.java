@@ -55,6 +55,21 @@ public class SingerService {
   public List<Singer> getActiveSingers() {
     return repository.findByActive(true);
   }
+  
+  @Transactional
+  public void saveNewSingers() {
+    Singer singer1 = new Singer();
+    singer1.setFirstName("test1");
+    singer1.setLastName("test1");
+    singer1.setActive(false);
+    repository.save(singer1);
+    
+    Singer singer2 = new Singer();
+    singer2.setFirstName("test2");
+    singer2.setLastName("test2");
+    singer2.setActive(false);
+    repository.save(singer2);
+  }
 
   /**
    * Prints all singers whose last name start with the given prefix. Also prints the related albums
