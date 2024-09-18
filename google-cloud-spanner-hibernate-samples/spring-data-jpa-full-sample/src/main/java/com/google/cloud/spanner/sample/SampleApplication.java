@@ -24,6 +24,7 @@ import com.google.cloud.spanner.sample.entities.Concert;
 import com.google.cloud.spanner.sample.entities.Singer;
 import com.google.cloud.spanner.sample.opentelemetry.OpenTelemetryInitializer;
 import com.google.cloud.spanner.sample.repository.ConcertRepository;
+import com.google.cloud.spanner.sample.repository.SingerRepository;
 import com.google.cloud.spanner.sample.service.AlbumService;
 import com.google.cloud.spanner.sample.service.ConcertService;
 import com.google.cloud.spanner.sample.service.SingerService;
@@ -76,6 +77,8 @@ public class SampleApplication implements CommandLineRunner {
   private final StaleReadService staleReadService;
 
   private final ConcertRepository concertRepository;
+  
+  private final SingerRepository singerRepository;
 
   /** Constructor with auto-injected dependencies. */
   public SampleApplication(
@@ -86,7 +89,8 @@ public class SampleApplication implements CommandLineRunner {
       ConcertService concertService,
       TicketSaleService ticketSaleService,
       StaleReadService staleReadService,
-      ConcertRepository concertRepository) {
+      ConcertRepository concertRepository,
+      SingerRepository singerRepository) {
     this.singerService = singerService;
     this.albumService = albumService;
     this.trackService = trackService;
@@ -95,6 +99,7 @@ public class SampleApplication implements CommandLineRunner {
     this.ticketSaleService = ticketSaleService;
     this.staleReadService = staleReadService;
     this.concertRepository = concertRepository;
+    this.singerRepository = singerRepository;
   }
 
   public static void main(String[] args) {
@@ -146,6 +151,27 @@ public class SampleApplication implements CommandLineRunner {
     // Deactivate one of the singers.
     if (!activeSingers.isEmpty()) {
       singerService.deactivateSinger(activeSingers.get(0));
+    }
+    
+    // Create a new in-active singer.
+    // This creates a created_at commit timestamp. The timestamp is not directly read back by
+    // Hibernate.
+    Singer newSinger = new Singer();
+    newSinger.setFirstName("test");
+    newSinger.setLastName("test");
+    newSinger.setActive(false);
+    singerRepository.save(newSinger);
+    
+    // Update the same singer to trigger an last_updated commit timestamp.
+    newSinger.setLastName("other lastname");
+    singerRepository.save(newSinger);
+    
+    // Select the active singers and print the created_at/last_updated_at values that were generated
+    // with commit timestamps.
+    for (Singer singer : singerRepository.findByActive(false)) {
+      log.info("Singer created: {}, updated: {}",
+          singer.getCommitTimestampCreated(),
+          singer.getCommitTimestampUpdated());
     }
   }
 

@@ -61,7 +61,7 @@ public class AbstractEntity {
    */
   @Column(updatable = false, columnDefinition = "timestamp options (allow_commit_timestamp=true)")
   @CreationCommitTimestamp
-  @ColumnTransformer(read = "timestamp '0001-01-01T00:00:00Z'")
+  //@ColumnTransformer(read = "timestamp '0001-01-01T00:00:00Z'")
   private OffsetDateTime commitTimestampCreated;
 
   /**
@@ -86,7 +86,7 @@ public class AbstractEntity {
    */
   @Column(insertable = false, columnDefinition = "timestamp options (allow_commit_timestamp=true)")
   @UpdateCommitTimestamp()
-  @ColumnTransformer(read = "timestamp '0001-01-01T00:00:00Z'")
+  //@ColumnTransformer(read = "timestamp '0001-01-01T00:00:00Z'")
   private OffsetDateTime commitTimestampUpdated;
 
   public OffsetDateTime getCreatedAt() {

@@ -58,6 +58,8 @@ public class SingleTableWithCommitTimestampEntityPersister extends SingleTableEn
   protected GeneratedValuesProcessor createGeneratedValuesProcessor(
       EventType timing, List<AttributeMapping> generatedAttributes) {
     // Skip all commit timestamp generated attributes, as these are not selectable.
+    // This is what prevents the commit timestamp column from being selected directly after being
+    // updated.
     return new GeneratedValuesProcessor(
         this,
         getGeneratedAttributesWithoutCommitTimestamp(generatedAttributes),
