@@ -18,14 +18,25 @@
 
 package model;
 
+import com.google.cloud.spanner.hibernate.types.SpannerJsonType;
+import java.util.List;
 import java.util.UUID;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
+@TypeDefs({
+    @TypeDef(
+        name = "spanner-json",
+        typeClass = SpannerJsonType.class
+    )
+})
 @Entity
 public class Coffee {
 
@@ -35,6 +46,10 @@ public class Coffee {
   private UUID id;
 
   private String size;
+  
+  @Type(type = "spanner-json")
+  @Column(name = "description", columnDefinition = "json")
+  private String description;
 
   @ManyToOne
   private Customer customer;
@@ -47,6 +62,7 @@ public class Coffee {
   public Coffee(Customer customer, String size) {
     this.customer = customer;
     this.size = size;
+    this.description = "{\"type\": \"coffee\", \"volume\": 100}";
   }
 
   public UUID getId() {
@@ -71,5 +87,13 @@ public class Coffee {
 
   public void setCustomer(Customer customer) {
     this.customer = customer;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 }
