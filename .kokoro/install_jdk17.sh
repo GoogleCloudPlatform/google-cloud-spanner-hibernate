@@ -19,7 +19,7 @@ set -eo pipefail
 
 sudo apt install -y openjdk-17-jdk openjdk-17-jre
 
-wget https://mirrors.estointernet.in/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+wget https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.6.3/apache-maven-3.6.3-bin.tar.gz
 tar -xvf apache-maven-3.6.3-bin.tar.gz
 mv apache-maven-3.6.3 /opt/
 
