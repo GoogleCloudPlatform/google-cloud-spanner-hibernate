@@ -20,6 +20,7 @@ package com.google.cloud.spanner.sample.entities;
 
 import com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator;
 import com.google.cloud.spanner.hibernate.types.SpannerStringArray;
+import com.google.cloud.spanner.sample.SingleTableWithCommitTimestampEntityPersister;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -30,11 +31,13 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Persister;
 import org.hibernate.annotations.Type;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
 /** {@link TicketSale} shows how to use bit-reversed sequences to generate primary key values. */
 @Entity
+@Persister(impl = SingleTableWithCommitTimestampEntityPersister.class)
 public class TicketSale extends AbstractEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ticketSaleId")

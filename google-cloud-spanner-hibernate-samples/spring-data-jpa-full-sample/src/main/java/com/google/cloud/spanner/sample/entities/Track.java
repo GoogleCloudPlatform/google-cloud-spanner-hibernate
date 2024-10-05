@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.sample.entities;
 
 import com.google.cloud.spanner.hibernate.Interleaved;
+import com.google.cloud.spanner.sample.SingleTableWithCommitTimestampEntityPersister;
 import com.google.cloud.spanner.sample.entities.Track.TrackId;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
@@ -34,11 +35,13 @@ import java.sql.Types;
 import java.util.Objects;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Persister;
 import org.springframework.data.domain.Persistable;
 
 /** Track is interleaved in Album, and therefore uses a composite primary key. */
 @Interleaved(parentEntity = Album.class, cascadeDelete = true)
 @Entity
+@Persister(impl = SingleTableWithCommitTimestampEntityPersister.class)
 public class Track extends AbstractEntity implements Persistable<TrackId> {
 
   /**

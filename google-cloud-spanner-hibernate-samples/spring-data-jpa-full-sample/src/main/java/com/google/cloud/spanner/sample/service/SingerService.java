@@ -29,6 +29,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,21 @@ public class SingerService {
 
   public List<Singer> getActiveSingers() {
     return repository.findByActive(true);
+  }
+  
+  @Transactional
+  public void saveNewSingers() {
+    Singer singer1 = new Singer();
+    singer1.setFirstName("test1");
+    singer1.setLastName("test1");
+    singer1.setActive(false);
+    repository.save(singer1);
+    
+    Singer singer2 = new Singer();
+    singer2.setFirstName("test2");
+    singer2.setLastName("test2");
+    singer2.setActive(false);
+    repository.save(singer2);
   }
 
   /**
@@ -102,8 +118,16 @@ public class SingerService {
       singer.setFirstName(randomDataService.getRandomFirstName());
       singer.setLastName(randomDataService.getRandomLastName());
       singer.setNickNames(randomDataService.getRandomNickNames());
+      singer.setActive(ThreadLocalRandom.current().nextBoolean());
       singers.add(singer);
     }
     return repository.saveAll(singers);
+  }
+
+  @Transactional
+  @TransactionTag("deactivate_singer")
+  public void deactivateSinger(Singer singer) {
+    singer.setActive(false);
+    repository.save(singer);
   }
 }

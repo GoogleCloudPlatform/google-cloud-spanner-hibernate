@@ -18,15 +18,18 @@
 
 package com.google.cloud.spanner.sample.entities;
 
+import com.google.cloud.spanner.sample.SingleTableWithCommitTimestampEntityPersister;
 import jakarta.persistence.Entity;
 import java.io.Serializable;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Persister;
 import org.hibernate.type.SqlTypes;
 
 @Entity
 // Use DynamicUpdate to prevent the JSON column from being updated everytime this entity is updated.
 @DynamicUpdate
+@Persister(impl = SingleTableWithCommitTimestampEntityPersister.class)
 public class Venue extends AbstractNonInterleavedEntity {
 
   /**
