@@ -18,9 +18,13 @@
 
 package com.google.cloud.spanner.sample;
 
+import static org.junit.Assert.assertTrue;
+
 import com.google.cloud.spanner.SpannerOptionsHelper;
 import com.google.cloud.spanner.connection.SpannerPool;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -62,6 +66,18 @@ public class SampleApplicationEmulatorTest {
 
     System.setProperty("spanner.emulator", "true");
     System.setProperty("spanner.host", "//localhost:" + emulator.getMappedPort(9010));
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    PrintStream printStream = new PrintStream(outputStream);
+    PrintStream originalSystemOut = System.out;
+    System.setOut(printStream);
+
     SampleApplication.main(new String[] {});
+
+    System.out.flush();
+    System.setOut(originalSystemOut);
+
+    String output = outputStream.toString();
+    assertTrue(output, output.contains("Found 10 active singers"));
   }
 }

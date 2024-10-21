@@ -32,6 +32,7 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -273,7 +274,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putPartialStatementResult(
         StatementResult.update(
             Statement.of(
-                "insert into singer (active,created_at,first_name,last_name,nick_names,updated_at,id) values (@p1,@p2,@p3,@p4,@p5,@p6,@p7)"),
+                "insert into singer (created_at,first_name,last_name,nick_names,updated_at,id) values (@p1,@p2,@p3,@p4,@p5,@p6)"),
             1L));
     mockSpanner.putPartialStatementResult(
         StatementResult.update(
@@ -692,8 +693,57 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     System.setProperty("spanner.auto_tag_transactions", "true");
     SampleApplication.main(new String[] {});
 
+    assertEquals(1, mockDatabaseAdmin.getRequests().size());
+    UpdateDatabaseDdlRequest ddlRequest =
+        (UpdateDatabaseDdlRequest) mockDatabaseAdmin.getRequests().get(0);
+    assertEquals(13, ddlRequest.getStatementsCount());
+    int index = -1;
     assertEquals(
-        35,
+        "create sequence ticket_sale_seq options(sequence_kind=\"bit_reversed_positive\", start_with_counter=50000, skip_range_min=1, skip_range_max=1000)",
+        ddlRequest.getStatements(++index));
+    assertEquals(
+        "create table album (id string(36) not null,created_at timestamp,updated_at timestamp,cover_picture bytes(1000000),marketing_budget numeric,release_date date,title string(200) not null,singer_id string(36) not null) PRIMARY KEY (id)",
+        ddlRequest.getStatements(++index));
+    assertEquals(
+        "create table concert (id string(36) not null,created_at timestamp,updated_at timestamp,end_time timestamp,name string(255),start_time timestamp,singer_id string(36) not null,venue_id string(36) not null) PRIMARY KEY (id)",
+        ddlRequest.getStatements(++index));
+    assertEquals(
+        "create table singer (id string(36) not null,created_at timestamp,updated_at timestamp,active bool default (true),first_name string(100),full_name STRING(300) AS (\n"
+            + "CASE WHEN first_name IS NULL THEN last_name\n"
+            + "     WHEN last_name IS NULL THEN first_name\n"
+            + "     ELSE first_name || ' ' || last_name\n"
+            + "END) STORED,last_name string(200),nick_names ARRAY<STRING(255)>) PRIMARY KEY (id)",
+        ddlRequest.getStatements(++index));
+    assertEquals(
+        "create table ticket_sale (id int64 not null,created_at timestamp,updated_at timestamp,customer_name string(255),price numeric,seats ARRAY<STRING(MAX)>,concert_id string(36) not null) PRIMARY KEY (id)",
+        ddlRequest.getStatements(++index));
+    assertEquals(
+        "create table track (id string(36) not null,track_number int64 not null,created_at timestamp,updated_at timestamp,sample_rate float64,title string(100) not null) PRIMARY KEY (id,track_number), INTERLEAVE IN PARENT album ON DELETE CASCADE",
+        ddlRequest.getStatements(++index));
+    assertEquals(
+        "create table venue (id string(36) not null,created_at timestamp,updated_at timestamp,description json,name string(255)) PRIMARY KEY (id)",
+        ddlRequest.getStatements(++index));
+    assertEquals(
+        "create index idx_singer_active on singer (active)", ddlRequest.getStatements(++index));
+    assertEquals(
+        "alter table album add constraint FK1imrvvcsp892ggu1tlcbhavjm foreign key (singer_id) references singer (id)",
+        ddlRequest.getStatements(++index));
+    assertEquals(
+        "alter table concert add constraint FKcixl9gtki9i7pvjabe6bcbpem foreign key (singer_id) references singer (id)",
+        ddlRequest.getStatements(++index));
+    assertEquals(
+        "alter table concert add constraint FKllw6cymtwrumecg1bcnsubw56 foreign key (venue_id) references venue (id)",
+        ddlRequest.getStatements(++index));
+    assertEquals(
+        "alter table ticket_sale add constraint FKqd5hyt9v2omxqhuf2gukkiw0n foreign key (concert_id) references concert (id)",
+        ddlRequest.getStatements(++index));
+    assertEquals(
+        "alter table track add constraint FKhwcw1xkgnlrd4n15sfe8p8eto foreign key (id) references album (id)",
+        ddlRequest.getStatements(++index));
+    assertEquals(ddlRequest.getStatementsCount() - 1, index);
+
+    assertEquals(
+        45,
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
             .filter(request -> !request.getSql().equals("SELECT 1"))
             .filter(
@@ -702,7 +752,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                         .getSql()
                         .equals("update venue set description=@p1,updated_at=@p2 where id=@p3"))
             .count());
-    assertEquals(6, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    assertEquals(5, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
     assertEquals(11, mockSpanner.countRequestsOfType(CommitRequest.class));
 
     // Verify that we receive a transaction tag for the generateRandomVenues() method.
@@ -728,7 +778,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
             .count());
     // Also verify that we get the auto-generated transaction tags.
     assertEquals(
-        6,
+        5,
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
             .filter(
                 request -> !Strings.isNullOrEmpty(request.getRequestOptions().getTransactionTag()))
@@ -754,8 +804,8 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                         .equals("service_AlbumService_deleteAllAlbums"))
             .count());
     assertEquals(
-        1,
-        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
+        10,
+        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
             .filter(
                 request ->
                     request
