@@ -24,13 +24,10 @@ import com.google.cloud.spanner.sample.entities.Concert;
 import com.google.cloud.spanner.sample.entities.Singer;
 import com.google.cloud.spanner.sample.opentelemetry.OpenTelemetryInitializer;
 import com.google.cloud.spanner.sample.repository.ConcertRepository;
-import com.google.cloud.spanner.sample.service.AlbumService;
+import com.google.cloud.spanner.sample.service.BatchService;
 import com.google.cloud.spanner.sample.service.ConcertService;
 import com.google.cloud.spanner.sample.service.SingerService;
 import com.google.cloud.spanner.sample.service.StaleReadService;
-import com.google.cloud.spanner.sample.service.TicketSaleService;
-import com.google.cloud.spanner.sample.service.TrackService;
-import com.google.cloud.spanner.sample.service.VenueService;
 import jakarta.annotation.PreDestroy;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -58,15 +55,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication
 public class SampleApplication implements CommandLineRunner {
-
   private static final Logger log = LoggerFactory.getLogger(SampleApplication.class);
 
   private final SingerService singerService;
-  private final AlbumService albumService;
-  private final TrackService trackService;
-  private final VenueService venueService;
   private final ConcertService concertService;
-  private final TicketSaleService ticketSaleService;
   /**
    * The {@link StaleReadService} is a generic service that can be used to execute workloads using
    * stale reads. Stale reads can perform better than strong reads. See <a
@@ -74,26 +66,22 @@ public class SampleApplication implements CommandLineRunner {
    * for more information.
    */
   private final StaleReadService staleReadService;
+  
+  private final BatchService batchService;
 
   private final ConcertRepository concertRepository;
 
   /** Constructor with auto-injected dependencies. */
   public SampleApplication(
       SingerService singerService,
-      AlbumService albumService,
-      TrackService trackService,
-      VenueService venueService,
       ConcertService concertService,
-      TicketSaleService ticketSaleService,
       StaleReadService staleReadService,
+      BatchService batchService,
       ConcertRepository concertRepository) {
     this.singerService = singerService;
-    this.albumService = albumService;
-    this.trackService = trackService;
-    this.venueService = venueService;
     this.concertService = concertService;
-    this.ticketSaleService = ticketSaleService;
     this.staleReadService = staleReadService;
+    this.batchService = batchService;
     this.concertRepository = concertRepository;
   }
 
@@ -114,26 +102,11 @@ public class SampleApplication implements CommandLineRunner {
 
   @Override
   public void run(String... args) {
-    // First clear the current tables.
-    log.info("Deleting all existing data");
-    ticketSaleService.deleteAllTicketSales();
-    concertService.deleteAllConcerts();
-    albumService.deleteAllAlbums();
-    singerService.deleteAllSingers();
+    // First clear the current tables in one batch.
+    batchService.deleteAllData();
 
-    // Generate some random data.
-    singerService.generateRandomSingers(10);
-    log.info("Created 10 singers");
-    albumService.generateRandomAlbums(30);
-    log.info("Created 30 albums");
-    trackService.generateRandomTracks(30, 15);
-    log.info("Created 20 tracks each for 30 albums");
-    venueService.generateRandomVenues(20);
-    log.info("Created 20 venues");
-    concertService.generateRandomConcerts(50);
-    log.info("Created 50 concerts");
-    ticketSaleService.generateRandomTicketSales(250);
-    log.info("Created 250 ticket sales");
+    // Generate some random data in one batch.
+    batchService.generateRandomData();
 
     // Print some of the randomly inserted data.
     printData();

@@ -46,7 +46,9 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -753,7 +755,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                         .equals("update venue set description=@p1,updated_at=@p2 where id=@p3"))
             .count());
     assertEquals(5, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
-    assertEquals(11, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(8, mockSpanner.countRequestsOfType(CommitRequest.class));
 
     // Verify that we receive a transaction tag for the generateRandomVenues() method.
     assertEquals(
@@ -783,25 +785,22 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
             .filter(
                 request -> !Strings.isNullOrEmpty(request.getRequestOptions().getTransactionTag()))
             .count());
+    List<ExecuteSqlRequest> deleteRequests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+        .filter(
+            request ->
+                request
+                    .getRequestOptions()
+                    .getTransactionTag()
+                    .equals("service_BatchService_deleteAllData")).collect(Collectors.toList());
     assertEquals(
-        1,
+        4,
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
             .filter(
                 request ->
                     request
                         .getRequestOptions()
                         .getTransactionTag()
-                        .equals("service_SingerService_deleteAllSingers"))
-            .count());
-    assertEquals(
-        1,
-        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
-            .filter(
-                request ->
-                    request
-                        .getRequestOptions()
-                        .getTransactionTag()
-                        .equals("service_AlbumService_deleteAllAlbums"))
+                        .equals("service_BatchService_deleteAllData"))
             .count());
     assertEquals(
         10,
