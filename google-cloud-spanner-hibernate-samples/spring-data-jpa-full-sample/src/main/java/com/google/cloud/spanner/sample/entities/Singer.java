@@ -26,10 +26,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.List;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.Type;
 
 @Entity
 @Table(indexes = {@Index(name = "idx_singer_active", columnList = "active")})
+@DynamicInsert
 public class Singer extends AbstractNonInterleavedEntity {
 
   @Column(length = 100)
@@ -53,7 +56,8 @@ public class Singer extends AbstractNonInterleavedEntity {
   @Type(SpannerStringArray.class)
   private List<String> nickNames;
 
-  private boolean active;
+  @ColumnDefault("true")
+  private Boolean active;
 
   @OneToMany
   @JoinColumn(name = "singer_id")
@@ -95,11 +99,11 @@ public class Singer extends AbstractNonInterleavedEntity {
     this.nickNames = nickNames;
   }
 
-  public boolean isActive() {
+  public Boolean getActive() {
     return active;
   }
 
-  public void setActive(boolean active) {
+  public void setActive(Boolean active) {
     this.active = active;
   }
 
