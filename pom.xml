@@ -194,7 +194,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
-          <version>3.4.1</version>
+          <version>3.5.0</version>
           <configuration>
             <!-- Turns off the cleanup of daemon threads to avoid spurious error messages. #218 -->
             <cleanupDaemonThreads>false</cleanupDaemonThreads>
