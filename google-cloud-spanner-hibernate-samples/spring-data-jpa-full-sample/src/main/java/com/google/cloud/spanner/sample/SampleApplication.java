@@ -66,7 +66,7 @@ public class SampleApplication implements CommandLineRunner {
    * for more information.
    */
   private final StaleReadService staleReadService;
-  
+
   private final BatchService batchService;
 
   private final ConcertRepository concertRepository;

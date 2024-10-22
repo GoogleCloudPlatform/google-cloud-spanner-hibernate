@@ -242,6 +242,18 @@ List<Singer> findByActive(boolean active);
 This https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/-/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample/src/main/java/com/google/cloud/spanner/sample/repository/SingerRepository.java[working sample application]
 shows how to use the above hints.
 
+==== DML Batching
+
+Spanner supports executing any combination of DML statements in a single batch. Batching can
+significantly reduce the number of round-trips between the application and Spanner that is needed
+to insert/update/delete a large number of entities. The Spanner Hibernate dialect supports the
+standard JDBC batching that is used by Hibernate. This batching is limited to DML statements that
+use the same SQL string.
+
+In addition to the standard JDBC batching, you can also use the `auto_batch_dml` flag in the Spanner
+JDBC driver to group more DML statements into a single batch. This https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/-/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample/src/main/java/com/google/cloud/spanner/sample/services/BatchService.java[working sample application]
+shows how to use the `auto_batch_dml` flag.
+
 ==== Transaction Tags
 
 Spanner supports adding
