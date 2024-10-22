@@ -64,13 +64,18 @@ public class ConcertService {
     repository.deleteAll();
   }
 
-  /** Generates the specified number of random Concert records. */
   @Transactional
   public List<Concert> generateRandomConcerts(int count) {
-    Random random = new Random();
-
     List<Singer> singers = singerRepository.findAll(Pageable.ofSize(20)).toList();
     List<Venue> venues = venueRepository.findAll();
+    return generateRandomConcerts(singers, venues, count);
+  }
+
+  /** Generates the specified number of random Concert records. */
+  @Transactional
+  public List<Concert> generateRandomConcerts(List<Singer> singers, List<Venue> venues, int count) {
+    Random random = new Random();
+
     List<Concert> concerts = new ArrayList<>(count);
     for (int i = 0; i < count; i++) {
       Concert concert = new Concert();

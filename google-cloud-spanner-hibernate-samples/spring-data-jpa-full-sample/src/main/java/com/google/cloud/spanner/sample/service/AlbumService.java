@@ -63,14 +63,20 @@ public class AlbumService {
     albumRepository.deleteAll();
   }
 
-  /** Generates the specified number of random Album records. */
   @Transactional
   @TransactionTag("generate_random_albums")
   public List<Album> generateRandomAlbums(int count) {
-    Random random = new Random();
-
     // Get the first 20 singers and link the albums to those.
     List<Singer> singers = singerRepository.findAll(Pageable.ofSize(20)).toList();
+    return generateRandomAlbums(singers, count);
+  }
+
+  /** Generates the specified number of random Album records. */
+  @Transactional
+  @TransactionTag("generate_random_albums")
+  public List<Album> generateRandomAlbums(List<Singer> singers, int count) {
+    Random random = new Random();
+
     List<Album> albums = new ArrayList<>(count);
     for (int i = 0; i < count; i++) {
       Album album = new Album();
