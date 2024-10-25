@@ -59,9 +59,14 @@ public class TicketSaleService {
   /** Generates the specified number of random TicketSale records. */
   @Transactional
   public List<TicketSale> generateRandomTicketSales(int count) {
+    return generateRandomTicketSales(concertRepository.findAll(), count);
+  }
+
+  /** Generates the specified number of random TicketSale records for the given list of concerts. */
+  @Transactional
+  public List<TicketSale> generateRandomTicketSales(List<Concert> concerts, int count) {
     Random random = new Random();
 
-    List<Concert> concerts = concertRepository.findAll();
     List<TicketSale> ticketSales = new ArrayList<>(count);
     if (concerts.isEmpty()) {
       return ticketSales;

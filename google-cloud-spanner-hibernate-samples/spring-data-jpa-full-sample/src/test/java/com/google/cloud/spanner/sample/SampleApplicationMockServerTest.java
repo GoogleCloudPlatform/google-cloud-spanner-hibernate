@@ -47,6 +47,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -301,8 +303,26 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putPartialStatementResult(
         StatementResult.update(
             Statement.of(
+                "update venue set created_at=@p1,description=@p2,updated_at=@p3 where id=@p4"),
+            1L));
+    mockSpanner.putPartialStatementResult(
+        StatementResult.update(
+            Statement.of(
                 "insert into concert (created_at,end_time,name,singer_id,start_time,updated_at,venue_id,id) values (@p1,@p2,@p3,@p4,@p5,@p6,@p7,@p8)"),
             1L));
+    mockSpanner.putPartialStatementResult(
+        StatementResult.update(
+            Statement.of(
+                "insert into ticket_sale (concert_id,created_at,customer_name,price,seats,updated_at,id) values (@p1,@p2,@p3,@p4,@p5,@p6,@p7)"),
+            1L));
+
+    // Add results for generating ticket sale identifiers.
+    mockSpanner.putStatementResult(
+        StatementResult.queryAndThen(
+            Statement.of(
+                "/* spanner.force_read_write_transaction=true */ /* spanner.ignore_during_internal_retry=true */  select get_next_sequence_value(sequence ticket_sale_seq) AS n from unnest(generate_array(1, 200))"),
+            generateSequenceResultSet(1L, 200L),
+            generateSequenceResultSet(201L, 400L)));
 
     // Add results for selecting singers.
     UUID singerId = UUID.randomUUID();
@@ -685,6 +705,32 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
             Statement.newBuilder(selectAlbumsSql).bind("p1").to("Foo").build(), empty()));
   }
 
+  static ResultSet generateSequenceResultSet(long startInclusive, long endInclusive) {
+    return ResultSet.newBuilder()
+        .setMetadata(
+            ResultSetMetadata.newBuilder()
+                .setRowType(
+                    StructType.newBuilder()
+                        .addFields(
+                            Field.newBuilder()
+                                .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
+                                .setName("n")
+                                .build())
+                        .build())
+                .build())
+        .addAllRows(
+            LongStream.rangeClosed(startInclusive, endInclusive)
+                .map(Long::reverse)
+                .mapToObj(
+                    id ->
+                        ListValue.newBuilder()
+                            .addValues(
+                                Value.newBuilder().setStringValue(String.valueOf(id)).build())
+                            .build())
+                .collect(Collectors.toList()))
+        .build();
+  }
+
   @Test
   public void testRunApplication() {
     SpannerOptionsHelper.resetActiveTracingFramework();
@@ -746,86 +792,41 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         ddlRequest.getStatements(++index));
     assertEquals(ddlRequest.getStatementsCount() - 1, index);
 
-    assertEquals(
-        45,
-        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
-            .filter(request -> !request.getSql().equals("SELECT 1"))
-            .filter(
-                request ->
-                    !request
-                        .getSql()
-                        .equals("update venue set description=@p1,updated_at=@p2 where id=@p3"))
-            .count());
-    assertEquals(5, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
-    assertEquals(11, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(32, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    assertEquals(3, mockSpanner.countRequestsOfType(CommitRequest.class));
 
-    // Verify that we receive a transaction tag for the generateRandomVenues() method.
+    // Verify that we receive a transaction tag for the generateRandomData() method.
     assertEquals(
         1,
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
             .filter(
                 request ->
-                    request
-                        .getRequestOptions()
-                        .getTransactionTag()
-                        .equals("generate_random_venues"))
+                    request.getRequestOptions().getTransactionTag().equals("generate_random_data"))
             .count());
     assertEquals(
         1,
         mockSpanner.getRequestsOfType(CommitRequest.class).stream()
             .filter(
                 request ->
-                    request
-                        .getRequestOptions()
-                        .getTransactionTag()
-                        .equals("generate_random_venues"))
+                    request.getRequestOptions().getTransactionTag().equals("generate_random_data"))
             .count());
     // Also verify that we get the auto-generated transaction tags.
     assertEquals(
-        5,
+        2,
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
             .filter(
                 request -> !Strings.isNullOrEmpty(request.getRequestOptions().getTransactionTag()))
             .count());
     assertEquals(
-        1,
+        4,
         mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
             .filter(
                 request ->
                     request
                         .getRequestOptions()
                         .getTransactionTag()
-                        .equals("service_SingerService_deleteAllSingers"))
-            .count());
-    assertEquals(
-        1,
-        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
-            .filter(
-                request ->
-                    request
-                        .getRequestOptions()
-                        .getTransactionTag()
-                        .equals("service_AlbumService_deleteAllAlbums"))
-            .count());
-    assertEquals(
-        10,
-        mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
-            .filter(
-                request ->
-                    request
-                        .getRequestOptions()
-                        .getTransactionTag()
-                        .equals("generate_random_singers"))
-            .count());
-    assertEquals(
-        1,
-        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
-            .filter(
-                request ->
-                    request
-                        .getRequestOptions()
-                        .getTransactionTag()
-                        .equals("generate_random_albums"))
+                        .equals("service_BatchService_deleteAllData"))
             .count());
     assertEquals(
         3,

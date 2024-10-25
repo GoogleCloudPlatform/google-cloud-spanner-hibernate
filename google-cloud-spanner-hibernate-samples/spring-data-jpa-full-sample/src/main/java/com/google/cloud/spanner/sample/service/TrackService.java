@@ -48,13 +48,18 @@ public class TrackService {
     this.trackRepository = trackRepository;
     this.albumRepository = albumRepository;
   }
-
   /** Generates the specified number of random Track records. */
   @Transactional
   public void generateRandomTracks(int numAlbums, int numTracksPerAlbum) {
+    List<Album> albums = albumRepository.findAll(Pageable.ofSize(numAlbums)).toList();
+    generateRandomTracks(albums, numTracksPerAlbum);
+  }
+
+  /** Generates the specified number of random Track records. */
+  @Transactional
+  public void generateRandomTracks(List<Album> albums, int numTracksPerAlbum) {
     Random random = new Random();
 
-    List<Album> albums = albumRepository.findAll(Pageable.ofSize(numAlbums)).toList();
     for (Album album : albums) {
       List<Track> tracks = new ArrayList<>(numTracksPerAlbum);
       for (int trackNumber = 1; trackNumber <= numTracksPerAlbum; trackNumber++) {
