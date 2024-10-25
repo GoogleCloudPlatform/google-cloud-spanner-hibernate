@@ -14,7 +14,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <java.version>11</java.version>
     <hibernate.version>6.6.1.Final</hibernate.version>
-    <spanner-jdbc-driver.version>2.23.0</spanner-jdbc-driver.version>
+    <spanner-jdbc-driver.version>2.24.0</spanner-jdbc-driver.version>
     <log4j.version>2.24.1</log4j.version>
 
     <maven-surefire-plugin.version>3.5.1</maven-surefire-plugin.version>
@@ -194,7 +194,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
-          <version>3.4.1</version>
+          <version>3.5.0</version>
           <configuration>
             <!-- Turns off the cleanup of daemon threads to avoid spurious error messages. #218 -->
             <cleanupDaemonThreads>false</cleanupDaemonThreads>
