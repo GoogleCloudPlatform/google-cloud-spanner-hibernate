@@ -1,6 +1,35 @@
 # Changelog
 
 
+## [3.7.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.7.0...v3.7.1) (2024-10-25)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.fasterxml.jackson.datatype:jackson-datatype-hibernate6 to v2.18.0 ([#1316](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1316)) ([d42b9d7](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/d42b9d765b5daa9119cb7c1cce0110d3873f940a))
+* **deps:** update dependency com.google.cloud:google-cloud-spanner-jdbc to v2.22.0 ([#1296](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1296)) ([856b79a](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/856b79a8953e128ef20d9840baaeae9ba57b6c94))
+* **deps:** update dependency com.google.cloud:google-cloud-spanner-jdbc to v2.23.0 ([#1337](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1337)) ([07601b0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/07601b021ffd6d16fbccbdf4316b706ea44d6312))
+* **deps:** update dependency com.google.cloud:google-cloud-spanner-jdbc to v2.24.0 ([#1377](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1377)) ([7a7bff5](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/7a7bff5dcefd663f1edfd6296d6b83705b2656d5))
+* **deps:** update dependency com.google.guava:guava to v33.3.1-jre ([#1307](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1307)) ([11b21c9](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/11b21c956718bd966ff25bc0ccb8e0c1e24ffc61))
+* **deps:** update dependency io.opentelemetry:opentelemetry-bom to v1.43.0 ([#1364](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1364)) ([4b21c43](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/4b21c43464c9ed1b2cb265367cb65ce17b5352e5))
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#1299](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1299)) ([228aabf](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/228aabf28b8f6813dd39772d10bc221d587d10d5))
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#1362](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1362)) ([69ca8fc](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/69ca8fc4a2d72ada7cd35bf6eb6ef1ff04a9e24a))
+* bump hibernate.version in /google-cloud-spanner-hibernate-dialect ([#1301](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1301)) ([d4bb318](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/d4bb318a1004fd4a8830627159eaa8fc46295c5a))
+* bump org.apache.maven.plugins:maven-failsafe-plugin ([#1354](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1354)) ([b3bc0bf](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/b3bc0bf29061b267ad97616c33f292b6518040cc))
+* bump org.apache.maven.plugins:maven-gpg-plugin ([#1292](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1292)) ([cdca005](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/cdca0054e33dec6cfb434233b4afcb75f92a0c40))
+* bump org.apache.maven.plugins:maven-surefire-plugin ([#1352](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1352)) ([7dae2a2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/7dae2a20b56a3623809917a49011d47354ae01df))
+* bump org.codehaus.mojo:exec-maven-plugin ([#1368](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1368)) ([72dc041](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/72dc041f7725232a6971d05ebe0f0fad7d1fd0dd))
+
+
+### Documentation
+
+* add sample for automatic DML batching ([#1366](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1366)) ([727e5c2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/727e5c2ecdb1c0f8b70170f12931d252418a98dd))
+* add sample for ColumnDefault ([#1365](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1365)) ([233dd3e](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/233dd3e2a339138140d213418a1f0714dc42a80f)), closes [#75](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/75)
+
 ## [3.7.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.6.0...v3.7.0) (2024-09-12)
 
 
