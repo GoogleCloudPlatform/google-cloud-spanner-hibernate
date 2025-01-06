@@ -1,6 +1,22 @@
 # Changelog
 
 
+## [3.7.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.7.1...v3.7.2) (2025-01-06)
+
+
+### Bug Fixes
+
+* **deps:** update log4j2 monorepo to v2.24.3 ([#1450](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1450)) ([955ca49](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/955ca497fde8a3f9b703f8055963a36f8317653f))
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#1444](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1444)) ([3a19432](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/3a194326f39819163bc9b27e12c22677169ad830))
+* bump org.apache.maven.plugins:maven-checkstyle-plugin ([#1385](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1385)) ([0d79fbd](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/0d79fbd6e0a009d81aa0018dc56140bae977aeec))
+* bump org.apache.maven.plugins:maven-failsafe-plugin ([#1404](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1404)) ([e83253b](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/e83253b741833f74168176f39fe7e50d754da5ac))
+* bump org.apache.maven.plugins:maven-javadoc-plugin ([#1425](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1425)) ([a0be2fc](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/a0be2fc90a7e22bc9f492df752dfc6ed949f6c1f))
+* bump org.apache.maven.plugins:maven-surefire-plugin ([#1406](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1406)) ([c968a81](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/c968a8187f3b4caf16737a8e183377ee4c0df7d2))
+
 ## [3.7.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.7.0...v3.7.1) (2024-10-25)
 
 
