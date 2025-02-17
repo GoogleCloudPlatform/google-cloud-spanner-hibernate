@@ -20,6 +20,8 @@ package com.google.cloud.spanner.hibernate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.sql.Connection;
@@ -206,41 +208,37 @@ public class SpannerDialectTests {
 
   @Test
   public void getForUpdateStringLockOptionsTest() {
-    assertThat(this.spannerDialect.getForUpdateString((LockOptions) null)).isEqualTo("");
+    assertEquals(" for update", this.spannerDialect.getForUpdateString((LockOptions) null));
   }
 
   @Test
   public void getForUpdateStringTest() {
-    assertThat(this.spannerDialect.getForUpdateString((LockOptions) null)).isEqualTo("");
+    assertEquals(" for update", this.spannerDialect.getForUpdateString((LockOptions) null));
   }
 
   @Test
   public void getWriteLockStringTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getWriteLockString(1))
-        .isInstanceOf(UnsupportedOperationException.class);
+    assertEquals(" for update", this.spannerDialect.getWriteLockString(1));
   }
 
   @Test
   public void getWriteLockStringAliasTimeoutTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getWriteLockString("a", 1))
-        .isInstanceOf(UnsupportedOperationException.class);
+    assertEquals(" for update", this.spannerDialect.getWriteLockString("a", 1));
   }
 
   @Test
   public void getReadLockStringTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getReadLockString(1))
-        .isInstanceOf(UnsupportedOperationException.class);
+    assertEquals(" for update", this.spannerDialect.getReadLockString(1));
   }
 
   @Test
   public void getReadLockStringAliasTimeoutTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getReadLockString("a", 1))
-        .isInstanceOf(UnsupportedOperationException.class);
+    assertEquals(" for update", this.spannerDialect.getReadLockString("a", 1));
   }
 
   @Test
   public void supportsOuterJoinForUpdateTest() {
-    assertThat(this.spannerDialect.supportsOuterJoinForUpdate()).isFalse();
+    assertTrue(this.spannerDialect.supportsOuterJoinForUpdate());
   }
 
   @Test
@@ -250,20 +248,17 @@ public class SpannerDialectTests {
 
   @Test
   public void getForUpdateStringAliasTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getForUpdateString("a"))
-        .isInstanceOf(UnsupportedOperationException.class);
+    assertEquals(" for update", this.spannerDialect.getForUpdateString("a"));
   }
 
   @Test
   public void getForUpdateStringAliasLockOptionsTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getForUpdateString("a", null))
-        .isInstanceOf(UnsupportedOperationException.class);
+    assertEquals(" for update", this.spannerDialect.getForUpdateString("a", null));
   }
 
   @Test
   public void getForUpdateNowaitStringTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getForUpdateNowaitString())
-        .isInstanceOf(UnsupportedOperationException.class);
+    assertEquals(" for update", this.spannerDialect.getForUpdateNowaitString());
   }
 
   @Test
@@ -274,8 +269,7 @@ public class SpannerDialectTests {
 
   @Test
   public void getForUpdateNowaitStringAliasTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getForUpdateNowaitString("a"))
-        .isInstanceOf(UnsupportedOperationException.class);
+    assertEquals(" for update", this.spannerDialect.getForUpdateNowaitString("a"));
   }
 
   @Test

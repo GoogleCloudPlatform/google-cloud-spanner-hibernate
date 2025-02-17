@@ -86,15 +86,15 @@ public class GeneratedSelectStatementsTests {
 
   @Test
   public void selectLockAcquisitionTest() {
-    // the translated statement must NOT show locking statements.
+    // the translated statement should include an 'for update' clause.
     testStatementTranslation(
         x -> {
-          Query q =
+          Query<?> q =
               x.createQuery("select s from SubTestEntity s").setFirstResult(8).setMaxResults(15);
           q.setLockMode(LockModeType.PESSIMISTIC_READ);
           q.list();
         },
-        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 limit ? offset ?");
+        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 limit ? offset ? for update");
   }
 
   @Test
