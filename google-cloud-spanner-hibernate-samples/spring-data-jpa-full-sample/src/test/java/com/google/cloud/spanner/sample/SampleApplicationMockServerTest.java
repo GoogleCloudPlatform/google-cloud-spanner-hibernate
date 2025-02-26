@@ -28,6 +28,7 @@ import com.google.cloud.spanner.connection.AbstractMockServerTest;
 import com.google.common.base.Strings;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Any;
+import com.google.protobuf.Duration;
 import com.google.protobuf.Empty;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -47,6 +48,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import org.junit.BeforeClass;
@@ -811,6 +813,14 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                 request ->
                     request.getRequestOptions().getTransactionTag().equals("generate_random_data"))
             .count());
+    CommitRequest commitRequest = mockSpanner.getRequestsOfType(CommitRequest.class).stream()
+        .filter(
+            request ->
+                request.getRequestOptions().getTransactionTag().equals("generate_random_data"))
+        .findAny().orElseThrow();
+    assertEquals(Duration.newBuilder()
+            .setNanos((int) TimeUnit.NANOSECONDS.convert(50, TimeUnit.MILLISECONDS)).build(),
+        commitRequest.getMaxCommitDelay());
     // Also verify that we get the auto-generated transaction tags.
     assertEquals(
         2,
