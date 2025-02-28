@@ -34,6 +34,7 @@ import java.sql.SQLException;
 import org.hibernate.HibernateException;
 import org.hibernate.boot.model.TypeContributions;
 import org.hibernate.boot.model.relational.Sequence;
+import org.hibernate.dialect.identity.IdentityColumnSupport;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfo;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -296,6 +297,11 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
     return getQuerySequencesString() == null
         ? SequenceInformationExtractorNoOpImpl.INSTANCE
         : SpannerSequenceInformationExtractor.INSTANCE;
+  }
+
+  @Override
+  public IdentityColumnSupport getIdentityColumnSupport() {
+    return SpannerIdentityColumnSupport.INSTANCE;
   }
 
   @Override
