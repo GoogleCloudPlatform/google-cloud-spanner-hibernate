@@ -26,6 +26,7 @@ import com.google.cloud.spanner.sample.entities.Venue;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import java.sql.Statement;
 import java.util.List;
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -77,12 +78,22 @@ public class BatchService {
     // Then flush the Hibernate session and reset the JDBC connection.
     Session session = entityManager.unwrap(Session.class);
     try {
-      session.doWork(connection -> connection.createStatement().execute("set auto_batch_dml=true"));
+      session.doWork(connection -> {
+        try (Statement statement = connection.createStatement()) {
+          statement.execute("set auto_batch_dml=true");
+          statement.execute("set max_commit_delay='50ms'");
+        }
+      });
       runnable.run();
       session.flush();
     } finally {
       session.doWork(
-          connection -> connection.createStatement().execute("set auto_batch_dml=false"));
+          connection -> {
+            try (Statement statement = connection.createStatement()) {
+              statement.execute("set auto_batch_dml=false");
+              statement.execute("set max_commit_delay=null");
+            }
+          });
     }
   }
 
