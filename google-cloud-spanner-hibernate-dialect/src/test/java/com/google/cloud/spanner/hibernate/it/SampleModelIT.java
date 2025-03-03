@@ -37,6 +37,7 @@ import com.google.cloud.spanner.hibernate.it.model.Album;
 import com.google.cloud.spanner.hibernate.it.model.AllTypes;
 import com.google.cloud.spanner.hibernate.it.model.Concert;
 import com.google.cloud.spanner.hibernate.it.model.Singer;
+import com.google.cloud.spanner.hibernate.it.model.TicketSale;
 import com.google.cloud.spanner.hibernate.it.model.Track;
 import com.google.cloud.spanner.hibernate.it.model.Venue;
 import com.google.cloud.spanner.hibernate.it.model.Venue.VenueDescription;
@@ -94,6 +95,7 @@ public class SampleModelIT {
                     Track.class,
                     Venue.class,
                     Concert.class,
+                    TicketSale.class,
                     AllTypes.class),
                 ImmutableMap.of("hibernate.hbm2ddl.auto", "update"))
             .buildSessionFactory();
@@ -330,6 +332,33 @@ public class SampleModelIT {
       assertEquals(
           Instant.from(OffsetDateTime.of(2023, 9, 27, 0, 0, 0, 0, ZoneOffset.UTC)),
           Instant.from(concert.getEndTime()));
+    }
+  }
+
+  @Test
+  public void testSaveTicketSale() {
+    try (Session session = sessionFactory.openSession()) {
+      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      final Transaction transaction = session.beginTransaction();
+      Venue venue = new Venue("Venue 2", new VenueDescription());
+      session.persist(venue);
+      Concert concert = new Concert(venue, peter);
+      concert.setName("Peter Live!");
+      concert.setStartTime(
+          OffsetDateTime.of(
+              LocalDate.of(2023, 9, 26), LocalTime.of(19, 30), ZoneOffset.of("+02:00")));
+      concert.setEndTime(
+          OffsetDateTime.of(
+              LocalDate.of(2023, 9, 27), LocalTime.of(2, 0), ZoneOffset.of("+02:00")));
+      session.persist(concert);
+      TicketSale ticketSale1 = new TicketSale(concert, "Colin");
+      session.persist(ticketSale1);
+      TicketSale ticketSale2 = new TicketSale(concert, "Emma");
+      session.persist(ticketSale2);
+      transaction.commit();
+
+      assertTrue("ID1: " + ticketSale1.getId(), ticketSale1.getId() > 0);
+      assertTrue("ID2: " + ticketSale2.getId(), ticketSale2.getId() > 0);
     }
   }
 

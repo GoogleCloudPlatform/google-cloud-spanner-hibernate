@@ -22,6 +22,7 @@ import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator.ReplaceInitCommand;
 import com.google.cloud.spanner.hibernate.Interleaved;
 import com.google.cloud.spanner.hibernate.SpannerDialect;
+import com.google.cloud.spanner.hibernate.SpannerIdentityColumnSupport;
 import com.google.cloud.spanner.hibernate.types.AbstractSpannerArrayType;
 import com.google.cloud.spanner.hibernate.types.SpannerArrayListType;
 import com.google.common.base.Strings;
@@ -211,7 +212,13 @@ public class SpannerTableStatements {
             + " "
             + typeString
             + (col.isNullable() ? this.spannerDialect.getNullColumnString() : " not null");
-    if (col.getDefaultValue() != null) {
+    if (col.isIdentity()) {
+      result =
+          result
+              + " "
+              + SpannerIdentityColumnSupport.INSTANCE.getIdentityColumnString(
+                  col.getSqlTypeCode(metadata));
+    } else if (col.getDefaultValue() != null) {
       result = result + " default (" + col.getDefaultValue() + ")";
     }
 
