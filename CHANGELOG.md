@@ -1,6 +1,30 @@
 # Changelog
 
 
+## [3.8.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.7.2...v3.8.0) (2025-03-03)
+
+
+### Features
+
+* add support for identity columns ([#1523](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1523)) ([deb01d5](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/deb01d53d9ef776217d53d980050f37592af5956))
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.google.cloud:google-cloud-spanner-jdbc to v2.27.1 ([#1522](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1522)) ([c531e24](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/c531e24e1c2976ce3ba4be611a1cd299edc27550))
+* **deps:** update spring boot to v3.4.3 ([#1497](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1497)) ([e5fa7bc](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/e5fa7bc6efb1848f36d473163dc7fdbb1d499b55))
+
+
+### Dependencies
+
+* bump hibernate.version in /google-cloud-spanner-hibernate-dialect ([#1505](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1505)) ([2920879](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/2920879c36062f3bf5de71656b625666903a5a5a))
+* bump org.apache.maven.plugins:maven-deploy-plugin ([#1518](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1518)) ([9fd4845](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/9fd4845627fc8ba86bd2db691e2e9f2fadbb7a2e))
+
+
+### Documentation
+
+* max_commit_delay sample ([#1515](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1515)) ([adab42c](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/adab42cf9e88ccb17034f83bfffe5776aee7a49f))
+
 ## [3.7.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.7.1...v3.7.2) (2025-02-17)
 
 
