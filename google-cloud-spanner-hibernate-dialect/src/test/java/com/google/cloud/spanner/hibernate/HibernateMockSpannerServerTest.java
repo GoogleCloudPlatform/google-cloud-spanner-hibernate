@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.hibernate.entities.IdentityEntity;
 import com.google.cloud.spanner.hibernate.entities.Singer;
 import com.google.cloud.spanner.hibernate.hints.Hints;
 import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint.ReplaceMode;
@@ -42,6 +43,7 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
@@ -594,6 +596,53 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
           mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
               .filter(request -> request.getSql().equals(expectedSql))
               .count());
+    }
+  }
+
+  @Test
+  public void testInsertIdentityEntity() {
+    String sql = "insert into IdentityEntity (name) values (@p1)\n" + "THEN RETURN *";
+    Statement statement = Statement.newBuilder(sql).bind("p1").to("test").build();
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            statement,
+            ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("id")
+                                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
+                                        .build())
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("name")
+                                        .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
+                                        .build())
+                                .build())
+                        .build())
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(
+                            Value.newBuilder()
+                                .setStringValue(String.valueOf(Math.abs(Long.reverse(1L))))
+                                .build())
+                        .addValues(Value.newBuilder().setStringValue("test").build())
+                        .build())
+                .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build())
+                .build()));
+    try (SessionFactory sessionFactory =
+            createTestHibernateConfig(ImmutableList.of(IdentityEntity.class))
+                .buildSessionFactory();
+        Session session = sessionFactory.openSession()) {
+      Transaction transaction = session.beginTransaction();
+      IdentityEntity entity = new IdentityEntity();
+      entity.setName("test");
+      session.persist(entity);
+      transaction.commit();
+      assertEquals(Math.abs(Long.reverse(1L)), entity.getId());
     }
   }
 

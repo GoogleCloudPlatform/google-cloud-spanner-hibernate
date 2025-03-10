@@ -166,7 +166,7 @@ public class AbstractSchemaGenerationMockServerTest extends AbstractMockSpannerS
                   + "    ELSE 2\n"
                   + "  END AS NULLABLE,\n"
                   + "  NULL AS REMARKS,\n"
-                  + "  NULL AS COLUMN_DEF,\n"
+                  + "  COLUMN_DEFAULT AS COLUMN_DEF,\n"
                   + "  0 AS SQL_DATA_TYPE,\n"
                   + "  0 AS SQL_DATETIME_SUB,\n"
                   + "  CASE\n"

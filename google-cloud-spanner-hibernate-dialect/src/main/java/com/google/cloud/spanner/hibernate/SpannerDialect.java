@@ -37,6 +37,7 @@ import org.hibernate.LockOptions;
 import org.hibernate.boot.model.TypeContributions;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.RowLockStrategy;
+import org.hibernate.dialect.identity.IdentityColumnSupport;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
@@ -307,6 +308,11 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
     return getQuerySequencesString() == null
         ? SequenceInformationExtractorNoOpImpl.INSTANCE
         : SpannerSequenceInformationExtractor.INSTANCE;
+  }
+
+  @Override
+  public IdentityColumnSupport getIdentityColumnSupport() {
+    return SpannerIdentityColumnSupport.INSTANCE;
   }
 
   @Override
