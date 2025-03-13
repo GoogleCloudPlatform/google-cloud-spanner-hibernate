@@ -32,9 +32,19 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import org.hibernate.HibernateException;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
 import org.hibernate.boot.model.TypeContributions;
 import org.hibernate.boot.model.relational.Sequence;
+import org.hibernate.dialect.RowLockStrategy;
 import org.hibernate.dialect.identity.IdentityColumnSupport;
+import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
+import org.hibernate.dialect.lock.OptimisticLockingStrategy;
+import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
+import org.hibernate.dialect.lock.PessimisticReadSelectLockingStrategy;
+import org.hibernate.dialect.lock.PessimisticWriteSelectLockingStrategy;
+import org.hibernate.dialect.lock.SelectLockingStrategy;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfo;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -43,6 +53,7 @@ import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.metamodel.mapping.EntityMappingType;
 import org.hibernate.metamodel.spi.RuntimeModelCreationContext;
+import org.hibernate.persister.entity.Lockable;
 import org.hibernate.query.spi.DomainQueryExecutionContext;
 import org.hibernate.query.spi.QueryOptions;
 import org.hibernate.query.sqm.internal.DomainParameterXref;
@@ -418,5 +429,101 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
 
   private static boolean hasStatementHint(String hint) {
     return !Strings.isNullOrEmpty(hint) && hint.startsWith("@{") && hint.endsWith("}");
+  }
+
+  /* Lock acquisition functions */
+
+  @Override
+  public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
+    // TODO: Remove the override in the super class to use the default implementation.
+    switch (lockMode) {
+      case PESSIMISTIC_FORCE_INCREMENT:
+        return new PessimisticForceIncrementLockingStrategy(lockable, lockMode);
+      case UPGRADE_NOWAIT:
+      case UPGRADE_SKIPLOCKED:
+      case PESSIMISTIC_WRITE:
+        return new PessimisticWriteSelectLockingStrategy(lockable, lockMode);
+      case PESSIMISTIC_READ:
+        return new PessimisticReadSelectLockingStrategy(lockable, lockMode);
+      case OPTIMISTIC_FORCE_INCREMENT:
+        return new OptimisticForceIncrementLockingStrategy(lockable, lockMode);
+      case OPTIMISTIC:
+        return new OptimisticLockingStrategy(lockable, lockMode);
+      case READ:
+        return new SelectLockingStrategy(lockable, lockMode);
+      default:
+        // WRITE, NONE are not allowed here
+        throw new IllegalArgumentException("Unsupported lock mode");
+    }
+  }
+
+  @Override
+  public RowLockStrategy getWriteRowLockStrategy() {
+    return RowLockStrategy.TABLE;
+  }
+
+  @Override
+  public String getForUpdateString() {
+    return " for update";
+  }
+
+  @Override
+  public String getForUpdateString(LockOptions lockOptions) {
+    return getForUpdateString();
+  }
+
+  @Override
+  public String getForUpdateString(String aliases) {
+    return getForUpdateString();
+  }
+
+  @Override
+  public String getForUpdateString(String aliases, LockOptions lockOptions) {
+    return getForUpdateString();
+  }
+
+  @Override
+  public String getWriteLockString(int timeout) {
+    return getForUpdateString();
+  }
+
+  @Override
+  public String getWriteLockString(String aliases, int timeout) {
+    return getForUpdateString();
+  }
+
+  @Override
+  public String getReadLockString(int timeout) {
+    return getForUpdateString();
+  }
+
+  @Override
+  public String getReadLockString(String aliases, int timeout) {
+    return getForUpdateString();
+  }
+
+  @Override
+  public boolean supportsOuterJoinForUpdate() {
+    return true;
+  }
+
+  @Override
+  public String getForUpdateNowaitString() {
+    return getForUpdateString();
+  }
+
+  @Override
+  public String getForUpdateNowaitString(String aliases) {
+    return getForUpdateString();
+  }
+
+  @Override
+  public String getForUpdateSkipLockedString() {
+    throw new UnsupportedOperationException("Spanner does not support skip locked.");
+  }
+
+  @Override
+  public String getForUpdateSkipLockedString(String aliases) {
+    throw new UnsupportedOperationException("Spanner does not support skip locked.");
   }
 }

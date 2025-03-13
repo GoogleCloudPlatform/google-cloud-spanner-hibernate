@@ -61,6 +61,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -138,7 +139,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
   public void testHibernateSaveSinger() {
     mockSpanner.putStatementResult(
         StatementResult.query(
-            Statement.of("select next_val as id_val from singerId"),
+            Statement.of("select next_val as id_val from singerId for update"),
             com.google.spanner.v1.ResultSet.newBuilder()
                 .setMetadata(
                     ResultSetMetadata.newBuilder()
@@ -185,7 +186,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
     long expectedId = Long.reverse(initialValue + 1L);
     mockSpanner.putStatementResult(
         StatementResult.query(
-            Statement.of("select next_val as id_val from singerId"),
+            Statement.of("select next_val as id_val from singerId for update"),
             com.google.spanner.v1.ResultSet.newBuilder()
                 .setMetadata(
                     ResultSetMetadata.newBuilder()
@@ -642,6 +643,45 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
       session.persist(entity);
       transaction.commit();
       assertEquals(Math.abs(Long.reverse(1L)), entity.getId());
+    }
+  }
+
+  @Test
+  public void testSelectForUpdate() {
+    String expectedSql = "select s1_0.id from Singer s1_0 where s1_0.id=@p1 for update";
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(expectedSql).bind("p1").to(1L).build(),
+            com.google.spanner.v1.ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(
+                            StructType.newBuilder()
+                                .addFields(
+                                    Field.newBuilder()
+                                        .setName("id")
+                                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
+                                        .build())
+                                .build())
+                        .build())
+                .addRows(
+                    ListValue.newBuilder()
+                        .addValues(Value.newBuilder().setStringValue("1").build())
+                        .build())
+                .build()));
+
+    try (SessionFactory sessionFactory =
+            createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
+        Session session = sessionFactory.openSession()) {
+      Transaction transaction = session.beginTransaction();
+      Singer singer = session.get(Singer.class, 1L, LockMode.PESSIMISTIC_WRITE);
+      assertNotNull(singer);
+      assertEquals(
+          1,
+          mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+              .filter(request -> request.getSql().equals(expectedSql))
+              .count());
+      transaction.commit();
     }
   }
 
