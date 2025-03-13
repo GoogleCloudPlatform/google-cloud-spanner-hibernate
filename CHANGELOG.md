@@ -1,6 +1,18 @@
 # Changelog
 
 
+## [3.9.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.8.0...v3.9.0) (2025-03-13)
+
+
+### Features
+
+* support FOR UPDATE clauses ([#1495](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1495)) ([515bce3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/515bce30c914d555d82222ab1cf399b2a2decce9))
+
+
+### Dependencies
+
+* bump hibernate.version in /google-cloud-spanner-hibernate-dialect ([#1536](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1536)) ([609beab](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/609beab927fef369e427bd3b16cd90682cbae533))
+
 ## [3.8.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.7.2...v3.8.0) (2025-03-03)
 
 
