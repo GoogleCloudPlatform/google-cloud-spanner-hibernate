@@ -24,6 +24,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import java.util.List;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Check;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -50,9 +53,28 @@ public class Singer {
   @Column(nullable = false)
   private long id;
 
+  @Column private String name;
+
+  @OneToMany(mappedBy = "singer")
+  @BatchSize(size = 2)
+  private List<Album> albums;
+
   public Singer() {}
+
+  public Singer(long id, String name) {
+    this.id = id;
+    this.name = name;
+  }
 
   public long getId() {
     return id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public List<Album> getAlbums() {
+    return albums;
   }
 }

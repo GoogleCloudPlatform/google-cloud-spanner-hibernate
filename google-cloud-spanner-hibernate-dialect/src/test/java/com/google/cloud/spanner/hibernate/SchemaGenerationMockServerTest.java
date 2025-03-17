@@ -26,6 +26,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.hibernate.entities.Account;
 import com.google.cloud.spanner.hibernate.entities.Airplane;
 import com.google.cloud.spanner.hibernate.entities.Airport;
+import com.google.cloud.spanner.hibernate.entities.Album;
 import com.google.cloud.spanner.hibernate.entities.AutoIdEntity;
 import com.google.cloud.spanner.hibernate.entities.Child;
 import com.google.cloud.spanner.hibernate.entities.Customer;
@@ -107,7 +108,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
       //noinspection EmptyTryBlock
       try (SessionFactory ignore =
           createTestHibernateConfig(
-                  ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
+                  ImmutableList.of(
+                      Singer.class, Album.class, Invoice.class, Customer.class, Account.class),
                   ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
               .buildSessionFactory()) {
         // do nothing, just generate the schema.
@@ -121,13 +123,16 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
               .collect(Collectors.toList());
       assertEquals(1, requests.size());
       UpdateDatabaseDdlRequest request = requests.get(0);
-      assertEquals(8, request.getStatementsCount());
+      assertEquals(10, request.getStatementsCount());
 
       int index = -1;
 
       if (hbm2Ddl.equals("update")) {
         assertEquals(
             "create table Account (id int64 not null,amount numeric,name string(255)) PRIMARY KEY (id)",
+            request.getStatements(++index));
+        assertEquals(
+            "create table Album (id int64 not null,singer int64) PRIMARY KEY (id)",
             request.getStatements(++index));
         assertEquals(
             "create table Customer (customerId int64 not null,name string(255)) PRIMARY KEY (customerId)",
@@ -142,10 +147,13 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             "create table invoiceId (next_val int64) PRIMARY KEY ()",
             request.getStatements(++index));
         assertEquals(
-            "create table Singer (id int64 not null) PRIMARY KEY (id)",
+            "create table Singer (id int64 not null,name string(255)) PRIMARY KEY (id)",
             request.getStatements(++index));
         assertEquals(
             "create table singerId (next_val int64) PRIMARY KEY ()",
+            request.getStatements(++index));
+        assertEquals(
+            "alter table Album add constraint fk_album_singer foreign key (singer) references Singer (id)",
             request.getStatements(++index));
         assertEquals(
             "alter table Invoice add constraint fk_invoice_customer foreign key (customer_customerId) references Customer (customerId) on delete cascade",
@@ -153,6 +161,9 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
       } else {
         assertEquals(
             "create table Account (amount numeric,id int64 not null,name string(255)) PRIMARY KEY (id)",
+            request.getStatements(++index));
+        assertEquals(
+            "create table Album (id int64 not null,singer int64) PRIMARY KEY (id)",
             request.getStatements(++index));
         assertEquals(
             "create table Customer (customerId int64 not null,name string(255)) PRIMARY KEY (customerId)",
@@ -167,10 +178,13 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             "create table invoiceId (next_val int64) PRIMARY KEY ()",
             request.getStatements(++index));
         assertEquals(
-            "create table Singer (id int64 not null) PRIMARY KEY (id)",
+            "create table Singer (id int64 not null,name string(255)) PRIMARY KEY (id)",
             request.getStatements(++index));
         assertEquals(
             "create table singerId (next_val int64) PRIMARY KEY ()",
+            request.getStatements(++index));
+        assertEquals(
+            "alter table Album add constraint fk_album_singer foreign key (singer) references Singer (id)",
             request.getStatements(++index));
         assertEquals(
             "alter table Invoice add constraint fk_invoice_customer foreign key (customer_customerId) references Customer (customerId) on delete cascade",
@@ -186,7 +200,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     //noinspection EmptyTryBlock
     try (SessionFactory ignore =
         createTestHibernateConfig(
-                ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
+                ImmutableList.of(
+                    Singer.class, Album.class, Invoice.class, Customer.class, Account.class),
                 ImmutableMap.of("hibernate.hbm2ddl.auto", "drop"))
             .buildSessionFactory()) {
       // do nothing, just generate the schema.
@@ -247,7 +262,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     //noinspection EmptyTryBlock
     try (SessionFactory ignore =
         createTestHibernateConfig(
-                ImmutableList.of(Singer.class, Invoice.class, Customer.class, Account.class),
+                ImmutableList.of(
+                    Singer.class, Album.class, Invoice.class, Customer.class, Account.class),
                 ImmutableMap.of("hibernate.hbm2ddl.auto", "drop"))
             .buildSessionFactory()) {
       // do nothing, just generate the schema.

@@ -34,6 +34,7 @@ import org.hibernate.sql.ast.tree.from.DerivedTableReference;
 import org.hibernate.sql.ast.tree.from.NamedTableReference;
 import org.hibernate.sql.ast.tree.from.TableGroup;
 import org.hibernate.sql.ast.tree.from.TableReference;
+import org.hibernate.sql.ast.tree.predicate.InArrayPredicate;
 import org.hibernate.sql.ast.tree.predicate.LikePredicate;
 import org.hibernate.sql.ast.tree.select.QueryPart;
 import org.hibernate.sql.ast.tree.select.SelectClause;
@@ -77,6 +78,14 @@ public class SpannerSqlAstTranslator<T extends JdbcOperation> extends AbstractSq
             likePredicate.isNegated());
       }
     }
+  }
+
+  @Override
+  public void visitInArrayPredicate(InArrayPredicate inArrayPredicate) {
+    inArrayPredicate.getTestExpression().accept(this);
+    appendSql(" in unnest(");
+    inArrayPredicate.getArrayParameter().accept(this);
+    appendSql(')');
   }
 
   @Override
