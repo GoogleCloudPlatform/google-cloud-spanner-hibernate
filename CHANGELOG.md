@@ -1,6 +1,26 @@
 # Changelog
 
 
+## [3.9.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.8.0...v3.9.0) (2025-03-18)
+
+
+### Features
+
+* support FOR UPDATE clauses ([#1495](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1495)) ([515bce3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/515bce30c914d555d82222ab1cf399b2a2decce9))
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.google.cloud.opentelemetry:exporter-trace to v0.34.0 ([#1553](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1553)) ([c3bb37a](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/c3bb37a398c9f732340df1503a49b2eede8ad932))
+* **deps:** update hibernate.version to v6.6.11.final ([#1548](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1548)) ([464d434](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/464d4349279e1971e9991e58d896cedad0efa3a1))
+* use unnest instead of array_contains ([#1552](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1552)) ([83f1a84](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/83f1a84dd4e0994237114a97937c8d8c5ad71122)), closes [#1546](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1546)
+
+
+### Dependencies
+
+* bump hibernate.version in /google-cloud-spanner-hibernate-dialect ([#1536](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1536)) ([609beab](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/609beab927fef369e427bd3b16cd90682cbae533))
+* bump hibernate.version in /google-cloud-spanner-hibernate-dialect ([#1550](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1550)) ([a63b423](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/a63b4238233974cdeb68ff902624bebaf9ea06c7))
+
 ## [3.8.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.7.2...v3.8.0) (2025-03-03)
 
 
