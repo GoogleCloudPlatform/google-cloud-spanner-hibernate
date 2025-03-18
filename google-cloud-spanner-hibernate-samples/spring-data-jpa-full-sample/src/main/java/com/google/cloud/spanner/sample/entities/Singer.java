@@ -26,6 +26,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.List;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.Type;
@@ -61,6 +62,7 @@ public class Singer extends AbstractNonInterleavedEntity {
 
   @OneToMany
   @JoinColumn(name = "singer_id")
+  @BatchSize(size = 10)
   private List<Album> albums;
 
   @OneToMany

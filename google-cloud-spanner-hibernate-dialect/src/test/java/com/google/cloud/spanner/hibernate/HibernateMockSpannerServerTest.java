@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.hibernate.entities.Album;
 import com.google.cloud.spanner.hibernate.entities.IdentityEntity;
 import com.google.cloud.spanner.hibernate.entities.Singer;
 import com.google.cloud.spanner.hibernate.hints.Hints;
@@ -59,6 +60,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import org.hibernate.LockMode;
@@ -73,7 +75,8 @@ import org.junit.Test;
 /** Tests Hibernate configuration using an in-memory mock Spanner server. */
 public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTest {
 
-  private static final ImmutableList<Class<?>> ENTITY_CLASSES = ImmutableList.of(Singer.class);
+  private static final ImmutableList<Class<?>> ENTITY_CLASSES =
+      ImmutableList.of(Singer.class, Album.class);
 
   static ResultSet createBitReversedSequenceResultSet(long startValue, long endValue) {
     return ResultSet.newBuilder()
@@ -105,27 +108,11 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
   public void testHibernateGetSinger() {
     mockSpanner.putStatementResult(
         StatementResult.query(
-            Statement.newBuilder("select s1_0.id from Singer s1_0 where s1_0.id=@p1")
+            Statement.newBuilder("select s1_0.id,s1_0.name from Singer s1_0 where s1_0.id=@p1")
                 .bind("p1")
                 .to(1L)
                 .build(),
-            com.google.spanner.v1.ResultSet.newBuilder()
-                .setMetadata(
-                    ResultSetMetadata.newBuilder()
-                        .setRowType(
-                            StructType.newBuilder()
-                                .addFields(
-                                    Field.newBuilder()
-                                        .setName("id")
-                                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
-                                        .build())
-                                .build())
-                        .build())
-                .addRows(
-                    ListValue.newBuilder()
-                        .addValues(Value.newBuilder().setStringValue("1").build())
-                        .build())
-                .build()));
+            createSingerResultSet(ImmutableList.of(new Singer(1L, "test")))));
 
     try (SessionFactory sessionFactory =
             createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
@@ -555,27 +542,12 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
 
   @Test
   public void testQueryHint() {
-    String expectedSql = "select s1_0.id from Singer @{FORCE_INDEX=idx_singer_active} s1_0";
+    String expectedSql =
+        "select s1_0.id,s1_0.name from Singer @{FORCE_INDEX=idx_singer_active} s1_0";
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.of(expectedSql),
-            com.google.spanner.v1.ResultSet.newBuilder()
-                .setMetadata(
-                    ResultSetMetadata.newBuilder()
-                        .setRowType(
-                            StructType.newBuilder()
-                                .addFields(
-                                    Field.newBuilder()
-                                        .setName("id")
-                                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
-                                        .build())
-                                .build())
-                        .build())
-                .addRows(
-                    ListValue.newBuilder()
-                        .addValues(Value.newBuilder().setStringValue("1").build())
-                        .build())
-                .build()));
+            createSingerResultSet(ImmutableList.of(new Singer(1L, "test")))));
 
     try (SessionFactory sessionFactory =
             createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
@@ -648,27 +620,11 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
 
   @Test
   public void testSelectForUpdate() {
-    String expectedSql = "select s1_0.id from Singer s1_0 where s1_0.id=@p1 for update";
+    String expectedSql = "select s1_0.id,s1_0.name from Singer s1_0 where s1_0.id=@p1 for update";
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.newBuilder(expectedSql).bind("p1").to(1L).build(),
-            com.google.spanner.v1.ResultSet.newBuilder()
-                .setMetadata(
-                    ResultSetMetadata.newBuilder()
-                        .setRowType(
-                            StructType.newBuilder()
-                                .addFields(
-                                    Field.newBuilder()
-                                        .setName("id")
-                                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
-                                        .build())
-                                .build())
-                        .build())
-                .addRows(
-                    ListValue.newBuilder()
-                        .addValues(Value.newBuilder().setStringValue("1").build())
-                        .build())
-                .build()));
+            createSingerResultSet(ImmutableList.of(new Singer(1L, "test")))));
 
     try (SessionFactory sessionFactory =
             createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
@@ -683,6 +639,114 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
               .count());
       transaction.commit();
     }
+  }
+
+  @Test
+  public void testCollectionWithBatchSize() {
+    Singer singer1 = new Singer(1L, "test1");
+    Singer singer2 = new Singer(2L, "test2");
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.of("select s1_0.id,s1_0.name from Singer s1_0"),
+            createSingerResultSet(ImmutableList.of(singer1, singer2))));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            Statement.newBuilder(
+                    "select a1_0.singer,a1_0.id from Album a1_0 where a1_0.singer in unnest(@p1)")
+                .bind("p1")
+                .toInt64Array(new long[] {1L, 2L})
+                .build(),
+            createAlbumResultSet(
+                ImmutableList.of(
+                    new Album(singer1, 1L),
+                    new Album(singer1, 2L),
+                    new Album(singer2, 3L),
+                    new Album(singer2, 4L)))));
+
+    try (SessionFactory sessionFactory =
+            createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
+        Session session = sessionFactory.openSession()) {
+      CriteriaBuilder cb = session.getCriteriaBuilder();
+      CriteriaQuery<Singer> cr = cb.createQuery(Singer.class);
+      Root<Singer> root = cr.from(Singer.class);
+      cr.select(root);
+      Query<Singer> query = session.createQuery(cr);
+      List<Singer> singers = query.getResultList();
+      assertNotNull(singers);
+      for (Singer singer : singers) {
+        List<Album> albums = singer.getAlbums();
+        assertEquals(2, albums.size());
+      }
+    }
+  }
+
+  ResultSet createSingerResultSet(List<Singer> singers) {
+    return ResultSet.newBuilder()
+        .setMetadata(
+            ResultSetMetadata.newBuilder()
+                .setRowType(
+                    StructType.newBuilder()
+                        .addFields(
+                            Field.newBuilder()
+                                .setName("id")
+                                .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
+                                .build())
+                        .addFields(
+                            Field.newBuilder()
+                                .setName("name")
+                                .setType(Type.newBuilder().setCode(TypeCode.STRING).build())
+                                .build())
+                        .build())
+                .build())
+        .addAllRows(
+            singers.stream()
+                .map(
+                    singer ->
+                        ListValue.newBuilder()
+                            .addValues(
+                                Value.newBuilder()
+                                    .setStringValue(String.valueOf(singer.getId()))
+                                    .build())
+                            .addValues(Value.newBuilder().setStringValue(singer.getName()).build())
+                            .build())
+                .collect(Collectors.toList()))
+        .build();
+  }
+
+  ResultSet createAlbumResultSet(List<Album> albums) {
+    return ResultSet.newBuilder()
+        .setMetadata(
+            ResultSetMetadata.newBuilder()
+                .setRowType(
+                    StructType.newBuilder()
+                        .addFields(
+                            Field.newBuilder()
+                                .setName("singer")
+                                .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
+                                .build())
+                        .addFields(
+                            Field.newBuilder()
+                                .setName("id")
+                                .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
+                                .build())
+                        .build())
+                .build())
+        .addAllRows(
+            albums.stream()
+                .map(
+                    album ->
+                        ListValue.newBuilder()
+                            .addValues(
+                                Value.newBuilder()
+                                    .setStringValue(String.valueOf(album.getSinger().getId()))
+                                    .build())
+                            .addValues(
+                                Value.newBuilder()
+                                    .setStringValue(String.valueOf(album.getId()))
+                                    .build())
+                            .build())
+                .collect(Collectors.toList()))
+        .build();
   }
 
   @Table(name = "test-entity")
