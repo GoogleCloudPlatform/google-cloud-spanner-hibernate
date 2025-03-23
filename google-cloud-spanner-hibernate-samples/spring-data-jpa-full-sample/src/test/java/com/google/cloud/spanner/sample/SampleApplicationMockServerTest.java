@@ -234,7 +234,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                         + "  NULL AS SCOPE_SCHEMA,\n"
                         + "  NULL AS SCOPE_TABLE,\n"
                         + "  NULL AS SOURCE_DATA_TYPE,\n"
-                        + "  'NO' AS IS_AUTOINCREMENT,\n"
+                        + "  IS_IDENTITY AS IS_AUTOINCREMENT,\n"
                         + "  CASE\n"
                         + "    WHEN (IS_GENERATED = 'NEVER') THEN 'NO'\n"
                         + "    ELSE 'YES'\n"
