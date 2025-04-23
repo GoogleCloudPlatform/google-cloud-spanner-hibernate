@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.sample;
 
+import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.SpannerPool;
 import com.google.cloud.spanner.sample.entities.Concert;
@@ -26,6 +27,7 @@ import com.google.cloud.spanner.sample.opentelemetry.OpenTelemetryInitializer;
 import com.google.cloud.spanner.sample.repository.ConcertRepository;
 import com.google.cloud.spanner.sample.service.BatchService;
 import com.google.cloud.spanner.sample.service.ConcertService;
+import com.google.cloud.spanner.sample.service.DatabaseClientService;
 import com.google.cloud.spanner.sample.service.SingerService;
 import com.google.cloud.spanner.sample.service.StaleReadService;
 import jakarta.annotation.PreDestroy;
@@ -71,18 +73,22 @@ public class SampleApplication implements CommandLineRunner {
 
   private final ConcertRepository concertRepository;
 
+  private final DatabaseClientService databaseClientService;
+
   /** Constructor with auto-injected dependencies. */
   public SampleApplication(
       SingerService singerService,
       ConcertService concertService,
       StaleReadService staleReadService,
       BatchService batchService,
-      ConcertRepository concertRepository) {
+      ConcertRepository concertRepository,
+      DatabaseClientService databaseClientService) {
     this.singerService = singerService;
     this.concertService = concertService;
     this.staleReadService = staleReadService;
     this.batchService = batchService;
     this.concertRepository = concertRepository;
+    this.databaseClientService = databaseClientService;
   }
 
   public static void main(String[] args) {
@@ -116,6 +122,9 @@ public class SampleApplication implements CommandLineRunner {
     // Select all active singers. This query uses a FORCE_INDEX query hint.
     List<Singer> activeSingers = singerService.getActiveSingers();
     log.info("Found {} active singers", activeSingers.size());
+
+    // Write 10 random singers to the database using mutations.
+    writeMutations();
   }
 
   void printData() {
@@ -142,6 +151,18 @@ public class SampleApplication implements CommandLineRunner {
         staleReadService.executeReadOnlyTransactionAtTimestamp(
             currentTime, concertRepository::findAll);
     log.info("Found {} concerts using a stale read.", concerts.size());
+  }
+
+  /**
+   * This sample methods gets a reference to the underlying Spanner {@link
+   * com.google.cloud.spanner.DatabaseClient} and uses that to write mutations to Spanner. The
+   * {@link com.google.cloud.spanner.DatabaseClient} that is returned is safe to use in parallel
+   * with JPA / Hibernate, and it is safe to store a reference to the client for later use.
+   */
+  void writeMutations() {
+    DatabaseClient client = databaseClientService.getSpannerClient();
+    // Generate 10 random singers and write these to the database using mutations.
+    singerService.insertSingersUsingMutations(client, 10);
   }
 
   /**

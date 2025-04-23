@@ -78,12 +78,13 @@ public class BatchService {
     // Then flush the Hibernate session and reset the JDBC connection.
     Session session = entityManager.unwrap(Session.class);
     try {
-      session.doWork(connection -> {
-        try (Statement statement = connection.createStatement()) {
-          statement.execute("set auto_batch_dml=true");
-          statement.execute("set max_commit_delay='50ms'");
-        }
-      });
+      session.doWork(
+          connection -> {
+            try (Statement statement = connection.createStatement()) {
+              statement.execute("set auto_batch_dml=true");
+              statement.execute("set max_commit_delay='50ms'");
+            }
+          });
       runnable.run();
       session.flush();
     } finally {

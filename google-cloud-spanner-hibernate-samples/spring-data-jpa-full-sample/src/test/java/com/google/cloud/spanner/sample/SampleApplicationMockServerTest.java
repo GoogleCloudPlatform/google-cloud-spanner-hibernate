@@ -796,7 +796,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
 
     assertEquals(32, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     assertEquals(2, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
-    assertEquals(3, mockSpanner.countRequestsOfType(CommitRequest.class));
+    assertEquals(4, mockSpanner.countRequestsOfType(CommitRequest.class));
 
     // Verify that we receive a transaction tag for the generateRandomData() method.
     assertEquals(
@@ -813,13 +813,17 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                 request ->
                     request.getRequestOptions().getTransactionTag().equals("generate_random_data"))
             .count());
-    CommitRequest commitRequest = mockSpanner.getRequestsOfType(CommitRequest.class).stream()
-        .filter(
-            request ->
-                request.getRequestOptions().getTransactionTag().equals("generate_random_data"))
-        .findAny().orElseThrow();
-    assertEquals(Duration.newBuilder()
-            .setNanos((int) TimeUnit.NANOSECONDS.convert(50, TimeUnit.MILLISECONDS)).build(),
+    CommitRequest commitRequest =
+        mockSpanner.getRequestsOfType(CommitRequest.class).stream()
+            .filter(
+                request ->
+                    request.getRequestOptions().getTransactionTag().equals("generate_random_data"))
+            .findAny()
+            .orElseThrow();
+    assertEquals(
+        Duration.newBuilder()
+            .setNanos((int) TimeUnit.NANOSECONDS.convert(50, TimeUnit.MILLISECONDS))
+            .build(),
         commitRequest.getMaxCommitDelay());
     // Also verify that we get the auto-generated transaction tags.
     assertEquals(
@@ -848,6 +852,10 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                         .getRequestTag()
                         .equals("search_singers_by_last_name_starts_with"))
             .count());
+    // Verify that the last commit request contains one mutation with 10 inserts.
+    CommitRequest lastCommitRequest = mockSpanner.getRequestsOfType(CommitRequest.class).get(3);
+    assertEquals(1, lastCommitRequest.getMutationsCount());
+    assertEquals(10, lastCommitRequest.getMutations(0).getInsertOrUpdate().getValuesCount());
   }
 
   private static void addDdlResponseToSpannerAdmin() {

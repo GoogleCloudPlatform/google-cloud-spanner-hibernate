@@ -18,6 +18,8 @@
 
 package com.google.cloud.spanner.sample.service;
 
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.hibernate.TransactionTag;
 import com.google.cloud.spanner.sample.entities.Album;
 import com.google.cloud.spanner.sample.entities.Concert;
@@ -29,6 +31,8 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -96,6 +100,37 @@ public class SingerService {
   @Transactional
   @TransactionTag("generate_random_singers")
   public List<Singer> generateRandomSingers(int count) {
+    return repository.saveAll(createRandomSingers(count));
+  }
+
+  public List<Singer> insertSingersUsingMutations(DatabaseClient client, int count) {
+    List<Singer> singers = createRandomSingers(count);
+    // Assign the singers a random ID.
+    singers.forEach(singer -> singer.setId(UUID.randomUUID()));
+
+    // Use the DatabaseClient to write the singers to the database using mutations.
+    client.write(
+        singers.stream()
+            .map(
+                singer ->
+                    Mutation.newInsertOrUpdateBuilder("singer")
+                        .set("id")
+                        .to(singer.getId().toString())
+                        .set("first_name")
+                        .to(singer.getFirstName())
+                        .set("last_name")
+                        .to(singer.getLastName())
+                        .set("nick_names")
+                        .toStringArray(singer.getNickNames())
+                        .set("active")
+                        .to(singer.getActive())
+                        .build())
+            .collect(Collectors.toList()));
+
+    return singers;
+  }
+
+  private List<Singer> createRandomSingers(int count) {
     List<Singer> singers = new ArrayList<>(count);
     for (int i = 0; i < count; i++) {
       Singer singer = new Singer();
@@ -104,6 +139,6 @@ public class SingerService {
       singer.setNickNames(randomDataService.getRandomNickNames());
       singers.add(singer);
     }
-    return repository.saveAll(singers);
+    return singers;
   }
 }
