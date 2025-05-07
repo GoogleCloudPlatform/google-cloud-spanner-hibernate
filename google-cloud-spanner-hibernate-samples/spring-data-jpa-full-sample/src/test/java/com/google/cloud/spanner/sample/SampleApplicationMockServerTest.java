@@ -183,6 +183,8 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
                         + "    WHEN SPANNER_TYPE LIKE 'STRING%' THEN -9\n"
                         + "    WHEN SPANNER_TYPE = 'JSON' THEN -9\n"
                         + "    WHEN SPANNER_TYPE = 'TIMESTAMP' THEN 93\n"
+                        + "    WHEN SPANNER_TYPE = 'UUID' THEN 1111\n"
+                        + "    ELSE 1111\n"
                         + "  END AS DATA_TYPE,\n"
                         + "  SPANNER_TYPE AS TYPE_NAME,\n"
                         + "  CASE\n"
