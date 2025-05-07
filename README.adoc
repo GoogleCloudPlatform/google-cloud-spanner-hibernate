@@ -25,7 +25,7 @@ Maven coordinates for the dialect:
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
-  <version>3.7.0</version>
+  <version>3.9.1</version>
 </dependency>
 ----
 // {x-version-update-start:google-cloud-spanner-hibernate-dialect:released}
@@ -37,7 +37,7 @@ Maven coordinates for the official https://cloud.google.com/spanner/docs/open-so
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-jdbc</artifactId>
-  <version>2.21.0</version>
+  <version>2.29.1</version>
 </dependency>
 ----
 
@@ -473,6 +473,38 @@ Please consult the https://cloud.google.com/spanner/docs/use-oss-jdbc[Cloud Span
 === Performance Optimizations
 
 There are some practices which can improve the execution time of Hibernate operations.
+
+==== Isolation Level
+
+Spanner supports two isolation levels:
+
+- `SERIALIZABLE` (default)
+- `REPEATABLE READ`
+
+Using `REPEATABLE READ` instead of `SERIALIZABLE` means that Spanner does not need to take locks on
+the data that your transaction reads, unless the query includes a `FOR UPDATE` clause. Using
+`REPEATABLE READ` can therefore improve the performance of your application and reduce the number of
+aborted transactions.
+
+You can set the isolation level that Spanner should use in the JDBC connection URL like this:
+
+[source]
+----
+jdbc:cloudspanner:/projects/my-project/instances/my-instance/databases/my-database;default_isolation_level=REPEATABLE_READ
+----
+
+You can also use the standard
+https://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html#setTransactionIsolation-int-[`Connection#setTransactionIsolation(level)`]
+JDBC method.
+
+If you are using Spring, you can use this annotation:
+
+[source, java]
+----
+----
+
+See https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/master/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample/src/main/java/com/google/cloud/spanner/sample/service/ConcertService.java[ConcertService.java]
+for a full working example.
 
 ==== Be Clear About Inserts or Updates
 
