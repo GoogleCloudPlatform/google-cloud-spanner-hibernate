@@ -1,6 +1,28 @@
 # Changelog
 
 
+## [3.9.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.9.0...v3.9.1) (2025-04-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.google.cloud:google-cloud-spanner-jdbc to v2.28.0 ([#1559](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1559)) ([3342b3b](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/3342b3b68f05e165159e8dcbfea97843bb553e0f))
+* **deps:** update hibernate.version to v6.6.13.final ([#1565](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1565)) ([195af6f](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/195af6f37a4b917772e81be42644de4e7003d0d1))
+* **deps:** update spring boot to v3.4.4 ([#1558](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1558)) ([d815665](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/d81566537bf07202be2d4a9d6f415acb76430e45))
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#1587](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1587)) ([cfaa85b](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/cfaa85bb1948f2875078911ba51ae8d605e0fb3e))
+* bump hibernate.version in /google-cloud-spanner-hibernate-dialect ([#1584](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1584)) ([5913190](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/591319083340b92e713a6db952efce4670750eb2))
+* bump org.apache.maven.plugins:maven-surefire-plugin ([#1575](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1575)) ([a3d92f9](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/a3d92f97bb651cfe3d7c7d9db6c6ce5d817620b4))
+
+
+### Documentation
+
+* add sample for isolation level repeatable read ([#1592](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1592)) ([60fd39f](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/60fd39fdda26ca60ed24927f4f697829fb01e37a))
+* add sample for unwrapping DatabaseClient ([#1591](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1591)) ([267bf68](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/267bf6899a97e7a8e91978ca23d4c9f2798e3edc))
+
 ## [3.9.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.8.0...v3.9.0) (2025-03-18)
 
 

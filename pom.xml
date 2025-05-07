@@ -6,7 +6,7 @@
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-hibernate</artifactId>
   <packaging>pom</packaging>
-  <version>3.9.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
+  <version>3.9.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-hibernate:current} -->
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -14,7 +14,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <java.version>11</java.version>
     <hibernate.version>6.6.13.Final</hibernate.version>
-    <spanner-jdbc-driver.version>2.29.0</spanner-jdbc-driver.version>
+    <spanner-jdbc-driver.version>2.29.1</spanner-jdbc-driver.version>
     <log4j.version>2.24.3</log4j.version>
 
     <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
@@ -285,7 +285,7 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>10.23.0</version>
+            <version>10.23.1</version>
           </dependency>
         </dependencies>
         <executions>

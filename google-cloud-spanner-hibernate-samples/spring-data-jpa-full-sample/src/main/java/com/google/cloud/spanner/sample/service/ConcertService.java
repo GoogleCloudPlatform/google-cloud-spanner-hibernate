@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Random;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 
 /** Service class for fetching and saving Concert records. */
 @Service
@@ -64,7 +65,12 @@ public class ConcertService {
     repository.deleteAll();
   }
 
-  @Transactional
+  /**
+   * Generates N random concerts in a transaction. The transaction uses isolation level repeatable
+   * read. Spanner supports the isolation levels {@link Isolation#SERIALIZABLE} and {@link
+   * Isolation#REPEATABLE_READ}.
+   */
+  @org.springframework.transaction.annotation.Transactional(isolation = Isolation.REPEATABLE_READ)
   public List<Concert> generateRandomConcerts(int count) {
     List<Singer> singers = singerRepository.findAll(Pageable.ofSize(20)).toList();
     List<Venue> venues = venueRepository.findAll();

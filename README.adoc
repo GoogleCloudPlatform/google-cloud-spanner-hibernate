@@ -501,6 +501,12 @@ If you are using Spring, you can use this annotation:
 
 [source, java]
 ----
+@org.springframework.transaction.annotation.Transactional(isolation = Isolation.REPEATABLE_READ)
+public List<Concert> generateRandomConcerts(int count) {
+  List<Singer> singers = singerRepository.findAll(Pageable.ofSize(20)).toList();
+  List<Venue> venues = venueRepository.findAll();
+  return generateRandomConcerts(singers, venues, count);
+}
 ----
 
 See https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/blob/master/google-cloud-spanner-hibernate-samples/spring-data-jpa-full-sample/src/main/java/com/google/cloud/spanner/sample/service/ConcertService.java[ConcertService.java]
