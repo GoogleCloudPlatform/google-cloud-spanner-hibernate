@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [3.9.4](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.9.3...v3.9.4) (2025-05-20)
+
+
+### Bug Fixes
+
+* **deps:** update hibernate.version to v6.6.15.final ([#1639](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1639)) ([2f7ec4d](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/2f7ec4dc08bc331d0ca2ea980e1b7d7bcd614606))
+
 ## [3.9.3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.9.2...v3.9.3) (2025-05-13)
 
 
