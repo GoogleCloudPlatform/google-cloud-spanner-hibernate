@@ -48,6 +48,9 @@ jobs:
       - name: Install Spanner Hibernate tools
         working-directory: google-cloud-spanner-hibernate-tools
         run: mvn install -DskipTests
+      - name: Install Spanner Hibernate dialect
+        working-directory: google-cloud-spanner-hibernate-dialect
+        run: mvn install -DskipTests
 
       - name: Run Integration Tests
         working-directory: google-cloud-spanner-hibernate-dialect
