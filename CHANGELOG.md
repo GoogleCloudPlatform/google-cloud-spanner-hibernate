@@ -1,6 +1,20 @@
 # Changelog
 
 
+## [3.9.6](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.9.5...v3.9.6) (2025-06-20)
+
+
+### Bug Fixes
+
+* **deps:** update hibernate.version to v6.6.18.final ([#1670](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1670)) ([c684004](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/c6840048941688d720cf6401642e157c301e5646))
+* **deps:** update spring boot to v3.5.3 ([#1706](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1706)) ([da04f07](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/da04f07056ae2e51a147ed72ead08a4509bc03f5))
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#1686](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1686)) ([2d371aa](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/2d371aa8436c388c91077526490b39a418832302))
+* bump org.codehaus.mojo:exec-maven-plugin ([#1669](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1669)) ([6c18ba5](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/6c18ba5bdb1d76d4fab509807fdd4385f4ef30ad))
+
 ## [3.9.5](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.9.4...v3.9.5) (2025-05-26)
 
 
