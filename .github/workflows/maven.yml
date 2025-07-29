@@ -30,9 +30,9 @@ jobs:
           distribution: temurin
 
       - name: Build with Maven
-        run: mvn install -B -V -DskipTests
+        run: mvn install -B -V -DskipTests -Pdefault
 
       - name: Run Unit Tests
-        run: mvn test
+        run: mvn test -Pdefault
 
 
