@@ -28,6 +28,7 @@ import org.hibernate.usertype.DynamicParameterizedType;
  * A {@link org.hibernate.usertype.UserType} which supports mapping Spanner JSON columns to entity
  * fields.
  */
+@Deprecated
 public class SpannerJsonType extends AbstractSingleColumnStandardBasicType<Object>
     implements DynamicParameterizedType {
 

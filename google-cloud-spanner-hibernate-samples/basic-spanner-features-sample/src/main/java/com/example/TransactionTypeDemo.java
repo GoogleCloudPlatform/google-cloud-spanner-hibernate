@@ -48,7 +48,7 @@ public class TransactionTypeDemo {
     try (Session session = sessionHelper.createReadOnlySession()) {
       session.beginTransaction();
       Book book = new Book("Programming Guide", "Author");
-      session.save(book);
+      session.persist(book);
       session.getTransaction().commit();
     } catch (PersistenceException ex) {
       System.out.println(

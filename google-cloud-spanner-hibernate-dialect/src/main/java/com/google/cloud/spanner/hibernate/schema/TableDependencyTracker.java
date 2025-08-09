@@ -25,10 +25,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import org.hibernate.boot.Metadata;
-import org.hibernate.internal.HEMLogging;
+import org.hibernate.internal.CoreLogging;
+import org.hibernate.internal.CoreMessageLogger;
 import org.hibernate.mapping.Table;
 import org.hibernate.tool.schema.Action;
-import org.jboss.logging.Logger;
 
 /**
  * Tracks the order in which tables should be processed (created/dropped) by Hibernate.
@@ -39,7 +39,8 @@ import org.jboss.logging.Logger;
  */
 public class TableDependencyTracker {
 
-  private static final Logger log = HEMLogging.logger(TableDependencyTracker.class);
+  private static final CoreMessageLogger log =
+      CoreLogging.messageLogger(TableDependencyTracker.class);
 
   // For each map entry (key, value), the key is a table which is being blocked by the
   // table stored as the value.

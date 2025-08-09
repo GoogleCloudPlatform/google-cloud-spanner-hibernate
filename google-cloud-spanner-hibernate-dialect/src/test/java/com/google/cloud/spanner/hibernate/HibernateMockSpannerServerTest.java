@@ -53,7 +53,6 @@ import com.google.spanner.v1.TypeCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -70,6 +69,7 @@ import org.hibernate.Transaction;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.query.Query;
+import org.junit.Before;
 import org.junit.Test;
 
 /** Tests Hibernate configuration using an in-memory mock Spanner server. */
@@ -104,6 +104,14 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
         .build();
   }
 
+  @Before
+  public void setUp() {
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            GET_SEQUENCES_STATEMENT,
+            ResultSet.newBuilder().setMetadata(GET_SEQUENCES_METADATA).build()));
+  }
+
   @Test
   public void testHibernateGetSinger() {
     mockSpanner.putStatementResult(
@@ -117,99 +125,8 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
     try (SessionFactory sessionFactory =
             createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
         Session session = sessionFactory.openSession()) {
-      Singer singer = session.get(Singer.class, 1L);
+      Singer singer = session.find(Singer.class, 1L);
       assertEquals(1L, singer.getId());
-    }
-  }
-
-  @Test
-  public void testHibernateSaveSinger() {
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            Statement.of("select next_val as id_val from singerId for update"),
-            com.google.spanner.v1.ResultSet.newBuilder()
-                .setMetadata(
-                    ResultSetMetadata.newBuilder()
-                        .setRowType(
-                            StructType.newBuilder()
-                                .addFields(
-                                    Field.newBuilder()
-                                        .setName("id_val")
-                                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
-                                        .build())
-                                .build())
-                        .build())
-                .addRows(
-                    ListValue.newBuilder()
-                        .addValues(Value.newBuilder().setStringValue("50000").build())
-                        .build())
-                .build()));
-    mockSpanner.putStatementResult(
-        StatementResult.update(
-            Statement.newBuilder("update singerId set next_val= @p1 where next_val=@p2")
-                .bind("p1")
-                .to(51000L)
-                .bind("p2")
-                .to(50000L)
-                .build(),
-            1L));
-
-    try (SessionFactory sessionFactory =
-            createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
-        Session session = sessionFactory.openSession()) {
-      long id = (long) session.save(new Singer());
-      assertEquals(Long.reverse(50000L), id);
-    }
-  }
-
-  @Test
-  public void testHibernateSaveSinger_skipsExcludedRange() {
-    // singerId will skip the ranges [1,1000] [10000,20000]
-    // Long.reverse(3422735716801576960) == 500
-
-    // The initial value will be skipped and instead (initial+1) will be used:
-    // Long.reverse(3422735716801576961) == -9223372036854775308
-    long initialValue = 3422735716801576960L;
-    long expectedId = Long.reverse(initialValue + 1L);
-    mockSpanner.putStatementResult(
-        StatementResult.query(
-            Statement.of("select next_val as id_val from singerId for update"),
-            com.google.spanner.v1.ResultSet.newBuilder()
-                .setMetadata(
-                    ResultSetMetadata.newBuilder()
-                        .setRowType(
-                            StructType.newBuilder()
-                                .addFields(
-                                    Field.newBuilder()
-                                        .setName("id_val")
-                                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
-                                        .build())
-                                .build())
-                        .build())
-                .addRows(
-                    ListValue.newBuilder()
-                        .addValues(
-                            Value.newBuilder()
-                                .setStringValue(String.valueOf(initialValue + 1000L - 1L))
-                                .build())
-                        .build())
-                .build()));
-    mockSpanner.putStatementResult(
-        StatementResult.update(
-            Statement.newBuilder("update singerId set next_val= @p1 where next_val=@p2")
-                .bind("p1")
-                .to(3422735716801578959L)
-                .bind("p2")
-                .to(3422735716801577959L)
-                .build(),
-            1L));
-
-    try (SessionFactory sessionFactory =
-            createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
-        Session session = sessionFactory.openSession()) {
-
-      long id = (long) session.save(new Singer());
-      assertEquals(expectedId, id);
     }
   }
 
@@ -254,8 +171,9 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
             StatementResult.query(
                 Statement.of(getNextSequenceValueSql),
                 createBitReversedSequenceResultSet(initialValue + i, initialValue + i + 1L)));
-        long id = (long) session.save(new NonPooledSequenceEntity());
-        assertEquals(reverse(initialValue + i), id);
+        NonPooledSequenceEntity entity = new NonPooledSequenceEntity();
+        session.persist(entity);
+        assertEquals(reverse(initialValue + i), entity.id);
       }
       transaction.commit();
     }
@@ -336,8 +254,9 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
       final Transaction transaction = session.beginTransaction();
       // Insert 5 records. This should be possible with the first batch of identifiers.
       for (int i = 0; i < 5; i++) {
-        long id = (long) session.save(new TestSequenceEntity());
-        assertEquals(reverse(initialValue + i), id);
+        TestSequenceEntity entity = new TestSequenceEntity();
+        session.persist(entity);
+        assertEquals(reverse(initialValue + i), entity.id);
       }
       // Add a result for the next batch of sequence values.
       mockSpanner.putStatementResult(
@@ -346,8 +265,9 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
               createBitReversedSequenceResultSet(20005L, 20010L)));
       // Insert another 5 records. This should use the second batch of identifiers.
       for (int i = 0; i < 5; i++) {
-        long id = (long) session.save(new TestSequenceEntity());
-        assertEquals(reverse(initialValue + i + 5L), id);
+        TestSequenceEntity entity = new TestSequenceEntity();
+        session.persist(entity);
+        assertEquals(reverse(initialValue + i + 5L), entity.id);
       }
       transaction.commit();
     }
@@ -432,8 +352,9 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
                 .buildSessionFactory();
         Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
-      long id = (long) session.save(new TestSequenceEntity());
-      assertEquals(expectedId, id);
+      TestSequenceEntity entity = new TestSequenceEntity();
+      session.persist(entity);
+      assertEquals(expectedId, entity.id);
       transaction.commit();
     }
 
@@ -510,8 +431,9 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
                 .buildSessionFactory();
         Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
-      long id = (long) session.save(new TestSequenceEntity());
-      assertEquals(expectedId, id);
+      TestSequenceEntity entity = new TestSequenceEntity();
+      session.persist(entity);
+      assertEquals(expectedId, entity.id);
       transaction.commit();
     }
 
@@ -542,6 +464,10 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
 
   @Test
   public void testQueryHint() {
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            GET_SEQUENCES_STATEMENT,
+            ResultSet.newBuilder().setMetadata(GET_SEQUENCES_METADATA).build()));
     String expectedSql =
         "select s1_0.id,s1_0.name from Singer @{FORCE_INDEX=idx_singer_active} s1_0";
     mockSpanner.putStatementResult(
@@ -630,7 +556,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
             createTestHibernateConfig(ENTITY_CLASSES).buildSessionFactory();
         Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
-      Singer singer = session.get(Singer.class, 1L, LockMode.PESSIMISTIC_WRITE);
+      Singer singer = session.find(Singer.class, 1L, LockMode.PESSIMISTIC_WRITE);
       assertNotNull(singer);
       assertEquals(
           1,
@@ -754,7 +680,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
   static class TestSequenceEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "batch_bit_reversed_generator")
+    @GeneratedValue
     @GenericGenerator(
         name = "batch_bit_reversed_generator",
         type = PooledBitReversedSequenceStyleGenerator.class,
@@ -774,7 +700,7 @@ public class HibernateMockSpannerServerTest extends AbstractMockSpannerServerTes
   static class NonPooledSequenceEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "test-entity-generator")
+    @GeneratedValue
     @SequenceGenerator(
         name = "test-entity-generator",
         allocationSize = 1,

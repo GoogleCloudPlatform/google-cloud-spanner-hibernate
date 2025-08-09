@@ -740,6 +740,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     SpannerOptionsHelper.resetActiveTracingFramework();
     GlobalOpenTelemetry.resetForTest();
 
+    System.setProperty("hibernate.show_sql", "true");
     System.setProperty("spanner.emulator", "false");
     System.setProperty("spanner.host", "//localhost:" + getPort());
     System.setProperty("spanner.connectionProperties", ";usePlainText=true");
@@ -752,9 +753,6 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         (UpdateDatabaseDdlRequest) mockDatabaseAdmin.getRequests().get(0);
     assertEquals(13, ddlRequest.getStatementsCount());
     int index = -1;
-    assertEquals(
-        "create sequence ticket_sale_seq options(sequence_kind=\"bit_reversed_positive\", start_with_counter=50000, skip_range_min=1, skip_range_max=1000)",
-        ddlRequest.getStatements(++index));
     assertEquals(
         "create table album (id string(36) not null,created_at timestamp,updated_at timestamp,cover_picture bytes(1000000),marketing_budget numeric,release_date date,title string(200) not null,singer_id string(36) not null) PRIMARY KEY (id)",
         ddlRequest.getStatements(++index));
@@ -780,6 +778,9 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     assertEquals(
         "create index idx_singer_active on singer (active)", ddlRequest.getStatements(++index));
     assertEquals(
+        "create sequence if not exists ticket_sale_seq options(sequence_kind=\"bit_reversed_positive\", start_with_counter=50000, skip_range_min=1, skip_range_max=1000)",
+        ddlRequest.getStatements(++index));
+    assertEquals(
         "alter table album add constraint FK1imrvvcsp892ggu1tlcbhavjm foreign key (singer_id) references singer (id)",
         ddlRequest.getStatements(++index));
     assertEquals(
@@ -796,8 +797,8 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         ddlRequest.getStatements(++index));
     assertEquals(ddlRequest.getStatementsCount() - 1, index);
 
-    assertEquals(32, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    assertEquals(31, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
     assertEquals(4, mockSpanner.countRequestsOfType(CommitRequest.class));
 
     // Verify that we receive a transaction tag for the generateRandomData() method.
@@ -829,7 +830,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         commitRequest.getMaxCommitDelay());
     // Also verify that we get the auto-generated transaction tags.
     assertEquals(
-        2,
+        1,
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
             .filter(
                 request -> !Strings.isNullOrEmpty(request.getRequestOptions().getTransactionTag()))

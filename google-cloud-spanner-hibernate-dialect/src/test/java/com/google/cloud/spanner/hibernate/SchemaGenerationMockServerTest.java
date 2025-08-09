@@ -103,14 +103,17 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
   public void testGenerateSchema() {
     for (String hbm2Ddl : new String[] {"create-only", "update", "create"}) {
       mockDatabaseAdmin.getRequests().clear();
+      // register response for extra batch request dropping sequences
+      if (hbm2Ddl.equals("create")) {
+        addDdlResponseToSpannerAdmin();
+      }
       addDdlResponseToSpannerAdmin();
-
       //noinspection EmptyTryBlock
       try (SessionFactory ignore =
           createTestHibernateConfig(
                   ImmutableList.of(
                       Singer.class, Album.class, Invoice.class, Customer.class, Account.class),
-                  ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl))
+                  ImmutableMap.of("hibernate.hbm2ddl.auto", hbm2Ddl, "hibernate.show_sql", "true"))
               .buildSessionFactory()) {
         // do nothing, just generate the schema.
       }
@@ -120,9 +123,24 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
           mockDatabaseAdmin.getRequests().stream()
               .filter(request -> request instanceof UpdateDatabaseDdlRequest)
               .map(request -> (UpdateDatabaseDdlRequest) request)
-              .collect(Collectors.toList());
-      assertEquals(1, requests.size());
-      UpdateDatabaseDdlRequest request = requests.get(0);
+              .toList();
+      if (hbm2Ddl.equals("create")) {
+        // 2 batches , 1 for dropping , 1 for creating
+        assertEquals(2, requests.size());
+        UpdateDatabaseDdlRequest dropRequest = requests.get(0);
+        int index = -1;
+        assertEquals(
+            "drop sequence if exists customer_id_sequence", dropRequest.getStatements(++index));
+        assertEquals(
+            "drop sequence if exists invoice_id_sequence", dropRequest.getStatements(++index));
+        assertEquals(
+            "drop sequence if exists singer_id_sequence", dropRequest.getStatements(++index));
+      } else {
+        assertEquals(1, requests.size());
+      }
+
+      UpdateDatabaseDdlRequest request =
+          hbm2Ddl.equals("create") ? requests.get(1) : requests.get(0);
       assertEquals(10, request.getStatementsCount());
 
       int index = -1;
@@ -138,19 +156,19 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             "create table Customer (customerId int64 not null,name string(255)) PRIMARY KEY (customerId)",
             request.getStatements(++index));
         assertEquals(
-            "create table customerId (next_val int64) PRIMARY KEY ()",
-            request.getStatements(++index));
-        assertEquals(
             "create table Invoice (invoiceId int64 not null,number string(255) default ('9999'),customer_customerId int64) PRIMARY KEY (invoiceId)",
-            request.getStatements(++index));
-        assertEquals(
-            "create table invoiceId (next_val int64) PRIMARY KEY ()",
             request.getStatements(++index));
         assertEquals(
             "create table Singer (id int64 not null,name string(255)) PRIMARY KEY (id)",
             request.getStatements(++index));
         assertEquals(
-            "create table singerId (next_val int64) PRIMARY KEY ()",
+            "create sequence if not exists customer_id_sequence options(sequence_kind=\"bit_reversed_positive\", start_with_counter=50000)",
+            request.getStatements(++index));
+        assertEquals(
+            "create sequence if not exists invoice_id_sequence options(sequence_kind=\"bit_reversed_positive\")",
+            request.getStatements(++index));
+        assertEquals(
+            "create sequence if not exists singer_id_sequence options(sequence_kind=\"bit_reversed_positive\")",
             request.getStatements(++index));
         assertEquals(
             "alter table Album add constraint fk_album_singer foreign key (singer) references Singer (id)",
@@ -159,6 +177,15 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             "alter table Invoice add constraint fk_invoice_customer foreign key (customer_customerId) references Customer (customerId) on delete cascade",
             request.getStatements(++index));
       } else {
+        assertEquals(
+            "create sequence if not exists customer_id_sequence options(sequence_kind=\"bit_reversed_positive\", start_with_counter=50000)",
+            request.getStatements(++index));
+        assertEquals(
+            "create sequence if not exists invoice_id_sequence options(sequence_kind=\"bit_reversed_positive\")",
+            request.getStatements(++index));
+        assertEquals(
+            "create sequence if not exists singer_id_sequence options(sequence_kind=\"bit_reversed_positive\")",
+            request.getStatements(++index));
         assertEquals(
             "create table Account (amount numeric,id int64 not null,name string(255)) PRIMARY KEY (id)",
             request.getStatements(++index));
@@ -169,19 +196,10 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             "create table Customer (customerId int64 not null,name string(255)) PRIMARY KEY (customerId)",
             request.getStatements(++index));
         assertEquals(
-            "create table customerId (next_val int64) PRIMARY KEY ()",
-            request.getStatements(++index));
-        assertEquals(
             "create table Invoice (customer_customerId int64,invoiceId int64 not null,number string(255) default ('9999')) PRIMARY KEY (invoiceId)",
             request.getStatements(++index));
         assertEquals(
-            "create table invoiceId (next_val int64) PRIMARY KEY ()",
-            request.getStatements(++index));
-        assertEquals(
             "create table Singer (id int64 not null,name string(255)) PRIMARY KEY (id)",
-            request.getStatements(++index));
-        assertEquals(
-            "create table singerId (next_val int64) PRIMARY KEY ()",
             request.getStatements(++index));
         assertEquals(
             "alter table Album add constraint fk_album_singer foreign key (singer) references Singer (id)",
@@ -202,7 +220,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         createTestHibernateConfig(
                 ImmutableList.of(
                     Singer.class, Album.class, Invoice.class, Customer.class, Account.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "drop"))
+                ImmutableMap.of("hibernate.hbm2ddl.auto", "drop", "hibernate.show_sql", "true"))
             .buildSessionFactory()) {
       // do nothing, just generate the schema.
     }
@@ -212,8 +230,8 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         mockDatabaseAdmin.getRequests().stream()
             .filter(request -> request instanceof UpdateDatabaseDdlRequest)
             .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
-    assertEquals(0, requests.size());
+            .toList();
+    assertEquals(1, requests.size());
   }
 
   @Test
@@ -233,8 +251,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
                 .build()));
     mockSpanner.putStatementResult(
         StatementResult.query(
-            GET_FOREIGN_KEYS_STATEMENT
-                .toBuilder()
+            GET_FOREIGN_KEYS_STATEMENT.toBuilder()
                 .bind("p1")
                 .to("%")
                 .bind("p2")
@@ -264,7 +281,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         createTestHibernateConfig(
                 ImmutableList.of(
                     Singer.class, Album.class, Invoice.class, Customer.class, Account.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "drop"))
+                ImmutableMap.of("hibernate.hbm2ddl.auto", "drop", "hibernate.show_sql", "true"))
             .buildSessionFactory()) {
       // do nothing, just generate the schema.
     }
@@ -274,7 +291,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         mockDatabaseAdmin.getRequests().stream()
             .filter(request -> request instanceof UpdateDatabaseDdlRequest)
             .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
+            .toList();
     assertEquals(1, requests.size());
     UpdateDatabaseDdlRequest request = requests.get(0);
     assertEquals(8, request.getStatementsCount());
@@ -284,11 +301,11 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         "alter table Invoice drop constraint fk_invoice_customer", request.getStatements(++index));
     assertEquals("drop table `Account`", request.getStatements(++index));
     assertEquals("drop table `Customer`", request.getStatements(++index));
-    assertEquals("drop table `customerId`", request.getStatements(++index));
     assertEquals("drop table `Invoice`", request.getStatements(++index));
-    assertEquals("drop table `invoiceId`", request.getStatements(++index));
     assertEquals("drop table `Singer`", request.getStatements(++index));
-    assertEquals("drop table `singerId`", request.getStatements(++index));
+    assertEquals("drop sequence if exists customer_id_sequence", request.getStatements(++index));
+    assertEquals("drop sequence if exists invoice_id_sequence", request.getStatements(++index));
+    assertEquals("drop sequence if exists singer_id_sequence", request.getStatements(++index));
   }
 
   @Test
@@ -313,7 +330,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             mockDatabaseAdmin.getRequests().stream()
                 .filter(request -> request instanceof UpdateDatabaseDdlRequest)
                 .map(request -> (UpdateDatabaseDdlRequest) request)
-                .collect(Collectors.toList());
+                .toList();
         assertEquals(1, requests.size());
         UpdateDatabaseDdlRequest request = requests.get(0);
         assertEquals(4, request.getStatementsCount());
@@ -373,7 +390,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
           mockDatabaseAdmin.getRequests().stream()
               .filter(request -> request instanceof UpdateDatabaseDdlRequest)
               .map(request -> (UpdateDatabaseDdlRequest) request)
-              .collect(Collectors.toList());
+              .toList();
       assertEquals(1, requests.size());
       UpdateDatabaseDdlRequest request = requests.get(0);
       assertEquals(7, request.getStatementsCount());
@@ -391,10 +408,10 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
           request.getStatements(++index));
 
       assertEquals(
-          "create unique index UK_gc568wb30sampsuirwne5jqgh on Airplane (modelName)",
+          "create unique index UKgc568wb30sampsuirwne5jqgh on Airplane (modelName)",
           request.getStatements(++index));
       assertEquals(
-          "create unique index UK_em0lqvwoqdwt29x0b0r010be on Airport_Airplane (airplanes_id)",
+          "create unique index UKem0lqvwoqdwt29x0b0r010be on Airport_Airplane (airplanes_id)",
           request.getStatements(++index));
       assertEquals(
           "alter table Airport_Airplane add constraint FKkn0enwaxbwk7csf52x0eps73d foreign key (airplanes_id) references Airplane (id)",
@@ -428,7 +445,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             mockDatabaseAdmin.getRequests().stream()
                 .filter(request -> request instanceof UpdateDatabaseDdlRequest)
                 .map(request -> (UpdateDatabaseDdlRequest) request)
-                .collect(Collectors.toList());
+                .toList();
         assertEquals(1, requests.size());
         UpdateDatabaseDdlRequest request = requests.get(0);
         assertEquals(4, request.getStatementsCount());
@@ -476,7 +493,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
           mockDatabaseAdmin.getRequests().stream()
               .filter(request -> request instanceof UpdateDatabaseDdlRequest)
               .map(request -> (UpdateDatabaseDdlRequest) request)
-              .collect(Collectors.toList());
+              .toList();
       assertEquals(1, requests.size());
       UpdateDatabaseDdlRequest request = requests.get(0);
       assertEquals(5, request.getStatementsCount());
@@ -546,7 +563,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         createTestHibernateConfig(
                 ImmutableList.of(
                     SequenceEntity.class, AutoIdEntity.class, PooledSequenceEntity.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "update"))
+                ImmutableMap.of("hibernate.hbm2ddl.auto", "update", "hibernate.show_sql", "true"))
             .buildSessionFactory()) {
       // do nothing, just generate the schema.
     }
@@ -556,7 +573,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         mockDatabaseAdmin.getRequests().stream()
             .filter(request -> request instanceof UpdateDatabaseDdlRequest)
             .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
+            .toList();
     assertEquals(1, requests.size());
     UpdateDatabaseDdlRequest request = requests.get(0);
     int expectedStatementCount = 6;
@@ -573,11 +590,6 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     assertEquals(
         "create table AutoIdEntity_SEQ (next_val int64) PRIMARY KEY ()",
         request.getStatements(++index));
-    // The PooledSequenceEntity uses a pooled sequence. These are not supported by Cloud Spanner.
-    // Hibernate therefore creates a table instead.
-    assertEquals(
-        "create table pooled_sequence (next_val int64) PRIMARY KEY ()",
-        request.getStatements(++index));
     assertEquals(
         "create table PooledSequenceEntity (id int64 not null,name string(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
@@ -585,7 +597,10 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         "create table SequenceEntity (id int64 not null,name string(255)) PRIMARY KEY (id)",
         request.getStatements(++index));
     assertEquals(
-        "create sequence test_sequence options(sequence_kind=\"bit_reversed_positive\")",
+        "create sequence if not exists pooled_sequence options(sequence_kind=\"bit_reversed_positive\")",
+        request.getStatements(++index));
+    assertEquals(
+        "create sequence if not exists test_sequence options(sequence_kind=\"bit_reversed_positive\")",
         request.getStatements(++index));
     assertEquals(expectedStatementCount, ++index);
   }
@@ -614,7 +629,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
             mockDatabaseAdmin.getRequests().stream()
                 .filter(request -> request instanceof UpdateDatabaseDdlRequest)
                 .map(request -> (UpdateDatabaseDdlRequest) request)
-                .collect(Collectors.toList());
+                .toList();
         assertEquals(1, requests.size());
         UpdateDatabaseDdlRequest request = requests.get(0);
         assertEquals(4, request.getStatementsCount());
@@ -672,7 +687,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         mockDatabaseAdmin.getRequests().stream()
             .filter(request -> request instanceof UpdateDatabaseDdlRequest)
             .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
+            .toList();
     assertEquals(1, requests.size());
     UpdateDatabaseDdlRequest request = requests.get(0);
     assertEquals(1, request.getStatementsCount());
@@ -750,8 +765,12 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
                 .buildSessionFactory();
         Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
-      assertEquals(Long.reverse(1L), session.save(new PooledBitReversedSequenceEntity("test1")));
-      assertEquals(Long.reverse(2L), session.save(new PooledBitReversedSequenceEntity("test2")));
+      PooledBitReversedSequenceEntity entity = new PooledBitReversedSequenceEntity("test1");
+      session.persist(entity);
+      assertEquals(Long.reverse(1L), entity.getId());
+      PooledBitReversedSequenceEntity entity2 = new PooledBitReversedSequenceEntity("test2");
+      session.persist(entity2);
+      assertEquals(Long.reverse(2L), entity2.getId());
       transaction.commit();
     }
 
@@ -780,7 +799,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         mockDatabaseAdmin.getRequests().stream()
             .filter(request -> request instanceof UpdateDatabaseDdlRequest)
             .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
+            .toList();
     assertEquals(1, requests.size());
     UpdateDatabaseDdlRequest request = requests.get(0);
     assertEquals(4, request.getStatementsCount());
@@ -788,11 +807,11 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     int index = -1;
 
     assertEquals(
-        "create sequence enhanced_sequence options(sequence_kind=\"bit_reversed_positive\", "
+        "create sequence if not exists enhanced_sequence options(sequence_kind=\"bit_reversed_positive\", "
             + "start_with_counter=5000, skip_range_min=1, skip_range_max=1000)",
         request.getStatements(++index));
     assertEquals(
-        "create sequence legacy_entity_sequence "
+        "create sequence if not exists legacy_entity_sequence "
             + "options(sequence_kind=\"bit_reversed_positive\", start_with_counter=5000, "
             + "skip_range_min=1, skip_range_max=20000)",
         request.getStatements(++index));
@@ -910,8 +929,13 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
                 .buildSessionFactory();
         Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
-      assertEquals(Long.reverse(1L), session.save(new PooledBitReversedSequenceEntity("test1")));
-      assertEquals(Long.reverse(2L), session.save(new PooledBitReversedSequenceEntity("test2")));
+      PooledBitReversedSequenceEntity entity = new PooledBitReversedSequenceEntity("test1");
+      session.persist(entity);
+      assertEquals(Long.reverse(1L), entity.getId());
+      PooledBitReversedSequenceEntity entity2 = new PooledBitReversedSequenceEntity("test2");
+      session.persist(entity2);
+      assertEquals(Long.reverse(2L), entity2.getId());
+
       transaction.commit();
     }
 
@@ -942,7 +966,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
         mockDatabaseAdmin.getRequests().stream()
             .filter(request -> request instanceof UpdateDatabaseDdlRequest)
             .map(request -> (UpdateDatabaseDdlRequest) request)
-            .collect(Collectors.toList());
+            .toList();
     assertEquals(0, requests.size());
   }
 }

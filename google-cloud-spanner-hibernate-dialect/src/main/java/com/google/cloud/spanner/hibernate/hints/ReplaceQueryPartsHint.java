@@ -277,7 +277,7 @@ public class ReplaceQueryPartsHint {
         String regex = getAsString(replacementObject, REGEX_FIELD_NAME);
         String replacementString = getAsString(replacementObject, REPLACEMENT_FIELD_NAME);
         String replaceModeString =
-            getAsString(replacementObject, REPLACE_MODE_FIELD_NAME, /* optional = */ true);
+            getAsString(replacementObject, REPLACE_MODE_FIELD_NAME, /* optional= */ true);
         ReplaceMode replaceMode =
             replaceModeString == null ? ReplaceMode.ALL : ReplaceMode.valueOf(replaceModeString);
         replacementsMapBuilder.add(new Replacement(regex, replacementString, replaceMode));

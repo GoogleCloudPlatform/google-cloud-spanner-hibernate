@@ -18,18 +18,14 @@
 
 package com.google.cloud.spanner.hibernate.it.model;
 
+import com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import java.time.OffsetDateTime;
 import org.hibernate.annotations.Check;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
 /** Concert entity. */
 @Entity
@@ -38,17 +34,7 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
 public class Concert extends AbstractBaseEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "concert_id_generator")
-  @GenericGenerator(
-      name = "concert_id_generator",
-      // TODO: Switch to PooledBitReversedSequenceStyleGenerator when that is available and the
-      //       emulator supports it.
-      strategy = "com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator",
-      parameters = {
-        // Use a separate name for each entity to ensure that it uses a separate table.
-        @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "concert_id"),
-        @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
-      })
+  @PooledBitReversedSequenceGenerator(sequenceName = "concert_id_sequence")
   private Long id;
 
   @Column(nullable = false)

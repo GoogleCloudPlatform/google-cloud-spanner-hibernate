@@ -19,10 +19,10 @@
 package org.hibernate.dialect.entities.foreignkey;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import org.hibernate.annotations.ForeignKey;
 
 @Entity
 public class CartSession {
@@ -30,8 +30,7 @@ public class CartSession {
   @Id public long sessionId;
 
   @OneToOne
-  @JoinColumn(name = "cartId")
-  @ForeignKey(name = "Fk_sessionDetails_cartId")
+  @JoinColumn(name = "cartId", foreignKey = @ForeignKey(name = "Fk_sessionDetails_cartId"))
   private Cart cart;
 
   public CartSession() {}

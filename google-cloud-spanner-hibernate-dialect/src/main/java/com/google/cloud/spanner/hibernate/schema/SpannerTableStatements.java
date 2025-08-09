@@ -19,7 +19,6 @@
 package com.google.cloud.spanner.hibernate.schema;
 
 import com.google.cloud.spanner.Type.Code;
-import com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator.ReplaceInitCommand;
 import com.google.cloud.spanner.hibernate.Interleaved;
 import com.google.cloud.spanner.hibernate.SpannerDialect;
 import com.google.cloud.spanner.hibernate.SpannerIdentityColumnSupport;
@@ -35,7 +34,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.hibernate.boot.Metadata;
-import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
@@ -153,19 +151,6 @@ public class SpannerTableStatements {
             getInterleavedClause(table, metadata));
 
     statements.add(createTableString);
-
-    if (table.getName().equals(SequenceStyleGenerator.SEQUENCE_PARAM)) {
-      // Caches the INSERT statement since DML statements must be run after a DDL batch.
-      table.addInitCommand(
-          context ->
-              new ReplaceInitCommand(
-                  "INSERT INTO "
-                      + context.format(table.getQualifiedTableName())
-                      + " ("
-                      + SequenceStyleGenerator.DEF_VALUE_COLUMN
-                      + ") VALUES(1)"));
-    }
-
     return statements;
   }
 
@@ -251,7 +236,7 @@ public class SpannerTableStatements {
     List<Column> sortedCurrentPkColumns =
         table.getPrimaryKey().getColumns().stream()
             .filter(column -> !sortedParentPkColumns.contains(column))
-            .collect(Collectors.toList());
+            .toList();
 
     ArrayList<Column> currentPkColumns = new ArrayList<>();
     currentPkColumns.addAll(sortedParentPkColumns);
