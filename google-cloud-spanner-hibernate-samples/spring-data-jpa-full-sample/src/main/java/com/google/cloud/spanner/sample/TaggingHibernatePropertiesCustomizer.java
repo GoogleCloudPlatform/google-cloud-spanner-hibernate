@@ -22,7 +22,7 @@ import com.google.cloud.spanner.hibernate.TransactionTagInterceptor;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import org.hibernate.cfg.AvailableSettings;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
+import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
 import org.springframework.stereotype.Component;
 
 /** This component adds the {@link TransactionTagInterceptor} to the sample application. */

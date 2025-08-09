@@ -120,6 +120,11 @@ public abstract class BaseEntityManagerFunctionalTestCase extends BaseUnitTestCa
     }
 
     @Override
+    public jakarta.persistence.PersistenceUnitTransactionType getPersistenceUnitTransactionType() {
+      return null;
+    }
+
+    @Override
     public PersistenceUnitTransactionType getTransactionType() {
       return null;
     }

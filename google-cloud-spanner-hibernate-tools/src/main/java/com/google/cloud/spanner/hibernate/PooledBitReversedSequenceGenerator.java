@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Google LLC
+ * Copyright 2019-2025 Google LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,30 +18,30 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import static org.hibernate.id.enhanced.SequenceStyleGenerator.SEQUENCE_PARAM;
+import static org.hibernate.generator.EventTypeSets.INSERT_ONLY;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Range;
-import java.io.Serializable;
+import java.lang.reflect.Member;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
-import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.relational.Database;
+import org.hibernate.boot.model.relational.ExportableProducer;
 import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.boot.model.relational.QualifiedName;
 import org.hibernate.boot.model.relational.QualifiedNameParser;
@@ -51,72 +51,22 @@ import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.generator.AnnotationBasedGenerator;
+import org.hibernate.generator.BeforeExecutionGenerator;
+import org.hibernate.generator.EventType;
+import org.hibernate.generator.GeneratorCreationContext;
 import org.hibernate.id.BulkInsertionCapableIdentifierGenerator;
-import org.hibernate.id.IdentifierGenerator;
-import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.DatabaseStructure;
-import org.hibernate.id.enhanced.NoopOptimizer;
-import org.hibernate.id.enhanced.Optimizer;
 import org.hibernate.id.enhanced.SequenceStructure;
-import org.hibernate.id.enhanced.SequenceStyleGenerator;
-import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
 
-/**
- * @Deprecated use {@link
- * com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator}
- *
- * <p>Pooled ID generator that uses a bit-reversed sequence to generate values. These values are
- * safe to use as the primary key of a table in Cloud Spanner. This is the recommended strategy for
- * auto-generated numeric primary keys in Cloud Spanner.
- *
- * <p>Using a bit-reversed sequence for ID generation is recommended above sequences that return a
- * monotonically increasing value for Cloud Spanner. This generator also supports both an increment
- * size larger than 1 and an initial value larger than 1. The increment value can not exceed 200 for
- * GoogleSQL-dialect databases and 60 for PostgreSQL-dialect databases.
- *
- * <p>Use the {@link #EXCLUDE_RANGE_PARAM} to exclude a range of values that should be skipped by
- * the generator if your entity table already contains data. The excluded values should be given as
- * closed range. E.g. "[1,1000]" to skip all values between 1 and 1000 (inclusive).
- *
- * <p>It is recommended to use a separate sequence for each entity. Set the sequence name to use for
- * a generator with the SequenceStyleGenerator.SEQUENCE_PARAM parameter (see example below).
- *
- * <p>Example usage:
- *
- * <pre>{@code
- * @Id
- * @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customerId")
- * @GenericGenerator(
- *       name = "customerId",
- *       strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
- *       parameters = {
- *           @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "customerId"),
- *           @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "200"),
- *           @Parameter(name = SequenceStyleGenerator.INITIAL_PARAM, value = "50000"),
- *           @Parameter(name = PooledBitReversedSequenceStyleGenerator.EXCLUDE_RANGE_PARAM,
- *                      value = "[1,1000]"),
- *       })
- * @Column(nullable = false)
- * private Long customerId;
- * }</pre>
- */
-@Deprecated(forRemoval = true)
-public class PooledBitReversedSequenceStyleGenerator
-    implements BulkInsertionCapableIdentifierGenerator, PersistentIdentifierGenerator {
-
-  /** The default increment (fetch) size for an {@link PooledBitReversedSequenceStyleGenerator}. */
-  public static final int DEFAULT_INCREMENT_SIZE = 50;
-
-  /**
-   * Configuration property for defining a range that should be excluded by a bit-reversed sequence
-   * generator.
-   */
-  public static final String EXCLUDE_RANGE_PARAM = "exclude_range";
-
-  /** Legacy parameter name. */
-  private static final String EXCLUDE_RANGES_PARAM = "exclude_ranges";
+public class PooledBitReversedSequenceGenerator
+    implements BulkInsertionCapableIdentifierGenerator,
+        BeforeExecutionGenerator,
+        ExportableProducer,
+        AnnotationBasedGenerator<
+            com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator> {
 
   /**
    * The maximum allowed increment size is 1000 for PostgreSQL-dialect databases. This limitation
@@ -126,7 +76,6 @@ public class PooledBitReversedSequenceStyleGenerator
 
   private static final Iterator<Long> EMPTY_ITERATOR = Collections.emptyIterator();
   private final Lock lock = new ReentrantLock();
-  private final Optimizer optimizer = new NoopOptimizer(Long.class, 1);
 
   private Dialect dialect;
   private QualifiedSequenceName sequenceName;
@@ -134,32 +83,6 @@ public class PooledBitReversedSequenceStyleGenerator
   private int fetchSize;
   private Iterator<Long> identifiers = EMPTY_ITERATOR;
   private DatabaseStructure databaseStructure;
-
-  private static QualifiedSequenceName determineSequenceName(
-      JdbcEnvironment jdbcEnvironment, Properties params) {
-    String sequenceName = params.getProperty(SEQUENCE_PARAM);
-    if (sequenceName == null) {
-      throw new MappingException("no sequence name specified");
-    }
-    if (sequenceName.contains(".")) {
-      QualifiedName qualifiedName = QualifiedNameParser.INSTANCE.parse(sequenceName);
-      return new QualifiedSequenceName(
-          qualifiedName.getCatalogName(),
-          qualifiedName.getSchemaName(),
-          qualifiedName.getObjectName());
-    } else {
-      final Identifier catalog =
-          jdbcEnvironment
-              .getIdentifierHelper()
-              .toIdentifier(ConfigurationHelper.getString(CATALOG, params));
-      final Identifier schema =
-          jdbcEnvironment
-              .getIdentifierHelper()
-              .toIdentifier(ConfigurationHelper.getString(SCHEMA, params));
-      return new QualifiedSequenceName(
-          catalog, schema, jdbcEnvironment.getIdentifierHelper().toIdentifier(sequenceName));
-    }
-  }
 
   private static String buildSkipRangeOptions(List<Range<Long>> excludeRanges) {
     return String.format(
@@ -178,12 +101,9 @@ public class PooledBitReversedSequenceStyleGenerator
         .orElse(Long.MAX_VALUE);
   }
 
-  private static int determineInitialValue(Properties params) {
-    int initialValue =
-        ConfigurationHelper.getInt(
-            SequenceStyleGenerator.INITIAL_PARAM,
-            params,
-            SequenceStyleGenerator.DEFAULT_INITIAL_VALUE);
+  private static int determineInitialValue(
+      com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator config) {
+    int initialValue = config.startWithCounter();
     if (initialValue <= 0) {
       throw new MappingException("initial value must be positive");
     }
@@ -191,99 +111,90 @@ public class PooledBitReversedSequenceStyleGenerator
   }
 
   @VisibleForTesting
-  static List<Range<Long>> parseExcludedRanges(String sequenceName, Properties params) {
-    // Accept both 'excluded_range' and 'excluded_ranges' params to accommodate anyone moving from
-    // the original BitReversedSequenceStyleGenerator to PooledBitReversedSequenceStyleGenerator.
-    String[] excludedRangesArray =
-        ConfigurationHelper.toStringArray(EXCLUDE_RANGES_PARAM, " ", params);
-    String[] excludedRangeArray =
-        ConfigurationHelper.toStringArray(EXCLUDE_RANGE_PARAM, " ", params);
-    if (excludedRangesArray == null && excludedRangeArray == null) {
+  static List<Range<Long>> parseExcludedRanges(
+      com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator config) {
+    String rangeString = config.excludeRange();
+    if ("".equals(rangeString)) {
       return ImmutableList.of();
     }
-    if (excludedRangesArray != null && excludedRangeArray != null) {
-      // Combine the two arrays.
-      String[] newArray = new String[excludedRangeArray.length + excludedRangesArray.length];
-      System.arraycopy(excludedRangeArray, 0, newArray, 0, excludedRangeArray.length);
-      System.arraycopy(
-          excludedRangesArray, 0, newArray, excludedRangeArray.length, excludedRangesArray.length);
-      excludedRangesArray = newArray;
-    } else if (excludedRangeArray != null) {
-      excludedRangesArray = excludedRangeArray;
-    }
     Builder<Range<Long>> builder = ImmutableList.builder();
-    for (String rangeString : excludedRangesArray) {
-      rangeString = rangeString.trim();
-      String invalidRangeMessage =
-          String.format(
-              "Invalid range found for the [%s] sequence: %%s\n"
-                  + "Excluded ranges must be given as a space-separated sequence of ranges between "
-                  + "square brackets, e.g. '[1,1000] [2001,3000]'. "
-                  + "Found '%s'",
-              sequenceName, rangeString);
-      if (!(rangeString.startsWith("[") && rangeString.endsWith("]"))) {
-        throw new MappingException(
-            String.format(invalidRangeMessage, "Range is not enclosed between '[' and ']'"));
-      }
-      rangeString = rangeString.substring(1, rangeString.length() - 1);
-      String[] values = rangeString.split(",");
-      if (values.length != 2) {
-        throw new MappingException(
-            String.format(invalidRangeMessage, "Range does not contain exactly two elements"));
-      }
-      long from;
-      long to;
-      try {
-        from = Long.parseLong(values[0]);
-        to = Long.parseLong(values[1]);
-        builder.add(Range.closed(from, to));
-      } catch (IllegalArgumentException e) {
-        throw new MappingException(String.format(invalidRangeMessage, e.getMessage()), e);
-      }
+    rangeString = rangeString.trim();
+    String invalidRangeMessage =
+        String.format(
+            "Invalid range found for the [%s] sequence: %%s\n"
+                + "Excluded range must be given as a range between "
+                + "square brackets, e.g. '[1,1000]'. "
+                + "Found '%s'",
+            config.sequenceName(), rangeString);
+    if (!(rangeString.startsWith("[") && rangeString.endsWith("]"))) {
+      throw new MappingException(
+          String.format(invalidRangeMessage, "Range is not enclosed between '[' and ']'"));
+    }
+    rangeString = rangeString.substring(1, rangeString.length() - 1);
+    String[] values = rangeString.split(",");
+    if (values.length != 2) {
+      throw new MappingException(
+          String.format(invalidRangeMessage, "Range does not contain exactly two elements"));
+    }
+    long from;
+    long to;
+    try {
+      from = Long.parseLong(values[0]);
+      to = Long.parseLong(values[1]);
+      builder.add(Range.closed(from, to));
+    } catch (IllegalArgumentException e) {
+      throw new MappingException(String.format(invalidRangeMessage, e.getMessage()), e);
     }
     return builder.build();
   }
 
-  @Override
-  public Optimizer getOptimizer() {
-    return optimizer;
+  private static QualifiedSequenceName determineSequenceName(
+      JdbcEnvironment jdbcEnvironment,
+      com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator config) {
+    String sequenceName = config.sequenceName();
+    if (sequenceName == null) {
+      throw new MappingException("no sequence name specified");
+    }
+    if (sequenceName.contains(".")) {
+      QualifiedName qualifiedName = QualifiedNameParser.INSTANCE.parse(sequenceName);
+      return new QualifiedSequenceName(
+          qualifiedName.getCatalogName(),
+          qualifiedName.getSchemaName(),
+          qualifiedName.getObjectName());
+    } else {
+      return new QualifiedSequenceName(
+          null,
+          jdbcEnvironment.getIdentifierHelper().toIdentifier(config.schema()),
+          jdbcEnvironment.getIdentifierHelper().toIdentifier(sequenceName));
+    }
   }
 
   @Override
-  public void configure(Type type, Properties params, ServiceRegistry serviceRegistry)
-      throws MappingException {
+  public void initialize(
+      com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator config,
+      Member member,
+      GeneratorCreationContext creationContext) {
+    final ServiceRegistry serviceRegistry = creationContext.getServiceRegistry();
     JdbcEnvironment jdbcEnvironment = serviceRegistry.getService(JdbcEnvironment.class);
     this.dialect = jdbcEnvironment.getDialect();
-    this.sequenceName = determineSequenceName(jdbcEnvironment, params);
-    this.fetchSize = determineFetchSize(params);
-    int initialValue = determineInitialValue(params);
+    this.sequenceName = determineSequenceName(jdbcEnvironment, config);
+    this.fetchSize = determineFetchSize(config);
+    int initialValue = determineInitialValue(config);
     this.select = buildSelect(sequenceName, fetchSize);
-    List<Range<Long>> excludeRanges =
-        parseExcludedRanges(sequenceName.getObjectName().getText(), params);
+    List<Range<Long>> excludeRanges = parseExcludedRanges(config);
     this.databaseStructure =
         buildDatabaseStructure(
-            determineContributor(params),
-            type,
+            "orm",
+            creationContext.getType(),
             sequenceName,
             initialValue,
             excludeRanges,
             jdbcEnvironment);
   }
 
-  private String determineContributor(Properties params) {
-    final String contributor = params.getProperty(IdentifierGenerator.CONTRIBUTOR_NAME);
-    return contributor == null ? "orm" : contributor;
-  }
-
-  private int determineFetchSize(Properties params) {
-    int fetchSize;
-    if (ConfigurationHelper.getInteger("fetch_size", params) != null) {
-      fetchSize = ConfigurationHelper.getInt("fetch_size", params, DEFAULT_INCREMENT_SIZE);
-    } else {
-      fetchSize =
-          ConfigurationHelper.getInt(
-              SequenceStyleGenerator.INCREMENT_PARAM, params, DEFAULT_INCREMENT_SIZE);
-    }
+  private int determineFetchSize(
+      com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator config) {
+    int fetchSize = config.poolSize();
     if (fetchSize <= 0) {
       throw new MappingException("increment size must be positive");
     }
@@ -302,7 +213,7 @@ public class PooledBitReversedSequenceStyleGenerator
       Type type,
       QualifiedSequenceName sequenceName,
       int initialValue,
-      List<Range<Long>> excludeRanges,
+      List<Range<Long>> excludeRange,
       JdbcEnvironment jdbcEnvironment) {
     if (isPostgres()) {
       return new BitReversedSequenceStructure(
@@ -311,7 +222,7 @@ public class PooledBitReversedSequenceStyleGenerator
           sequenceName,
           initialValue,
           1,
-          excludeRanges,
+          excludeRange,
           type.getReturnedClass());
     }
     return new SequenceStructure(
@@ -319,7 +230,7 @@ public class PooledBitReversedSequenceStyleGenerator
         sequenceName,
         initialValue,
         1,
-        excludeRanges.isEmpty() ? "" : buildSkipRangeOptions(excludeRanges),
+        excludeRange.isEmpty() ? "" : buildSkipRangeOptions(excludeRange),
         type.getReturnedClass());
   }
 
@@ -367,8 +278,8 @@ public class PooledBitReversedSequenceStyleGenerator
   }
 
   @Override
-  public Serializable generate(SharedSessionContractImplementor session, Object object)
-      throws HibernateException {
+  public Object generate(
+      SharedSessionContractImplementor session, Object o, Object o1, EventType eventType) {
     this.lock.lock();
     try {
       while (!this.identifiers.hasNext()) {
@@ -382,6 +293,11 @@ public class PooledBitReversedSequenceStyleGenerator
 
   private String getSequenceName() {
     return this.databaseStructure.getPhysicalName().getObjectName().getCanonicalName();
+  }
+
+  @Override
+  public EnumSet<EventType> getEventTypes() {
+    return INSERT_ONLY;
   }
 
   @Override
@@ -418,7 +334,8 @@ public class PooledBitReversedSequenceStyleGenerator
         try (ResultSet resultSet = statement.executeQuery(this.select)) {
           while (resultSet.next()) {
             for (int col = 1; col <= resultSet.getMetaData().getColumnCount(); col++) {
-              identifiers.add(resultSet.getLong(col));
+              long value = resultSet.getLong(col);
+              identifiers.add(value);
             }
           }
         }

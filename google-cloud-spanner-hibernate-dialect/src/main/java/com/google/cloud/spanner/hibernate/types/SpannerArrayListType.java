@@ -30,6 +30,7 @@ import org.hibernate.usertype.DynamicParameterizedType;
  * A {@link org.hibernate.usertype.UserType} which supports mapping Spanner array columns to Java
  * lists.
  */
+@Deprecated
 public class SpannerArrayListType extends AbstractSingleColumnStandardBasicType<List<?>>
     implements DynamicParameterizedType {
 

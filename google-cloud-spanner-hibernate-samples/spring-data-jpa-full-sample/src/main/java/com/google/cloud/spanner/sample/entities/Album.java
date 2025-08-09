@@ -18,10 +18,11 @@
 
 package com.google.cloud.spanner.sample.entities;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import java.math.BigDecimal;
@@ -42,11 +43,10 @@ public class Album extends AbstractNonInterleavedEntity {
   @Column(length = 1_000_000)
   private byte[] coverPicture;
 
-  @ManyToOne(optional = false)
+  @ManyToOne(optional = false, fetch = LAZY)
   private Singer singer;
 
-  @OneToMany
-  @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
+  @OneToMany(mappedBy = "album")
   private List<Track> tracks;
 
   public String getTitle() {

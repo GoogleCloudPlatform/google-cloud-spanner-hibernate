@@ -108,15 +108,18 @@ public class GeneratedSelectStatementsTests {
     try {
       openSessionAndDo(
           x -> {
-            x.save(te);
+            x.persist(te);
             x.getTransaction().commit();
           });
     } catch (OptimisticLockException exception) {
       // This exception is expected because the real Transaction is created by the real Session
       // but the mock driver cannot satisfy it.
       String preparedStatement =
-          this.jdbcMockObjectFactory.getMockConnection().getPreparedStatementResultSetHandler()
-              .getPreparedStatements().stream()
+          this.jdbcMockObjectFactory
+              .getMockConnection()
+              .getPreparedStatementResultSetHandler()
+              .getPreparedStatements()
+              .stream()
               .map(MockPreparedStatement::getSQL)
               .findFirst()
               .get();
@@ -191,8 +194,11 @@ public class GeneratedSelectStatementsTests {
     openSessionAndDo(hibernateOperation);
 
     List<String> statements =
-        this.jdbcMockObjectFactory.getMockConnection().getPreparedStatementResultSetHandler()
-            .getPreparedStatements().stream()
+        this.jdbcMockObjectFactory
+            .getMockConnection()
+            .getPreparedStatementResultSetHandler()
+            .getPreparedStatements()
+            .stream()
             .map(MockPreparedStatement::getSQL)
             .collect(Collectors.toList());
 

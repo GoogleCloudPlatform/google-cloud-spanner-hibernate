@@ -47,6 +47,7 @@ public class Person {
   @GeneratedValue(strategy = GenerationType.AUTO)
   @JdbcTypeCode(SqlTypes.CHAR)
   private UUID id;
+
   // [END spanner_hibernate_generated_ids]
 
   private String name;

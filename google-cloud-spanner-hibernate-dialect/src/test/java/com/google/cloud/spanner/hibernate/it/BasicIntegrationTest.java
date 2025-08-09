@@ -63,23 +63,23 @@ public class BasicIntegrationTest {
                 .buildSessionFactory();
         Session session = factory.openSession()) {
       // Insert a row.
-      runWithTransactionAndClearSession(session, () -> session.save(new TestEntity(1L, "One")));
+      runWithTransactionAndClearSession(session, () -> session.persist(new TestEntity(1L, "One")));
 
       // Verify that the row was actually written.
-      TestEntity entity = session.get(TestEntity.class, 1L);
+      TestEntity entity = session.find(TestEntity.class, 1L);
       assertEquals(1L, entity.id.longValue());
       assertEquals("One", entity.value);
 
       // Update the row and verify that the update is written to the database.
       entity.value = "One - Updated";
-      runWithTransactionAndClearSession(session, () -> session.update(entity));
-      TestEntity updatedEntity = session.get(TestEntity.class, 1L);
+      runWithTransactionAndClearSession(session, () -> session.merge(entity));
+      TestEntity updatedEntity = session.find(TestEntity.class, 1L);
       assertEquals("One - Updated", updatedEntity.value);
       session.clear();
 
       // Delete the row.
-      runWithTransactionAndClearSession(session, () -> session.delete(entity));
-      assertNull(session.get(TestEntity.class, 1L));
+      runWithTransactionAndClearSession(session, () -> session.remove(entity));
+      assertNull(session.find(TestEntity.class, 1L));
     }
   }
 

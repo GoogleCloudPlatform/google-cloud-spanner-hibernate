@@ -52,13 +52,7 @@ public class BitReversedSequenceStructure extends SequenceStructure {
       int incrementSize,
       List<Range<Long>> excludedRanges,
       Class numberType) {
-    super(
-        jdbcEnvironment,
-        contributor,
-        qualifiedSequenceName,
-        initialValue,
-        incrementSize,
-        numberType);
+    super(contributor, qualifiedSequenceName, initialValue, incrementSize, "", numberType);
     this.contributor = contributor;
     this.qualifiedSequenceName = qualifiedSequenceName;
     this.initialValue = initialValue;
