@@ -126,11 +126,12 @@ __NOTE__: Read to the end of this section to see the recommended way to set up `
 
 `GenerationType.IDENTITY`
 -   See https://cloud.google.com/spanner/docs/primary-key-default-value#identity-columns[Identity columns].
-IDs are generated at insert time, which prevents Hibernate from batching inserts efficiently.
+It is not recommended to use the `IDENTITY` generation strategy, as it prevents Hibernate from using JDBC batching for inserts. See https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#batch-session-batch for more information.
 
 
 `@GeneratedValue` +  `@SequenceGenerator` with `allocationSize = 1`
-Uses https://cloud.google.com/spanner/docs/primary-key-default-value#bit-reversed-sequence[Bit-reversed sequences] by spanner. Batching is inhibited because each insert requires a round‑trip to database
+This strategy uses a https://cloud.google.com/spanner/docs/primary-key-default-value#bit-reversed-sequence[bit-reversed sequence] with an allocation size of 1. This requires Hibernate to fetch a new
+sequence value for each insert, causing each insert to cause two round-trips to Spanner.
 ----
 @Entity
 public class Employee {
@@ -684,7 +685,7 @@ mutations for Cloud Spanner. The dialect will only generate DML statements.
 
 === Locking
 
-Cloud Spanner supports exclusive row locks using https://cloud.google.com/spanner/docs/use-select-for-update[`SELECT ... FOR UPDATE`]
+Cloud Spanner supports explicit row locks using https://cloud.google.com/spanner/docs/use-select-for-update[`SELECT ... FOR UPDATE`]
 
 ```java
 entityManager.find(MyEntity.class, studentId, LockModeType.PESSIMISTIC_WRITE);
