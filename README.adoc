@@ -122,7 +122,7 @@ __NOTE__: Read to the end of this section to see the recommended way to set up `
 
 ❌ Not recommended
 
-`GenerationType.AUTO`, `GenerationType.TABLE`, `GenerationType.SEQUENCE` - Not supported by the Spanner dialect.
+`GenerationType.AUTO`, `GenerationType.TABLE`, `GenerationType.SEQUENCE`: These are not supported by the Spanner dialect.
 
 `GenerationType.IDENTITY`
 -   See https://cloud.google.com/spanner/docs/primary-key-default-value#identity-columns[Identity columns].
@@ -132,10 +132,14 @@ It is not recommended to use the `IDENTITY` generation strategy, as it prevents 
 `@GeneratedValue` +  `@SequenceGenerator` with `allocationSize = 1`
 This strategy uses a https://cloud.google.com/spanner/docs/primary-key-default-value#bit-reversed-sequence[bit-reversed sequence] with an allocation size of 1. This requires Hibernate to fetch a new
 sequence value for each insert, causing each insert to cause two round-trips to Spanner.
+
+[source, java]
 ----
 @Entity
 public class Employee {
 
+  // Generates a bit-reversed sequence with an increment_size=1.
+  // This is not recommended!
   @Id
   @GeneratedValue(generator = "employee_generator")
   @SequenceGenerator(
@@ -146,13 +150,20 @@ public class Employee {
 }
 ----
 
-✅ Recommended: custom generator provided by spanner dialect
+✅ Recommended:
 
-https://cloud.google.com/spanner/docs/primary-key-default-value#bit-reversed-sequence[Bit‑reversed sequences] themselves do not support an increment size larger than 1. Without pooling, each insert requires a round‑trip. The pooled generator addresses this by using the configured `increment_size` to fetch multiple identifiers in a single query, instead of setting an increment on the database sequence.
+Bit-reversed sequences do not support an increment size larger than 1. This means that entities
+that use this style of identifiers by default require a round-trip to the database for each entity
+that is inserted. The `PooledBitReversedSequenceStyleGenerator` provided in this repository fixes
+this problem by using the configured `increment_size` to generate a query that fetches multiple
+identifier values from the sequence in one query, instead of setting an `increment_size` on the
+sequence in the database.
 
-The increment_size for this pooled generator can not exceed 200.
+The `increment_size` for this pooled generator can not exceed 200.
 
 This is the **recommended configuration** for bit-reversed sequences:
+
+[source, java]
 ----
 @Entity
 public class Employee {
