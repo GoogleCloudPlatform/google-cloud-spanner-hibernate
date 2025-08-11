@@ -118,38 +118,40 @@ The `@Type(type="uuid-char")` annotation specifies that this UUID value will be 
 Leaving out this annotation causes a `BYTES` column to be used.
 
 ==== Use @GeneratedValue for ID Generation
-
 __NOTE__: Read to the end of this section to see the recommended way to set up `@GeneratedValue`.
 
-Hibernate's `@GeneratedValue` annotation for numeric fields is supported, and will by default use a
-positive bit-reversed sequence. A bit-reversed sequence internally uses a monotonically increasing
-counter  that is reversed before being returned to Hibernate. This means that the identifiers that
-are generated are in the form bitReversePositive(1), bitReversePositive(2), ...:
-[source, java]
+❌ Not recommended
+
+`GenerationType.AUTO`, `GenerationType.TABLE`, `GenerationType.SEQUENCE` - Not supported by the Spanner dialect.
+
+`GenerationType.IDENTITY`
+-   See https://cloud.google.com/spanner/docs/primary-key-default-value#identity-columns[Identity columns].
+IDs are generated at insert time, which prevents Hibernate from batching inserts efficiently.
+
+
+`@GeneratedValue` +  `@SequenceGenerator` with `allocationSize = 1`
+Uses https://cloud.google.com/spanner/docs/primary-key-default-value#bit-reversed-sequence[Bit-reversed sequences] by spanner. Batching is inhibited because each insert requires a round‑trip to database
 ----
 @Entity
 public class Employee {
 
-  // Generates a bit-reversed sequence with an increment_size=1.
-  // This is not recommended!
   @Id
-  @GeneratedValue   
+  @GeneratedValue(generator = "employee_generator")
+  @SequenceGenerator(
+      name = "employee_generator",
+      sequenceName = "employee_seq",
+      allocationSize = 1)
   public Long id;
 }
 ----
 
-Bit-reversed sequences do not support an increment size larger than 1. This means that entities
-that use this style of identifiers by default require a round-trip to the database for each entity
-that is inserted. The `PooledBitReversedSequenceStyleGenerator` provided in this repository fixes
-this problem by using the configured `increment_size` to generate a query that fetches multiple
-identifier values from the sequence in one query, instead of setting an `increment_size` on the
-sequence in the database.
+✅ Recommended: custom generator provided by spanner dialect
 
-The `increment_size` for this pooled generator can not exceed 200.
+https://cloud.google.com/spanner/docs/primary-key-default-value#bit-reversed-sequence[Bit‑reversed sequences] themselves do not support an increment size larger than 1. Without pooling, each insert requires a round‑trip. The pooled generator addresses this by using the configured `increment_size` to fetch multiple identifiers in a single query, instead of setting an increment on the database sequence.
+
+The increment_size for this pooled generator can not exceed 200.
 
 This is the **recommended configuration** for bit-reversed sequences:
-
-[source, java]
 ----
 @Entity
 public class Employee {
@@ -639,7 +641,6 @@ The Cloud Spanner Hibernate Dialect supports most of the standard Hibernate and 
 | Large DML Transactions | Each Spanner transaction may only have up to 80,000 operations which modify rows of a table.
 | Catalog and schema scoping for table names | Tables name references cannot contain periods or other punctuation.
 | Mutations | Cloud Spanner supports both DML and mutations for modifying data. Hibernate does not support mutations, and mutations can therefore not be used with this Hibernate dialect.
-| Locking | Cloud Spanner does not support explicit lock clauses. Setting the lock mode of a query is therefore not supported.
 |===
 
 === Large DML Transactions Limits
@@ -683,8 +684,7 @@ mutations for Cloud Spanner. The dialect will only generate DML statements.
 
 === Locking
 
-Cloud Spanner does not support explicit locking clauses like `SELECT ... FOR UPDATE`. Setting an explicit lock level in
-Hibernate is therefore not supported. The following is for example not supported:
+Cloud Spanner supports exclusive row locks using https://cloud.google.com/spanner/docs/use-select-for-update[`SELECT ... FOR UPDATE`]
 
 ```java
 entityManager.find(MyEntity.class, studentId, LockModeType.PESSIMISTIC_WRITE);
