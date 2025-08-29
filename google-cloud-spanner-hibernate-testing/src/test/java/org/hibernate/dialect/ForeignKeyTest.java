@@ -106,9 +106,9 @@ public class ForeignKeyTest extends BaseCoreFunctionalTestCase {
     doInHibernate(
         this::sessionFactory,
         session -> {
-          Item item = session.get(Item.class, 2L);
+          Item item = session.find(Item.class, 2L);
           assertEquals(2L, item.getCart().cartId);
-          CartSession cartSession = session.get(CartSession.class, 2L);
+          CartSession cartSession = session.find(CartSession.class, 2L);
           assertEquals(2L, cartSession.getCart().cartId);
         });
   }
@@ -170,14 +170,14 @@ public class ForeignKeyTest extends BaseCoreFunctionalTestCase {
           session.persist(cartSession);
 
           // Delete the referenced cart object referenced by Item/CartSession child tables.
-          assertThat(session.get(Item.class, 4L)).isNotNull();
-          assertThat(session.get(CartSession.class, 4L)).isNotNull();
+          assertThat(session.find(Item.class, 4L)).isNotNull();
+          assertThat(session.find(CartSession.class, 4L)).isNotNull();
         });
 
     doInHibernate(
         this::sessionFactory,
         session -> {
-          session.delete(cart);
+          session.remove(cart);
         });
 
     doInHibernate(
@@ -185,8 +185,8 @@ public class ForeignKeyTest extends BaseCoreFunctionalTestCase {
         session -> {
           // Verify cascade deletes in child tables ensuring that the referencing records get
           // deleted.
-          assertThat(session.get(Item.class, 4L)).isNull();
-          assertThat(session.get(CartSession.class, 4L)).isNull();
+          assertThat(session.find(Item.class, 4L)).isNull();
+          assertThat(session.find(CartSession.class, 4L)).isNull();
         });
 
     verifyOnDeleteCascadeReferentialConstraints();

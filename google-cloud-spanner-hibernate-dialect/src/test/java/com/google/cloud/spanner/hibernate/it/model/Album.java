@@ -18,11 +18,10 @@
 
 package com.google.cloud.spanner.hibernate.it.model;
 
+import com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
@@ -31,9 +30,6 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
 /** Album entity definition. */
 @Entity
@@ -41,17 +37,7 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
 public class Album extends AbstractBaseEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "album_id_generator")
-  @GenericGenerator(
-      name = "album_id_generator",
-      // TODO: Switch to PooledBitReversedSequenceStyleGenerator when that is available and the
-      //       emulator supports it.
-      strategy = "com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator",
-      parameters = {
-        // Use a separate name for each entity to ensure that it uses a separate table.
-        @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "album_id"),
-        @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
-      })
+  @PooledBitReversedSequenceGenerator(sequenceName = "album_id_sequence", poolSize = 30)
   private Long id;
 
   @Column(nullable = false, length = 300)

@@ -70,12 +70,12 @@ public class App {
 
     Singer singerMelissa = new Singer("Melissa", "Garcia", makeDate("1981-03-19"));
     Album albumGoGoGo = new Album(singerMelissa, "Go, Go, Go");
-    session.save(singerMelissa);
-    session.save(albumGoGoGo);
+    session.persist(singerMelissa);
+    session.persist(albumGoGoGo);
 
-    session.save(new Singer("Russell", "Morales", makeDate("1978-12-02")));
-    session.save(new Singer("Jacqueline", "Long", makeDate("1990-07-29")));
-    session.save(new Singer("Dylan", "Shaw", makeDate("1998-05-02")));
+    session.persist(new Singer("Russell", "Morales", makeDate("1978-12-02")));
+    session.persist(new Singer("Jacqueline", "Long", makeDate("1990-07-29")));
+    session.persist(new Singer("Dylan", "Shaw", makeDate("1998-05-02")));
 
     session.getTransaction().commit();
   }

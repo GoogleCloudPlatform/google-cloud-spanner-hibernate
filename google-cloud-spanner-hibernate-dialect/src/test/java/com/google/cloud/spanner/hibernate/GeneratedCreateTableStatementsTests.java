@@ -135,10 +135,10 @@ public class GeneratedCreateTableStatementsTests {
     assertThat(sqlStrings)
         .containsExactly(
             "START BATCH DDL",
-            "drop sequence GrandParent_Sequence",
+            "drop sequence if exists GrandParent_Sequence",
             "RUN BATCH",
             "START BATCH DDL",
-            "create sequence GrandParent_Sequence options(sequence_kind=\"bit_reversed_positive\")",
+            "create sequence if not exists GrandParent_Sequence options(sequence_kind=\"bit_reversed_positive\")",
             "create table GrandParent (grandParentId int64 not null,name string(255)) "
                 + "PRIMARY KEY (grandParentId)",
             "create table Parent (grandParentId int64 not null,parentId int64 not null,"
@@ -198,10 +198,10 @@ public class GeneratedCreateTableStatementsTests {
     assertThat(sqlStrings)
         .containsExactly(
             "START BATCH DDL",
-            "drop sequence Employee_Sequence",
+            "drop sequence if exists Employee_Sequence",
             "RUN BATCH",
             "START BATCH DDL",
-            "create sequence Employee_Sequence options(sequence_kind=\"bit_reversed_positive\")",
+            "create sequence if not exists Employee_Sequence options(sequence_kind=\"bit_reversed_positive\")",
             "create table Employee (id int64 not null,manager_id int64,name string(255)) "
                 + "PRIMARY KEY (id)",
             "create index name_index on Employee (name)",
@@ -246,13 +246,12 @@ public class GeneratedCreateTableStatementsTests {
     assertThat(sqlStrings)
         .containsExactly(
             "START BATCH DDL",
+            "drop sequence if exists customer_id_sequence",
             "RUN BATCH",
             "START BATCH DDL",
-            "create table Customer (customerId int64 not null,name string(255)) "
-                + "PRIMARY KEY (customerId)",
-            "create table customerId (next_val int64) PRIMARY KEY ()",
-            "RUN BATCH",
-            "insert into customerId (next_val) values ( 50000 )");
+            "create sequence if not exists customer_id_sequence options(sequence_kind=\"bit_reversed_positive\", start_with_counter=50000)",
+            "create table Customer (customerId int64 not null,name string(255)) PRIMARY KEY (customerId)",
+            "RUN BATCH");
   }
 
   @Test
@@ -318,7 +317,7 @@ public class GeneratedCreateTableStatementsTests {
             "START BATCH DDL",
             "drop index if exists name_index",
             "drop table `Employee`",
-            "drop sequence Employee_Sequence",
+            "drop sequence if exists Employee_Sequence",
             "RUN BATCH");
   }
 
@@ -340,7 +339,7 @@ public class GeneratedCreateTableStatementsTests {
             "RUN BATCH",
             "START BATCH DDL",
             "create table Airplane (id string(36) not null,modelName string(255)) PRIMARY KEY (id)",
-            "create unique index UK_gc568wb30sampsuirwne5jqgh on Airplane (modelName)",
+            "create unique index UKgc568wb30sampsuirwne5jqgh on Airplane (modelName)",
             "RUN BATCH");
   }
 
@@ -371,8 +370,8 @@ public class GeneratedCreateTableStatementsTests {
             "create table Airport (id string(36) not null) PRIMARY KEY (id)",
             "create table Airport_Airplane (Airport_id string(36) not null,"
                 + "airplanes_id string(36) not null) PRIMARY KEY (Airport_id,airplanes_id)",
-            "create unique index UK_gc568wb30sampsuirwne5jqgh on Airplane (modelName)",
-            "create unique index UK_em0lqvwoqdwt29x0b0r010be on Airport_Airplane (airplanes_id)",
+            "create unique index UKgc568wb30sampsuirwne5jqgh on Airplane (modelName)",
+            "create unique index UKem0lqvwoqdwt29x0b0r010be on Airport_Airplane (airplanes_id)",
             "alter table Airport_Airplane add constraint FKkn0enwaxbwk7csf52x0eps73d "
                 + "foreign key (airplanes_id) references Airplane (id)",
             "alter table Airport_Airplane add constraint FKh186t28ublke8o13fo4ppogs7 "

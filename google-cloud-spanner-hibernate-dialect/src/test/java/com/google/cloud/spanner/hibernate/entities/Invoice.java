@@ -18,21 +18,16 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
-import com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator;
+import com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
 /**
  * A test entity that has a many-to-one relationship.
@@ -42,15 +37,7 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
 @Entity
 public class Invoice {
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "invoiceId")
-  @GenericGenerator(
-      name = "invoiceId",
-      type = BitReversedSequenceStyleGenerator.class,
-      parameters = {
-        @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
-        @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "invoiceId"),
-        @Parameter(name = SequenceStyleGenerator.INITIAL_PARAM, value = "1")
-      })
+  @PooledBitReversedSequenceGenerator(sequenceName = "invoice_id_sequence")
   @Column(nullable = false)
   private Long invoiceId;
 

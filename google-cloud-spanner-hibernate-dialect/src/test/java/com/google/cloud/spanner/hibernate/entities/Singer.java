@@ -18,19 +18,14 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
-import com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator;
+import com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.util.List;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Check;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
 /** Test entity using a bit-reversed sequence generator for ID generation. */
 @Entity
@@ -38,18 +33,7 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
 public class Singer {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customerId")
-  @GenericGenerator(
-      name = "customerId",
-      type = BitReversedSequenceStyleGenerator.class,
-      parameters = {
-        @Parameter(name = SequenceStyleGenerator.SEQUENCE_PARAM, value = "singerId"),
-        @Parameter(name = SequenceStyleGenerator.INCREMENT_PARAM, value = "1000"),
-        @Parameter(name = SequenceStyleGenerator.INITIAL_PARAM, value = "50000"),
-        @Parameter(
-            name = BitReversedSequenceStyleGenerator.EXCLUDE_RANGES_PARAM,
-            value = "[1,1000] [10000,20000]"),
-      })
+  @PooledBitReversedSequenceGenerator(sequenceName = "singer_id_sequence")
   @Column(nullable = false)
   private long id;
 

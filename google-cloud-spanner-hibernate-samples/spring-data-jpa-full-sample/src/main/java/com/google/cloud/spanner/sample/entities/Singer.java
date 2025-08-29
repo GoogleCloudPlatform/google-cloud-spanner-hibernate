@@ -22,7 +22,6 @@ import com.google.cloud.spanner.hibernate.types.SpannerStringArray;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.List;
@@ -60,13 +59,11 @@ public class Singer extends AbstractNonInterleavedEntity {
   @ColumnDefault("true")
   private Boolean active;
 
-  @OneToMany
-  @JoinColumn(name = "singer_id")
+  @OneToMany(mappedBy = "singer")
   @BatchSize(size = 10)
   private List<Album> albums;
 
-  @OneToMany
-  @JoinColumn(name = "singer_id")
+  @OneToMany(mappedBy = "singer")
   private List<Concert> concerts;
 
   public String getFirstName() {
