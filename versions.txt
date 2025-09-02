@@ -1,4 +1,4 @@
 # Format:
 # module:released-version:current-version
 
-google-cloud-spanner-hibernate:3.9.7:3.9.7
+google-cloud-spanner-hibernate:3.9.7:3.9.8-SNAPSHOT
