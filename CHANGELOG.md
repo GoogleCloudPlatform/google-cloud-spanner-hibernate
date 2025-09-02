@@ -1,6 +1,30 @@
 # Changelog
 
 
+## [3.9.7](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.9.6...v3.9.7) (2025-09-02)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.google.cloud:google-cloud-spanner-jdbc to v2.32.2 ([#1817](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1817)) ([8c3d255](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/8c3d2554d6458630995123d9f83b7da8bc2f4ffa))
+* **deps:** update dependency org.apache.commons:commons-lang3 to v3.18.0 [security] ([#1745](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1745)) ([8f18be1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/8f18be1e86f92b0b719ded663383489640d9f9a1))
+* **deps:** update hibernate-orm monorepo to v6.6.27.final ([#1806](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1806)) ([cf4ac61](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/cf4ac6153a9264652dd0270bd1ddab7427848897))
+* **deps:** update hibernate-orm monorepo to v6.6.28.final ([#1822](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1822)) ([406d521](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/406d521788bf71a31913b008406143205d2dfe68))
+* **deps:** update log4j2 monorepo to v2.25.1 ([#1807](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1807)) ([ae3ff1c](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/ae3ff1cced88090669db0f16e102a420a770d377))
+* **deps:** update spring boot to v3.5.5 ([#1808](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1808)) ([5929138](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/592913895f847daf3c20f60c069c793f25b1b00d))
+
+
+### Dependencies
+
+* bump com.google.cloud:google-cloud-spanner-jdbc ([#1788](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1788)) ([6085928](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/60859288ed07463a692025f23e572dd2380ee576))
+* bump org.apache.maven.plugins:maven-gpg-plugin ([#1735](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1735)) ([6e21349](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/6e21349883a0e1ea67489d088b96c1d50eb3262b))
+* bump org.apache.maven.plugins:maven-javadoc-plugin ([#1802](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1802)) ([eefbc8b](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/eefbc8b14cf9035f54cabe418f459408a4775289))
+
+
+### Documentation
+
+* update readme for usage of @GeneratedValue and select for update ([#1785](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1785)) ([8481848](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/8481848537c88955749a27f661d212bddb1f8bab))
+
 ## [3.9.6](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.9.5...v3.9.6) (2025-06-20)
 
 
