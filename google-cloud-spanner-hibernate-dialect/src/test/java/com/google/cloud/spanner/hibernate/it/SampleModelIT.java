@@ -97,7 +97,7 @@ public class SampleModelIT {
                     Concert.class,
                     TicketSale.class,
                     AllTypes.class),
-                ImmutableMap.of("hibernate.hbm2ddl.auto", "update"))
+                ImmutableMap.of("hibernate.show_sql", "true", "hibernate.hbm2ddl.auto", "create"))
             .buildSessionFactory();
     try (Session session = sessionFactory.openSession()) {
       final Transaction transaction = session.beginTransaction();
@@ -130,11 +130,13 @@ public class SampleModelIT {
   public void deleteTestData() {
     try (Session session = sessionFactory.openSession()) {
       final Transaction transaction = session.beginTransaction();
+      final Singer peter = findSingerByFirstName(session, "Peter");
+      final Singer alice = findSingerByFirstName(session, "Alice");
       session
           .createMutationQuery(
               "delete from Concert " + "where not singer.id=:id1 " + "  and not singer.id=:id2")
-          .setParameter("id1", Long.reverse(50000))
-          .setParameter("id2", Long.reverse(50001))
+          .setParameter("id1", peter.getId())
+          .setParameter("id2", alice.getId())
           .executeUpdate();
       session
           .createMutationQuery(
@@ -146,13 +148,13 @@ public class SampleModelIT {
               "delete from Album "
                   + "where not (singer.id=:id1 or singer.id=:id2) "
                   + "or not (title='Album 1' or title='Album 2')")
-          .setParameter("id1", Long.reverse(50000))
-          .setParameter("id2", Long.reverse(50001))
+          .setParameter("id1", peter.getId())
+          .setParameter("id2", alice.getId())
           .executeUpdate();
       session
           .createMutationQuery("delete from Singer " + "where not id=:id1 " + "  and not id=:id2")
-          .setParameter("id1", Long.reverse(50000))
-          .setParameter("id2", Long.reverse(50001))
+          .setParameter("id1", peter.getId())
+          .setParameter("id2", alice.getId())
           .executeUpdate();
 
       transaction.commit();
@@ -162,10 +164,7 @@ public class SampleModelIT {
   @Test
   public void testGetSinger() {
     try (Session session = sessionFactory.openSession()) {
-      // The id generator should start counting at 50000 and the values should be bit-reversed.
-      assertNull(session.get(Singer.class, 1L));
-      assertNull(session.get(Singer.class, 50000L));
-      Singer singer = session.get(Singer.class, Long.reverse(50000L));
+      Singer singer = findSingerByFirstName(session, "Peter");
       assertNotNull(singer);
       assertEquals("Peter", singer.getFirstName());
       assertEquals("Allison", singer.getLastName());
@@ -216,7 +215,7 @@ public class SampleModelIT {
   @Test
   public void testSingerGetAlbums() {
     try (Session session = sessionFactory.openSession()) {
-      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Singer peter = findSingerByFirstName(session, "Peter");
       assertNotNull(peter.getAlbums());
       assertEquals(2, peter.getAlbums().size());
     }
@@ -226,7 +225,7 @@ public class SampleModelIT {
   public void testSaveAlbum() {
     try (Session session = sessionFactory.openSession()) {
       final Transaction transaction = session.beginTransaction();
-      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Singer peter = findSingerByFirstName(session, "Peter");
       Album album = new Album(peter, "Album 3");
       album.setMarketingBudget(new BigDecimal("990429.23"));
       album.setReleaseDate(LocalDate.of(2023, 9, 27));
@@ -249,7 +248,7 @@ public class SampleModelIT {
   public void testSaveTrack() {
     try (Session session = sessionFactory.openSession()) {
       Transaction transaction = session.beginTransaction();
-      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Singer peter = findSingerByFirstName(session, "Peter");
       Album album = peter.getAlbums().get(0);
       Track track = new Track(album, 1, "Track 1");
       track.setSampleRate(3.14d);
@@ -266,7 +265,7 @@ public class SampleModelIT {
     }
     // Test associations.
     try (Session session = sessionFactory.openSession()) {
-      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Singer peter = findSingerByFirstName(session, "Peter");
       Album album = peter.getAlbums().get(0);
       assertNotNull(album.getTracks());
       assertEquals(1, album.getTracks().size());
@@ -297,7 +296,7 @@ public class SampleModelIT {
   public void testSaveVenueWithNullDescription() {
     try (Session session = sessionFactory.openSession()) {
       final Transaction transaction = session.beginTransaction();
-      Venue venue = new Venue("Venue 2", /* description = */ null);
+      Venue venue = new Venue("Venue 2", /* description= */ null);
       session.persist(venue);
       transaction.commit();
 
@@ -310,7 +309,7 @@ public class SampleModelIT {
   @Test
   public void testSaveConcert() {
     try (Session session = sessionFactory.openSession()) {
-      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Singer peter = findSingerByFirstName(session, "Peter");
       final Transaction transaction = session.beginTransaction();
       Venue venue = new Venue("Venue 2", new VenueDescription());
       session.persist(venue);
@@ -338,7 +337,7 @@ public class SampleModelIT {
   @Test
   public void testSaveTicketSale() {
     try (Session session = sessionFactory.openSession()) {
-      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Singer peter = findSingerByFirstName(session, "Peter");
       final Transaction transaction = session.beginTransaction();
       Venue venue = new Venue("Venue 2", new VenueDescription());
       session.persist(venue);
@@ -365,7 +364,7 @@ public class SampleModelIT {
   @Test
   public void testSingerAlbumAssociation() {
     try (Session session = sessionFactory.openSession()) {
-      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Singer peter = findSingerByFirstName(session, "Peter");
       assertNotNull(peter.getAlbums());
       assertEquals(2, peter.getAlbums().size());
       for (Album album : peter.getAlbums()) {
@@ -384,7 +383,7 @@ public class SampleModelIT {
 
       // Verify that the albums of the singer were not saved.
       session.clear();
-      singer = session.get(Singer.class, singer.getId());
+      singer = session.find(Singer.class, singer.getId());
       assertNotNull(singer.getAlbums());
       assertTrue(singer.getAlbums().isEmpty());
 
@@ -400,7 +399,7 @@ public class SampleModelIT {
       }
       transaction2.commit();
 
-      singer2 = session.get(Singer.class, singer2.getId());
+      singer2 = session.find(Singer.class, singer2.getId());
       assertNotNull(singer2.getAlbums());
       assertEquals(2, singer2.getAlbums().size());
     }
@@ -410,7 +409,7 @@ public class SampleModelIT {
   public void testAlbumTracksAssociation() {
     try (Session session = sessionFactory.openSession()) {
       final Transaction transaction = session.beginTransaction();
-      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Singer peter = findSingerByFirstName(session, "Peter");
 
       Album album = new Album(peter, "Album 3");
       // We need to save the album before adding tracks to it, as the tracks must use the same id
@@ -424,7 +423,7 @@ public class SampleModelIT {
       transaction.commit();
       // Reload the album from the database.
       session.clear();
-      Album album2 = session.get(Album.class, album.getId());
+      Album album2 = session.find(Album.class, album.getId());
 
       // Verify that we can delete an album with tracks, as Cloud Spanner will cascade-delete the
       // tracks of an album. Hibernate does not know about this.
@@ -434,7 +433,7 @@ public class SampleModelIT {
 
       // The album should no longer be present in the database.
       session.clear();
-      assertNull(session.get(Album.class, album.getId()));
+      assertNull(session.find(Album.class, album.getId()));
     }
   }
 
@@ -448,7 +447,7 @@ public class SampleModelIT {
       //    concerts.
       // The emulator does not support parallel transactions.
       final Transaction transaction = isUsingEmulator() ? null : session.beginTransaction();
-      Singer peter = session.get(Singer.class, Long.reverse(50000L));
+      Singer peter = findSingerByFirstName(session, "Peter");
       Venue venue = new Venue("Concert Hall", new VenueDescription());
       venue.setConcerts(
           ImmutableList.of(
@@ -481,7 +480,7 @@ public class SampleModelIT {
       }
 
       session.clear();
-      Venue venue2 = session.get(Venue.class, venue.getId());
+      Venue venue2 = session.find(Venue.class, venue.getId());
       assertEquals(2, venue2.getConcerts().size());
 
       // Verify that we can delete a venue with concerts, because we have set cascade=ALL on the
@@ -494,7 +493,7 @@ public class SampleModelIT {
       deleteTransaction.commit();
 
       session.clear();
-      assertNull(session.get(Venue.class, venue.getId()));
+      assertNull(session.find(Venue.class, venue.getId()));
     }
   }
 
@@ -536,7 +535,7 @@ public class SampleModelIT {
       session.clear();
 
       // Verify that we can read it back and that the values are correct.
-      AllTypes fetched = session.get(AllTypes.class, 1L);
+      AllTypes fetched = session.find(AllTypes.class, 1L);
 
       assertEquals(saved.getId(), fetched.getId());
       assertEquals(saved.getColBool(), fetched.getColBool());
@@ -669,5 +668,13 @@ public class SampleModelIT {
         assertEquals(2, hashJoinQuery.getResultList().size());
       }
     }
+  }
+
+  private Singer findSingerByFirstName(Session session, String firstName) {
+    return session
+        .createQuery("select s from Singer s where s.firstName = :firstName", Singer.class)
+        .setParameter("firstName", firstName)
+        .setMaxResults(1)
+        .uniqueResult();
   }
 }

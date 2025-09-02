@@ -167,7 +167,7 @@ public class SpannerTableExporterTests {
             "START BATCH DDL;",
             "drop index if exists name_index;",
             "drop table `Employee`;",
-            "drop sequence Employee_Sequence;",
+            "drop sequence if exists Employee_Sequence;",
             "RUN BATCH;");
   }
 
@@ -221,7 +221,7 @@ public class SpannerTableExporterTests {
         .containsExactly(
             // This omits creating the Employee table since it is declared to exist in metadata.
             "START BATCH DDL;",
-            "create sequence Employee_Sequence options(sequence_kind=\"bit_reversed_positive\");",
+            "create sequence if not exists Employee_Sequence options(sequence_kind=\"bit_reversed_positive\");",
             "create index name_index on Employee (name);",
             "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
                 + "foreign key (manager_id) references Employee (id);",

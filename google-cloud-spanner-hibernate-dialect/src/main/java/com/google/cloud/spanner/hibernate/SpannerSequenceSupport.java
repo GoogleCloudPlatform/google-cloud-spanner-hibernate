@@ -44,6 +44,17 @@ public class SpannerSequenceSupport implements SequenceSupport {
         "Cloud Spanner does not support sequences with an increment size != 1");
   }
 
+  @Override
+  public String[] getCreateSequenceStrings(
+      String sequenceName, int initialValue, int incrementSize, String options)
+      throws MappingException {
+    if (incrementSize == 1) {
+      return new String[] {getCreateSequenceString(sequenceName, initialValue, options)};
+    }
+    throw new MappingException(
+        "Cloud Spanner does not support sequences with an increment size != 1");
+  }
+
   String getCreateSequenceString(String sequenceName, int initialValue, String additionalOptions) {
     ImmutableMap.Builder<String, String> options = ImmutableMap.builder();
     options.put("sequence_kind", "\"bit_reversed_positive\"");
@@ -55,7 +66,7 @@ public class SpannerSequenceSupport implements SequenceSupport {
     } else {
       additionalOptions = ")";
     }
-    return "create sequence "
+    return "create sequence if not exists "
         + sequenceName
         + options.build().entrySet().stream()
             .map(option -> option.getKey() + "=" + option.getValue())
@@ -64,7 +75,7 @@ public class SpannerSequenceSupport implements SequenceSupport {
 
   @Override
   public String getDropSequenceString(String sequenceName) {
-    return "drop sequence " + sequenceName;
+    return "drop sequence if exists " + sequenceName;
   }
 
   @Override

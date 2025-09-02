@@ -53,7 +53,7 @@ public class StaleReadsDemo {
       // First save a book record in the database.
       session.beginTransaction();
       book = new Book("Super Book", "Bob Blob");
-      session.save(book);
+      session.persist(book);
       session.getTransaction().commit();
       System.out.println("Saved book to database: " + book);
 

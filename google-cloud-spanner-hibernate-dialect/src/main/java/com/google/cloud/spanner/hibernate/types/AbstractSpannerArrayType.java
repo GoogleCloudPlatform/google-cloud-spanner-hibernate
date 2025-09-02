@@ -28,7 +28,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.usertype.UserType;
 
 /** Base class for Spanner ARRAY types. */
@@ -57,24 +57,24 @@ public abstract class AbstractSpannerArrayType<A, T> implements UserType<List<T>
   }
 
   @Override
-  public List<T> nullSafeGet(
-      ResultSet rs, int position, SharedSessionContractImplementor session, Object owner)
+  public List<T> nullSafeGet(ResultSet rs, int position, WrapperOptions options)
       throws SQLException {
     Array array = rs.getArray(position);
     return array != null ? toList(array) : null;
   }
 
   @Override
-  public void nullSafeSet(
-      PreparedStatement st, List<T> value, int index, SharedSessionContractImplementor session)
+  public void nullSafeSet(PreparedStatement st, List<T> value, int index, WrapperOptions options)
       throws SQLException {
     if (st != null) {
       if (value != null) {
-        session.doWork(
-            connection -> {
-              Array array = connection.createArrayOf(getArrayElementTypeName(), toArray(value));
-              st.setArray(index, array);
-            });
+        options
+            .getSession()
+            .doWork(
+                connection -> {
+                  Array array = connection.createArrayOf(getArrayElementTypeName(), toArray(value));
+                  st.setArray(index, array);
+                });
       } else {
         st.setNull(index, Types.ARRAY);
       }

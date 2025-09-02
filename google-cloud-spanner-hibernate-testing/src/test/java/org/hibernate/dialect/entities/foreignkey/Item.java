@@ -19,10 +19,10 @@
 package org.hibernate.dialect.entities.foreignkey;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import org.hibernate.annotations.ForeignKey;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -32,8 +32,7 @@ public class Item {
   @Id public long itemId;
 
   @ManyToOne
-  @JoinColumn(name = "cartId")
-  @ForeignKey(name = "Fk_itemDetails_cartId")
+  @JoinColumn(name = "cartId", foreignKey = @ForeignKey(name = "Fk_itemDetails_cartId"))
   @OnDelete(action = OnDeleteAction.CASCADE)
   public Cart cart;
 

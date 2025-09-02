@@ -30,7 +30,7 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
 @Entity
 public class SequenceEntity {
   @Id
-  @GeneratedValue(generator = "sequence-generator")
+  @GeneratedValue
   @GenericGenerator(
       name = "sequence-generator",
       type = SequenceStyleGenerator.class,

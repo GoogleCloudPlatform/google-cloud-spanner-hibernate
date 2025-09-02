@@ -48,12 +48,12 @@ import org.hibernate.dialect.lock.SelectLockingStrategy;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfo;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.mapping.Constraint;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
+import org.hibernate.mapping.UniqueKey;
 import org.hibernate.metamodel.mapping.EntityMappingType;
 import org.hibernate.metamodel.spi.RuntimeModelCreationContext;
-import org.hibernate.persister.entity.Lockable;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.query.spi.DomainQueryExecutionContext;
 import org.hibernate.query.spi.QueryOptions;
 import org.hibernate.query.sqm.internal.DomainParameterXref;
@@ -84,7 +84,7 @@ import org.hibernate.type.descriptor.sql.internal.DdlTypeImpl;
 import org.hibernate.type.descriptor.sql.spi.DdlTypeRegistry;
 import org.jboss.logging.Logger;
 
-/** Hibernate 6.x dialect for Cloud Spanner. */
+/** Hibernate 7.x dialect for Cloud Spanner. */
 public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   private static final Logger LOG = Logger.getLogger(SpannerDialect.class.getName());
 
@@ -169,8 +169,10 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
 
   private final StandardUniqueKeyExporter spannerUniqueKeyExporter =
       new StandardUniqueKeyExporter(this);
+
   private final SpannerSequenceSupport sequenceSupport = new SpannerSequenceSupport();
-  private final StandardSequenceExporter sequenceExporter = new SpannerSequenceExporter(this);
+
+  private final StandardSequenceExporter sequenceExporter = new StandardSequenceExporter(this);
 
   private final SpannerUniqueDelegate spannerUniqueDelegate = new SpannerUniqueDelegate(this);
 
@@ -316,7 +318,7 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   }
 
   @Override
-  public Exporter<Constraint> getUniqueKeyExporter() {
+  public Exporter<UniqueKey> getUniqueKeyExporter() {
     return spannerUniqueKeyExporter;
   }
 
@@ -434,27 +436,21 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   /* Lock acquisition functions */
 
   @Override
-  public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-    // TODO: Remove the override in the super class to use the default implementation.
-    switch (lockMode) {
-      case PESSIMISTIC_FORCE_INCREMENT:
-        return new PessimisticForceIncrementLockingStrategy(lockable, lockMode);
-      case UPGRADE_NOWAIT:
-      case UPGRADE_SKIPLOCKED:
-      case PESSIMISTIC_WRITE:
-        return new PessimisticWriteSelectLockingStrategy(lockable, lockMode);
-      case PESSIMISTIC_READ:
-        return new PessimisticReadSelectLockingStrategy(lockable, lockMode);
-      case OPTIMISTIC_FORCE_INCREMENT:
-        return new OptimisticForceIncrementLockingStrategy(lockable, lockMode);
-      case OPTIMISTIC:
-        return new OptimisticLockingStrategy(lockable, lockMode);
-      case READ:
-        return new SelectLockingStrategy(lockable, lockMode);
-      default:
-        // WRITE, NONE are not allowed here
-        throw new IllegalArgumentException("Unsupported lock mode");
-    }
+  public LockingStrategy getLockingStrategy(EntityPersister lockable, LockMode lockMode) {
+    return switch (lockMode) {
+      case PESSIMISTIC_FORCE_INCREMENT ->
+          new PessimisticForceIncrementLockingStrategy(lockable, lockMode);
+      case UPGRADE_NOWAIT, UPGRADE_SKIPLOCKED, PESSIMISTIC_WRITE ->
+          new PessimisticWriteSelectLockingStrategy(lockable, lockMode);
+      case PESSIMISTIC_READ -> new PessimisticReadSelectLockingStrategy(lockable, lockMode);
+      case OPTIMISTIC_FORCE_INCREMENT ->
+          new OptimisticForceIncrementLockingStrategy(lockable, lockMode);
+      case OPTIMISTIC -> new OptimisticLockingStrategy(lockable, lockMode);
+      case READ -> new SelectLockingStrategy(lockable, lockMode);
+      default ->
+          // WRITE, NONE are not allowed here
+          throw new IllegalArgumentException("Unsupported lock mode");
+    };
   }
 
   @Override

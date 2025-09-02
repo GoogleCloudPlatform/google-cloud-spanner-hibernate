@@ -18,21 +18,24 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import com.google.cloud.spanner.hibernate.BitReversedSequenceStyleGenerator.ReplaceInitCommand;
 import com.google.cloud.spanner.hibernate.schema.RunBatchDdl;
 import com.google.cloud.spanner.hibernate.schema.SpannerDatabaseInfo;
 import com.google.cloud.spanner.hibernate.schema.SpannerTableStatements;
 import com.google.cloud.spanner.hibernate.schema.TableDependencyTracker;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.hibernate.HibernateException;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.relational.InitCommand;
 import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.mapping.Column;
-import org.hibernate.mapping.Constraint;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
 import org.hibernate.tool.schema.Action;
@@ -73,20 +76,8 @@ public class SpannerTableExporter implements Exporter<Table> {
   protected void applyInitCommands(
       Table table, Metadata metadata, SqlStringGenerationContext context) {
     List<InitCommand> initCommands = table.getInitCommands(context);
-    // Use only the replaced commands if the list contains both normal InitCommands and
-    // ReplaceInitCommands.
-    if (initCommands.stream().anyMatch(ReplaceInitCommand.class::isInstance)
-        && initCommands.stream().anyMatch(cmd -> !ReplaceInitCommand.class.isInstance(cmd))) {
-      initCommands =
-          initCommands.stream()
-              .filter(ReplaceInitCommand.class::isInstance)
-              .collect(Collectors.toList());
-    } else if (initCommands.stream().anyMatch(ReplaceInitCommand.class::isInstance)) {
-      // Only ReplaceInitCommands, but there is nothing to replace, so we return early.
-      return;
-    }
     for (InitCommand initCommand : initCommands) {
-      addStatementAfterDdlBatch(metadata, initCommand.getInitCommands());
+      addStatementAfterDdlBatch(metadata, initCommand.initCommands());
     }
   }
 
@@ -147,14 +138,51 @@ public class SpannerTableExporter implements Exporter<Table> {
    * with @Column(unique = true).
    */
   private static void initializeUniqueConstraints(Table table) {
-    Iterator<Column> colIterator = table.getColumns().iterator();
-    while (colIterator.hasNext()) {
-      Column col = colIterator.next();
-      if (col.isUnique()) {
-        String name = Constraint.generateName("UK_", table, col);
-        UniqueKey uk = table.getOrCreateUniqueKey(name);
-        uk.addColumn(col);
+    for (Column column : table.getColumns()) {
+      if (column.isUnique() && !table.isPrimaryKey(column)) {
+        String uniqueKeyName = column.getUniqueKeyName();
+        final String keyName =
+            uniqueKeyName == null
+                // fallback in case the ImplicitNamingStrategy name was not assigned
+                // (we don't have access to the ImplicitNamingStrategy here)
+                ? generateName("UK_", table, column)
+                : uniqueKeyName;
+        final UniqueKey uniqueKey = table.getOrCreateUniqueKey(keyName);
+        uniqueKey.addColumn(column);
       }
+    }
+  }
+
+  private static String generateName(String prefix, Table table, Column... columns) {
+    // Use a concatenation that guarantees uniqueness, even if identical names
+    // exist between all table and column identifiers.
+    final StringBuilder sb = new StringBuilder("table`" + table.getName() + "`");
+    // Ensure a consistent ordering of columns, regardless of the order
+    // they were bound.
+    // Clone the list, as sometimes a set of order-dependent Column
+    // bindings are given.
+    final Column[] alphabeticalColumns = columns.clone();
+    Arrays.sort(alphabeticalColumns, Comparator.comparing(Column::getName));
+    for (Column column : alphabeticalColumns) {
+      final String columnName = column == null ? "" : column.getName();
+      sb.append("column`").append(columnName).append("`");
+    }
+    return prefix + hashedName(sb.toString());
+  }
+
+  private static String hashedName(String name) {
+    try {
+      final MessageDigest md = MessageDigest.getInstance("MD5");
+      md.reset();
+      md.update(name.getBytes());
+      final byte[] digest = md.digest();
+      final BigInteger bigInt = new BigInteger(1, digest);
+      // By converting to base 35 (full alphanumeric), we guarantee
+      // that the length of the name will always be smaller than the 30
+      // character identifier restriction enforced by a few dialects.
+      return bigInt.toString(35);
+    } catch (NoSuchAlgorithmException e) {
+      throw new HibernateException("Unable to generate a hashed Constraint name", e);
     }
   }
 }

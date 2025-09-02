@@ -21,7 +21,6 @@ package com.google.cloud.spanner.hibernate.entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -34,7 +33,7 @@ import org.hibernate.annotations.Parameter;
 public class LegacySequenceEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "legacy_sequence")
+  @GeneratedValue
   @GenericGenerator(
       name = "legacy_sequence",
       strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",

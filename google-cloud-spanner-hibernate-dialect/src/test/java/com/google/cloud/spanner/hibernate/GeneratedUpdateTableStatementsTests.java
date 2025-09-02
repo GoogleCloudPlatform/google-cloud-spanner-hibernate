@@ -66,6 +66,7 @@ public class GeneratedUpdateTableStatementsTests {
             .applySetting("hibernate.connection.username", "unused")
             .applySetting("hibernate.connection.password", "unused")
             .applySetting("hibernate.hbm2ddl.auto", "update")
+            .applySetting("hibernate.show_sql", "true")
             .build();
   }
 
@@ -105,7 +106,7 @@ public class GeneratedUpdateTableStatementsTests {
             "create table Employee (id int64 not null,name string(255),manager_id int64) "
                 + "PRIMARY KEY (id)",
             "create index name_index on Employee (name)",
-            "create sequence Employee_Sequence options(sequence_kind=\"bit_reversed_positive\")",
+            "create sequence if not exists Employee_Sequence options(sequence_kind=\"bit_reversed_positive\")",
             "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
                 + "foreign key (manager_id) references Employee (id)",
             "RUN BATCH");
@@ -123,7 +124,7 @@ public class GeneratedUpdateTableStatementsTests {
         .containsExactly(
             "START BATCH DDL",
             "create index name_index on Employee (name)",
-            "create sequence Employee_Sequence options(sequence_kind=\"bit_reversed_positive\")",
+            "create sequence if not exists Employee_Sequence options(sequence_kind=\"bit_reversed_positive\")",
             "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
                 + "foreign key (manager_id) references Employee (id)",
             "RUN BATCH");
@@ -140,7 +141,12 @@ public class GeneratedUpdateTableStatementsTests {
 
     List<String> sqlStrings =
         defaultConnection.getStatementResultSetHandler().getExecutedStatements();
-    assertThat(sqlStrings).containsExactly("START BATCH DDL", "RUN BATCH");
+    assertThat(sqlStrings)
+        .containsExactly(
+            "START BATCH DDL",
+            "create sequence if not exists customer_id_sequence options(sequence_kind=\"bit_reversed_positive\", start_with_counter=50000)",
+            "create sequence if not exists invoice_id_sequence options(sequence_kind=\"bit_reversed_positive\")",
+            "RUN BATCH");
     sqlStrings = defaultConnection.getPreparedStatementResultSetHandler().getExecutedStatements();
     assertThat(sqlStrings)
         .containsExactly(

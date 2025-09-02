@@ -242,11 +242,6 @@ public class SpannerDialectTests {
   }
 
   @Test
-  public void isLockTimeoutParameterizedTest() {
-    assertThat(this.spannerDialect.isLockTimeoutParameterized()).isFalse();
-  }
-
-  @Test
   public void getForUpdateStringAliasTest() {
     assertEquals(" for update", this.spannerDialect.getForUpdateString("a"));
   }

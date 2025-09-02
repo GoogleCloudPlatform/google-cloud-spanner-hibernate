@@ -18,29 +18,21 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
+import com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 
 /** Test entity for using a bit-reversed sequence that supports batching. */
 @Entity
 public class PooledBitReversedSequenceEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "batch_bit_reversed_generator")
-  @GenericGenerator(
-      name = "batch_bit_reversed_generator",
-      strategy = "com.google.cloud.spanner.hibernate.PooledBitReversedSequenceStyleGenerator",
-      parameters = {
-        @Parameter(name = "sequence_name", value = "enhanced_sequence"),
-        @Parameter(name = "increment_size", value = "5"),
-        @Parameter(name = "initial_value", value = "5000"),
-        @Parameter(name = "exclude_range", value = "[1,1000]")
-      })
+  @PooledBitReversedSequenceGenerator(
+      sequenceName = "enhanced_sequence",
+      startWithCounter = 5000,
+      poolSize = 5,
+      excludeRange = "[1,1000]")
   private long id;
 
   @Column private String name;

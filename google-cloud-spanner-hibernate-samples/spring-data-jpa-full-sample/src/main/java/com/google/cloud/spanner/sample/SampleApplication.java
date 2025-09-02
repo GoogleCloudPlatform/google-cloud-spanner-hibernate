@@ -61,6 +61,7 @@ public class SampleApplication implements CommandLineRunner {
 
   private final SingerService singerService;
   private final ConcertService concertService;
+
   /**
    * The {@link StaleReadService} is a generic service that can be used to execute workloads using
    * stale reads. Stale reads can perform better than strong reads. See <a
