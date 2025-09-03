@@ -64,28 +64,22 @@ import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
 
 /**
- * @Deprecated use {@link
- * com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator}
- *
- * <p>Pooled ID generator that uses a bit-reversed sequence to generate values. These values are
- * safe to use as the primary key of a table in Cloud Spanner. This is the recommended strategy for
- * auto-generated numeric primary keys in Cloud Spanner.
- *
- * <p>Using a bit-reversed sequence for ID generation is recommended above sequences that return a
- * monotonically increasing value for Cloud Spanner. This generator also supports both an increment
- * size larger than 1 and an initial value larger than 1. The increment value can not exceed 200 for
- * GoogleSQL-dialect databases and 60 for PostgreSQL-dialect databases.
- *
- * <p>Use the {@link #EXCLUDE_RANGE_PARAM} to exclude a range of values that should be skipped by
- * the generator if your entity table already contains data. The excluded values should be given as
- * closed range. E.g. "[1,1000]" to skip all values between 1 and 1000 (inclusive).
- *
- * <p>It is recommended to use a separate sequence for each entity. Set the sequence name to use for
- * a generator with the SequenceStyleGenerator.SEQUENCE_PARAM parameter (see example below).
- *
- * <p>Example usage:
- *
- * <pre>{@code
+ * @deprecated use {@link
+ *     com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator}
+ *     <p>Pooled ID generator that uses a bit-reversed sequence to generate values. These values are
+ *     safe to use as the primary key of a table in Cloud Spanner. This is the recommended strategy
+ *     for auto-generated numeric primary keys in Cloud Spanner.
+ *     <p>Using a bit-reversed sequence for ID generation is recommended above sequences that return
+ *     a monotonically increasing value for Cloud Spanner. This generator also supports both an
+ *     increment size larger than 1 and an initial value larger than 1. The increment value can not
+ *     exceed 200 for GoogleSQL-dialect databases and 60 for PostgreSQL-dialect databases.
+ *     <p>Use the {@link #EXCLUDE_RANGE_PARAM} to exclude a range of values that should be skipped
+ *     by the generator if your entity table already contains data. The excluded values should be
+ *     given as closed range. E.g. "[1,1000]" to skip all values between 1 and 1000 (inclusive).
+ *     <p>It is recommended to use a separate sequence for each entity. Set the sequence name to use
+ *     for a generator with the SequenceStyleGenerator.SEQUENCE_PARAM parameter (see example below).
+ *     <p>Example usage:
+ *     <pre>{@code
  * @Id
  * @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customerId")
  * @GenericGenerator(
