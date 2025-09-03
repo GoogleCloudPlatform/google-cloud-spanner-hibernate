@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [4.0.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.0.0...v4.0.1) (2025-09-03)
+
+
+### Bug Fixes
+
+* **deps:** update spring boot to v4.0.0-m2 ([#1828](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1828)) ([ee4314a](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/ee4314a77310dc3887821d94104fd524cec971ab))
+
 ## [4.0.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.9.7...v4.0.0) (2025-09-02)
 
 
