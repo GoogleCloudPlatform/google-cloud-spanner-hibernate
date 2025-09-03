@@ -1,6 +1,17 @@
 # Changelog
 
 
+## [4.0.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.9.7...v4.0.0) (2025-09-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* Hibernate version 7 update ([#1803](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1803))
+
+### Features
+
+* Hibernate version 7 update ([#1803](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1803)) ([b65ec64](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/b65ec64e1b854626af91500c673247b833c89daa))
+
 ## [3.9.7](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v3.9.6...v3.9.7) (2025-09-02)
 
 
