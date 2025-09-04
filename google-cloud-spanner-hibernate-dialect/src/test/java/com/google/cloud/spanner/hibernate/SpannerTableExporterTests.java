@@ -196,7 +196,7 @@ public class SpannerTableExporterTests {
               "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
                   + "foreign key (manager_id) references Employee (id);",
               "RUN BATCH;",
-              "insert into Employee_Sequence values ( 1 );");
+              "insert into Employee_Sequence ( next_val ) values ( 1 );");
     } finally {
       SpannerDialect.enableSpannerSequences();
     }

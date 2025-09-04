@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.cloud.spanner.hibernate.entities.SubTestEntity;
 import com.google.cloud.spanner.hibernate.entities.TestEntity;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.hibernate.Session;
+import org.hibernate.Timeouts;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
@@ -85,16 +87,91 @@ public class GeneratedSelectStatementsTests {
   }
 
   @Test
-  public void selectLockAcquisitionTest() {
+  public void selectLockAcquisitionTest_pessimisticRead_withPagination() {
     // the translated statement should include an 'for update' clause.
     testStatementTranslation(
         x -> {
-          Query<?> q =
-              x.createQuery("select s from SubTestEntity s").setFirstResult(8).setMaxResults(15);
+          Query<SubTestEntity> q =
+              x.createQuery("select s from SubTestEntity s", SubTestEntity.class)
+                  .setFirstResult(8)
+                  .setMaxResults(15);
           q.setLockMode(LockModeType.PESSIMISTIC_READ);
           q.list();
         },
         "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 limit ? offset ? for update");
+  }
+
+  @Test
+  public void selectLockAcquisitionTest_pessimisticWrite() {
+    testStatementTranslation(
+        x -> {
+          Query<SubTestEntity> q =
+              x.createQuery("select s from SubTestEntity s", SubTestEntity.class);
+          q.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+          q.list();
+        },
+        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 for update");
+  }
+
+  @Test
+  public void selectLockAcquisitionTest_pessimisticWrite_waitForever() {
+    testStatementTranslation(
+        x -> {
+          Query<SubTestEntity> q =
+              x.createQuery("select s from SubTestEntity s", SubTestEntity.class);
+          q.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+          q.setTimeout(Timeouts.WAIT_FOREVER);
+          q.list();
+        },
+        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 for update");
+  }
+
+  @Test
+  public void selectLockAcquisitionTest_pessimisticWrite_withTimeout() {
+    assertThatThrownBy(
+            () ->
+                openSessionAndDo(
+                    x -> {
+                      Query<SubTestEntity> q =
+                          x.createQuery("select s from SubTestEntity s", SubTestEntity.class);
+                      q.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+                      q.setTimeout(Timeouts.ONE_SECOND);
+                      q.list();
+                    }))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessage("Spanner does not support lock timeout.");
+  }
+
+  @Test
+  public void selectLockAcquisitionTest_pessimisticWrite_nowait() {
+    assertThatThrownBy(
+            () ->
+                openSessionAndDo(
+                    x -> {
+                      Query<SubTestEntity> q =
+                          x.createQuery("select s from SubTestEntity s", SubTestEntity.class);
+                      q.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+                      q.setTimeout(Timeouts.NO_WAIT);
+                      q.list();
+                    }))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessage("Spanner does not support no wait.");
+  }
+
+  @Test
+  public void selectLockAcquisitionTest_pessimisticWrite_skipLocked() {
+    assertThatThrownBy(
+            () ->
+                openSessionAndDo(
+                    x -> {
+                      Query<SubTestEntity> q =
+                          x.createQuery("select s from SubTestEntity s", SubTestEntity.class);
+                      q.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+                      q.setTimeout(Timeouts.SKIP_LOCKED);
+                      q.list();
+                    }))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessageContaining("Spanner does not support skip locked.");
   }
 
   @Test

@@ -18,6 +18,8 @@
 
 package com.google.cloud.spanner.hibernate.entities;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -34,7 +36,7 @@ public class SubTestEntity {
 
   @Id String id;
 
-  @ManyToOne
+  @ManyToOne(fetch = LAZY)
   @JoinColumns({@JoinColumn(name = "id1"), @JoinColumn(name = "id2")})
   TestEntity testEntity;
 }

@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.hibernate.LockOptions;
+import org.hibernate.Timeouts;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -218,22 +219,46 @@ public class SpannerDialectTests {
 
   @Test
   public void getWriteLockStringTest() {
-    assertEquals(" for update", this.spannerDialect.getWriteLockString(1));
+    assertEquals(" for update", this.spannerDialect.getWriteLockString(Timeouts.WAIT_FOREVER));
+  }
+
+  @Test
+  public void getWriteLockStringTimeoutTest() {
+    assertThatThrownBy(() -> this.spannerDialect.getWriteLockString(Timeouts.ONE_SECOND))
+        .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
+  public void getWriteLockStringAliasTest() {
+    assertEquals(" for update", this.spannerDialect.getWriteLockString("a", Timeouts.WAIT_FOREVER));
   }
 
   @Test
   public void getWriteLockStringAliasTimeoutTest() {
-    assertEquals(" for update", this.spannerDialect.getWriteLockString("a", 1));
+    assertThatThrownBy(() -> this.spannerDialect.getWriteLockString("a", Timeouts.ONE_SECOND))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   public void getReadLockStringTest() {
-    assertEquals(" for update", this.spannerDialect.getReadLockString(1));
+    assertEquals(" for update", this.spannerDialect.getReadLockString(Timeouts.WAIT_FOREVER));
+  }
+
+  @Test
+  public void getReadLockStringTimeoutTest() {
+    assertThatThrownBy(() -> this.spannerDialect.getReadLockString(Timeouts.ONE_SECOND))
+        .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
+  public void getReadLockStringAliasTest() {
+    assertEquals(" for update", this.spannerDialect.getReadLockString("a", Timeouts.WAIT_FOREVER));
   }
 
   @Test
   public void getReadLockStringAliasTimeoutTest() {
-    assertEquals(" for update", this.spannerDialect.getReadLockString("a", 1));
+    assertThatThrownBy(() -> this.spannerDialect.getReadLockString("a", Timeouts.ONE_SECOND))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
@@ -253,7 +278,8 @@ public class SpannerDialectTests {
 
   @Test
   public void getForUpdateNowaitStringTest() {
-    assertEquals(" for update", this.spannerDialect.getForUpdateNowaitString());
+    assertThatThrownBy(() -> this.spannerDialect.getForUpdateNowaitString())
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
@@ -264,7 +290,8 @@ public class SpannerDialectTests {
 
   @Test
   public void getForUpdateNowaitStringAliasTest() {
-    assertEquals(" for update", this.spannerDialect.getForUpdateNowaitString("a"));
+    assertThatThrownBy(() -> this.spannerDialect.getForUpdateNowaitString("a"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test

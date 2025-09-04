@@ -20,13 +20,16 @@ package com.google.cloud.spanner.hibernate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.mockrunner.base.NestedApplicationException;
 import com.mockrunner.mock.jdbc.MockDriver;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,8 +48,8 @@ public class SpannerServiceContributorTest {
 
   @Test
   public void testUserAgentContribution() throws SQLException {
-    // create mock Driver so we can intercept the call to Driver.connect(url, props)
     AtomicBoolean obtainedConnection = new AtomicBoolean();
+    // create mock Driver so we can intercept the call to Driver.connect(url, props)
     MockDriver mockDriver =
         new MockDriver() {
           public Connection connect(String url, Properties info) throws SQLException {
@@ -59,7 +62,18 @@ public class SpannerServiceContributorTest {
                     "Missing or unexpected user agent string: %s", info.get("userAgent")));
           }
         };
-    mockDriver.setupConnection(mock(Connection.class));
+    // Mock Connection + DatabaseMetaData
+    Connection mockConnection = mock(Connection.class);
+    DatabaseMetaData mockMetaData = mock(DatabaseMetaData.class);
+    Statement mockStatement = mock(Statement.class);
+    when(mockConnection.getMetaData()).thenReturn(mockMetaData);
+    when(mockMetaData.getDriverName()).thenReturn("MockDriver");
+    when(mockMetaData.getDatabaseProductName()).thenReturn("Spanner");
+    when(mockMetaData.getDatabaseProductVersion()).thenReturn("0.0");
+    when(mockMetaData.getDriverVersion()).thenReturn("0.0");
+    when(mockConnection.createStatement()).thenReturn(mockStatement);
+    when(mockStatement.getFetchSize()).thenReturn(0);
+    mockDriver.setupConnection(mockConnection);
 
     // make sure our mock driver is discovered by Hibernate
     deregisterDrivers();
