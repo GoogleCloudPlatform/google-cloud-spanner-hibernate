@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import static java.sql.Types.REAL;
+import static org.hibernate.sql.ast.internal.NonLockingClauseStrategy.NON_CLAUSE_STRATEGY;
 import static org.hibernate.type.SqlTypes.DECIMAL;
 import static org.hibernate.type.SqlTypes.JSON;
 import static org.hibernate.type.SqlTypes.NUMERIC;
@@ -42,9 +43,15 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
+import org.hibernate.dialect.lock.PessimisticLockStyle;
 import org.hibernate.dialect.lock.PessimisticReadSelectLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticWriteSelectLockingStrategy;
 import org.hibernate.dialect.lock.SelectLockingStrategy;
+import org.hibernate.dialect.lock.internal.LockingSupportSimple;
+import org.hibernate.dialect.lock.spi.ConnectionLockTimeoutStrategy;
+import org.hibernate.dialect.lock.spi.LockTimeoutType;
+import org.hibernate.dialect.lock.spi.LockingSupport;
+import org.hibernate.dialect.lock.spi.OuterJoinLockingType;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfo;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -57,13 +64,18 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.query.spi.DomainQueryExecutionContext;
 import org.hibernate.query.spi.QueryOptions;
 import org.hibernate.query.sqm.internal.DomainParameterXref;
+import org.hibernate.query.sqm.mutation.spi.MultiTableHandlerBuildResult;
 import org.hibernate.query.sqm.mutation.spi.SqmMultiTableInsertStrategy;
 import org.hibernate.query.sqm.tree.insert.SqmInsertStatement;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.sql.ast.SqlAstTranslator;
 import org.hibernate.sql.ast.SqlAstTranslatorFactory;
+import org.hibernate.sql.ast.internal.NonLockingClauseStrategy;
+import org.hibernate.sql.ast.internal.PessimisticLockKind;
+import org.hibernate.sql.ast.spi.LockingClauseStrategy;
 import org.hibernate.sql.ast.spi.StandardSqlAstTranslatorFactory;
 import org.hibernate.sql.ast.tree.Statement;
+import org.hibernate.sql.ast.tree.select.QuerySpec;
 import org.hibernate.sql.exec.spi.JdbcOperation;
 import org.hibernate.tool.schema.extract.internal.SequenceInformationExtractorLegacyImpl;
 import org.hibernate.tool.schema.extract.internal.SequenceInformationExtractorNoOpImpl;
@@ -93,10 +105,10 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
         new NoOpSqmMultiTableInsertStrategy();
 
     @Override
-    public int executeInsert(
+    public MultiTableHandlerBuildResult buildHandler(
         SqmInsertStatement<?> sqmInsertStatement,
         DomainParameterXref domainParameterXref,
-        DomainQueryExecutionContext context) {
+        DomainQueryExecutionContext domainQueryExecutionContext) {
       throw new HibernateException("Multi-table inserts are not supported for Cloud Spanner");
     }
   }
@@ -175,6 +187,14 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   private final StandardSequenceExporter sequenceExporter = new StandardSequenceExporter(this);
 
   private final SpannerUniqueDelegate spannerUniqueDelegate = new SpannerUniqueDelegate(this);
+
+  private final LockingSupport spannerLockingSupport =
+      new LockingSupportSimple(
+          PessimisticLockStyle.CLAUSE,
+          RowLockStrategy.NONE,
+          LockTimeoutType.NONE,
+          OuterJoinLockingType.FULL,
+          ConnectionLockTimeoutStrategy.NONE);
 
   /** Default constructor. */
   public SpannerDialect() {}
@@ -521,5 +541,25 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   @Override
   public String getForUpdateSkipLockedString(String aliases) {
     throw new UnsupportedOperationException("Spanner does not support skip locked.");
+  }
+
+  @Override
+  public LockingSupport getLockingSupport() {
+    return spannerLockingSupport;
+  }
+
+  @Override
+  public LockingClauseStrategy getLockingClauseStrategy(
+      QuerySpec querySpec, LockOptions lockOptions) {
+    if (getPessimisticLockStyle() != PessimisticLockStyle.CLAUSE || lockOptions == null) {
+      return NON_CLAUSE_STRATEGY;
+    }
+    final LockMode lockMode = lockOptions.getLockMode();
+    final PessimisticLockKind lockKind = PessimisticLockKind.interpret(lockMode);
+    if (lockKind == PessimisticLockKind.NONE) {
+      return NonLockingClauseStrategy.NON_CLAUSE_STRATEGY;
+    }
+    final RowLockStrategy rowLockStrategy = RowLockStrategy.TABLE;
+    return buildLockingClauseStrategy(lockKind, rowLockStrategy, lockOptions);
   }
 }
