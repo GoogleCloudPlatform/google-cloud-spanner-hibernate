@@ -57,6 +57,7 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.query.spi.DomainQueryExecutionContext;
 import org.hibernate.query.spi.QueryOptions;
 import org.hibernate.query.sqm.internal.DomainParameterXref;
+import org.hibernate.query.sqm.mutation.spi.MultiTableHandlerBuildResult;
 import org.hibernate.query.sqm.mutation.spi.SqmMultiTableInsertStrategy;
 import org.hibernate.query.sqm.tree.insert.SqmInsertStatement;
 import org.hibernate.service.ServiceRegistry;
@@ -93,10 +94,10 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
         new NoOpSqmMultiTableInsertStrategy();
 
     @Override
-    public int executeInsert(
+    public MultiTableHandlerBuildResult buildHandler(
         SqmInsertStatement<?> sqmInsertStatement,
         DomainParameterXref domainParameterXref,
-        DomainQueryExecutionContext context) {
+        DomainQueryExecutionContext domainQueryExecutionContext) {
       throw new HibernateException("Multi-table inserts are not supported for Cloud Spanner");
     }
   }
