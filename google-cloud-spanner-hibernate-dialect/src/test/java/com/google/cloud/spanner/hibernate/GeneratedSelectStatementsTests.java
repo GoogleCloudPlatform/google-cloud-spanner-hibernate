@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.hibernate.Session;
+import org.hibernate.Timeouts;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
@@ -85,16 +86,85 @@ public class GeneratedSelectStatementsTests {
   }
 
   @Test
-  public void selectLockAcquisitionTest() {
+  public void selectLockAcquisitionTest_pessimisticRead_withPagination() {
     // the translated statement should include an 'for update' clause.
     testStatementTranslation(
         x -> {
-          Query<?> q =
-              x.createQuery("select s from SubTestEntity s").setFirstResult(8).setMaxResults(15);
+          Query<SubTestEntity> q =
+              x.createQuery("select s from SubTestEntity s", SubTestEntity.class)
+                  .setFirstResult(8)
+                  .setMaxResults(15);
           q.setLockMode(LockModeType.PESSIMISTIC_READ);
           q.list();
         },
         "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 limit ? offset ? for update");
+  }
+
+  @Test
+  public void selectLockAcquisitionTest_pessimisticWrite() {
+    testStatementTranslation(
+        x -> {
+          Query<SubTestEntity> q =
+              x.createQuery("select s from SubTestEntity s", SubTestEntity.class);
+          q.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+          q.list();
+        },
+        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 for update");
+  }
+
+  @Test
+  public void selectLockAcquisitionTest_pessimisticWrite_withTimeout() {
+    // timeout is not supported by Spanner.
+    testStatementTranslation(
+        x -> {
+          Query<SubTestEntity> q =
+              x.createQuery("select s from SubTestEntity s", SubTestEntity.class);
+          q.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+          q.setTimeout(Timeouts.ONE_SECOND);
+          q.list();
+        },
+        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 for update");
+  }
+
+  @Test
+  public void selectLockAcquisitionTest_pessimisticWrite_nowait() {
+    // no wait is not supported by Spanner.
+    testStatementTranslation(
+        x -> {
+          Query<SubTestEntity> q =
+              x.createQuery("select s from SubTestEntity s", SubTestEntity.class);
+          q.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+          q.setTimeout(Timeouts.NO_WAIT);
+          q.list();
+        },
+        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 for update");
+  }
+
+  @Test
+  public void selectLockAcquisitionTest_pessimisticWrite_skipLocked() {
+    // skip locked is not supported by Spanner.
+    testStatementTranslation(
+        x -> {
+          Query<SubTestEntity> q =
+              x.createQuery("select s from SubTestEntity s", SubTestEntity.class);
+          q.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+          q.setTimeout(Timeouts.SKIP_LOCKED);
+          q.list();
+        },
+        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 for update");
+  }
+
+  @Test
+  public void selectLockAcquisitionTest_pessimisticWrite_waitForever() {
+    testStatementTranslation(
+        x -> {
+          Query<SubTestEntity> q =
+              x.createQuery("select s from SubTestEntity s", SubTestEntity.class);
+          q.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+          q.setTimeout(Timeouts.WAIT_FOREVER);
+          q.list();
+        },
+        "select ste1_0.id,ste1_0.id1,ste1_0.id2 from SubTestEntity ste1_0 for update");
   }
 
   @Test

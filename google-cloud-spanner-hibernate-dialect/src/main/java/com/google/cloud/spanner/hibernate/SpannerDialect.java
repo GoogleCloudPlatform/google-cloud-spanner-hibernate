@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import static java.sql.Types.REAL;
+import static org.hibernate.sql.ast.internal.NonLockingClauseStrategy.NON_CLAUSE_STRATEGY;
 import static org.hibernate.type.SqlTypes.DECIMAL;
 import static org.hibernate.type.SqlTypes.JSON;
 import static org.hibernate.type.SqlTypes.NUMERIC;
@@ -27,6 +28,7 @@ import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint;
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
 import com.google.cloud.spanner.jdbc.JsonType;
 import com.google.common.base.Strings;
+import jakarta.persistence.Timeout;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,17 +36,18 @@ import java.sql.SQLException;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
+import org.hibernate.Locking;
 import org.hibernate.boot.model.TypeContributions;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.dialect.RowLockStrategy;
 import org.hibernate.dialect.identity.IdentityColumnSupport;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
-import org.hibernate.dialect.lock.OptimisticLockingStrategy;
-import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
-import org.hibernate.dialect.lock.PessimisticReadSelectLockingStrategy;
-import org.hibernate.dialect.lock.PessimisticWriteSelectLockingStrategy;
-import org.hibernate.dialect.lock.SelectLockingStrategy;
+import org.hibernate.dialect.lock.PessimisticLockStyle;
+import org.hibernate.dialect.lock.internal.LockingSupportSimple;
+import org.hibernate.dialect.lock.spi.ConnectionLockTimeoutStrategy;
+import org.hibernate.dialect.lock.spi.LockTimeoutType;
+import org.hibernate.dialect.lock.spi.LockingSupport;
+import org.hibernate.dialect.lock.spi.OuterJoinLockingType;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfo;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -57,13 +60,17 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.query.spi.DomainQueryExecutionContext;
 import org.hibernate.query.spi.QueryOptions;
 import org.hibernate.query.sqm.internal.DomainParameterXref;
+import org.hibernate.query.sqm.mutation.spi.MultiTableHandlerBuildResult;
 import org.hibernate.query.sqm.mutation.spi.SqmMultiTableInsertStrategy;
 import org.hibernate.query.sqm.tree.insert.SqmInsertStatement;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.sql.ast.SqlAstTranslator;
 import org.hibernate.sql.ast.SqlAstTranslatorFactory;
+import org.hibernate.sql.ast.internal.PessimisticLockKind;
+import org.hibernate.sql.ast.spi.LockingClauseStrategy;
 import org.hibernate.sql.ast.spi.StandardSqlAstTranslatorFactory;
 import org.hibernate.sql.ast.tree.Statement;
+import org.hibernate.sql.ast.tree.select.QuerySpec;
 import org.hibernate.sql.exec.spi.JdbcOperation;
 import org.hibernate.tool.schema.extract.internal.SequenceInformationExtractorLegacyImpl;
 import org.hibernate.tool.schema.extract.internal.SequenceInformationExtractorNoOpImpl;
@@ -93,10 +100,10 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
         new NoOpSqmMultiTableInsertStrategy();
 
     @Override
-    public int executeInsert(
+    public MultiTableHandlerBuildResult buildHandler(
         SqmInsertStatement<?> sqmInsertStatement,
         DomainParameterXref domainParameterXref,
-        DomainQueryExecutionContext context) {
+        DomainQueryExecutionContext domainQueryExecutionContext) {
       throw new HibernateException("Multi-table inserts are not supported for Cloud Spanner");
     }
   }
@@ -175,6 +182,14 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   private final StandardSequenceExporter sequenceExporter = new StandardSequenceExporter(this);
 
   private final SpannerUniqueDelegate spannerUniqueDelegate = new SpannerUniqueDelegate(this);
+
+  private final LockingSupport spannerLockingSupport =
+      new LockingSupportSimple(
+          PessimisticLockStyle.CLAUSE,
+          RowLockStrategy.NONE,
+          LockTimeoutType.NONE,
+          OuterJoinLockingType.FULL,
+          ConnectionLockTimeoutStrategy.NONE);
 
   /** Default constructor. */
   public SpannerDialect() {}
@@ -436,26 +451,44 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   /* Lock acquisition functions */
 
   @Override
-  public LockingStrategy getLockingStrategy(EntityPersister lockable, LockMode lockMode) {
+  public LockingStrategy getLockingStrategy(
+      EntityPersister lockable, LockMode lockMode, Locking.Scope lockScope) {
     return switch (lockMode) {
       case PESSIMISTIC_FORCE_INCREMENT ->
-          new PessimisticForceIncrementLockingStrategy(lockable, lockMode);
+          buildPessimisticForceIncrementStrategy(lockable, lockMode, lockScope);
       case UPGRADE_NOWAIT, UPGRADE_SKIPLOCKED, PESSIMISTIC_WRITE ->
-          new PessimisticWriteSelectLockingStrategy(lockable, lockMode);
-      case PESSIMISTIC_READ -> new PessimisticReadSelectLockingStrategy(lockable, lockMode);
-      case OPTIMISTIC_FORCE_INCREMENT ->
-          new OptimisticForceIncrementLockingStrategy(lockable, lockMode);
-      case OPTIMISTIC -> new OptimisticLockingStrategy(lockable, lockMode);
-      case READ -> new SelectLockingStrategy(lockable, lockMode);
-      default ->
-          // WRITE, NONE are not allowed here
-          throw new IllegalArgumentException("Unsupported lock mode");
+          buildPessimisticWriteStrategy(lockable, lockMode, lockScope);
+      case PESSIMISTIC_READ -> buildPessimisticReadStrategy(lockable, lockMode, lockScope);
+      case OPTIMISTIC_FORCE_INCREMENT -> buildOptimisticForceIncrementStrategy(lockable, lockMode);
+      case OPTIMISTIC -> buildOptimisticStrategy(lockable, lockMode);
+      case READ -> buildReadStrategy(lockable, lockMode, lockScope);
+      default -> throw new IllegalArgumentException("Unsupported lock mode : " + lockMode);
     };
   }
 
   @Override
-  public RowLockStrategy getWriteRowLockStrategy() {
-    return RowLockStrategy.TABLE;
+  public LockingStrategy getLockingStrategy(EntityPersister lockable, LockMode lockMode) {
+    return getLockingStrategy(lockable, lockMode, Locking.Scope.ROOT_ONLY);
+  }
+
+  @Override
+  public LockingSupport getLockingSupport() {
+    return spannerLockingSupport;
+  }
+
+  @Override
+  public LockingClauseStrategy getLockingClauseStrategy(
+      QuerySpec querySpec, LockOptions lockOptions) {
+    if (getPessimisticLockStyle() != PessimisticLockStyle.CLAUSE || lockOptions == null) {
+      return NON_CLAUSE_STRATEGY;
+    }
+    final LockMode lockMode = lockOptions.getLockMode();
+    final PessimisticLockKind lockKind = PessimisticLockKind.interpret(lockMode);
+    if (lockKind == PessimisticLockKind.NONE) {
+      return NON_CLAUSE_STRATEGY;
+    }
+    final RowLockStrategy rowLockStrategy = RowLockStrategy.NONE;
+    return buildLockingClauseStrategy(lockKind, rowLockStrategy, lockOptions);
   }
 
   @Override
@@ -484,8 +517,18 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   }
 
   @Override
+  public String getWriteLockString(Timeout timeout) {
+    return getWriteLockString(timeout.milliseconds());
+  }
+
+  @Override
   public String getWriteLockString(String aliases, int timeout) {
     return getForUpdateString();
+  }
+
+  @Override
+  public String getWriteLockString(String aliases, Timeout timeout) {
+    return getWriteLockString(aliases, timeout.milliseconds());
   }
 
   @Override
@@ -494,13 +537,18 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   }
 
   @Override
+  public String getReadLockString(Timeout timeout) {
+    return getReadLockString(timeout.milliseconds());
+  }
+
+  @Override
   public String getReadLockString(String aliases, int timeout) {
     return getForUpdateString();
   }
 
   @Override
-  public boolean supportsOuterJoinForUpdate() {
-    return true;
+  public String getReadLockString(String aliases, Timeout timeout) {
+    return getReadLockString(aliases, timeout.milliseconds());
   }
 
   @Override
@@ -515,11 +563,11 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
 
   @Override
   public String getForUpdateSkipLockedString() {
-    throw new UnsupportedOperationException("Spanner does not support skip locked.");
+    return getForUpdateString();
   }
 
   @Override
   public String getForUpdateSkipLockedString(String aliases) {
-    throw new UnsupportedOperationException("Spanner does not support skip locked.");
+    return getForUpdateString();
   }
 }

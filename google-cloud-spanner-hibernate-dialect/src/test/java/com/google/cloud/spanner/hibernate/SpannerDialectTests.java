@@ -258,8 +258,7 @@ public class SpannerDialectTests {
 
   @Test
   public void getForUpdateSkipLockedStringTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getForUpdateSkipLockedString())
-        .isInstanceOf(UnsupportedOperationException.class);
+    assertEquals(" for update", this.spannerDialect.getForUpdateSkipLockedString());
   }
 
   @Test
@@ -269,8 +268,7 @@ public class SpannerDialectTests {
 
   @Test
   public void getForUpdateSkipLockedStringAliasTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getForUpdateSkipLockedString("a"))
-        .isInstanceOf(UnsupportedOperationException.class);
+    assertEquals(" for update", this.spannerDialect.getForUpdateSkipLockedString("a"));
   }
 
   @Test
