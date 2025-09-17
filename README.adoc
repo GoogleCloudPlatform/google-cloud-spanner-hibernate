@@ -3,8 +3,10 @@
 
 = Google Cloud Spanner Dialect for Hibernate ORM
 
-This is a dialect compatible with https://hibernate.org/orm/releases/6.6/[Hibernate 6.6] for the https://cloud.google.com/spanner/[Google Cloud Spanner] database service.
+This is a dialect compatible with https://hibernate.org/orm/releases/7.1/[Hibernate 7.1] for the https://cloud.google.com/spanner/[Google Cloud Spanner] database service.
 The `SpannerDialect` produces SQL, DML, and DDL statements for most common entity types and relationships using standard Hibernate and Java Persistence annotations.
+
+Version 3.x of this library supports Hibernate 6.6
 
 Version 1.x and 2.x of this library supports Hibernate 5.4.
 
@@ -122,7 +124,8 @@ __NOTE__: Read to the end of this section to see the recommended way to set up `
 
 ❌ Not recommended
 
-`GenerationType.AUTO`, `GenerationType.TABLE`, `GenerationType.SEQUENCE`: These are not supported by the Spanner dialect.
+`GenerationType.AUTO`, `GenerationType.TABLE`, `GenerationType.SEQUENCE`: Hibernate generates sequential IDs using a table-backed sequence. This can lead to hotspots in Spanner and is therefore not recommended.
+
 
 `GenerationType.IDENTITY`
 -   See https://cloud.google.com/spanner/docs/primary-key-default-value#identity-columns[Identity columns].
@@ -689,6 +692,8 @@ mutations for Cloud Spanner. The dialect will only generate DML statements.
 === Locking
 
 Cloud Spanner supports explicit row locks using https://cloud.google.com/spanner/docs/use-select-for-update[`SELECT ... FOR UPDATE`]
+
+Cloud Spanner does not support lock timeouts, NOWAIT, or SKIP LOCKED. The dialect throws UnsupportedException if used.
 
 ```java
 entityManager.find(MyEntity.class, studentId, LockModeType.PESSIMISTIC_WRITE);

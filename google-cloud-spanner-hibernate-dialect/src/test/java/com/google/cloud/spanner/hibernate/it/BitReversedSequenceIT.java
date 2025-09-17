@@ -47,7 +47,6 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.cfg.AvailableSettings;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -208,7 +207,6 @@ public class BitReversedSequenceIT {
     TEST_ENV.cleanup();
   }
 
-  @Ignore("temporarily disabled")
   @Test
   public void testDefaultEntity() throws Exception {
     testSequenceEntity(DefaultEntity.class);

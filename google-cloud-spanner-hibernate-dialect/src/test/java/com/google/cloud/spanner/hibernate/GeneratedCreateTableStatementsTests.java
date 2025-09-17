@@ -111,7 +111,7 @@ public class GeneratedCreateTableStatementsTests {
                   + "INTERLEAVE IN PARENT Parent",
               "create table GrandParent_Sequence (next_val int64) PRIMARY KEY ()",
               "RUN BATCH",
-              "insert into GrandParent_Sequence values ( 1 )");
+              "insert into GrandParent_Sequence ( next_val ) values ( 1 )");
     } finally {
       SpannerDialect.enableSpannerSequences();
     }
@@ -177,7 +177,7 @@ public class GeneratedCreateTableStatementsTests {
               "alter table Employee add constraint FKiralam2duuhr33k8a10aoc2t6 "
                   + "foreign key (manager_id) references Employee (id)",
               "RUN BATCH",
-              "insert into Employee_Sequence values ( 1 )");
+              "insert into Employee_Sequence ( next_val ) values ( 1 )");
     } finally {
       SpannerDialect.enableSpannerSequences();
     }
