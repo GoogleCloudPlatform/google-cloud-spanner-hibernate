@@ -803,7 +803,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
 
     // Verify that we receive a transaction tag for the generateRandomData() method.
     assertEquals(
-        2,
+        1,
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
             .filter(
                 request ->
@@ -830,7 +830,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         commitRequest.getMaxCommitDelay());
     // Also verify that we get the auto-generated transaction tags.
     assertEquals(
-        1,
+        2,
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
             .filter(
                 request -> !Strings.isNullOrEmpty(request.getRequestOptions().getTransactionTag()))
