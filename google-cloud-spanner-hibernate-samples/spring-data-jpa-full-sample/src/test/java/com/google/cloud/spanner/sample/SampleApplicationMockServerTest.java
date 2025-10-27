@@ -797,8 +797,8 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         ddlRequest.getStatements(++index));
     assertEquals(ddlRequest.getStatementsCount() - 1, index);
 
-    assertEquals(31, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+    assertEquals(30, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
     assertEquals(4, mockSpanner.countRequestsOfType(CommitRequest.class));
 
     // Verify that we receive a transaction tag for the generateRandomData() method.
@@ -830,7 +830,7 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
         commitRequest.getMaxCommitDelay());
     // Also verify that we get the auto-generated transaction tags.
     assertEquals(
-        1,
+        2,
         mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class).stream()
             .filter(
                 request -> !Strings.isNullOrEmpty(request.getRequestOptions().getTransactionTag()))
