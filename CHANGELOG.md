@@ -1,6 +1,23 @@
 # Changelog
 
 
+## [4.1.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.1.0...v4.1.1) (2025-11-10)
+
+
+### Bug Fixes
+
+* **deps:** update dependency io.undertow:undertow-core to v2.3.20.final [security] ([#1926](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1926)) ([533f046](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/533f046f28f30eec9f3c5903f5abb9e27a3836c2))
+* **deps:** update hibernate-orm monorepo to v7.1.4.final ([#1898](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1898)) ([f8ad420](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/f8ad420e52c9da20f476127623b13921dfc8a615))
+* **deps:** update hibernate-orm monorepo to v7.1.5.final ([#1920](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1920)) ([adfc02e](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/adfc02ebf1612aff2704c5c7bf1c98d184207065))
+* **deps:** update log4j2 monorepo to v2.25.2 ([#1927](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1927)) ([94dea7f](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/94dea7f361f5676e5577ca9641d97c8d9826ca33))
+
+
+### Dependencies
+
+* bump com.puppycrawl.tools:checkstyle ([#1916](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1916)) ([ce6c3d9](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/ce6c3d94e7c0bba16595dc1985fb9b0efb238ba8))
+* bump hibernate.version in /google-cloud-spanner-hibernate-dialect ([#1933](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1933)) ([528e91d](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/528e91d942cb57acb5c60c386a3fa9b259130176))
+* bump org.apache.commons:commons-lang3 ([#1887](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1887)) ([aa6365e](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/aa6365e126392d740bb254b44cb533baa42eca88))
+
 ## [4.1.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.0.1...v4.1.0) (2025-10-03)
 
 
