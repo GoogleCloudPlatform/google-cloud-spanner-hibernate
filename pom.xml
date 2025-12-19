@@ -15,7 +15,7 @@
     <java.version>17</java.version>
     <hibernate.version>7.1.6.Final</hibernate.version>
     <spanner-jdbc-driver.version>2.33.3</spanner-jdbc-driver.version>
-    <log4j.version>2.25.2</log4j.version>
+    <log4j.version>2.25.3</log4j.version>
 
     <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
     <maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
