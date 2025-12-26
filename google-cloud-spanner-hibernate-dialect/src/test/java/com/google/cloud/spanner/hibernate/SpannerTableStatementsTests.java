@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +37,8 @@ import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.boot.model.relational.Namespace.Name;
+import org.hibernate.boot.model.relational.QualifiedTableName;
+import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.PrimaryKey;
@@ -92,8 +95,11 @@ public class SpannerTableStatementsTests {
         .thenReturn(new Name(Identifier.toIdentifier(""), Identifier.toIdentifier("")));
     Table table = new Table("orm", namespace, Identifier.toIdentifier("House"), false);
 
-    List<String> statements = spannerTableStatements.dropTable(table);
-    assertThat(statements).containsExactly("drop table `House`");
+    SqlStringGenerationContext context = mock(SqlStringGenerationContext.class);
+    when(context.format(any(QualifiedTableName.class))).thenReturn("House");
+    List<String> statements = spannerTableStatements.dropTable(table, context);
+
+    assertThat(statements).containsExactly("drop table House");
   }
 
   @Test
@@ -101,7 +107,10 @@ public class SpannerTableStatementsTests {
     Table table = new Table("orm");
     table.setName("Missing_Table");
 
-    List<String> statements = spannerTableStatements.dropTable(table);
+    SqlStringGenerationContext context = mock(SqlStringGenerationContext.class);
+    when(context.format(any(QualifiedTableName.class))).thenReturn("Missing_Table");
+
+    List<String> statements = spannerTableStatements.dropTable(table, context);
     assertThat(statements).isEmpty();
   }
 
@@ -114,8 +123,17 @@ public class SpannerTableStatementsTests {
     index.setName("address");
     table.addIndex(index);
 
-    List<String> statements = spannerTableStatements.dropTable(table);
-    assertThat(statements).containsExactly("drop index if exists address", "drop table `House`");
+    SqlStringGenerationContext context = mock(SqlStringGenerationContext.class);
+
+    when(context.format(any(QualifiedTableName.class)))
+        .thenAnswer(
+            invocation -> {
+              QualifiedTableName name = invocation.getArgument(0);
+              return name.getTableName().getText();
+            });
+
+    List<String> statements = spannerTableStatements.dropTable(table, context);
+    assertThat(statements).containsExactly("drop index if exists address", "drop table House");
   }
 
   @Test
@@ -137,7 +155,10 @@ public class SpannerTableStatementsTests {
     col.setSqlType("STRING(255)");
     table.addColumn(col);
 
-    List<String> statements = spannerTableStatements.createTable(table, metadata);
+    SqlStringGenerationContext context = mock(SqlStringGenerationContext.class);
+    when(context.format(any(QualifiedTableName.class))).thenReturn("Test");
+
+    List<String> statements = spannerTableStatements.createTable(table, metadata, context);
     assertThat(statements).containsExactly("create table Test (name STRING(255)) PRIMARY KEY (id)");
   }
 }
