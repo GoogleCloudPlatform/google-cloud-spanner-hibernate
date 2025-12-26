@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [4.1.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.1.1...v4.1.2) (2025-12-26)
+
+
+### Dependencies
+
+* bump hibernate.version in /google-cloud-spanner-hibernate-dialect ([#1938](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1938)) ([091189a](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/091189a45d252c45f6207e326cd1e0f23aec9c1b))
+
 ## [4.1.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.1.0...v4.1.1) (2025-11-10)
 
 
