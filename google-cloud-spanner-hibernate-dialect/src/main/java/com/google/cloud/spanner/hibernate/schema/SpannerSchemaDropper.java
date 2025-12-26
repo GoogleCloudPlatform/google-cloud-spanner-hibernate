@@ -21,6 +21,7 @@ package com.google.cloud.spanner.hibernate.schema;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.hibernate.boot.Metadata;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.resource.transaction.spi.DdlTransactionIsolator;
 import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.internal.SchemaDropperImpl;
@@ -60,9 +61,14 @@ public class SpannerSchemaDropper implements SchemaDropper {
     DdlTransactionIsolator isolator = tool.getDdlTransactionIsolator(options);
     try {
       Connection connection = isolator.getIsolatedConnection();
-      // Initialize exporters with drop table dependencies so tables are dropped in the right order.
+
+      String defaultSchema =
+          (String) options.getConfigurationValues().get(AvailableSettings.DEFAULT_SCHEMA);
+
       SpannerDatabaseInfo spannerDatabaseInfo =
-          new SpannerDatabaseInfo(metadata.getDatabase(), connection.getMetaData());
+          new SpannerDatabaseInfo(metadata.getDatabase(), connection.getMetaData(), defaultSchema);
+
+      // Initialize exporters with drop table dependencies so tables are dropped in the right order.
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.DROP);
       tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
       schemaDropper.doDrop(
@@ -84,9 +90,14 @@ public class SpannerSchemaDropper implements SchemaDropper {
     DdlTransactionIsolator isolator = tool.getDdlTransactionIsolator(options);
     try {
       Connection connection = isolator.getIsolatedConnection();
+
+      String defaultSchema =
+          (String) options.getConfigurationValues().get(AvailableSettings.DEFAULT_SCHEMA);
+
       // Initialize exporters with drop table dependencies so tables are dropped in the right order.
       SpannerDatabaseInfo spannerDatabaseInfo =
-          new SpannerDatabaseInfo(metadata.getDatabase(), connection.getMetaData());
+          new SpannerDatabaseInfo(metadata.getDatabase(), connection.getMetaData(), defaultSchema);
+
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.DROP);
       tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
       return schemaDropper.buildDelayedAction(

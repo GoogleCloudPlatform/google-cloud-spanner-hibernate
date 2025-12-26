@@ -77,6 +77,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
   /** Set up empty mocked results for schema queries. */
   @Before
   public void setupSchemaQueryResults() {
+    // Default wildcard results
     mockSpanner.putStatementResult(
         StatementResult.query(
             GET_TABLES_STATEMENT, ResultSet.newBuilder().setMetadata(GET_TABLES_METADATA).build()));
@@ -96,6 +97,25 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     mockSpanner.putStatementResult(
         StatementResult.query(
             GET_COLUMNS_STATEMENT,
+            ResultSet.newBuilder().setMetadata(GET_COLUMNS_METADATA).build()));
+
+    // Explicit empty schema ("") results for SpannerDatabaseInfo compatibility
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            GET_TABLES_STATEMENT.toBuilder().bind("p2").to("").build(),
+            ResultSet.newBuilder().setMetadata(GET_TABLES_METADATA).build()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            GET_INDEXES_STATEMENT.toBuilder().bind("p2").to("").build(),
+            ResultSet.newBuilder()
+                .setMetadata(
+                    ResultSetMetadata.newBuilder()
+                        .setRowType(StructType.newBuilder().build())
+                        .build())
+                .build()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(
+            GET_COLUMNS_STATEMENT.toBuilder().bind("p2").to("").build(),
             ResultSet.newBuilder().setMetadata(GET_COLUMNS_METADATA).build()));
   }
 
@@ -236,9 +256,11 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
 
   @Test
   public void testDropExistingSchema() {
+    // Explicitly bind p2 to "" because SpannerDatabaseInfo now uses that for default namespace
+    // lookups
     mockSpanner.putStatementResult(
         StatementResult.query(
-            GET_TABLES_STATEMENT,
+            GET_TABLES_STATEMENT.toBuilder().bind("p2").to("").build(),
             ResultSet.newBuilder()
                 .setMetadata(GET_TABLES_METADATA)
                 .addRows(createTableRow("Account"))
@@ -299,10 +321,10 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     int index = -1;
     assertEquals(
         "alter table Invoice drop constraint fk_invoice_customer", request.getStatements(++index));
-    assertEquals("drop table `Account`", request.getStatements(++index));
-    assertEquals("drop table `Customer`", request.getStatements(++index));
-    assertEquals("drop table `Invoice`", request.getStatements(++index));
-    assertEquals("drop table `Singer`", request.getStatements(++index));
+    assertEquals("drop table Account", request.getStatements(++index));
+    assertEquals("drop table Customer", request.getStatements(++index));
+    assertEquals("drop table Invoice", request.getStatements(++index));
+    assertEquals("drop table Singer", request.getStatements(++index));
     assertEquals("drop sequence if exists customer_id_sequence", request.getStatements(++index));
     assertEquals("drop sequence if exists invoice_id_sequence", request.getStatements(++index));
     assertEquals("drop sequence if exists singer_id_sequence", request.getStatements(++index));
@@ -827,10 +849,11 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
   public void testBatchedSequenceEntity_Update() {
     addDdlResponseToSpannerAdmin();
 
-    // Setup schema results.
+    // Setup schema results using explicit schema "" since the updated SpannerDatabaseInfo will use
+    // that
     mockSpanner.putStatementResult(
         StatementResult.query(
-            GET_TABLES_STATEMENT,
+            GET_TABLES_STATEMENT.toBuilder().bind("p2").to("").build(),
             ResultSet.newBuilder()
                 .setMetadata(GET_TABLES_METADATA)
                 .addRows(createTableRow("PooledBitReversedSequenceEntity"))
@@ -844,7 +867,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
                 .build()));
     mockSpanner.putStatementResult(
         StatementResult.query(
-            GET_COLUMNS_STATEMENT,
+            GET_COLUMNS_STATEMENT.toBuilder().bind("p2").to("").build(),
             ResultSet.newBuilder()
                 .setMetadata(GET_COLUMNS_METADATA)
                 .addRows(
@@ -860,7 +883,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
                 .build()));
     mockSpanner.putStatementResult(
         StatementResult.query(
-            GET_INDEXES_STATEMENT,
+            GET_INDEXES_STATEMENT.toBuilder().bind("p2").to("").build(),
             ResultSet.newBuilder()
                 .setMetadata(
                     ResultSetMetadata.newBuilder()

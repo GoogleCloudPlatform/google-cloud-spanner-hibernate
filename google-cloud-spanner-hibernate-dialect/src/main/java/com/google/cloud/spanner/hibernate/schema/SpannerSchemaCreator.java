@@ -21,6 +21,7 @@ package com.google.cloud.spanner.hibernate.schema;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.hibernate.boot.Metadata;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.resource.transaction.spi.DdlTransactionIsolator;
 import org.hibernate.tool.schema.Action;
 import org.hibernate.tool.schema.internal.SchemaCreatorImpl;
@@ -59,8 +60,13 @@ public class SpannerSchemaCreator implements SchemaCreator {
     DdlTransactionIsolator isolator = tool.getDdlTransactionIsolator(options);
     try {
       Connection connection = isolator.getIsolatedConnection();
+
+      String defaultSchema =
+          (String) options.getConfigurationValues().get(AvailableSettings.DEFAULT_SCHEMA);
+
       SpannerDatabaseInfo spannerDatabaseInfo =
-          new SpannerDatabaseInfo(metadata.getDatabase(), connection.getMetaData());
+          new SpannerDatabaseInfo(metadata.getDatabase(), connection.getMetaData(), defaultSchema);
+
       tool.getSpannerTableExporter(options).init(metadata, spannerDatabaseInfo, Action.CREATE);
       tool.getForeignKeyExporter(options).init(spannerDatabaseInfo);
       schemaCreator.doCreation(
