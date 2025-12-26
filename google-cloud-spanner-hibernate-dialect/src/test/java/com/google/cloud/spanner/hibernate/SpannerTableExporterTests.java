@@ -132,7 +132,7 @@ public class SpannerTableExporterTests {
           .containsExactly(
               "START BATCH DDL;",
               "drop index if exists name_index;",
-              "drop table `Employee`;",
+              "drop table Employee;",
               "RUN BATCH;");
     } finally {
       SpannerDialect.enableSpannerSequences();
@@ -166,7 +166,7 @@ public class SpannerTableExporterTests {
         .containsExactly(
             "START BATCH DDL;",
             "drop index if exists name_index;",
-            "drop table `Employee`;",
+            "drop table Employee;",
             "drop sequence if exists Employee_Sequence;",
             "RUN BATCH;");
   }

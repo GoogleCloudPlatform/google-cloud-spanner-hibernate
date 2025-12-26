@@ -449,6 +449,26 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
     return !Strings.isNullOrEmpty(hint) && hint.startsWith("@{") && hint.endsWith("}");
   }
 
+  @Override
+  public boolean canCreateSchema() {
+    return true;
+  }
+
+  @Override
+  public String[] getCreateSchemaCommand(String schemaName) {
+    return new String[] {"CREATE SCHEMA IF NOT EXISTS " + quote(schemaName)};
+  }
+
+  @Override
+  public String[] getDropSchemaCommand(String schemaName) {
+    return new String[] {"DROP SCHEMA IF EXISTS " + quote(schemaName)};
+  }
+
+  @Override
+  public boolean qualifyIndexName() {
+    return true;
+  }
+
   /* Lock acquisition functions */
 
   private static void validateSpannerLockTimeout(int millis) {

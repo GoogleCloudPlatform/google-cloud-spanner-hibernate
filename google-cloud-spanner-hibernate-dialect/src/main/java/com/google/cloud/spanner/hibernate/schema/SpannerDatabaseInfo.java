@@ -84,6 +84,10 @@ public class SpannerDatabaseInfo {
     // Passing all null parameters will get all the tables and apply no filters.
     try (ResultSet resultSet = databaseMetaData.getTables(null, null, null, null)) {
       while (resultSet.next()) {
+        String schema = resultSet.getString("TABLE_SCHEM");
+        if (isSystemSchema(schema)) {
+          continue;
+        }
         String type = resultSet.getString("TABLE_TYPE");
         if (type.equals("TABLE")) {
           Table table =
@@ -108,6 +112,10 @@ public class SpannerDatabaseInfo {
     try (ResultSet indexResultSet = databaseMetaData.getIndexInfo(null, null, null, false, false)) {
 
       while (indexResultSet.next()) {
+        String schema = indexResultSet.getString("TABLE_SCHEM");
+        if (isSystemSchema(schema)) {
+          continue;
+        }
         String name = indexResultSet.getString("INDEX_NAME");
         Table table =
             new Table(
@@ -122,5 +130,13 @@ public class SpannerDatabaseInfo {
       }
     }
     return result;
+  }
+
+  private static boolean isSystemSchema(String schemaName) {
+    if (schemaName == null) {
+      return false;
+    }
+    String upper = schemaName.toUpperCase();
+    return upper.equals("INFORMATION_SCHEMA") || upper.equals("SPANNER_SYS");
   }
 }

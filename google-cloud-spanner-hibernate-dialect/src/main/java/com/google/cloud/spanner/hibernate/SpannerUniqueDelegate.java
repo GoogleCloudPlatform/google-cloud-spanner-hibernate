@@ -17,10 +17,9 @@
  */
 package com.google.cloud.spanner.hibernate;
 
-import static org.hibernate.internal.util.StringHelper.unqualify;
-
-import com.google.common.base.Strings;
 import org.hibernate.boot.Metadata;
+import org.hibernate.boot.model.naming.Identifier;
+import org.hibernate.boot.model.relational.QualifiedTableName;
 import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.unique.UniqueDelegate;
@@ -60,13 +59,18 @@ public class SpannerUniqueDelegate implements UniqueDelegate {
       UniqueKey uniqueKey,
       Metadata metadata,
       SqlStringGenerationContext sqlStringGenerationContext) {
+    final String tableName =
+        sqlStringGenerationContext.format(uniqueKey.getTable().getQualifiedTableName());
+
+    // Correctly qualify the index name with the schema
+    String indexName = getQualifiedIndexName(uniqueKey, sqlStringGenerationContext);
+
     StringBuilder statement =
         new StringBuilder(dialect.getCreateIndexString(true))
             .append(" ")
-            .append(
-                dialect.qualifyIndexName() ? uniqueKey.getName() : unqualify(uniqueKey.getName()))
+            .append(indexName)
             .append(" on ")
-            .append(uniqueKey.getTable().getName())
+            .append(tableName)
             .append(" (");
     boolean first = true;
     for (Column column : uniqueKey.getColumns()) {
@@ -91,11 +95,24 @@ public class SpannerUniqueDelegate implements UniqueDelegate {
       Metadata metadata,
       SqlStringGenerationContext sqlStringGenerationContext) {
     // Dropping a unique constraint in Spanner is equivalent to dropping the index.
-    StringBuilder buf = new StringBuilder("DROP INDEX ");
-    if (!Strings.isNullOrEmpty(uniqueKey.getTable().getSchema())) {
-      buf.append(dialect.quote(uniqueKey.getTable().getSchema())).append('.');
+    String indexName = getQualifiedIndexName(uniqueKey, sqlStringGenerationContext);
+    return "drop index " + indexName;
+  }
+
+  /** Generates the qualified index name (e.g. `schema`.`indexName`) using the context. */
+  private String getQualifiedIndexName(UniqueKey uniqueKey, SqlStringGenerationContext context) {
+    Table table = uniqueKey.getTable();
+    String name = uniqueKey.getName();
+
+    if (table.getSchema() != null || table.getCatalog() != null) {
+      QualifiedTableName qualifiedIndexName =
+          new QualifiedTableName(
+              Identifier.toIdentifier(table.getCatalog()),
+              Identifier.toIdentifier(table.getSchema()),
+              Identifier.toIdentifier(name));
+      return context.format(qualifiedIndexName);
+    } else {
+      return dialect.quote(name);
     }
-    buf.append(dialect.quote(uniqueKey.getName()));
-    return buf.toString();
   }
 }

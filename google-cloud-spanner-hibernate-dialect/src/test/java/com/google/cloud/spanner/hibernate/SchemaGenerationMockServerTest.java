@@ -299,10 +299,10 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
     int index = -1;
     assertEquals(
         "alter table Invoice drop constraint fk_invoice_customer", request.getStatements(++index));
-    assertEquals("drop table `Account`", request.getStatements(++index));
-    assertEquals("drop table `Customer`", request.getStatements(++index));
-    assertEquals("drop table `Invoice`", request.getStatements(++index));
-    assertEquals("drop table `Singer`", request.getStatements(++index));
+    assertEquals("drop table Account", request.getStatements(++index));
+    assertEquals("drop table Customer", request.getStatements(++index));
+    assertEquals("drop table Invoice", request.getStatements(++index));
+    assertEquals("drop table Singer", request.getStatements(++index));
     assertEquals("drop sequence if exists customer_id_sequence", request.getStatements(++index));
     assertEquals("drop sequence if exists invoice_id_sequence", request.getStatements(++index));
     assertEquals("drop sequence if exists singer_id_sequence", request.getStatements(++index));
