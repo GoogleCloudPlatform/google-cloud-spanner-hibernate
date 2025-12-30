@@ -849,8 +849,7 @@ public class SchemaGenerationMockServerTest extends AbstractSchemaGenerationMock
   public void testBatchedSequenceEntity_Update() {
     addDdlResponseToSpannerAdmin();
 
-    // Setup schema results using explicit schema "" since the updated SpannerDatabaseInfo will use
-    // that
+    // Setup schema results using explicit schema "" since the SpannerDatabaseInfo will use that
     mockSpanner.putStatementResult(
         StatementResult.query(
             GET_TABLES_STATEMENT.toBuilder().bind("p2").to("").build(),

@@ -698,6 +698,8 @@ public class Product { ... }
 
 Note: The `catalog` attribute in `@Table` is not supported, as Cloud Spanner does not use named catalogs in its hierarchy.
 
+Note: Spanner *doesn't* support https://docs.hibernate.org/orm/7.0/userguide/html_single/#multitenacy[Multitenancy using named schemas]
+
 === Mutations
 
 Cloud Spanner supports both https://cloud.google.com/spanner/docs/dml-versus-mutations[DML and mutations for modifying data].

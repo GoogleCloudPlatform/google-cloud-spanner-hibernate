@@ -61,10 +61,8 @@ public class SpannerSchemaDropper implements SchemaDropper {
     DdlTransactionIsolator isolator = tool.getDdlTransactionIsolator(options);
     try {
       Connection connection = isolator.getIsolatedConnection();
-
       String defaultSchema =
           (String) options.getConfigurationValues().get(AvailableSettings.DEFAULT_SCHEMA);
-
       SpannerDatabaseInfo spannerDatabaseInfo =
           new SpannerDatabaseInfo(metadata.getDatabase(), connection.getMetaData(), defaultSchema);
 
