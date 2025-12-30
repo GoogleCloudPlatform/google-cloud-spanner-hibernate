@@ -1,6 +1,21 @@
 # Changelog
 
 
+## [4.1.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.1.1...v4.1.2) (2025-12-30)
+
+
+### Bug Fixes
+
+* **deps:** update dependency io.opentelemetry:opentelemetry-bom to v1.57.0 ([#1957](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1957)) ([4c356d0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/4c356d0e13b87cbac9e56f669fe9b739e0c3510f))
+* **deps:** update dependency org.apache.commons:commons-lang3 to v3.20.0 ([#1958](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1958)) ([dd5d986](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/dd5d986dcc039f216e4650ab7e45c64045d4694c))
+* **deps:** update jackson monorepo to v2.20.1 ([#1954](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1954)) ([8b63925](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/8b639251d497d335df556f368c56ef1c585f07c3))
+* **deps:** update spring boot to v4.0.1 ([#1951](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1951)) ([6674bf0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/6674bf0766c65e44b37b6f8c5375663d70aeacb8))
+
+
+### Dependencies
+
+* bump hibernate.version in /google-cloud-spanner-hibernate-dialect ([#1938](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1938)) ([091189a](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/091189a45d252c45f6207e326cd1e0f23aec9c1b))
+
 ## [4.1.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.1.0...v4.1.1) (2025-11-10)
 
 
