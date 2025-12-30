@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.relational.Database;
+import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.mapping.Table;
 
 /**
@@ -41,11 +42,18 @@ public class SpannerDatabaseInfo {
 
   private final DatabaseMetaData databaseMetaData;
 
-  /** Constructs the {@link SpannerDatabaseInfo} by querying the Spanner database metadata. */
-  public SpannerDatabaseInfo(Database database, DatabaseMetaData databaseMetaData)
+  /**
+   * Constructs the {@link SpannerDatabaseInfo} by querying the Spanner database metadata.
+   *
+   * @param database The Hibernate database model.
+   * @param databaseMetaData The JDBC metadata.
+   * @param defaultSchema The configured default schema (from hibernate.default_schema) can be null.
+   */
+  public SpannerDatabaseInfo(
+      Database database, DatabaseMetaData databaseMetaData, String defaultSchema)
       throws SQLException {
-    this.tableNames = extractDatabaseTables(database, databaseMetaData);
-    this.indexNames = extractDatabaseIndices(database, databaseMetaData);
+    this.tableNames = extractDatabaseTables(database, databaseMetaData, defaultSchema);
+    this.indexNames = extractDatabaseIndices(database, databaseMetaData, defaultSchema);
     this.databaseMetaData = databaseMetaData;
   }
 
@@ -78,23 +86,27 @@ public class SpannerDatabaseInfo {
   }
 
   private static Set<Table> extractDatabaseTables(
-      Database database, DatabaseMetaData databaseMetaData) throws SQLException {
+      Database database, DatabaseMetaData databaseMetaData, String defaultSchema)
+      throws SQLException {
     HashSet<Table> result = new HashSet<>();
 
-    // Passing all null parameters will get all the tables and apply no filters.
-    try (ResultSet resultSet = databaseMetaData.getTables(null, null, null, null)) {
-      while (resultSet.next()) {
-        String type = resultSet.getString("TABLE_TYPE");
-        if (type.equals("TABLE")) {
-          Table table =
-              new Table(
-                  "orm",
-                  database.locateNamespace(
-                      Identifier.toIdentifier(resultSet.getString("TABLE_CAT")),
-                      Identifier.toIdentifier(resultSet.getString("TABLE_SCHEM"))),
-                  Identifier.toIdentifier(resultSet.getString("TABLE_NAME")),
-                  false);
-          result.add(table);
+    // Iterate over all namespaces that belong to the application.
+    for (Namespace namespace : database.getNamespaces()) {
+
+      String schema = resolveSchemaName(namespace, defaultSchema);
+
+      try (ResultSet resultSet = databaseMetaData.getTables(null, schema, null, null)) {
+        while (resultSet.next()) {
+          String type = resultSet.getString("TABLE_TYPE");
+          if ("TABLE".equals(type)) {
+            Table table =
+                new Table(
+                    "orm",
+                    namespace,
+                    Identifier.toIdentifier(resultSet.getString("TABLE_NAME")),
+                    false);
+            result.add(table);
+          }
         }
       }
     }
@@ -103,24 +115,40 @@ public class SpannerDatabaseInfo {
   }
 
   private static Map<Table, Set<String>> extractDatabaseIndices(
-      Database database, DatabaseMetaData databaseMetaData) throws SQLException {
+      Database database, DatabaseMetaData databaseMetaData, String defaultSchema)
+      throws SQLException {
     HashMap<Table, Set<String>> result = new HashMap<>();
-    try (ResultSet indexResultSet = databaseMetaData.getIndexInfo(null, null, null, false, false)) {
 
-      while (indexResultSet.next()) {
-        String name = indexResultSet.getString("INDEX_NAME");
-        Table table =
-            new Table(
-                "orm",
-                database.locateNamespace(
-                    Identifier.toIdentifier(indexResultSet.getString("TABLE_CAT")),
-                    Identifier.toIdentifier(indexResultSet.getString("TABLE_SCHEM"))),
-                Identifier.toIdentifier(indexResultSet.getString("TABLE_NAME")),
-                false);
-        Set<String> tableIndices = result.computeIfAbsent(table, k -> new HashSet<>());
-        tableIndices.add(name);
+    for (Namespace namespace : database.getNamespaces()) {
+
+      String schema = resolveSchemaName(namespace, defaultSchema);
+
+      try (ResultSet indexResultSet =
+          databaseMetaData.getIndexInfo(null, schema, null, false, false)) {
+
+        while (indexResultSet.next()) {
+          String name = indexResultSet.getString("INDEX_NAME");
+          Table table =
+              new Table(
+                  "orm",
+                  namespace,
+                  Identifier.toIdentifier(indexResultSet.getString("TABLE_NAME")),
+                  false);
+          Set<String> tableIndices = result.computeIfAbsent(table, k -> new HashSet<>());
+          tableIndices.add(name);
+        }
       }
     }
     return result;
+  }
+
+  private static String resolveSchemaName(Namespace namespace, String defaultSchema) {
+    if (namespace.getPhysicalName().schema() != null) {
+      return namespace.getPhysicalName().schema().render();
+    }
+    if (defaultSchema != null) {
+      return defaultSchema;
+    }
+    return "";
   }
 }

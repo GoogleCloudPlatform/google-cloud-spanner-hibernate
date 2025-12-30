@@ -78,19 +78,19 @@ public class SpannerDialectTests {
 
   @Test
   public void canCreateSchemaTest() {
-    assertThat(this.spannerDialect.canCreateSchema()).isFalse();
+    assertThat(this.spannerDialect.canCreateSchema()).isTrue();
   }
 
   @Test
   public void createSchemaStatementTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getCreateSchemaCommand("test"))
-        .isInstanceOf(UnsupportedOperationException.class);
+    assertThat(this.spannerDialect.getCreateSchemaCommand("test"))
+        .containsExactly("CREATE SCHEMA IF NOT EXISTS test");
   }
 
   @Test
-  public void dropCatalogStatementTest() {
-    assertThatThrownBy(() -> this.spannerDialect.getDropSchemaCommand("test"))
-        .isInstanceOf(UnsupportedOperationException.class);
+  public void dropSchemaStatementTest() {
+    assertThat(this.spannerDialect.getDropSchemaCommand("test"))
+        .containsExactly("DROP SCHEMA IF EXISTS test");
   }
 
   @Test
@@ -116,7 +116,7 @@ public class SpannerDialectTests {
 
   @Test
   public void qualifyIndexNameTest() {
-    assertThat(this.spannerDialect.qualifyIndexName()).isFalse();
+    assertThat(this.spannerDialect.qualifyIndexName()).isTrue();
   }
 
   @Test

@@ -662,25 +662,43 @@ Consequently, users must take care to avoid encountering these constraints.
 1. We recommend being careful with the use of `CASCADE_TYPE.ALL` in Entity annotations because, depending on the application, it might trigger a large number of entities to be deleted in a single transaction and bring you over the 80,000 limit.
 2. Also, when persisting a collection of entities, be mindful of the 80,000 mutations per transaction constraint.
 
-=== Catalog/Schema Table Names
+=== Named Schema Support
 
-The Cloud Spanner Dialect only supports `@Table` with the `name` attribute.
-It does not support table names with catalog and/or schema components because Cloud Spanner does not support named catalogs and schemas:
+The Cloud Spanner Dialect supports named schemas. You can organize your tables into specific Spanner schemas using the standard JPA/Hibernate mechanisms. For more information on Spanner Named Schemas, please refer to the https://docs.cloud.google.com/spanner/docs/named-schemas[official documentation].
+
+You can specify a schema for a specific entity using the `schema` attribute of the `@Table` annotation:
 
 [source, java]
 ----
-// Supported.
+@Entity
 @Table(
-  name = "book"
+  name = "audit_logs",
+  schema = "reporting" // Maps to table reporting.audit_logs
 )
-
-// Not supported.
-@Table(
-  catalog = "public",
-  schema = "store",
-  name = "book"
-)
+public class AuditLog { ... }
 ----
+
+You can also configure a global default schema for your application. If `hibernate.default_schema` is set, all entities that do not explicitly define a schema will be placed in the default schema.
+
+**Configuration:**
+[source, properties]
+----
+# Example hibernate.properties
+hibernate.default_schema=shop
+----
+
+**Entity Usage:**
+[source, java]
+----
+// If hibernate.default_schema="shop", this maps to table shop.products
+@Entity
+@Table(name = "products")
+public class Product { ... }
+----
+
+Note: The `catalog` attribute in `@Table` is not supported, as Cloud Spanner does not use named catalogs in its hierarchy.
+
+Note: Spanner *doesn't* support https://docs.hibernate.org/orm/7.0/userguide/html_single/#multitenacy[Multitenancy using named schemas]
 
 === Mutations
 

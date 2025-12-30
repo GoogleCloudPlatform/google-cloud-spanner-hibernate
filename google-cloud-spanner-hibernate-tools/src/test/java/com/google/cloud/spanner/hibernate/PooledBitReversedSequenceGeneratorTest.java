@@ -231,10 +231,7 @@ public class PooledBitReversedSequenceGeneratorTest {
     Long id;
 
     @Id
-    @PooledBitReversedSequenceGenerator(
-        sequenceName = "test_sequence",
-        poolSize = 5,
-        schema = "public")
+    @PooledBitReversedSequenceGenerator(sequenceName = "test_sequence", poolSize = 5)
     Long idPostgres;
   }
 

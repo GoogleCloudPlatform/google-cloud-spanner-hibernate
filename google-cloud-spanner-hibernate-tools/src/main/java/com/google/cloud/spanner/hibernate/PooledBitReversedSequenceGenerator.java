@@ -150,6 +150,7 @@ public class PooledBitReversedSequenceGenerator
 
   private static QualifiedSequenceName determineSequenceName(
       JdbcEnvironment jdbcEnvironment,
+      GeneratorCreationContext creationContext,
       com.google.cloud.spanner.hibernate.annotations.PooledBitReversedSequenceGenerator config) {
     String sequenceName = config.sequenceName();
     if (sequenceName == null) {
@@ -162,9 +163,15 @@ public class PooledBitReversedSequenceGenerator
           qualifiedName.getSchemaName(),
           qualifiedName.getObjectName());
     } else {
+      String schemaName = config.schema();
+      if ((schemaName == null || schemaName.isEmpty())
+          && creationContext.getDefaultSchema() != null) {
+        schemaName = creationContext.getDefaultSchema();
+      }
+
       return new QualifiedSequenceName(
           null,
-          jdbcEnvironment.getIdentifierHelper().toIdentifier(config.schema()),
+          jdbcEnvironment.getIdentifierHelper().toIdentifier(schemaName),
           jdbcEnvironment.getIdentifierHelper().toIdentifier(sequenceName));
     }
   }
@@ -177,7 +184,7 @@ public class PooledBitReversedSequenceGenerator
     final ServiceRegistry serviceRegistry = creationContext.getServiceRegistry();
     JdbcEnvironment jdbcEnvironment = serviceRegistry.getService(JdbcEnvironment.class);
     this.dialect = jdbcEnvironment.getDialect();
-    this.sequenceName = determineSequenceName(jdbcEnvironment, config);
+    this.sequenceName = determineSequenceName(jdbcEnvironment, creationContext, config);
     this.fetchSize = determineFetchSize(config);
     int initialValue = determineInitialValue(config);
     this.select = buildSelect(sequenceName, fetchSize);
@@ -244,14 +251,14 @@ public class PooledBitReversedSequenceGenerator
           "%s select %s",
           hints,
           IntStream.range(0, fetchSize)
-              .mapToObj(
-                  ignore -> "nextval('" + sequenceName.getSequenceName().getText() + "') as n")
+              .mapToObj(ignore -> "nextval('" + sequenceName.render() + "') as n")
               .collect(Collectors.joining(", ")));
     }
+
     return String.format(
         "%s select get_next_sequence_value(sequence %s) AS n "
             + "from unnest(generate_array(1, %d))",
-        hints, sequenceName.getSequenceName().getText(), fetchSize);
+        hints, sequenceName.render(), fetchSize);
   }
 
   @VisibleForTesting
