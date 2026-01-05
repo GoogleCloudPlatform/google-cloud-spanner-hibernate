@@ -33,6 +33,7 @@ import com.google.cloud.spanner.hibernate.entities.Customer;
 import com.google.cloud.spanner.hibernate.entities.Employee;
 import com.google.cloud.spanner.hibernate.entities.GrandParent;
 import com.google.cloud.spanner.hibernate.entities.Parent;
+import com.google.cloud.spanner.hibernate.entities.ReservedKeywordEntity;
 import com.mockrunner.mock.jdbc.JDBCMockObjectFactory;
 import com.mockrunner.mock.jdbc.MockConnection;
 import java.sql.SQLException;
@@ -282,8 +283,8 @@ public class GeneratedCreateTableStatementsTests {
           .startsWith(
               "START BATCH DDL",
               "drop index if exists name_index",
-              "drop table `Employee`",
-              "drop table `Employee_Sequence`",
+              "drop table Employee",
+              "drop table Employee_Sequence",
               "RUN BATCH");
     } finally {
       SpannerDialect.enableSpannerSequences();
@@ -316,7 +317,7 @@ public class GeneratedCreateTableStatementsTests {
         .startsWith(
             "START BATCH DDL",
             "drop index if exists name_index",
-            "drop table `Employee`",
+            "drop table Employee",
             "drop sequence if exists Employee_Sequence",
             "RUN BATCH");
   }
@@ -401,5 +402,23 @@ public class GeneratedCreateTableStatementsTests {
     SpannerException spannerException =
         assertThrows(SpannerException.class, metadata::buildSessionFactory);
     assertEquals("UNKNOWN: test exception", spannerException.getMessage());
+  }
+
+  @Test
+  public void testDropReservedKeywordTable() throws SQLException {
+    Metadata metadata =
+        new MetadataSources(this.registry)
+            .addAnnotatedClass(ReservedKeywordEntity.class)
+            .buildMetadata();
+
+    this.connection.setMetaData(MockJdbcUtils.metaDataBuilder().setTables("select").build());
+    Session session = metadata.buildSessionFactory().openSession();
+    session.beginTransaction();
+    session.close();
+
+    List<String> sqlStrings =
+        this.connection.getStatementResultSetHandler().getExecutedStatements();
+
+    assertThat(sqlStrings).contains("drop table `select`");
   }
 }

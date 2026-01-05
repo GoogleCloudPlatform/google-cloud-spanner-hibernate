@@ -31,6 +31,7 @@ import com.google.common.base.Strings;
 import jakarta.persistence.Timeout;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import org.hibernate.HibernateException;
@@ -51,6 +52,8 @@ import org.hibernate.dialect.lock.spi.LockingSupport;
 import org.hibernate.dialect.lock.spi.OuterJoinLockingType;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfo;
+import org.hibernate.engine.jdbc.env.spi.IdentifierHelper;
+import org.hibernate.engine.jdbc.env.spi.IdentifierHelperBuilder;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
@@ -447,6 +450,35 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
 
   private static boolean hasStatementHint(String hint) {
     return !Strings.isNullOrEmpty(hint) && hint.startsWith("@{") && hint.endsWith("}");
+  }
+
+  @Override
+  public IdentifierHelper buildIdentifierHelper(
+      IdentifierHelperBuilder builder, DatabaseMetaData metadata) throws SQLException {
+    builder.applyReservedWords(metadata);
+    builder.setAutoQuoteKeywords(true);
+    builder.setAutoQuoteDollar(true);
+    return super.buildIdentifierHelper(builder, metadata);
+  }
+
+  @Override
+  public boolean canCreateSchema() {
+    return true;
+  }
+
+  @Override
+  public String[] getCreateSchemaCommand(String schemaName) {
+    return new String[] {"CREATE SCHEMA IF NOT EXISTS " + quote(schemaName)};
+  }
+
+  @Override
+  public String[] getDropSchemaCommand(String schemaName) {
+    return new String[] {"DROP SCHEMA IF EXISTS " + quote(schemaName)};
+  }
+
+  @Override
+  public boolean qualifyIndexName() {
+    return true;
   }
 
   /* Lock acquisition functions */

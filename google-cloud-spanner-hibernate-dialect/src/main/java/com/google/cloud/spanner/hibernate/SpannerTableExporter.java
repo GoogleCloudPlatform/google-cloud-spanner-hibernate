@@ -66,7 +66,7 @@ public class SpannerTableExporter implements Exporter<Table> {
   public String[] getSqlCreateStrings(
       Table currentTable, Metadata metadata, SqlStringGenerationContext context) {
     initializeUniqueConstraints(currentTable);
-    List<String> sqlStrings = buildSqlStrings(currentTable, metadata, Action.CREATE);
+    List<String> sqlStrings = buildSqlStrings(currentTable, metadata, context, Action.CREATE);
 
     applyInitCommands(currentTable, metadata, context);
 
@@ -85,7 +85,7 @@ public class SpannerTableExporter implements Exporter<Table> {
   public String[] getSqlDropStrings(
       Table currentTable, Metadata metadata, SqlStringGenerationContext context) {
     initializeUniqueConstraints(currentTable);
-    return buildSqlStrings(currentTable, metadata, Action.DROP).toArray(new String[0]);
+    return buildSqlStrings(currentTable, metadata, context, Action.DROP).toArray(new String[0]);
   }
 
   /**
@@ -97,16 +97,20 @@ public class SpannerTableExporter implements Exporter<Table> {
     spannerTableStatements.initializeSpannerDatabaseInfo(spannerDatabaseInfo);
   }
 
-  private List<String> buildSqlStrings(Table currentTable, Metadata metadata, Action schemaAction) {
+  private List<String> buildSqlStrings(
+      Table currentTable,
+      Metadata metadata,
+      SqlStringGenerationContext context,
+      Action schemaAction) {
     Collection<Table> tablesToProcess = tableDependencyTracker.getDependentTables(currentTable);
 
     return tablesToProcess.stream()
         .flatMap(
             table -> {
               if (schemaAction == Action.CREATE) {
-                return spannerTableStatements.createTable(table, metadata).stream();
+                return spannerTableStatements.createTable(table, metadata, context).stream();
               } else {
-                return spannerTableStatements.dropTable(table).stream();
+                return spannerTableStatements.dropTable(table, context).stream();
               }
             })
         .collect(Collectors.toList());
