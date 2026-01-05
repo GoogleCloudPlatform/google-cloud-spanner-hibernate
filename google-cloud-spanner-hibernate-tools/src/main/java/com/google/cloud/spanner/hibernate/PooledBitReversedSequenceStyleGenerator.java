@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate;
 
 import static org.hibernate.id.enhanced.SequenceStyleGenerator.SEQUENCE_PARAM;
+import static org.hibernate.internal.util.config.ConfigurationHelper.extractPropertyValue;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -59,6 +60,8 @@ import org.hibernate.id.enhanced.NoopOptimizer;
 import org.hibernate.id.enhanced.Optimizer;
 import org.hibernate.id.enhanced.SequenceStructure;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
+import org.hibernate.internal.util.StringHelper;
+import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
@@ -189,9 +192,13 @@ public class PooledBitReversedSequenceStyleGenerator
     // Accept both 'excluded_range' and 'excluded_ranges' params to accommodate anyone moving from
     // the original BitReversedSequenceStyleGenerator to PooledBitReversedSequenceStyleGenerator.
     String[] excludedRangesArray =
-        ConfigurationHelper.toStringArray(EXCLUDE_RANGES_PARAM, " ", params);
+        extractPropertyValue(EXCLUDE_RANGES_PARAM, params) != null
+            ? StringHelper.split(" ", extractPropertyValue(EXCLUDE_RANGES_PARAM, params))
+            : ArrayHelper.EMPTY_STRING_ARRAY;
     String[] excludedRangeArray =
-        ConfigurationHelper.toStringArray(EXCLUDE_RANGE_PARAM, " ", params);
+        extractPropertyValue(EXCLUDE_RANGE_PARAM, params) != null
+            ? StringHelper.split(" ", extractPropertyValue(EXCLUDE_RANGE_PARAM, params))
+            : ArrayHelper.EMPTY_STRING_ARRAY;
     if (excludedRangesArray == null && excludedRangeArray == null) {
       return ImmutableList.of();
     }

@@ -18,6 +18,8 @@
 
 package com.google.cloud.spanner.hibernate.schema;
 
+import static org.hibernate.internal.CoreMessageLogger.CORE_LOGGER;
+
 import com.google.cloud.spanner.hibernate.Interleaved;
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -25,8 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import org.hibernate.boot.Metadata;
-import org.hibernate.internal.CoreLogging;
-import org.hibernate.internal.CoreMessageLogger;
 import org.hibernate.mapping.Table;
 import org.hibernate.tool.schema.Action;
 
@@ -38,9 +38,6 @@ import org.hibernate.tool.schema.Action;
  * table first before its parent table.
  */
 public class TableDependencyTracker {
-
-  private static final CoreMessageLogger log =
-      CoreLogging.messageLogger(TableDependencyTracker.class);
 
   // For each map entry (key, value), the key is a table which is being blocked by the
   // table stored as the value.
@@ -63,7 +60,7 @@ public class TableDependencyTracker {
 
       if (interleaved != null) {
         if (!SchemaUtils.validateInterleaved(entity)) {
-          log.warnf(
+          CORE_LOGGER.warnf(
               "Composite key for Interleaved table '%s' should be a superset of the parent's key.",
               entity.getName());
         }
