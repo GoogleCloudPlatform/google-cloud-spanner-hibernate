@@ -148,9 +148,7 @@ public class GeneratedUpdateTableStatementsTests {
             "create sequence if not exists invoice_id_sequence options(sequence_kind=\"bit_reversed_positive\")",
             "RUN BATCH");
     sqlStrings = defaultConnection.getPreparedStatementResultSetHandler().getExecutedStatements();
-    assertThat(sqlStrings)
-        .containsExactly(
-            new SpannerDialect().getQuerySequencesString(), "select * from `Customer` where 1=0");
+    assertThat(sqlStrings).containsExactly(new SpannerDialect().getQuerySequencesString());
   }
 
   /** Sets up which pre-existing tables that Hibernate sees. */

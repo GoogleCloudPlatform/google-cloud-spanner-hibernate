@@ -539,7 +539,8 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
     }
 
     final RowLockStrategy rowLockStrategy = RowLockStrategy.NONE;
-    return buildLockingClauseStrategy(lockKind, rowLockStrategy, lockOptions);
+    return buildLockingClauseStrategy(
+        lockKind, rowLockStrategy, lockOptions, querySpec.getRootPathsForLocking());
   }
 
   @Override
