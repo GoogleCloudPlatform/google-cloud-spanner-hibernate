@@ -19,6 +19,7 @@
 package com.google.cloud.spanner.hibernate.it;
 
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
@@ -59,12 +60,22 @@ public class HibernateIntegrationTestEnv {
   public static final String TEST_DATABASE_PROPERTY = "HIBERNATE_TEST_DATABASE";
   private static final Logger logger =
       Logger.getLogger(HibernateIntegrationTestEnv.class.getName());
+  // Default project and instance ids for experimental host endpoints.
+  private static final String DEFAULT_EXPERIMENTAL_HOST_ID = "default";
   // Default fallback project Id will be used if one isn't set via the system property.
   private static final String DEFAULT_PROJECT_ID = "appdev-soda-spanner-staging";
   // Default instance id.
   private static final String DEFAULT_INSTANCE_ID = "hibernate-tests";
   // Default database id.
   private static final String DEFAULT_DATABASE_ID = "test-db";
+  // Set to true if plain text communication required over experimental host
+  private static final String TEST_USE_PLAIN_TEXT_PROPERTY = "hibernate.use_plain_text";
+  // Experimental Host Endpoint should be set through this system property.
+  private static final String TEST_EXPERIMENTAL_HOST_PROPERTY = "hibernate.experimental_host";
+  // Client Certificate path to establish mTLS over experimental host
+  private static final String TEST_CLIENT_CERT_PATH = "spanner.client_cert_path";
+  // Client Certificate Key path to establish mTLS over experimental host
+  private static final String TEST_CLIENT_CERT_KEY_PATH = "spanner.client_cert_key_path";
   // Shared Spanner instance that is automatically created and closed.
   private final Spanner spanner;
   // Spanner URL.
@@ -75,14 +86,29 @@ public class HibernateIntegrationTestEnv {
   private final String hostUrl;
   private Database database;
 
+  /* Determines whether endpoint is an experimental host */
+  private boolean isRunningOnExperimentalHost() {
+    return !Strings.isNullOrEmpty(System.getProperty(TEST_EXPERIMENTAL_HOST_PROPERTY));
+  }
+
+  /* Determines whether endpoint is set up over mTLS based connection */
+  private boolean isMtlsBasedConnection(){
+    return !Strings.isNullOrEmpty(System.getProperty(TEST_CLIENT_CERT_PATH)) && !Strings.isNullOrEmpty(System.getProperty(TEST_CLIENT_CERT_KEY_PATH));
+  }
+
   /** Constructs an integration test environment for Hibernate. */
   public HibernateIntegrationTestEnv() {
-    projectId = System.getProperty(TEST_PROJECT_PROPERTY, DEFAULT_PROJECT_ID);
-    instanceId = System.getProperty(TEST_INSTANCE_PROPERTY, DEFAULT_INSTANCE_ID);
+    if (isRunningOnExperimentalHost()) {
+      projectId = DEFAULT_EXPERIMENTAL_HOST_ID;
+      instanceId = DEFAULT_EXPERIMENTAL_HOST_ID;
+      hostUrl = System.getProperty(TEST_EXPERIMENTAL_HOST_PROPERTY);
+    } else {
+      projectId = System.getProperty(TEST_PROJECT_PROPERTY, DEFAULT_PROJECT_ID);
+      instanceId = System.getProperty(TEST_INSTANCE_PROPERTY, DEFAULT_INSTANCE_ID);
+      hostUrl = System.getProperty(TEST_SPANNER_URL_PROPERTY);
+    }
     String databaseIdFormat = System.getProperty(TEST_DATABASE_PROPERTY, DEFAULT_DATABASE_ID);
     databaseId = generateDatabaseId(databaseIdFormat);
-    hostUrl = System.getProperty(TEST_SPANNER_URL_PROPERTY);
-
     spannerHost = getSpannerUrl();
     logger.info("Using Spanner host: " + spannerHost);
     SpannerOptions options = createSpannerOptions();
@@ -195,7 +221,16 @@ public class HibernateIntegrationTestEnv {
 
   private SpannerOptions createSpannerOptions() {
     SpannerOptions.Builder builder = SpannerOptions.newBuilder().setProjectId(projectId);
-    if (spannerHost != null) {
+    if (isRunningOnExperimentalHost()) {
+      builder.setExperimentalHost(spannerHost);
+      builder.setBuiltInMetricsEnabled(false);
+      builder.setCredentials(NoCredentials.getInstance());
+      if(Boolean.getBoolean(TEST_USE_PLAIN_TEXT_PROPERTY)){
+        builder.usePlainText();
+      } else if (isMtlsBasedConnection()){
+        builder.useClientCert(System.getProperty(TEST_CLIENT_CERT_PATH), System.getProperty(TEST_CLIENT_CERT_KEY_PATH));
+      }
+    } else if (spannerHost != null) {
       builder.setHost(spannerHost);
     }
     return builder.build();
@@ -222,6 +257,16 @@ public class HibernateIntegrationTestEnv {
             projectId, instanceId, databaseId);
     if (!Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST"))) {
       url += ";autoConfigEmulator=true";
+    }
+    if (isRunningOnExperimentalHost()) {
+      url =
+          String.format(
+              "jdbc:spanner://%s/databases/%s;isExperimentalHost=true", spannerHost.replaceFirst("^.*?//",""),databaseId);
+      if (Boolean.getBoolean(TEST_USE_PLAIN_TEXT_PROPERTY)){
+        url+=";usePlainText=true";
+      } else if (isMtlsBasedConnection()){
+        url+= String.format(";clientCertificate=%s;clientKey=%s",System.getProperty(TEST_CLIENT_CERT_PATH),System.getProperty(TEST_CLIENT_CERT_KEY_PATH));
+      }
     }
     return url;
   }
