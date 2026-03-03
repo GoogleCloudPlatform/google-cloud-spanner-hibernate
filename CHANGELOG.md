@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [4.2.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.2.1...v4.2.2) (2026-03-03)
+
+
+### Bug Fixes
+
+* release fix ([#1995](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/1995)) ([450ec1a](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/450ec1a5b00034c75768f7775d971154b6a27581))
+
 ## [4.2.1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.2.0...v4.2.1) (2026-02-27)
 
 
