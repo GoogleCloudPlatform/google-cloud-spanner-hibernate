@@ -99,8 +99,8 @@ public class SpannerTableExporterTests {
     assertThat(statements)
         .containsExactly(
             "START BATCH DDL;",
-            "drop table `TestEntity_stringList`;",
-            "drop table `test_table`;",
+            "drop table if exists `TestEntity_stringList`;",
+            "drop table if exists `test_table`;",
             "RUN BATCH;");
   }
 
@@ -132,7 +132,7 @@ public class SpannerTableExporterTests {
           .containsExactly(
               "START BATCH DDL;",
               "drop index if exists name_index;",
-              "drop table Employee;",
+              "drop table if exists Employee;",
               "RUN BATCH;");
     } finally {
       SpannerDialect.enableSpannerSequences();
@@ -166,7 +166,7 @@ public class SpannerTableExporterTests {
         .containsExactly(
             "START BATCH DDL;",
             "drop index if exists name_index;",
-            "drop table Employee;",
+            "drop table if exists Employee;",
             "drop sequence if exists Employee_Sequence;",
             "RUN BATCH;");
   }

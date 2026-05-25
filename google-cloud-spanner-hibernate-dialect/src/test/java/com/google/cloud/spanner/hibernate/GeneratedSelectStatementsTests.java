@@ -238,12 +238,12 @@ public class GeneratedSelectStatementsTests {
     testUpdateStatementTranslation(
         "delete TestEntity where boolVal = true",
         ImmutableList.of(
-            "delete from `TestEntity_stringList` where exists "
+            "delete from `TestEntity_stringList` to_delete_ where exists"
                 + "(select 1 from `test_table` te1_0 where "
-                + "(te1_0.`ID1`=`TestEntity_stringList`.`TestEntity_ID1` "
-                + "and te1_0.id2=`TestEntity_stringList`.`TestEntity_id2`) "
+                + "(te1_0.`ID1`=to_delete_.`TestEntity_ID1` "
+                + "and te1_0.id2=to_delete_.`TestEntity_id2`) "
                 + "and (te1_0.`boolColumn`=true))",
-            "delete from `test_table` where `boolColumn`=true"));
+            "delete from `test_table` te1_0 where te1_0.`boolColumn`=true"));
   }
 
   @Test

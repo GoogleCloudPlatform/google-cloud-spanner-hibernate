@@ -92,8 +92,9 @@ public class HibernateIntegrationTestEnv {
   }
 
   /* Determines whether endpoint is set up over mTLS based connection */
-  private boolean isMtlsBasedConnection(){
-    return !Strings.isNullOrEmpty(System.getProperty(TEST_CLIENT_CERT_PATH)) && !Strings.isNullOrEmpty(System.getProperty(TEST_CLIENT_CERT_KEY_PATH));
+  private boolean isMtlsBasedConnection() {
+    return !Strings.isNullOrEmpty(System.getProperty(TEST_CLIENT_CERT_PATH))
+        && !Strings.isNullOrEmpty(System.getProperty(TEST_CLIENT_CERT_KEY_PATH));
   }
 
   /** Constructs an integration test environment for Hibernate. */
@@ -225,10 +226,12 @@ public class HibernateIntegrationTestEnv {
       builder.setExperimentalHost(spannerHost);
       builder.setBuiltInMetricsEnabled(false);
       builder.setCredentials(NoCredentials.getInstance());
-      if(Boolean.getBoolean(TEST_USE_PLAIN_TEXT_PROPERTY)){
+      if (Boolean.getBoolean(TEST_USE_PLAIN_TEXT_PROPERTY)) {
         builder.usePlainText();
-      } else if (isMtlsBasedConnection()){
-        builder.useClientCert(System.getProperty(TEST_CLIENT_CERT_PATH), System.getProperty(TEST_CLIENT_CERT_KEY_PATH));
+      } else if (isMtlsBasedConnection()) {
+        builder.useClientCert(
+            System.getProperty(TEST_CLIENT_CERT_PATH),
+            System.getProperty(TEST_CLIENT_CERT_KEY_PATH));
       }
     } else if (spannerHost != null) {
       builder.setHost(spannerHost);
@@ -261,11 +264,16 @@ public class HibernateIntegrationTestEnv {
     if (isRunningOnExperimentalHost()) {
       url =
           String.format(
-              "jdbc:spanner://%s/databases/%s;isExperimentalHost=true", spannerHost.replaceFirst("^.*?//",""),databaseId);
-      if (Boolean.getBoolean(TEST_USE_PLAIN_TEXT_PROPERTY)){
-        url+=";usePlainText=true";
-      } else if (isMtlsBasedConnection()){
-        url+= String.format(";clientCertificate=%s;clientKey=%s",System.getProperty(TEST_CLIENT_CERT_PATH),System.getProperty(TEST_CLIENT_CERT_KEY_PATH));
+              "jdbc:spanner://%s/databases/%s;isExperimentalHost=true",
+              spannerHost.replaceFirst("^.*?//", ""), databaseId);
+      if (Boolean.getBoolean(TEST_USE_PLAIN_TEXT_PROPERTY)) {
+        url += ";usePlainText=true";
+      } else if (isMtlsBasedConnection()) {
+        url +=
+            String.format(
+                ";clientCertificate=%s;clientKey=%s",
+                System.getProperty(TEST_CLIENT_CERT_PATH),
+                System.getProperty(TEST_CLIENT_CERT_KEY_PATH));
       }
     }
     return url;

@@ -283,8 +283,8 @@ public class GeneratedCreateTableStatementsTests {
           .startsWith(
               "START BATCH DDL",
               "drop index if exists name_index",
-              "drop table Employee",
-              "drop table Employee_Sequence",
+              "drop table if exists Employee",
+              "drop table if exists Employee_Sequence",
               "RUN BATCH");
     } finally {
       SpannerDialect.enableSpannerSequences();
@@ -317,7 +317,7 @@ public class GeneratedCreateTableStatementsTests {
         .startsWith(
             "START BATCH DDL",
             "drop index if exists name_index",
-            "drop table Employee",
+            "drop table if exists Employee",
             "drop sequence if exists Employee_Sequence",
             "RUN BATCH");
   }
@@ -419,6 +419,6 @@ public class GeneratedCreateTableStatementsTests {
     List<String> sqlStrings =
         this.connection.getStatementResultSetHandler().getExecutedStatements();
 
-    assertThat(sqlStrings).contains("drop table `select`");
+    assertThat(sqlStrings).contains("drop table if exists `select`");
   }
 }

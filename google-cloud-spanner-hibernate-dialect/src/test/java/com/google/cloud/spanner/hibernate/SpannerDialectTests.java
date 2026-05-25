@@ -49,7 +49,7 @@ public class SpannerDialectTests {
   @Test
   public void dropTableStringTest() {
     String dropTableString = this.spannerDialect.getDropTableString("test_table");
-    assertThat(dropTableString).isEqualTo("drop table test_table");
+    assertThat(dropTableString).isEqualTo("drop table if exists test_table");
   }
 
   @Test
@@ -167,7 +167,7 @@ public class SpannerDialectTests {
 
   @Test
   public void supportsIfExistsBeforeTableNameTest() {
-    assertThat(this.spannerDialect.supportsIfExistsBeforeTableName()).isFalse();
+    assertThat(this.spannerDialect.supportsIfExistsBeforeTableName()).isTrue();
   }
 
   @Test
@@ -193,12 +193,12 @@ public class SpannerDialectTests {
   @Test
   public void getDropStringTest() {
     String dropTableString = this.spannerDialect.getDropTableString("test_table");
-    assertThat(dropTableString).isEqualTo("drop table test_table");
+    assertThat(dropTableString).isEqualTo("drop table if exists test_table");
   }
 
   @Test
   public void getCreateTableStringTest() {
-    assertThat(this.spannerDialect.getCreateTableString()).isEqualTo("create table");
+    assertThat(this.spannerDialect.getCreateTableString()).isEqualTo("create table if not exists");
   }
 
   /* Lock acquisition functions */

@@ -18,146 +18,90 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import java.util.List;
-import org.hibernate.LockMode;
+import org.hibernate.Locking;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.query.sqm.ComparisonOperator;
-import org.hibernate.sql.ast.Clause;
-import org.hibernate.sql.ast.spi.AbstractSqlAstTranslator;
-import org.hibernate.sql.ast.spi.SqlSelection;
+import org.hibernate.query.IllegalQueryOperationException;
+import org.hibernate.sql.ast.spi.LockingClauseStrategy;
 import org.hibernate.sql.ast.tree.Statement;
-import org.hibernate.sql.ast.tree.expression.Expression;
-import org.hibernate.sql.ast.tree.expression.Literal;
-import org.hibernate.sql.ast.tree.expression.SqlTuple;
-import org.hibernate.sql.ast.tree.expression.Summarization;
-import org.hibernate.sql.ast.tree.from.DerivedTableReference;
-import org.hibernate.sql.ast.tree.from.NamedTableReference;
-import org.hibernate.sql.ast.tree.from.TableGroup;
-import org.hibernate.sql.ast.tree.from.TableReference;
-import org.hibernate.sql.ast.tree.predicate.InArrayPredicate;
-import org.hibernate.sql.ast.tree.predicate.LikePredicate;
-import org.hibernate.sql.ast.tree.select.QueryPart;
-import org.hibernate.sql.ast.tree.select.SelectClause;
+import org.hibernate.sql.ast.tree.select.QuerySpec;
 import org.hibernate.sql.exec.spi.JdbcOperation;
 
-/** We need a translator for the LIKE operator, as Cloud Spanner does not support ESCAPE clauses. */
-public class SpannerSqlAstTranslator<T extends JdbcOperation> extends AbstractSqlAstTranslator<T> {
-
-  // Spanner lacks the lateral keyword and instead has an unnest/array mechanism
-  private boolean correlated;
+/**
+ * SQL AST translator for Cloud Spanner.
+ *
+ * @param <T> type of JDBC operation.
+ */
+public class SpannerSqlAstTranslator<T extends JdbcOperation>
+    extends org.hibernate.dialect.sql.ast.SpannerSqlAstTranslator<T> {
 
   public SpannerSqlAstTranslator(SessionFactoryImplementor sessionFactory, Statement statement) {
     super(sessionFactory, statement);
   }
 
   @Override
-  public void visitLikePredicate(LikePredicate likePredicate) {
-    // Cloud Spanner does not support ESCAPE clauses.
-    if (likePredicate.isCaseSensitive()) {
-      likePredicate.getMatchExpression().accept(this);
-      if (likePredicate.isNegated()) {
-        appendSql(" not");
+  protected LockStrategy determineLockingStrategy(
+      QuerySpec querySpec, Locking.FollowOn followOnStrategy) {
+    if (followOnStrategy == Locking.FollowOn.FORCE) {
+      return LockStrategy.FOLLOW_ON;
+    }
+
+    if (!querySpec.isRoot()) {
+      followOnStrategy = Locking.FollowOn.ALLOW;
+    }
+
+    LockStrategy strategy = LockStrategy.CLAUSE;
+
+    if (!querySpec.getGroupByClauseExpressions().isEmpty()) {
+      if (followOnStrategy == Locking.FollowOn.DISALLOW) {
+        throw new IllegalQueryOperationException("Locking with GROUP BY is not supported");
+      } else if (followOnStrategy == Locking.FollowOn.IGNORE) {
+        return LockStrategy.NONE;
       }
-      appendSql(" like ");
-      likePredicate.getPattern().accept(this);
-    } else {
-      if (getDialect().supportsCaseInsensitiveLike()) {
-        likePredicate.getMatchExpression().accept(this);
-        if (likePredicate.isNegated()) {
-          appendSql(" not");
+      strategy = LockStrategy.FOLLOW_ON;
+    }
+
+    if (querySpec.getHavingClauseRestrictions() != null) {
+      if (followOnStrategy == Locking.FollowOn.DISALLOW) {
+        throw new IllegalQueryOperationException("Locking with HAVING is not supported");
+      } else if (followOnStrategy == Locking.FollowOn.IGNORE) {
+        return LockStrategy.NONE;
+      }
+      strategy = LockStrategy.FOLLOW_ON;
+    }
+
+    if (querySpec.getSelectClause().isDistinct()) {
+      if (followOnStrategy == Locking.FollowOn.DISALLOW) {
+        throw new IllegalQueryOperationException("Locking with DISTINCT is not supported");
+      } else if (followOnStrategy == Locking.FollowOn.IGNORE) {
+        return LockStrategy.NONE;
+      }
+      strategy = LockStrategy.FOLLOW_ON;
+    }
+
+    if (!getDialect().supportsOuterJoinForUpdate()) {
+      LockingClauseStrategy lockingClauseStrategy = getLockingClauseStrategy();
+      if (lockingClauseStrategy != null && lockingClauseStrategy.containsOuterJoins()) {
+        // we have any outer joins to lock, but the dialect does not support locking outer joins
+        // 		-we need to use follow-on locking if allowed
+        if (followOnStrategy == Locking.FollowOn.DISALLOW) {
+          throw new IllegalQueryOperationException("Locking with OUTER joins is not supported");
+        } else if (followOnStrategy == Locking.FollowOn.IGNORE) {
+          return LockStrategy.NONE;
         }
-        appendSql(WHITESPACE);
-        appendSql(getDialect().getCaseInsensitiveLike());
-        appendSql(WHITESPACE);
-        likePredicate.getPattern().accept(this);
-      } else {
-        renderCaseInsensitiveLikeEmulation(
-            likePredicate.getMatchExpression(),
-            likePredicate.getPattern(),
-            null,
-            likePredicate.isNegated());
+        strategy = LockStrategy.FOLLOW_ON;
       }
     }
-  }
 
-  @Override
-  public void visitInArrayPredicate(InArrayPredicate inArrayPredicate) {
-    inArrayPredicate.getTestExpression().accept(this);
-    appendSql(" in unnest(");
-    inArrayPredicate.getArrayParameter().accept(this);
-    appendSql(')');
-  }
-
-  @Override
-  public void visitOffsetFetchClause(QueryPart queryPart) {
-    renderLimitOffsetClause(queryPart);
-  }
-
-  @Override
-  protected void renderComparison(Expression lhs, ComparisonOperator operator, Expression rhs) {
-    renderComparisonEmulateIntersect(lhs, operator, rhs);
-  }
-
-  @Override
-  protected void renderSelectTupleComparison(
-      List<SqlSelection> lhsExpressions, SqlTuple tuple, ComparisonOperator operator) {
-    emulateSelectTupleComparison(lhsExpressions, tuple.getExpressions(), operator, true);
-  }
-
-  @Override
-  protected void renderPartitionItem(Expression expression) {
-    if (expression instanceof Literal) {
-      appendSql("'0' || '0'");
-    } else if (expression instanceof Summarization) {
-      // This could theoretically be emulated by rendering all grouping variations of the query and
-      // connect them via union all but that's probably pretty inefficient and would have to happen
-      // on the query spec level
-      throw new UnsupportedOperationException("Summarization is not supported by DBMS");
-    } else {
-      expression.accept(this);
-    }
-  }
-
-  @Override
-  public void visitSelectClause(SelectClause selectClause) {
-    getClauseStack().push(Clause.SELECT);
-
-    try {
-      appendSql("select ");
-      if (correlated) {
-        appendSql("as struct ");
+    if (hasAggregateFunctions(querySpec)) {
+      if (followOnStrategy == Locking.FollowOn.DISALLOW) {
+        throw new IllegalQueryOperationException(
+            "Locking with aggregate functions is not supported");
+      } else if (followOnStrategy == Locking.FollowOn.IGNORE) {
+        return LockStrategy.NONE;
       }
-      if (selectClause.isDistinct()) {
-        appendSql("distinct ");
-      }
-      visitSqlSelections(selectClause);
-    } finally {
-      getClauseStack().pop();
+      strategy = LockStrategy.FOLLOW_ON;
     }
-  }
 
-  @Override
-  protected boolean renderPrimaryTableReference(TableGroup tableGroup, LockMode lockMode) {
-    if (shouldInlineCte(tableGroup)) {
-      inlineCteTableGroup(tableGroup, lockMode);
-      return false;
-    }
-    final TableReference tableReference = tableGroup.getPrimaryTableReference();
-    if (tableReference instanceof NamedTableReference) {
-      return renderNamedTableReference((NamedTableReference) tableReference, lockMode);
-    }
-    final DerivedTableReference derivedTableReference = (DerivedTableReference) tableReference;
-    final boolean correlated = derivedTableReference.isLateral();
-    final boolean oldCorrelated = this.correlated;
-    if (correlated) {
-      this.correlated = true;
-      appendSql("unnest(array");
-    }
-    tableReference.accept(this);
-    if (correlated) {
-      this.correlated = oldCorrelated;
-      appendSql(CLOSE_PARENTHESIS);
-    }
-    return false;
+    return strategy;
   }
 }

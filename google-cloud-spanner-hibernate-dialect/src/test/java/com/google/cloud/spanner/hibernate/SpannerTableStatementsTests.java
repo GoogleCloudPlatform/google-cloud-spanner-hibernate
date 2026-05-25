@@ -99,7 +99,7 @@ public class SpannerTableStatementsTests {
     when(context.format(any(QualifiedTableName.class))).thenReturn("House");
     List<String> statements = spannerTableStatements.dropTable(table, context);
 
-    assertThat(statements).containsExactly("drop table House");
+    assertThat(statements).containsExactly("drop table if exists House");
   }
 
   @Test
@@ -133,7 +133,8 @@ public class SpannerTableStatementsTests {
             });
 
     List<String> statements = spannerTableStatements.dropTable(table, context);
-    assertThat(statements).containsExactly("drop index if exists address", "drop table House");
+    assertThat(statements)
+        .containsExactly("drop index if exists address", "drop table if exists House");
   }
 
   @Test
