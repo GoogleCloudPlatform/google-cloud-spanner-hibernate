@@ -1,6 +1,17 @@
 # Changelog
 
 
+## [4.2.3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.2.2...v4.2.3) (2026-06-01)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.google.cloud:google-cloud-spanner-jdbc to v2.39.0 ([#2009](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2009)) ([6a7a1c7](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/6a7a1c7d49558e50eaa4e27c43ceec2cbee22d7b))
+* **deps:** update dependency org.jboss.logging:jboss-logging to v3.6.3.final ([#2013](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2013)) ([4399df7](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/4399df7d75d2de32ccc6e0c5ec736f98b90f25da))
+* **deps:** update quarkus.platform.version to v3.36.0 ([#2011](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2011)) ([ce37c1b](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/ce37c1b1808b735374dcb38db6c2e26c31274edd))
+* **deps:** update spring boot to v4.0.6 ([#2004](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2004)) ([8fc158e](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/8fc158e222023057c8874cafb4774ca6839d447d))
+* update hibernate to 7.3.6.Final ([#2016](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2016)) ([fd142bb](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/fd142bb0686d0c28b76db2b8a24eac5e559cad58))
+
 ## [4.2.2](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.2.1...v4.2.2) (2026-03-03)
 
 
