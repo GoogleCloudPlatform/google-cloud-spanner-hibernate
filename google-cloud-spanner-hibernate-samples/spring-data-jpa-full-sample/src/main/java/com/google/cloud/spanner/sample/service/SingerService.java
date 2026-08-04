@@ -18,6 +18,7 @@
 
 package com.google.cloud.spanner.sample.service;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.hibernate.TransactionTag;
@@ -124,6 +125,10 @@ public class SingerService {
                         .toStringArray(singer.getNickNames())
                         .set("active")
                         .to(singer.getActive())
+                        .set("created_at")
+                        .to(Timestamp.now())
+                        .set("updated_at")
+                        .to(Timestamp.now())
                         .build())
             .collect(Collectors.toList()));
 

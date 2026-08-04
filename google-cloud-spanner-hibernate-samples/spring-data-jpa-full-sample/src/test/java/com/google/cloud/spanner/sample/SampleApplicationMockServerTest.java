@@ -81,27 +81,9 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.query(
             Statement.of(
-                "select seq.CATALOG as sequence_catalog, seq.SCHEMA as sequence_schema, seq.NAME as sequence_name,\n"
-                    + "       coalesce(kind.OPTION_VALUE, 'bit_reversed_positive') as KIND,\n"
-                    + "       coalesce(safe_cast(initial.OPTION_VALUE AS INT64),\n"
-                    + "           case coalesce(kind.OPTION_VALUE, 'bit_reversed_positive')\n"
-                    + "               when 'bit_reversed_positive' then 1\n"
-                    + "               when 'bit_reversed_signed' then -pow(2, 63)\n"
-                    + "               else 1\n"
-                    + "           end\n"
-                    + "       ) as start_value, 1 as minimum_value, 9223372036854775807 as maximum_value,\n"
-                    + "       1 as increment,\n"
-                    + "       safe_cast(skip_range_min.OPTION_VALUE as int64) as skip_range_min,\n"
-                    + "       safe_cast(skip_range_max.OPTION_VALUE as int64) as skip_range_max,\n"
-                    + "from INFORMATION_SCHEMA.SEQUENCES seq\n"
-                    + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS kind\n"
-                    + "    on seq.CATALOG=kind.CATALOG and seq.SCHEMA=kind.SCHEMA and seq.NAME=kind.NAME and kind.OPTION_NAME='sequence_kind'\n"
-                    + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS initial\n"
-                    + "    on seq.CATALOG=initial.CATALOG and seq.SCHEMA=initial.SCHEMA and seq.NAME=initial.NAME and initial.OPTION_NAME='start_with_counter'\n"
-                    + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_min\n"
-                    + "    on seq.CATALOG=skip_range_min.CATALOG and seq.SCHEMA=skip_range_min.SCHEMA and seq.NAME=skip_range_min.NAME and skip_range_min.OPTION_NAME='skip_range_min'\n"
-                    + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_max\n"
-                    + "    on seq.CATALOG=skip_range_max.CATALOG and seq.SCHEMA=skip_range_max.SCHEMA and seq.NAME=skip_range_max.NAME and skip_range_max.OPTION_NAME='skip_range_max'"),
+                new com.google.cloud.spanner.hibernate.SpannerDialect()
+                    .getQuerySequencesString()
+                    .trim()),
             empty()));
 
     // TABLES - Register for both wildcard "%" and empty "" schema
@@ -316,7 +298,17 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     mockSpanner.putPartialStatementResult(
         StatementResult.update(
             Statement.of(
+                "update venue v1_0 set v1_0.description=@p1,v1_0.updated_at=@p2 where v1_0.id=@p3"),
+            1L));
+    mockSpanner.putPartialStatementResult(
+        StatementResult.update(
+            Statement.of(
                 "update venue set created_at=@p1,description=@p2,updated_at=@p3 where id=@p4"),
+            1L));
+    mockSpanner.putPartialStatementResult(
+        StatementResult.update(
+            Statement.of(
+                "update venue v1_0 set v1_0.created_at=@p1,v1_0.description=@p2,v1_0.updated_at=@p3 where v1_0.id=@p4"),
             1L));
     mockSpanner.putPartialStatementResult(
         StatementResult.update(
@@ -763,26 +755,26 @@ public class SampleApplicationMockServerTest extends AbstractMockServerTest {
     assertEquals(13, ddlRequest.getStatementsCount());
     int index = -1;
     assertEquals(
-        "create table album (id string(36) not null,created_at timestamp,updated_at timestamp,cover_picture bytes(1000000),marketing_budget numeric,release_date date,title string(200) not null,singer_id string(36) not null) PRIMARY KEY (id)",
+        "create table album (id string(36) not null,created_at timestamp not null,updated_at timestamp not null,cover_picture bytes(1000000),marketing_budget numeric,release_date date,title string(200) not null,singer_id string(36) not null) PRIMARY KEY (id)",
         ddlRequest.getStatements(++index));
     assertEquals(
-        "create table concert (id string(36) not null,created_at timestamp,updated_at timestamp,end_time timestamp,name string(255),start_time timestamp,singer_id string(36) not null,venue_id string(36) not null) PRIMARY KEY (id)",
+        "create table concert (id string(36) not null,created_at timestamp not null,updated_at timestamp not null,end_time timestamp,name string(255),start_time timestamp,singer_id string(36) not null,venue_id string(36) not null) PRIMARY KEY (id)",
         ddlRequest.getStatements(++index));
     assertEquals(
-        "create table singer (id string(36) not null,created_at timestamp,updated_at timestamp,active bool default (true),first_name string(100),full_name STRING(300) AS (\n"
+        "create table singer (id string(36) not null,created_at timestamp not null,updated_at timestamp not null,active bool default (true),first_name string(100),full_name STRING(300) AS (\n"
             + "CASE WHEN first_name IS NULL THEN last_name\n"
             + "     WHEN last_name IS NULL THEN first_name\n"
             + "     ELSE first_name || ' ' || last_name\n"
             + "END) STORED,last_name string(200),nick_names ARRAY<STRING(255)>) PRIMARY KEY (id)",
         ddlRequest.getStatements(++index));
     assertEquals(
-        "create table ticket_sale (id int64 not null,created_at timestamp,updated_at timestamp,customer_name string(255),price numeric,seats ARRAY<STRING(MAX)>,concert_id string(36) not null) PRIMARY KEY (id)",
+        "create table ticket_sale (id int64 not null,created_at timestamp not null,updated_at timestamp not null,customer_name string(255),price numeric,seats ARRAY<STRING(MAX)>,concert_id string(36) not null) PRIMARY KEY (id)",
         ddlRequest.getStatements(++index));
     assertEquals(
-        "create table track (id string(36) not null,track_number int64 not null,created_at timestamp,updated_at timestamp,sample_rate float64,title string(100) not null) PRIMARY KEY (id,track_number), INTERLEAVE IN PARENT album ON DELETE CASCADE",
+        "create table track (id string(36) not null,track_number int64 not null,created_at timestamp not null,updated_at timestamp not null,sample_rate float64,title string(100) not null) PRIMARY KEY (id,track_number), INTERLEAVE IN PARENT album ON DELETE CASCADE",
         ddlRequest.getStatements(++index));
     assertEquals(
-        "create table venue (id string(36) not null,created_at timestamp,updated_at timestamp,description json,name string(255)) PRIMARY KEY (id)",
+        "create table venue (id string(36) not null,created_at timestamp not null,updated_at timestamp not null,description json,name string(255)) PRIMARY KEY (id)",
         ddlRequest.getStatements(++index));
     assertEquals(
         "create index idx_singer_active on singer (active)", ddlRequest.getStatements(++index));

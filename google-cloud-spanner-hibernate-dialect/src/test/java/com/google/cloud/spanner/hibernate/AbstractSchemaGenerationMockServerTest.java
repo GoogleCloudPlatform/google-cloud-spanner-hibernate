@@ -363,28 +363,7 @@ public class AbstractSchemaGenerationMockServerTest extends AbstractMockSpannerS
           .to("%")
           .build();
   protected static final Statement GET_SEQUENCES_STATEMENT =
-      Statement.of(
-          "select seq.CATALOG as sequence_catalog, seq.SCHEMA as sequence_schema, seq.NAME as sequence_name,\n"
-              + "       coalesce(kind.OPTION_VALUE, 'bit_reversed_positive') as KIND,\n"
-              + "       coalesce(safe_cast(initial.OPTION_VALUE AS INT64),\n"
-              + "           case coalesce(kind.OPTION_VALUE, 'bit_reversed_positive')\n"
-              + "               when 'bit_reversed_positive' then 1\n"
-              + "               when 'bit_reversed_signed' then -pow(2, 63)\n"
-              + "               else 1\n"
-              + "           end\n"
-              + "       ) as start_value, 1 as minimum_value, 9223372036854775807 as maximum_value,\n"
-              + "       1 as increment,\n"
-              + "       safe_cast(skip_range_min.OPTION_VALUE as int64) as skip_range_min,\n"
-              + "       safe_cast(skip_range_max.OPTION_VALUE as int64) as skip_range_max,\n"
-              + "from INFORMATION_SCHEMA.SEQUENCES seq\n"
-              + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS kind\n"
-              + "    on seq.CATALOG=kind.CATALOG and seq.SCHEMA=kind.SCHEMA and seq.NAME=kind.NAME and kind.OPTION_NAME='sequence_kind'\n"
-              + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS initial\n"
-              + "    on seq.CATALOG=initial.CATALOG and seq.SCHEMA=initial.SCHEMA and seq.NAME=initial.NAME and initial.OPTION_NAME='start_with_counter'\n"
-              + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_min\n"
-              + "    on seq.CATALOG=skip_range_min.CATALOG and seq.SCHEMA=skip_range_min.SCHEMA and seq.NAME=skip_range_min.NAME and skip_range_min.OPTION_NAME='skip_range_min'\n"
-              + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_max\n"
-              + "    on seq.CATALOG=skip_range_max.CATALOG and seq.SCHEMA=skip_range_max.SCHEMA and seq.NAME=skip_range_max.NAME and skip_range_max.OPTION_NAME='skip_range_max'");
+      Statement.of(new SpannerDialect().getQuerySequencesString().trim());
   protected static final ResultSetMetadata GET_SEQUENCES_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(

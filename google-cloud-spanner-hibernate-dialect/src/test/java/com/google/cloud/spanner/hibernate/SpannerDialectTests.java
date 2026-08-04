@@ -198,7 +198,7 @@ public class SpannerDialectTests {
 
   @Test
   public void getCreateTableStringTest() {
-    assertThat(this.spannerDialect.getCreateTableString()).isEqualTo("create table if not exists");
+    assertThat(this.spannerDialect.getCreateTableString()).isEqualTo("create table");
   }
 
   /* Lock acquisition functions */
@@ -209,12 +209,12 @@ public class SpannerDialectTests {
 
   @Test
   public void getForUpdateStringLockOptionsTest() {
-    assertEquals(" for update", this.spannerDialect.getForUpdateString((LockOptions) null));
+    assertEquals(" for update", this.spannerDialect.getForUpdateString(new LockOptions()));
   }
 
   @Test
   public void getForUpdateStringTest() {
-    assertEquals(" for update", this.spannerDialect.getForUpdateString((LockOptions) null));
+    assertEquals(" for update", this.spannerDialect.getForUpdateString(new LockOptions()));
   }
 
   @Test
@@ -273,7 +273,7 @@ public class SpannerDialectTests {
 
   @Test
   public void getForUpdateStringAliasLockOptionsTest() {
-    assertEquals(" for update", this.spannerDialect.getForUpdateString("a", null));
+    assertEquals(" for update", this.spannerDialect.getForUpdateString("a", new LockOptions()));
   }
 
   @Test
@@ -302,15 +302,15 @@ public class SpannerDialectTests {
 
   @Test
   public void appendLockHintTest() {
-    String lockHint = this.spannerDialect.appendLockHint((LockOptions) null, "original_table_name");
+    String lockHint = this.spannerDialect.appendLockHint(new LockOptions(), "original_table_name");
     assertThat(lockHint).isEqualTo("original_table_name");
   }
 
   @Test
   public void applyLocksToSqlTest() {
     String originalStatement =
-        this.spannerDialect.applyLocksToSql("original statement", null, null);
-    assertThat(originalStatement).isEqualTo("original statement");
+        this.spannerDialect.applyLocksToSql("original statement", new LockOptions(), null);
+    assertThat(originalStatement).isEqualTo("original statement for update");
   }
 
   @Test

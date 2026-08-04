@@ -18,81 +18,31 @@
 
 package com.google.cloud.spanner.hibernate;
 
-import static java.sql.Types.REAL;
-import static org.hibernate.sql.ast.internal.NonLockingClauseStrategy.NON_CLAUSE_STRATEGY;
-import static org.hibernate.type.SqlTypes.DECIMAL;
-import static org.hibernate.type.SqlTypes.JSON;
-import static org.hibernate.type.SqlTypes.NUMERIC;
-
 import com.google.cloud.spanner.hibernate.hints.ReplaceQueryPartsHint;
 import com.google.cloud.spanner.hibernate.schema.SpannerForeignKeyExporter;
-import com.google.cloud.spanner.jdbc.JsonType;
 import com.google.common.base.Strings;
-import jakarta.persistence.Timeout;
-import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
-import org.hibernate.LockOptions;
-import org.hibernate.Locking;
-import org.hibernate.Timeouts;
-import org.hibernate.boot.model.TypeContributions;
-import org.hibernate.boot.model.relational.Sequence;
-import org.hibernate.dialect.RowLockStrategy;
-import org.hibernate.dialect.identity.IdentityColumnSupport;
-import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.dialect.lock.PessimisticLockStyle;
-import org.hibernate.dialect.lock.internal.LockingSupportSimple;
-import org.hibernate.dialect.lock.spi.ConnectionLockTimeoutStrategy;
-import org.hibernate.dialect.lock.spi.LockTimeoutType;
-import org.hibernate.dialect.lock.spi.LockingSupport;
-import org.hibernate.dialect.lock.spi.OuterJoinLockingType;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.dialect.unique.UniqueDelegate;
 import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfo;
-import org.hibernate.engine.jdbc.env.spi.IdentifierHelper;
-import org.hibernate.engine.jdbc.env.spi.IdentifierHelperBuilder;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Table;
-import org.hibernate.mapping.UniqueKey;
 import org.hibernate.metamodel.mapping.EntityMappingType;
 import org.hibernate.metamodel.spi.RuntimeModelCreationContext;
-import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.query.spi.DomainQueryExecutionContext;
 import org.hibernate.query.spi.QueryOptions;
 import org.hibernate.query.sqm.internal.DomainParameterXref;
 import org.hibernate.query.sqm.mutation.spi.MultiTableHandlerBuildResult;
 import org.hibernate.query.sqm.mutation.spi.SqmMultiTableInsertStrategy;
 import org.hibernate.query.sqm.tree.insert.SqmInsertStatement;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.sql.ast.SqlAstTranslator;
-import org.hibernate.sql.ast.SqlAstTranslatorFactory;
-import org.hibernate.sql.ast.internal.PessimisticLockKind;
-import org.hibernate.sql.ast.spi.LockingClauseStrategy;
-import org.hibernate.sql.ast.spi.StandardSqlAstTranslatorFactory;
-import org.hibernate.sql.ast.tree.Statement;
-import org.hibernate.sql.ast.tree.select.QuerySpec;
-import org.hibernate.sql.exec.spi.JdbcOperation;
 import org.hibernate.tool.schema.extract.internal.SequenceInformationExtractorLegacyImpl;
 import org.hibernate.tool.schema.extract.internal.SequenceInformationExtractorNoOpImpl;
 import org.hibernate.tool.schema.extract.spi.ExtractionContext;
 import org.hibernate.tool.schema.extract.spi.SequenceInformation;
 import org.hibernate.tool.schema.extract.spi.SequenceInformationExtractor;
-import org.hibernate.tool.schema.internal.StandardSequenceExporter;
-import org.hibernate.tool.schema.internal.StandardUniqueKeyExporter;
 import org.hibernate.tool.schema.spi.Exporter;
-import org.hibernate.type.SqlTypes;
-import org.hibernate.type.descriptor.ValueBinder;
-import org.hibernate.type.descriptor.WrapperOptions;
-import org.hibernate.type.descriptor.java.JavaType;
-import org.hibernate.type.descriptor.jdbc.BasicBinder;
-import org.hibernate.type.descriptor.jdbc.JsonAsStringJdbcType;
-import org.hibernate.type.descriptor.jdbc.spi.JdbcTypeRegistry;
-import org.hibernate.type.descriptor.sql.internal.DdlTypeImpl;
-import org.hibernate.type.descriptor.sql.spi.DdlTypeRegistry;
 import org.jboss.logging.Logger;
 
 /** Hibernate 7.x dialect for Cloud Spanner. */
@@ -109,45 +59,6 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
         DomainParameterXref domainParameterXref,
         DomainQueryExecutionContext domainQueryExecutionContext) {
       throw new HibernateException("Multi-table inserts are not supported for Cloud Spanner");
-    }
-  }
-
-  private static class SpannerJsonJdbcType extends JsonAsStringJdbcType {
-    private SpannerJsonJdbcType() {
-      super(JSON, null);
-    }
-
-    @Override
-    public <X> ValueBinder<X> getBinder(JavaType<X> javaType) {
-      return new BasicBinder<X>(javaType, this) {
-        @Override
-        protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options)
-            throws SQLException {
-          final String json =
-              ((SpannerJsonJdbcType) getJdbcType()).toString(value, getJavaType(), options);
-          st.setObject(index, json, JsonType.VENDOR_TYPE_NUMBER);
-        }
-
-        @Override
-        protected void doBind(CallableStatement st, X value, String name, WrapperOptions options)
-            throws SQLException {
-          final String json =
-              ((SpannerJsonJdbcType) getJdbcType()).toString(value, getJavaType(), options);
-          st.setObject(name, json, JsonType.VENDOR_TYPE_NUMBER);
-        }
-
-        @Override
-        protected void doBindNull(PreparedStatement st, int index, WrapperOptions options)
-            throws SQLException {
-          st.setNull(index, JsonType.VENDOR_TYPE_NUMBER);
-        }
-
-        @Override
-        protected void doBindNull(CallableStatement st, String name, WrapperOptions options)
-            throws SQLException {
-          st.setNull(name, JsonType.VENDOR_TYPE_NUMBER);
-        }
-      };
     }
   }
 
@@ -178,22 +89,9 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   private final SpannerForeignKeyExporter spannerForeignKeyExporter =
       new SpannerForeignKeyExporter(this);
 
-  private final StandardUniqueKeyExporter spannerUniqueKeyExporter =
-      new StandardUniqueKeyExporter(this);
-
   private final SpannerSequenceSupport sequenceSupport = new SpannerSequenceSupport();
 
-  private final StandardSequenceExporter sequenceExporter = new StandardSequenceExporter(this);
-
   private final SpannerUniqueDelegate spannerUniqueDelegate = new SpannerUniqueDelegate(this);
-
-  private final LockingSupport spannerLockingSupport =
-      new LockingSupportSimple(
-          PessimisticLockStyle.CLAUSE,
-          RowLockStrategy.NONE,
-          LockTimeoutType.NONE,
-          OuterJoinLockingType.FULL,
-          ConnectionLockTimeoutStrategy.NONE);
 
   /** Default constructor. */
   public SpannerDialect() {}
@@ -201,52 +99,6 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   /** Constructor used for automatic dialect detection. */
   public SpannerDialect(DialectResolutionInfo info) {
     super(info);
-  }
-
-  @Override
-  public SqlAstTranslatorFactory getSqlAstTranslatorFactory() {
-    return new StandardSqlAstTranslatorFactory() {
-      @Override
-      protected <T extends JdbcOperation> SqlAstTranslator<T> buildTranslator(
-          SessionFactoryImplementor sessionFactory, Statement statement) {
-        return new SpannerSqlAstTranslator<>(sessionFactory, statement);
-      }
-    };
-  }
-
-  // TODO: Remove when the override in the super class has been fixed.
-  @Override
-  protected String columnType(int sqlTypeCode) {
-    if (sqlTypeCode == DECIMAL || sqlTypeCode == NUMERIC) {
-      return "numeric";
-    }
-    if (sqlTypeCode == JSON) {
-      return "json";
-    }
-    // The JDBC spec is a bit confusing here.
-    // DOUBLE == FLOAT == 64 bit
-    // REAL == 32 bit
-    // The default Hibernate implementation did not really get this right, as it uses
-    // java.sql.Types.FLOAT for java.lang.Float. It should have been java.sql.Types.REAL.
-    // This dialect follows the default Hibernate implementation, and in order to actually
-    // use a float32, you need to annotate the column with the JDBC type code REAL.
-    if (sqlTypeCode == REAL) {
-      return "float32";
-    }
-    return super.columnType(sqlTypeCode);
-  }
-
-  @Override
-  protected void registerColumnTypes(
-      TypeContributions typeContributions, ServiceRegistry serviceRegistry) {
-    super.registerColumnTypes(typeContributions, serviceRegistry);
-    JdbcTypeRegistry jdbcTypeRegistry =
-        typeContributions.getTypeConfiguration().getJdbcTypeRegistry();
-    jdbcTypeRegistry.addDescriptorIfAbsent(new SpannerJsonJdbcType());
-    final DdlTypeRegistry ddlTypeRegistry =
-        typeContributions.getTypeConfiguration().getDdlTypeRegistry();
-    ddlTypeRegistry.addDescriptor(
-        new DdlTypeImpl(SqlTypes.JSON, columnType(SqlTypes.JSON), castType(SqlTypes.JSON), this));
   }
 
   @Override
@@ -260,46 +112,29 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   }
 
   @Override
-  public Exporter<Sequence> getSequenceExporter() {
-    return this.sequenceExporter;
-  }
-
-  @Override
   public SpannerSequenceSupport getSequenceSupport() {
     return this.sequenceSupport;
   }
 
+  // Overridden to return standard "create unique index" instead of upstream's
+  // "create unique null_filtered index", maintaining compatibility with existing
+  // Cloud Spanner unique index schemas and DDL migrations.
   @Override
-  public String getQuerySequencesString() {
-    return "select seq.CATALOG as sequence_catalog, "
-        + "seq.SCHEMA as sequence_schema, "
-        + "seq.NAME as sequence_name,\n"
-        + "       coalesce(kind.OPTION_VALUE, 'bit_reversed_positive') as KIND,\n"
-        + "       coalesce(safe_cast(initial.OPTION_VALUE AS INT64),\n"
-        + "           case coalesce(kind.OPTION_VALUE, 'bit_reversed_positive')\n"
-        + "               when 'bit_reversed_positive' then 1\n"
-        + "               when 'bit_reversed_signed' then -pow(2, 63)\n"
-        + "               else 1\n"
-        + "           end\n"
-        + "       ) as start_value, 1 as minimum_value, "
-        + Long.MAX_VALUE
-        + " as maximum_value,\n"
-        + "       1 as increment,\n"
-        + "       safe_cast(skip_range_min.OPTION_VALUE as int64) as skip_range_min,\n"
-        + "       safe_cast(skip_range_max.OPTION_VALUE as int64) as skip_range_max,\n"
-        + "from INFORMATION_SCHEMA.SEQUENCES seq\n"
-        + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS kind\n"
-        + "    on seq.CATALOG=kind.CATALOG and seq.SCHEMA=kind.SCHEMA and "
-        + "seq.NAME=kind.NAME and kind.OPTION_NAME='sequence_kind'\n"
-        + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS initial\n"
-        + "    on seq.CATALOG=initial.CATALOG and seq.SCHEMA=initial.SCHEMA "
-        + "and seq.NAME=initial.NAME and initial.OPTION_NAME='start_with_counter'\n"
-        + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_min\n"
-        + "    on seq.CATALOG=skip_range_min.CATALOG and seq.SCHEMA=skip_range_min.SCHEMA "
-        + "and seq.NAME=skip_range_min.NAME and skip_range_min.OPTION_NAME='skip_range_min'\n"
-        + "left outer join INFORMATION_SCHEMA.SEQUENCE_OPTIONS skip_range_max\n"
-        + "    on seq.CATALOG=skip_range_max.CATALOG and seq.SCHEMA=skip_range_max.SCHEMA "
-        + "and seq.NAME=skip_range_max.NAME and skip_range_max.OPTION_NAME='skip_range_max'";
+  public String getCreateIndexString(boolean unique) {
+    return unique ? "create unique index" : "create index";
+  }
+
+  // Upstream Hibernate sets PREFERRED_POOLED_OPTIMIZER to "none", which causes default
+  // @GeneratedValue(strategy = GenerationType.AUTO) annotations to default to an increment
+  // size of 1 and use native Spanner sequences (CREATE SEQUENCE ...).
+  //
+  // Overriding to restore Hibernate's standard default of "pooled-lo" makes default
+  // @GeneratedValue annotations use table-backed sequences (CREATE TABLE ..._SEQ) with
+  // increment size 50, maintaining backwards compatibility with existing user schemas.
+  @Override
+  protected void initDefaultProperties() {
+    super.initDefaultProperties();
+    getDefaultProperties().setProperty(AvailableSettings.PREFERRED_POOLED_OPTIMIZER, "pooled-lo");
   }
 
   private static final class SpannerSequenceInformationExtractor
@@ -329,60 +164,6 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
     return getQuerySequencesString() == null
         ? SequenceInformationExtractorNoOpImpl.INSTANCE
         : SpannerSequenceInformationExtractor.INSTANCE;
-  }
-
-  @Override
-  public IdentityColumnSupport getIdentityColumnSupport() {
-    return SpannerIdentityColumnSupport.INSTANCE;
-  }
-
-  @Override
-  public Exporter<UniqueKey> getUniqueKeyExporter() {
-    return spannerUniqueKeyExporter;
-  }
-
-  @Override
-  public boolean dropConstraints() {
-    return true;
-  }
-
-  @Override
-  public String getDropForeignKeyString() {
-    // TODO: Remove when the override in the super class has been fixed.
-    return "drop constraint";
-  }
-
-  @Override
-  public String getAddForeignKeyConstraintString(
-      String constraintName,
-      String[] foreignKey,
-      String referencedTable,
-      String[] primaryKey,
-      boolean referencesPrimaryKey) {
-    // TODO: Remove when the override in the super class has been fixed.
-    return " add constraint "
-        + quote(constraintName)
-        + " foreign key ("
-        + String.join(", ", foreignKey)
-        + ") references "
-        + referencedTable
-        // Cloud Spanner requires the referenced columns to specified in all cases, including
-        // if the foreign key is referencing the primary key of the referenced table.
-        + " ("
-        + String.join(", ", primaryKey)
-        + ')';
-  }
-
-  @Override
-  public String getAddForeignKeyConstraintString(
-      String constraintName, String foreignKeyDefinition) {
-    // TODO: Remove when the override in the super class has been fixed.
-    return " add constraint " + quote(constraintName) + " " + foreignKeyDefinition;
-  }
-
-  @Override
-  public boolean supportsCascadeDelete() {
-    return true;
   }
 
   @Override
@@ -453,15 +234,6 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   }
 
   @Override
-  public IdentifierHelper buildIdentifierHelper(
-      IdentifierHelperBuilder builder, DatabaseMetaData metadata) throws SQLException {
-    builder.applyReservedWords(metadata);
-    builder.setAutoQuoteKeywords(true);
-    builder.setAutoQuoteDollar(true);
-    return super.buildIdentifierHelper(builder, metadata);
-  }
-
-  @Override
   public boolean canCreateSchema() {
     return true;
   }
@@ -479,153 +251,5 @@ public class SpannerDialect extends org.hibernate.dialect.SpannerDialect {
   @Override
   public boolean qualifyIndexName() {
     return true;
-  }
-
-  /* Lock acquisition functions */
-
-  private static void validateSpannerLockTimeout(int millis) {
-    if (Timeouts.isRealTimeout(millis)) {
-      throw new UnsupportedOperationException("Spanner does not support lock timeout.");
-    }
-    if (millis == Timeouts.SKIP_LOCKED_MILLI) {
-      throw new UnsupportedOperationException("Spanner does not support skip locked.");
-    }
-    if (millis == Timeouts.NO_WAIT_MILLI) {
-      throw new UnsupportedOperationException("Spanner does not support no wait.");
-    }
-  }
-
-  @Override
-  public LockingStrategy getLockingStrategy(
-      EntityPersister lockable, LockMode lockMode, Locking.Scope lockScope) {
-    return switch (lockMode) {
-      case PESSIMISTIC_FORCE_INCREMENT ->
-          buildPessimisticForceIncrementStrategy(lockable, lockMode, lockScope);
-      case UPGRADE_NOWAIT, UPGRADE_SKIPLOCKED, PESSIMISTIC_WRITE ->
-          buildPessimisticWriteStrategy(lockable, lockMode, lockScope);
-      case PESSIMISTIC_READ -> buildPessimisticReadStrategy(lockable, lockMode, lockScope);
-      case OPTIMISTIC_FORCE_INCREMENT -> buildOptimisticForceIncrementStrategy(lockable, lockMode);
-      case OPTIMISTIC -> buildOptimisticStrategy(lockable, lockMode);
-      case READ -> buildReadStrategy(lockable, lockMode, lockScope);
-      default -> throw new IllegalArgumentException("Unsupported lock mode : " + lockMode);
-    };
-  }
-
-  @Override
-  public LockingStrategy getLockingStrategy(EntityPersister lockable, LockMode lockMode) {
-    return getLockingStrategy(lockable, lockMode, Locking.Scope.ROOT_ONLY);
-  }
-
-  @Override
-  public LockingSupport getLockingSupport() {
-    return spannerLockingSupport;
-  }
-
-  @Override
-  public LockingClauseStrategy getLockingClauseStrategy(
-      QuerySpec querySpec, LockOptions lockOptions) {
-    if (getPessimisticLockStyle() != PessimisticLockStyle.CLAUSE || lockOptions == null) {
-      return NON_CLAUSE_STRATEGY;
-    }
-
-    final LockMode lockMode = lockOptions.getLockMode();
-    final PessimisticLockKind lockKind = PessimisticLockKind.interpret(lockMode);
-    if (lockKind == PessimisticLockKind.NONE) {
-      return NON_CLAUSE_STRATEGY;
-    }
-
-    if (lockOptions.getTimeout() != null) {
-      validateSpannerLockTimeout(lockOptions.getTimeout().milliseconds());
-    }
-
-    final RowLockStrategy rowLockStrategy = RowLockStrategy.NONE;
-    return buildLockingClauseStrategy(
-        lockKind, rowLockStrategy, lockOptions, querySpec.getRootPathsForLocking());
-  }
-
-  @Override
-  public String getForUpdateString() {
-    return " for update";
-  }
-
-  @Override
-  public String getForUpdateString(LockOptions lockOptions) {
-    if (lockOptions != null && lockOptions.getTimeout() != null) {
-      final int millis = lockOptions.getTimeout().milliseconds();
-      validateSpannerLockTimeout(millis);
-    }
-    return getForUpdateString();
-  }
-
-  @Override
-  public String getForUpdateString(String aliases) {
-    return getForUpdateString();
-  }
-
-  @Override
-  public String getForUpdateString(String aliases, LockOptions lockOptions) {
-    return getForUpdateString(lockOptions);
-  }
-
-  @Override
-  public String getWriteLockString(int timeout) {
-    validateSpannerLockTimeout(timeout);
-    return getForUpdateString();
-  }
-
-  @Override
-  public String getWriteLockString(Timeout timeout) {
-    return getWriteLockString(timeout.milliseconds());
-  }
-
-  @Override
-  public String getWriteLockString(String aliases, int timeout) {
-    return getWriteLockString(timeout);
-  }
-
-  @Override
-  public String getWriteLockString(String aliases, Timeout timeout) {
-    return getWriteLockString(aliases, timeout.milliseconds());
-  }
-
-  @Override
-  public String getReadLockString(int timeout) {
-    validateSpannerLockTimeout(timeout);
-    return getForUpdateString();
-  }
-
-  @Override
-  public String getReadLockString(Timeout timeout) {
-    return getReadLockString(timeout.milliseconds());
-  }
-
-  @Override
-  public String getReadLockString(String aliases, int timeout) {
-    return getReadLockString(timeout);
-  }
-
-  @Override
-  public String getReadLockString(String aliases, Timeout timeout) {
-    return getReadLockString(aliases, timeout.milliseconds());
-  }
-
-  @Override
-  public String getForUpdateNowaitString() {
-    throw new UnsupportedOperationException("Spanner does not support no wait.");
-  }
-
-  @Override
-  public String getForUpdateNowaitString(String aliases) {
-    throw new UnsupportedOperationException("Spanner does not support no wait.");
-  }
-
-  @Override
-  public String getForUpdateSkipLockedString() {
-    throw new UnsupportedOperationException("Spanner does not support skip locked.");
-  }
-
-  @Override
-  public String getForUpdateSkipLockedString(String aliases) {
-    throw new UnsupportedOperationException("Spanner does not support skip locked.");
   }
 }
