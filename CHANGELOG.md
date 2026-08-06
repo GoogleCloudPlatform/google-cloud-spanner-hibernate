@@ -1,6 +1,24 @@
 # Changelog
 
 
+## [4.3.0](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.2.3...v4.3.0) (2026-08-06)
+
+
+### Features
+
+* upgrade Hibernate ORM to version 7.4.5.Final ([#2020](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2020)) ([b5689ba](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/b5689baf6e4a185b2e9d7ee037b9b1f93d5f629c))
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.fasterxml.jackson.datatype:jackson-datatype-hibernate7 to v2.22.1 ([#2014](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2014)) ([a4a715e](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/a4a715e7a6dc656a1292ac226f40bd74bd507e26))
+* **deps:** update dependency com.google.cloud:google-cloud-spanner-jdbc to v2.42.0 ([#2025](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2025)) ([83ff8b1](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/83ff8b15641575ec8c68fcfa295c232ef8714ea3))
+* **deps:** update dependency io.opentelemetry:opentelemetry-bom to v1.64.0 ([#2027](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2027)) ([fe17762](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/fe1776297a3ebe893e1c966c6e59c439e8fb7398))
+* **deps:** update dependency io.undertow:undertow-core to v2.4.2.final ([#2028](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2028)) ([88b34c4](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/88b34c491f6aa691e36f3df49ad736ce62696d0d))
+* **deps:** update log4j.version to v2.25.4 [security] ([#2000](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2000)) ([016ac60](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/016ac60651757d5d7bda3128d2cc6c965edb8c7e))
+* **deps:** update quarkus.platform.version to v3.38.1 ([#2029](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2029)) ([d317a32](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/d317a32c8d022435b1a4d1ac2e56b149c558822a))
+* **deps:** update spring boot to v4.1.0 ([#2030](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/issues/2030)) ([aa11427](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/commit/aa11427f346d25a5ef4953a310697d05da45b04b))
+
 ## [4.2.3](https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/compare/v4.2.2...v4.2.3) (2026-06-01)
 
 
