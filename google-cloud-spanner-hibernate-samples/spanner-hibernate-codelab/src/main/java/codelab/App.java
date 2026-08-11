@@ -82,7 +82,10 @@ public class App {
 
   private static void readData(Session session) {
     List<Singer> singers =
-        session.createQuery("from Singer where birthDate >= '1990-01-01' order by lastName").list();
+        session
+            .createQuery(
+                "from Singer where birthDate >= cast('1990-01-01' as date) order by lastName")
+            .list();
     System.out.println("Singers who were born in 1990 or later:");
     for (Singer singer : singers) {
       System.out.println(
