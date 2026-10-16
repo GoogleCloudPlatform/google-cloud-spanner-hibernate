@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.cloud.spanner.hibernate.schema.SpannerSchemaManagementTool;
 import com.mockrunner.base.NestedApplicationException;
 import com.mockrunner.mock.jdbc.MockDriver;
 import java.sql.Connection;
@@ -37,6 +38,7 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.tool.schema.spi.SchemaManagementTool;
 import org.junit.Test;
 
 /**
@@ -94,6 +96,48 @@ public class SpannerServiceContributorTest {
 
     // verify that our mock Driver.connect(url, props) was called and returned a connection.
     assertThat(obtainedConnection.get()).isTrue();
+  }
+
+  /**
+   * Verifies that each {@link StandardServiceRegistry} receives a dedicated {@link
+   * SpannerSchemaManagementTool} instance so multiple persistence units do not overwrite each
+   * other's injected service registry state.
+   */
+  @Test
+  public void testSchemaManagementToolCreatesNewInstancePerServiceRegistry() throws SQLException {
+    MockDriver mockDriver = new MockDriver();
+    Connection mockConnection = mock(Connection.class);
+    DatabaseMetaData mockMetaData = mock(DatabaseMetaData.class);
+    Statement mockStatement = mock(Statement.class);
+    when(mockConnection.getMetaData()).thenReturn(mockMetaData);
+    when(mockMetaData.getDriverName()).thenReturn("MockDriver");
+    when(mockMetaData.getDatabaseProductName()).thenReturn("Spanner");
+    when(mockMetaData.getDatabaseProductVersion()).thenReturn("0.0");
+    when(mockMetaData.getDriverVersion()).thenReturn("0.0");
+    when(mockConnection.createStatement()).thenReturn(mockStatement);
+    when(mockStatement.getFetchSize()).thenReturn(0);
+    mockDriver.setupConnection(mockConnection);
+
+    deregisterDrivers();
+    DriverManager.registerDriver(mockDriver);
+
+    StandardServiceRegistry firstRegistry =
+        new StandardServiceRegistryBuilder()
+            .applySetting("hibernate.dialect", SpannerDialect.class.getName())
+            .applySetting("hibernate.connection.url", "unused")
+            .build();
+    StandardServiceRegistry secondRegistry =
+        new StandardServiceRegistryBuilder()
+            .applySetting("hibernate.dialect", SpannerDialect.class.getName())
+            .applySetting("hibernate.connection.url", "unused")
+            .build();
+
+    SchemaManagementTool firstTool = firstRegistry.getService(SchemaManagementTool.class);
+    SchemaManagementTool secondTool = secondRegistry.getService(SchemaManagementTool.class);
+
+    assertThat(firstTool).isInstanceOf(SpannerSchemaManagementTool.class);
+    assertThat(secondTool).isInstanceOf(SpannerSchemaManagementTool.class);
+    assertThat(firstTool).isNotSameAs(secondTool);
   }
 
   private void deregisterDrivers() {

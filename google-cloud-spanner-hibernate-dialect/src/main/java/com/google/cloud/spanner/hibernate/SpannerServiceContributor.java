@@ -40,9 +40,6 @@ import org.hibernate.tool.schema.spi.SchemaManagementTool;
  */
 public class SpannerServiceContributor implements ServiceContributor {
 
-  private static final SpannerSchemaManagementTool SCHEMA_MANAGEMENT_TOOL =
-      new SpannerSchemaManagementTool();
-
   static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
 
   @Override
@@ -58,7 +55,7 @@ public class SpannerServiceContributor implements ServiceContributor {
                 if (jdbcEnvironment != null) {
                   if (SpannerDialect.class.isAssignableFrom(
                       jdbcEnvironment.getDialect().getClass())) {
-                    return SCHEMA_MANAGEMENT_TOOL;
+                    return new SpannerSchemaManagementTool();
                   }
                 }
                 return super.initiateService(configurationValues, registry);
