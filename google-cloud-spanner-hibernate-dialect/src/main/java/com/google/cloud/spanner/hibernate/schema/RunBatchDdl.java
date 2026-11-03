@@ -80,7 +80,7 @@ public class RunBatchDdl implements AuxiliaryDatabaseObject {
     if (schemaAction == Action.UPDATE) {
       return new String[] {};
     } else {
-      return statements.toArray(new String[statements.size()]);
+      return new String[] {"RUN BATCH"};
     }
   }
 }

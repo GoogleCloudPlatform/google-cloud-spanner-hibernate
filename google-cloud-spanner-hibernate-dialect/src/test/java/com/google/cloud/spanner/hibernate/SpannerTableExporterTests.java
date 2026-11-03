@@ -304,6 +304,32 @@ public class SpannerTableExporterTests {
   }
 
   @Test
+  public void generateCreateAndDropStringsDoesNotInsertSequenceOnDrop()
+      throws IOException, SQLException {
+    SpannerDialect.disableSpannerSequences();
+    try {
+      this.connection.setMetaData(MockJdbcUtils.metaDataBuilder().setTables("Employee").build());
+      Metadata employeeMetadata =
+          new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
+      String createFile = UUID.randomUUID().toString();
+      new SchemaExport()
+          .setOutputFile(createFile)
+          .createOnly(EnumSet.of(TargetType.STDOUT, TargetType.SCRIPT), employeeMetadata);
+      new File(createFile).deleteOnExit();
+
+      com.google.cloud.spanner.hibernate.schema.RunBatchDdl runBatchDdl =
+          employeeMetadata.getDatabase().getAuxiliaryDatabaseObjects().stream()
+              .filter(com.google.cloud.spanner.hibernate.schema.RunBatchDdl.class::isInstance)
+              .map(com.google.cloud.spanner.hibernate.schema.RunBatchDdl.class::cast)
+              .findFirst()
+              .orElseThrow();
+      assertThat(runBatchDdl.sqlDropStrings(null)).containsExactly("RUN BATCH");
+    } finally {
+      SpannerDialect.enableSpannerSequences();
+    }
+  }
+
+  @Test
   public void testAddStatementAfterDdlBatchFailsWithNoBatch() {
     Metadata metadata =
         new MetadataSources(this.registry).addAnnotatedClass(Employee.class).buildMetadata();
